@@ -1,0 +1,78 @@
+*.sh.*
+
+*.log
+*.tlog
+*.pdb
+*.lastbuildstate
+**/Debug/*
+**/Release/*
+.fig
+figures/
+!draft/*.pdf
+
+# Data files
+*.bin
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+*.db
+
+cpp/QJ/\.vs/QJ/v14/\.suo
+
+cpp/QJ/QJ/QJ\.vcxproj
+
+*.vcxproj
+
+cpp/CQdiss/\.vs/CQdiss/v14/\.suo
+
+*.opendb
+
+*.aux
+
+draft/draft\.synctex\.gz
+
+
+
+data/
+
+cpp/QJ/QJ/*.txt
+!config.txt
+articles/
+
+*.sdf
+
+*.suo
+
+*.asv
+
+*.opensdf
+
+*.user
