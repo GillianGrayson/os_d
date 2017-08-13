@@ -67,6 +67,10 @@ cpp/QJ/QJ/*.txt
 !config.txt
 articles/
 
+
+source/cpp/QJ/QJ/*.txt
+!source/cpp/QJ/QJ/config.txt
+
 *.sdf
 
 *.suo
