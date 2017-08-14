@@ -9,19 +9,19 @@ $input_path = "qj_input";
 
 $prefix = "check";
 
-for($curr_U = 0.01; $curr_U <= 1.0001; $curr_U += 0.01)
+for($curr_U = 0.4; $curr_U <= 0.90001; $curr_U += 0.1)
 {
 	print "curr_U = $curr_U\n";
 	
-	$N = 200;
+	$N = 1000;
 	$U = $curr_U;
 	
-	$num_periods = 10000;
+	$num_periods = 1000;
 	$init_state_id = int($N/2);
 	$propagation_type = 1;
-	$num_dumps = 10001;
+	$num_dumps = 1001;
 	$dump_type = 0;
-	$num_periods_in_trans_proc = 1000;
+	$num_periods_in_trans_proc = 100;
 	$num_omp_threads = 1;
 	$num_trajectories = 1;
 	$rnd_max = 2000000;
@@ -48,7 +48,7 @@ for($curr_U = 0.01; $curr_U <= 1.0001; $curr_U += 0.01)
 	for($seed = 0; $seed < 1; $seed+=1)
 	{
 		$start = 0;
-		$finish = 1;
+		$finish = 100;
 		%exp = ();
 		$i = 0;
 		$i = $start;
@@ -115,7 +115,7 @@ for($curr_U = 0.01; $curr_U <= 1.0001; $curr_U += 0.01)
 			print WF "mc_type = $mc_type \n";
 			close WF;
 
-			$test_file = "periods.txt";
+			$test_file = "periods_evo.txt";
 			
 			unless (-e "$key/$test_file")
 			{	
