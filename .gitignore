@@ -59,7 +59,8 @@ cpp/CQdiss/\.vs/CQdiss/v14/\.suo
 
 draft/draft\.synctex\.gz
 
-
+source/cpp/NonLin/NonLin/*.txt
+!source/cpp/NonLin/NonLin/config.txt
 
 data/
 
