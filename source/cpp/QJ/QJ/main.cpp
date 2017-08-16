@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 	int mc_type;
 	int num_att_trajectories;
 	double var_eps;
+	double delta_lim = 0.1;
 	
 	FILE * config_file = fopen("config.txt", "r");
 	fscanf(config_file, "num_periods = %d\n", &num_periods);
@@ -74,6 +75,7 @@ int main(int argc, char **argv)
 	fscanf(config_file, "mc_type = %d\n", &mc_type);
 	fscanf(config_file, "num_att_trajectories = %d\n", &num_att_trajectories);
 	fscanf(config_file, "var_eps = %lf\n", &var_eps);
+	fscanf(config_file, "delta_lim = %lf\n", &delta_lim);
 
 	fclose(config_file);
 
@@ -148,6 +150,37 @@ int main(int argc, char **argv)
 			energy_max
 			);
 	}
+	else if (propagation_type == 3)
+	{
+		omp_qj_chaos(
+			argv[1],
+			num_periods,
+			num_dumps,
+			dump_type,
+			num_periods_in_trans_proc,
+			num_omp_threads,
+			num_trajectories,
+			rnd_max,
+			rnd_cur,
+			init_state_id,
+			mean_low_limit,
+			mean_high_limit,
+			dump_rho,
+			avg_dump,
+			dump_characteristics,
+			btw_jump_times,
+			borders_type,
+			stationary,
+			after_dump,
+			double_scale_dump,
+			deep_characteristic,
+			mc_specific,
+			mc_type,
+			num_att_trajectories,
+			var_eps,
+			delta_lim);
+	}
+
 	
 	double time = omp_get_wtime() - start_time;
 
