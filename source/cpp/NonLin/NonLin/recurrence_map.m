@@ -1,5 +1,5 @@
 clear all;
-U = 0.425;
+U = 0.50;
 N=1000;
 
 seed_begin = 0;
@@ -54,7 +54,7 @@ x_n_pdf = x_n_pdf / (num_hits * x_n_shift * x_n_shift);
 x_n_pdf = x_n_pdf';
 
 fig = figure;
-hLine = imagesc(x_n_int, x_n_int, x_n_pdf);
+hLine = imagesc(x_n_int, x_n_int, log10(x_n_pdf + 1.0e-8));
 set(gca, 'FontSize', 30);
 xlabel('$x_n$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
@@ -62,5 +62,5 @@ ylabel('$x_{n+1}$', 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);
-title(h, 'PDF');
+title(h, '$\log_{10}PDF$', 'Interpreter', 'latex');
 set(gca,'YDir','normal');

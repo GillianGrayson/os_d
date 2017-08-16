@@ -82,7 +82,9 @@ void omp_qj_statistic(
 	int double_scale_dump,
 	int deep_characteristic, 
 	int mc_specific,
-	int mc_type
+	int mc_type,
+	int num_att_trajectories,
+	double var_eps
 );
 
 

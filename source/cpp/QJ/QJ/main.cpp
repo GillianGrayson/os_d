@@ -40,6 +40,8 @@ int main(int argc, char **argv)
 	int deep_characteristic;
 	int mc_specific;
 	int mc_type;
+	int num_att_trajectories;
+	double var_eps;
 	
 	FILE * config_file = fopen("config.txt", "r");
 	fscanf(config_file, "num_periods = %d\n", &num_periods);
@@ -70,6 +72,9 @@ int main(int argc, char **argv)
 	fscanf(config_file, "deep_characteristic = %d\n", &deep_characteristic);
 	fscanf(config_file, "mc_specific = %d\n", &mc_specific);
 	fscanf(config_file, "mc_type = %d\n", &mc_type);
+	fscanf(config_file, "num_att_trajectories = %d\n", &num_att_trajectories);
+	fscanf(config_file, "var_eps = %lf\n", &var_eps);
+
 	fclose(config_file);
 
 	std::cout << argv[1] << std::endl;
@@ -119,7 +124,9 @@ int main(int argc, char **argv)
 			double_scale_dump,
 			deep_characteristic,
 			mc_specific,
-			mc_type);
+			mc_type, 
+			num_att_trajectories,
+			var_eps);
 	}
 	else if (propagation_type == 2)
 	{

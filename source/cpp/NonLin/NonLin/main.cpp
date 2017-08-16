@@ -24,7 +24,7 @@ double const pi = 3.141592653589793238463643;
 int Nstep = 1000;
 
 double gamma = 0.1, J = 1., U = 2.5, E0 = 1, w = 1, A0 = 1.5, phi = 0;
-double h = 2 * pi / w / Nstep, h1, t_tr = 2000 * 2 * pi / w, t_fin = 2000 * 2 * pi / w + t_tr;
+double h = 2 * pi / w / Nstep, h1, t_tr = 2000 * 2 * pi / w, t_fin = 20000 * 2 * pi / w + t_tr;
 double const limit_count = 499, zero_ini = 0, rand_ini = 1;
 double t = 0;
 
@@ -51,7 +51,7 @@ int main()
 	double count = 0, flag, flag1;
 	double x[n], dx[n];
 
-	double U_real = 0.425;
+	double U_real = 0.50;
 	U = 4.0 * U_real;
 
 	clock_t t0, t1;
