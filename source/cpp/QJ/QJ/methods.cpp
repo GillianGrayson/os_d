@@ -55,6 +55,7 @@ double * delta_s;
 
 double* mean_evo;
 int* periods_evo;
+double * lambda_evo;
 
 int num_att_peaks;
 double * begins_att_peaks = NULL;
@@ -1716,10 +1717,19 @@ void dump_aux_statistics_data(
 			}
 			fclose(mean_evo_f);
 
+			char lambda_fn[512];
+			sprintf(lambda_fn, "lambda_trajectory_%d.txt", trajectory_id);
+			FILE * lambda_f = fopen(lambda_fn, write_type);
+			fprintf(lambda_f, "%0.18le\n", lambda[trajectory_id]);
+			fclose(lambda_f);
+
 			char lambda_evo_fn[512];
-			sprintf(lambda_evo_fn, "lambda_trajectory_%d.txt", trajectory_id);
+			sprintf(lambda_evo_fn, "lambda_evo_trajectory_%d.txt", trajectory_id);
 			FILE * lambda_evo_f = fopen(lambda_evo_fn, write_type);
-			fprintf(lambda_evo_f, "%0.18le\n", lambda[trajectory_id]);
+			for (int period_id = 0; period_id < num_periods; period_id++)
+			{
+				fprintf(lambda_evo_f, "%0.18le\n", lambda_evo[trajectory_id * num_periods + period_id]);
+			}
 			fclose(lambda_evo_f);
 		}
 
@@ -3290,10 +3300,12 @@ void omp_qj_chaos(char input_file_name[],
 	split * head = create_struct_bin(input_file);
 	fclose(input_file);
 
+	double T = head->dt;
 	int N = head->N;
 
 	VSLStreamStatePtr * rnd_streams = new VSLStreamStatePtr[num_trajectories];
 	vslNewStream(&rnd_streams[0], VSL_BRNG_MCG59, 777);
+	vslLeapfrogStream(rnd_streams[0], rnd_cur, rnd_max);
 
 	split * heads = new split[num_omp_threads];
 	for (int i = 0; i < num_omp_threads; i++)
@@ -3303,7 +3315,7 @@ void omp_qj_chaos(char input_file_name[],
 
 	// Random generator for variance
 	VSLStreamStatePtr * var_streams = new VSLStreamStatePtr[num_trajectories];
-	vslNewStream(&var_streams[0], VSL_BRNG_MCG31, 77778888);
+	vslNewStream(&var_streams[0], VSL_BRNG_MCG31, 777);
 	for (int i = 1; i < num_trajectories; i++)
 	{
 		vslCopyStream(&var_streams[i], var_streams[0]);
@@ -3445,12 +3457,14 @@ void omp_qj_chaos(char input_file_name[],
 	// Init means for every trajectory and periods 
 	int real_num_periods = num_periods;
 	mean_evo = new double[num_trajectories * real_num_periods];
+	lambda_evo = new double[num_trajectories * real_num_periods];
 	periods_evo = new int[real_num_periods];
 	for (int period_id = 0; period_id < real_num_periods; period_id++)
 	{
 		for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
 		{
 			mean_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+			lambda_evo[trajectory_id * real_num_periods + period_id] = 0.0;
 		}
 
 		periods_evo[period_id] = 0;
@@ -3466,6 +3480,7 @@ void omp_qj_chaos(char input_file_name[],
 	for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
 	{
 		mean_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+		lambda_evo[trajectory_id * real_num_periods + period_id] = 0;
 	}
 
 	double current_dump_limit = start;
@@ -3533,6 +3548,10 @@ void omp_qj_chaos(char input_file_name[],
 			refresh_main_statistics_data(N, num_trajectories, dump_characteristics, stationary);
 
 			// Now we should check delta
+
+			period_id++;
+			periods_evo[period_id] = period;
+
 			for (int trajectory_id = 1; trajectory_id < num_trajectories; trajectory_id++)
 			{
 				double delta_f = fabs(mean[0] - mean[trajectory_id]) / double(N);
@@ -3609,29 +3628,32 @@ void omp_qj_chaos(char input_file_name[],
 					double curr_mean = get_init_mean(0, N, max_index_direct, adr);
 					mean[trajectory_id] = curr_mean;
 					delta_s[trajectory_id] = fabs(mean[trajectory_id] - mean[0]) / double(N);
+
+					lambda_evo[trajectory_id * real_num_periods + period_id] = lambda[trajectory_id] / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+				}
+				else
+				{
+					lambda_evo[trajectory_id * real_num_periods + period_id] = lambda[trajectory_id] / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					//lambda_evo[trajectory_id * real_num_periods + period_id] = (lambda[trajectory_id] + log(delta_f / delta_s[trajectory_id])) / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
 				}
 			}
 
-			period_id++;
-			periods_evo[period_id] = period;
 			for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
 			{
-				mean_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+				mean_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];	
 			}
 		}
 	}
 
 	for (int trajectory_id = 1; trajectory_id < num_trajectories; trajectory_id++)
 	{
-		lambda[trajectory_id] = lambda[trajectory_id] / double(num_periods);
+		lambda[trajectory_id] = lambda[trajectory_id] / ((double(periods_evo[real_num_periods-1]) - double(periods_evo[0])) * T);
 	}
 
 	dump_aux_statistics_data(N, real_num_periods, num_trajectories, "w", avg_dump, dump_characteristics, btw_jump_times, stationary);
 
 	delete_main_statistics_data(dump_characteristics, stationary, num_att_trajectories);
 	delete_dump_statistics_data(dump_characteristics, btw_jump_times, stationary);
-
-	//delete_aux_statistics_data(num_trajectories, dump_characteristics, stationary);
 
 	for (int i = 0; i < num_omp_threads; i++)
 	{
@@ -3645,4 +3667,5 @@ void omp_qj_chaos(char input_file_name[],
 
 	delete[] mean_evo;
 	delete[] periods_evo;
+	delete[] lambda_evo;
 }

@@ -77,6 +77,7 @@ int main(int argc, char **argv)
 	fscanf(config_file, "var_eps = %lf\n", &var_eps);
 	fscanf(config_file, "delta_lim = %lf\n", &delta_lim);
 
+
 	fclose(config_file);
 
 	std::cout << argv[1] << std::endl;
