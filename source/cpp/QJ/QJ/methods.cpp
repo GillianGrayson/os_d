@@ -54,6 +54,7 @@ double * lambda;
 double * delta_s;
 
 double* mean_evo;
+double* mean_real_evo;
 int* periods_evo;
 double * lambda_evo;
 
@@ -77,6 +78,7 @@ vector<int> ** sticking_times_stationary;
 int * current_peaks_ids_stationary;
 
 vector<double> * jump_times;
+vector<double> * jump_means;
 
 int * histogramm;
 double * energy_intervals;
@@ -590,6 +592,9 @@ void init_dump_statistics_data(int num_trajectories, int btw_jump_times, int sta
 	lambda = new double[num_trajectories];
 	delta_s = new double[num_trajectories];
 
+	jump_times = new vector<double>[num_trajectories];
+	jump_means = new vector<double>[num_trajectories];
+
 	if (stationary == 1)
 	{
 		mean_start_stationary = new double[num_trajectories];
@@ -598,11 +603,6 @@ void init_dump_statistics_data(int num_trajectories, int btw_jump_times, int sta
 		dispersion_stationary = new double[num_trajectories];
 		m2_stationary = new double[num_trajectories];
 		max_id_stationary = new int[num_trajectories];
-	}
-
-	if (btw_jump_times > 0)
-	{
-		jump_times = new vector<double>[num_trajectories];
 	}
 
 	for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
@@ -702,10 +702,8 @@ void delete_dump_statistics_data(int dump_characteristics, int btw_jump_times, i
 		delete[] max_id_stationary;
 	}
 
-	if (btw_jump_times > 0)
-	{
-		delete[] jump_times;
-	}
+	delete[] jump_times;
+	delete[] jump_means;
 }
 
 void init_main_statistics_data(int N,
@@ -1000,25 +998,12 @@ void QJ_EXP_one_branch(
 					fclose(eta_f);
 				}
 
-				if (btw_jump_times > 0)
-				{
-					jump_times[trajectory_id].push_back(ts[trajectory_id] + branch->dt);
-				}
-
 				if (deep_characteristics == 1)
 				{
 					double * adr = &abs_rho_diag_all[trajectory_id * N];
 					double * adr_stationary = &abs_rho_diag_all_stationary[trajectory_id * N];
 
 					double curr_norm = norm_vector2(tmp_vec, N);
-
-					MKL_Complex16 * phi_n = NULL;
-					MKL_Complex16 * phi_st = NULL;
-					if (stationary == 1)
-					{
-						phi_n = &phi_normed[trajectory_id * N];
-						phi_st = &phi_stationary[trajectory_id * N];
-					}
 
 					double max_val_direct = 0.0;
 					double max_index_direct = 0;
@@ -1031,39 +1016,13 @@ void QJ_EXP_one_branch(
 							max_val_direct = adr[state_id];
 							max_index_direct = state_id;
 						}
-
-						if (stationary == 1)
-						{
-							phi_n[state_id].real = tmp_vec[state_id].real / sqrt(curr_norm);
-							phi_n[state_id].imag = tmp_vec[state_id].imag / sqrt(curr_norm);
-
-							phi_st[state_id].real = 0.0;
-							phi_st[state_id].imag = 0.0;
-						}
 					}
 
 					double curr_mean = get_mean(periodic, N, max_index_direct, adr, trajectory_id, mc_specific);
 					mean[trajectory_id] = curr_mean;
 
-					if (stationary == 1)
-					{
-						cblas_zgemv(CblasRowMajor, CblasNoTrans, N, N, &ONE, ev_t_hamiltonian_sorted, N, phi_n, 1, &ZERO, phi_st, 1);
-						double max_val_stationary = 0.0;
-						int max_index_stationary = 0;
-						for (int state_id = 0; state_id < N; state_id++)
-						{
-							adr_stationary[state_id] = Complex_mul(Complex_scalar_mul(&phi_st[state_id], &phi_st[state_id], 1), 1.0).real;
-
-							if (adr_stationary[state_id] > max_val_stationary)
-							{
-								max_val_stationary = adr_stationary[state_id];
-								max_index_stationary = state_id;
-							}
-						}
-
-						double curr_mean_stationary = get_mean_stationary(periodic, N, max_index_direct, adr_stationary, trajectory_id, mc_specific);
-						mean_stationary[trajectory_id] = curr_mean_stationary;
-					}
+					jump_times[trajectory_id].push_back(ts[trajectory_id] + branch->dt);
+					jump_means[trajectory_id].push_back(curr_mean);
 				}
 			}
 
@@ -1717,6 +1676,15 @@ void dump_aux_statistics_data(
 			}
 			fclose(mean_evo_f);
 
+			char mean_real_evo_fn[512];
+			sprintf(mean_real_evo_fn, "mean_real_evo_trajectory_%d.txt", trajectory_id);
+			FILE * mean_real_evo_f = fopen(mean_real_evo_fn, write_type);
+			for (int period_id = 0; period_id < num_periods; period_id++)
+			{
+				fprintf(mean_real_evo_f, "%0.18le\n", mean_real_evo[trajectory_id * num_periods + period_id]);
+			}
+			fclose(mean_real_evo_f);
+
 			char lambda_fn[512];
 			sprintf(lambda_fn, "lambda_trajectory_%d.txt", trajectory_id);
 			FILE * lambda_f = fopen(lambda_fn, write_type);
@@ -1731,6 +1699,30 @@ void dump_aux_statistics_data(
 				fprintf(lambda_evo_f, "%0.18le\n", lambda_evo[trajectory_id * num_periods + period_id]);
 			}
 			fclose(lambda_evo_f);
+
+			char jump_times_fn[512];
+			sprintf(jump_times_fn, "jump_times_trajectory_%d.txt", trajectory_id);
+			FILE * jump_times_file = fopen(jump_times_fn, write_type);
+			if (!jump_times[trajectory_id].empty())
+			{
+				for (int i = 0; i < jump_times[trajectory_id].size(); i++)
+				{
+					fprintf(jump_times_file, "%0.18le\n", jump_times[trajectory_id][i]);
+				}
+			}
+			fclose(jump_times_file);
+
+			char jump_means_fn[512];
+			sprintf(jump_means_fn, "jump_means_trajectory_%d.txt", trajectory_id);
+			FILE * jump_means_file = fopen(jump_means_fn, write_type);
+			if (!jump_means[trajectory_id].empty())
+			{
+				for (int i = 0; i < jump_means[trajectory_id].size(); i++)
+				{
+					fprintf(jump_means_file, "%0.18le\n", jump_means[trajectory_id][i]);
+				}
+			}
+			fclose(jump_means_file);
 		}
 
 		char periods_evo_fn[512];
@@ -2839,12 +2831,16 @@ void omp_qj_statistic(char input_file_name[],
 
 	int real_num_periods = num_periods;
 	mean_evo = new double[num_trajectories * real_num_periods];
+	mean_real_evo = new double[num_trajectories * real_num_periods];
+	lambda_evo = new double[num_trajectories * real_num_periods];
 	periods_evo = new int[real_num_periods];
 	for (int period_id = 0; period_id < real_num_periods; period_id++)
 	{
 		for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
 		{
 			mean_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+			mean_real_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+			lambda_evo[trajectory_id * real_num_periods + period_id] = 0.0;
 		}
 
 		periods_evo[period_id] = 0;
@@ -3121,6 +3117,8 @@ void omp_qj_statistic(char input_file_name[],
 	}
 
 	delete[] mean_evo;
+	delete[] mean_real_evo;
+	delete[] lambda_evo;
 	delete[] periods_evo;
 }
 
@@ -3430,13 +3428,15 @@ void omp_qj_chaos(char input_file_name[],
 			phi_target[state_id].imag = phi_target[state_id].imag * sqrt(norm_target);
 		}
 
+		mod_norm = norm_vector2(phi_target, N);
+
 		double * adr = &abs_rho_diag_all[trajectory_id * N];
 
 		int max_val_direct = 0.0;
 		int max_index_direct = 0;
 		for (int state_id = 0; state_id < N; state_id++)
 		{
-			adr[state_id] = Complex_mul(Complex_scalar_mul(&phi_target[state_id], &phi_target[state_id], 1), 1.0 / norm_target).real;
+			adr[state_id] = Complex_mul(Complex_scalar_mul(&phi_target[state_id], &phi_target[state_id], 1), 1.0 / mod_norm).real;
 
 			avg_rho_diag_all[trajectory_id * N + state_id] = adr[state_id];
 
@@ -3457,6 +3457,7 @@ void omp_qj_chaos(char input_file_name[],
 	// Init means for every trajectory and periods 
 	int real_num_periods = num_periods;
 	mean_evo = new double[num_trajectories * real_num_periods];
+	mean_real_evo = new double[num_trajectories * real_num_periods];
 	lambda_evo = new double[num_trajectories * real_num_periods];
 	periods_evo = new int[real_num_periods];
 	for (int period_id = 0; period_id < real_num_periods; period_id++)
@@ -3464,6 +3465,7 @@ void omp_qj_chaos(char input_file_name[],
 		for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
 		{
 			mean_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+			mean_real_evo[trajectory_id * real_num_periods + period_id] = 0.0;
 			lambda_evo[trajectory_id * real_num_periods + period_id] = 0.0;
 		}
 
@@ -3480,6 +3482,7 @@ void omp_qj_chaos(char input_file_name[],
 	for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
 	{
 		mean_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+		mean_real_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
 		lambda_evo[trajectory_id * real_num_periods + period_id] = 0;
 	}
 
@@ -3551,11 +3554,15 @@ void omp_qj_chaos(char input_file_name[],
 
 			period_id++;
 			periods_evo[period_id] = period;
+			for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+			{
+				mean_real_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+			}
 
 			for (int trajectory_id = 1; trajectory_id < num_trajectories; trajectory_id++)
 			{
 				double delta_f = fabs(mean[0] - mean[trajectory_id]) / double(N);
-				if (delta_f > delta_lim)
+				if ((delta_f > delta_lim) || (delta_f < 1.0e-13))
 				{
 					lambda[trajectory_id] += log(delta_f / delta_s[trajectory_id]);
 
@@ -3610,13 +3617,15 @@ void omp_qj_chaos(char input_file_name[],
 						phi_target[state_id].imag = phi_target[state_id].imag * sqrt(norm_target);
 					}
 
+					mod_norm = norm_vector2(phi_target, N);
+
 					double * adr = &abs_rho_diag_all[trajectory_id * N];
 
 					int max_val_direct = 0.0;
 					int max_index_direct = 0;
 					for (int state_id = 0; state_id < N; state_id++)
 					{
-						adr[state_id] = Complex_mul(Complex_scalar_mul(&phi_target[state_id], &phi_target[state_id], 1), 1.0 / norm_target).real;
+						adr[state_id] = Complex_mul(Complex_scalar_mul(&phi_target[state_id], &phi_target[state_id], 1), 1.0 / mod_norm).real;
 
 						if (adr[state_id] > max_val_direct)
 						{
@@ -3633,8 +3642,7 @@ void omp_qj_chaos(char input_file_name[],
 				}
 				else
 				{
-					lambda_evo[trajectory_id * real_num_periods + period_id] = lambda[trajectory_id] / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
-					//lambda_evo[trajectory_id * real_num_periods + period_id] = (lambda[trajectory_id] + log(delta_f / delta_s[trajectory_id])) / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					lambda_evo[trajectory_id * real_num_periods + period_id] = (lambda[trajectory_id] + log(delta_f / delta_s[trajectory_id])) / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
 				}
 			}
 
@@ -3666,6 +3674,7 @@ void omp_qj_chaos(char input_file_name[],
 	delete[] var_streams;
 
 	delete[] mean_evo;
+	delete[] mean_real_evo;
 	delete[] periods_evo;
 	delete[] lambda_evo;
 }
