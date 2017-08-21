@@ -28,4 +28,4 @@ mc_specific = 0
 mc_type = 1
 num_att_trajectories = 0
 var_eps = 0.001
-delta_lim = 0.1;
+delta_lim = 0.1

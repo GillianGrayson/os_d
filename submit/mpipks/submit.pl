@@ -7,23 +7,23 @@ $dir = getcwd;
 $data_path = "/data/biophys/yusipov/os_d";
 $input_path = "qj_input";
 
-$prefix = "check";
+$prefix = "qj_results/delta_0.1000";
 
-for($curr_U = 0.4; $curr_U <= 0.90001; $curr_U += 0.1)
+for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
-	$N = 1000;
+	$N = 500;
 	$U = $curr_U;
 	
 	$num_periods = 1000;
 	$init_state_id = int($N/2);
-	$propagation_type = 1;
+	$propagation_type = 3;
 	$num_dumps = 1001;
 	$dump_type = 0;
-	$num_periods_in_trans_proc = 100;
+	$num_periods_in_trans_proc = 1000;
 	$num_omp_threads = 1;
-	$num_trajectories = 1;
+	$num_trajectories = 2;
 	$rnd_max = 2000000;
 	$rnd_cur = 0;
 	$calc_characteristics = 0;
@@ -44,6 +44,9 @@ for($curr_U = 0.4; $curr_U <= 0.90001; $curr_U += 0.1)
 	$deep_characteristic = 0;
 	$mc_specific = 0;
 	$mc_type = 1;
+	$num_att_trajectories = 0;
+	$var_eps = 0.001;
+	$delta_lim = 0.1;
 
 	for($seed = 0; $seed < 1; $seed+=1)
 	{
@@ -113,6 +116,9 @@ for($curr_U = 0.4; $curr_U <= 0.90001; $curr_U += 0.1)
 			print WF "deep_characteristic = $deep_characteristic \n";
 			print WF "mc_specific = $mc_specific \n";
 			print WF "mc_type = $mc_type \n";
+			print WF "num_att_trajectories = $num_att_trajectories \n";
+			print WF "var_eps = $var_eps \n";
+			print WF "delta_lim = $delta_lim \n";
 			close WF;
 
 			$test_file = "periods_evo.txt";
