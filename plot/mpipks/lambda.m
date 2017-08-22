@@ -9,6 +9,8 @@ data_path = sprintf('%s%s', data_path, prefix);
 
 N = 500;
 
+lambda_id = 1000;
+
 U_begin = 0.01;
 U_step = 0.01;
 U_num = 75;
@@ -34,14 +36,13 @@ for U_id = 1:U_num
 			Us(U_id), ...
 			seed - 1);
       
-		path = sprintf('%s/lambda_trajectory_1.txt', path_to_folder);
+		path = sprintf('%s/lambda_evo_trajectory_1.txt', path_to_folder);
 		data = importdata(path);
        
-		if (isinf(data))
-			data = data
-		else
-			curr_lambda_avg = curr_lambda_avg + data;
-		end
+		curr_lambda = data(lambda_id)
+		seed = seed
+	   
+		curr_lambda_avg = curr_lambda_avg + data(lambda_id);
 		
 	end
    
