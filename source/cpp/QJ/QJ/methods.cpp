@@ -3564,7 +3564,7 @@ void omp_qj_chaos(char input_file_name[],
 				double delta_f = fabs(mean[0] - mean[trajectory_id]) / double(N);
 				if ((delta_f > delta_lim) || (delta_f < 1.0e-13))
 				{
-					lambda[trajectory_id] += log(delta_f / delta_s[trajectory_id]);
+					lambda[trajectory_id] += log(delta_f / delta_s[trajectory_id] + 1.0e-16);
 
 					// Downgrading variance
 					MKL_Complex16 * phi_var = new MKL_Complex16[N];
@@ -3642,7 +3642,7 @@ void omp_qj_chaos(char input_file_name[],
 				}
 				else
 				{
-					lambda_evo[trajectory_id * real_num_periods + period_id] = (lambda[trajectory_id] + log(delta_f / delta_s[trajectory_id])) / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					lambda_evo[trajectory_id * real_num_periods + period_id] = (lambda[trajectory_id] + log(delta_f / delta_s[trajectory_id] + 1.0e-16)) / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
 				}
 			}
 
