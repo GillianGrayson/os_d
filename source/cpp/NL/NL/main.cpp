@@ -25,7 +25,6 @@ int Nstep = 1000;
 
 double gamma = 0.1, J = 1., U = 2.5, E0 = 1, w = 1, A0 = 1.5, phi = 0;
 double h = 2 * pi / w / Nstep, h1, t_tr = 2000 * 2 * pi / w, t_fin = 20000 * 2 * pi / w + t_tr;
-double const limit_count = 499, zero_ini = 0, rand_ini = 1;
 double t = 0;
 
 inline void fun(double[n], double[n]);
@@ -70,7 +69,9 @@ int main()
 	{
 		printf("U: %0.4le\n", U);
 
-		for (int seed = 0; seed < 100; seed++)
+		U_real = U / 4.0;
+
+		for (int seed = 0; seed < 10; seed++)
 		{
 			t = 0;
 			count = 0;

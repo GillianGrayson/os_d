@@ -62,8 +62,8 @@ draft/draft\.synctex\.gz
 source/cpp/NonLin/NonLin/*.txt
 !source/cpp/NonLin/NonLin/config.txt
 
-source/cpp/NonLin/NL/*.txt
-!source/cpp/NonLin/NL/config.txt
+source/cpp/NL/NL/*.txt
+!source/cpp/NL/NL/config.txt
 
 data/
 
