@@ -7,7 +7,7 @@ $dir = getcwd;
 $data_path = "/data/biophys/yusipov/os_d";
 $input_path = "qj_input";
 
-$prefix = "qj_results/delta_0.1000";
+$prefix = "qj_results/delta_0.1000/tt_1000";
 
 for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
 {

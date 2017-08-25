@@ -3,9 +3,12 @@ clear all;
 home_figures_path = '/home/yusipov/Work/os_d/figures';
 
 data_path = '/data/biophys/yusipov/os_d';
-prefix = '/qj_results/delta_0.1000';
+prefix = '/qj_results/';
 
 data_path = sprintf('%s%s', data_path, prefix);
+
+delta = 0.1;
+tt = 1000;
 
 N = 500;
 
@@ -28,8 +31,10 @@ for U_id = 1:U_num
 	curr_rho_avg = zeros(N,1);
    
 	for seed = 1:num_seeds 
-		path_to_folder = sprintf('%s/N_%d/U_%0.4f/rnd_%d', ...
+		path_to_folder = sprintf('%s/delta_%0.4f/tt_%d/N_%d/U_%0.4f/rnd_%d', ...
 			data_path, ...
+			delta, ...
+			tt, ...
 			N, ...
 			Us(U_id), ...
 			seed-1);
@@ -49,6 +54,11 @@ for U_id = 1:U_num
     
 end
 
+for U_id = 1:U_num
+	curr_max = max(rho(U_id, :));
+	rho(U_id, :) = rho(U_id, :) / curr_max; 
+end
+
 rho = rho';
 
 fig = figure;
@@ -64,7 +74,9 @@ set(gca, 'FontSize', 30);
 title(h, '<\rho_{n,n}>');
 set(gca,'YDir','normal');
 
-fn_suffix = sprintf('N(%d)', ...
+fn_suffix = sprintf('delta(%0.4f)_tt(%d)_N(%d)', ...
+		delta, ...
+		tt, ...
         N);
 		
 savefig(sprintf('%s/bifurcation_%s.fig', home_figures_path, fn_suffix));
