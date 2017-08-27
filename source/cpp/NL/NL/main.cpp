@@ -65,13 +65,13 @@ int main()
 	tstart = time(NULL);
 	t0 = clock();
 
-	for (U = 0.0; U < 3; U += 0.02)
+	for (U = 2.6; U <= 2.600001; U += 0.02)
 	{
-		printf("U: %0.4le\n", U);
-
 		U_real = U / 4.0;
 
-		for (int seed = 0; seed < 10; seed++)
+		printf("U: %0.4le\n", U_real);
+
+		for (int seed = 0; seed < 100; seed++)
 		{
 			t = 0;
 			count = 0;

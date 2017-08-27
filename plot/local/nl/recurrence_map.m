@@ -1,13 +1,19 @@
 clear all;
-U = 0.50;
-N=1000;
+
+data_path = '../../../source/cpp/NL/NL';
+
+N = 500;
+
+U = 0.55;
+
+num_periods = 2000;
 
 seed_begin = 0;
 seed_num = 100;
 
-num_int = 1000;
+num_int = 500;
 x_n_begin = 0;
-x_n_end = 1000;
+x_n_end = 500;
 x_n_shift = (x_n_end - x_n_begin) / num_int;
 x_n_int = zeros(num_int, 1);
 for int_id = 1:num_int
@@ -20,20 +26,21 @@ x_n_pdf = zeros(num_int, num_int);
 num_hits = 0;
 for seed = seed_begin : seed_begin + (seed_num - 1)
     
-    fn = sprintf('data_U(%0.4f)_seed(%d).txt', U, seed);
+    fn_suffix = sprintf('U(%0.4f)_seed(%d).txt', ...
+        U, ...
+        seed);
+    
+    fn = sprintf('%s/data_%s', data_path, fn_suffix);
     data = importdata(fn);
     
-    theta=data(:,1);
-    phi=data(:,2);
-    n1=N/2*(cos(theta)+1);
-    theta=mod(theta,2*pi);
-    phi=mod(phi,2*pi);
+    theta = data(:,1);
+    phi = data(:,2);
     
-    num_periods = size(n1, 1);
+    coordinate = N/2*(cos(theta)+1);
     
     for period_id = 1 : (num_periods - 1)
-        x_n = n1(period_id);
-        y_n = n1(period_id + 1);
+        x_n = coordinate(period_id);
+        y_n = coordinate(period_id + 1);
         
         if x_n >= x_n_begin && x_n <= x_n_end && y_n >= x_n_begin && y_n <= x_n_end
             
@@ -64,3 +71,5 @@ h = colorbar;
 set(gca, 'FontSize', 30);
 title(h, '$\log_{10}PDF$', 'Interpreter', 'latex');
 set(gca,'YDir','normal');
+
+propertyeditor('on')
