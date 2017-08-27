@@ -1,15 +1,18 @@
 clear all;
 
-
 home_figures_path = '/home/yusipov/Work/os_d/figures';
 
 data_path = '/data/biophys/yusipov/os_d';
-prefix = '/check';
+prefix = '/qj_results/';
 
 data_path = sprintf('%s%s', data_path, prefix);
 
-N = 1000;
-U = 0.7;
+delta = 0.1;
+tt = 1000;
+
+N = 500;
+U = 0.1;
+
 local_path = sprintf('%s/N_%d/U_%0.4f', ...
     data_path, ...
     N, ...
@@ -17,12 +20,11 @@ local_path = sprintf('%s/N_%d/U_%0.4f', ...
 
 num_periods = 1000;
 
-rnd_start = 0;
-num_rnd = 100;
+num_seeds = 100;
 
-num_int = 200;
+num_int = 500;
 x_n_begin = 0;
-x_n_end = 1000;
+x_n_end = 500;
 x_n_shift = (x_n_end - x_n_begin) / num_int;
 x_n_int = zeros(num_int, 1);
 for int_id = 1:num_int
@@ -34,17 +36,25 @@ x_n_pdf = zeros(num_int, num_int);
 
 num_existed = 0;
 num_hits = 0;
-for rnd_cur = rnd_start : rnd_start + (num_rnd - 1)
 
-	rnd_cur = rnd_cur
-
-    path_to_folder = sprintf('%s/rnd_%d', local_path, rnd_cur);
+for seed = 1:num_seeds
+    
+    path_to_folder = sprintf('%s/delta_%0.4f/tt_%d/N_%d/U_%0.4f/rnd_%d', ...
+        data_path, ...
+        delta, ...
+        tt, ...
+        N, ...
+        U, ...
+        seed-1);
+    
+    
     path = sprintf('%s/mean_evo_trajectory_0.txt', path_to_folder);
-	
-	if (exist(path, 'file') == 2)
+    
+    if (exist(path, 'file') == 2)
+        
 		num_existed = num_existed + 1;
-		
-		data = importdata(path);
+        
+        data = importdata(path);
         
         for period_id = 1 : (num_periods - 1)
             x_n = data(period_id);
@@ -60,7 +70,9 @@ for rnd_cur = rnd_start : rnd_start + (num_rnd - 1)
                 x_n_pdf(x_id, y_id) = x_n_pdf(x_id, y_id) + 1; 
             end
         end
+        
     end
+    
 end
 
 num_possible_hits = num_existed * (num_periods - 1);
@@ -70,7 +82,7 @@ x_n_pdf = x_n_pdf / (num_hits * x_n_shift * x_n_shift);
 x_n_pdf = x_n_pdf';
 
 fig = figure;
-hLine = imagesc(x_n_int, x_n_int, x_n_pdf);
+hLine = imagesc(x_n_int, x_n_int, log10(x_n_pdf + 1.0e-8));
 set(gca, 'FontSize', 30);
 xlabel('$x_n$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
@@ -78,12 +90,11 @@ ylabel('$x_{n+1}$', 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);
-title(h, 'PDF');
+title(h, '$\log_{10}PDF$', 'Interpreter', 'latex');
 set(gca,'YDir','normal');
-set(gca, 'Position', [0.10 0.15 0.75 0.75])
 
-fn_suffix = sprintf('N(%d)_U(%0.4f).fig', ...
+fn_suffix = sprintf('N%d_U%0.4f.fig', ...
         N, ...
         U);
 		
-savefig(sprintf('%s/recurrence_map_%s.fig', home_figures_path, fn_suffix));
+savefig(sprintf('%s/rm_%s', home_figures_path, fn_suffix));
