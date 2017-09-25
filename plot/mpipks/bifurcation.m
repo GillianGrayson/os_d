@@ -19,7 +19,7 @@ U_num = 75;
 num_seeds = 100;
 
 Us = zeros(U_num, 1);
-states = linspace(1, N, N) / N;
+states = linspace(1, N, N);
 
 rho = zeros(U_num, N);
 

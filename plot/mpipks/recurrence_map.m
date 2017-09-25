@@ -11,7 +11,7 @@ delta = 0.1;
 tt = 1000;
 
 N = 500;
-U = 0.1;
+U = 0.45;
 
 local_path = sprintf('%s/N_%d/U_%0.4f', ...
     data_path, ...
