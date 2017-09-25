@@ -57,6 +57,7 @@ for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
 		$i = $start;
 	
 		$U_str = sprintf("%.4f", $U);
+		$delta_str = sprintf("%.4f", $delta_lim);
 		
 		$input_file_name = sprintf('%s/main_data_N%d_U%0.4f.bin', $input_path, $N, $U);
 		$aux_file_name 	 = sprintf('%s/main_data_N%d_U%0.4f.bin', $input_path, $N, $U);
@@ -64,13 +65,15 @@ for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
 		sub ForderName{
 			$key_str = $_[0];
 			
-			return  "$data_path/$prefix/N_${N}/U_${U_str}/rnd_${key_str}";
+			return  "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/N_${N}/U_${U_str}/rnd_${key_str}";
 		}
 
-		mkdir "$data_path/$prefix";
-		mkdir "$data_path/$prefix/N_${N}";
-		mkdir "$data_path/$prefix/N_${N}/U_${U_str}";
 		
+		mkdir "$data_path/delta_${delta_str}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/N_${N}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/N_${N}/U_${U_str}";
+
 		
 		for($val = $start; $val < $finish; $val+=1)
 		{
