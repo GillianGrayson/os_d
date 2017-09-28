@@ -4,17 +4,29 @@ use Cwd;
 use Math::Trig;
 $dir = getcwd;
 
-$data_path = "/data/biophys/yusipov/os_d";
+$data_path = "/data/biophys/yusipov/os_d/qj_results";
 $input_path = "qj_input";
 
-$prefix = "qj_results/delta_0.1000/tt_1000";
+$PI = 3.1415926535897932384626433832795;
 
 for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
+	$E = 1.0;
+	$T = 2 * $PI;
+	$A = 1.5;
 	$N = 500;
 	$U = $curr_U;
+	$J = 1.0;
+	$g = 0.1;
+	
+	$E_str = sprintf("%.4f", $E);
+	$T_str = sprintf("%.4f", $T);
+	$A_str = sprintf("%.4f", $A);
+	$U_str = sprintf("%.4f", $U);
+	$J_str = sprintf("%.4f", $J);
+	$g_str = sprintf("%.4f", $g);
 	
 	$num_periods = 1000;
 	$init_state_id = int($N/2);
@@ -56,25 +68,27 @@ for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
 		$i = 0;
 		$i = $start;
 	
-		$U_str = sprintf("%.4f", $U);
 		$delta_str = sprintf("%.4f", $delta_lim);
 		
-		$input_file_name = sprintf('%s/main_data_N%d_U%0.4f.bin', $input_path, $N, $U);
-		$aux_file_name 	 = sprintf('%s/main_data_N%d_U%0.4f.bin', $input_path, $N, $U);
+		$input_file_name = sprintf('%s/main_data_E%0.4f_T%0.4f_A%0.4f_N%d_U%0.4f_J%0.4f_g%0.4f.bin', $input_path, $E, $T, $A, $N, $U, $J, $g);
+		$aux_file_name 	 = sprintf('%s/main_data_E%0.4f_T%0.4f_A%0.4f_N%d_U%0.4f_J%0.4f_g%0.4f.bin', $input_path, $E, $T, $A, $N, $U, $J, $g);
 
 		sub ForderName{
 			$key_str = $_[0];
 			
-			return  "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/N_${N}/U_${U_str}/rnd_${key_str}";
+			return  "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}/g_${g_str}/rnd_${key_str}";
 		}
-
 		
 		mkdir "$data_path/delta_${delta_str}";
 		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/N_${N}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/N_${N}/U_${U_str}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}";
+		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}/g_${g_str}";
 
-		
 		for($val = $start; $val < $finish; $val+=1)
 		{
 			$exp{ForderName($i)} = $val;
