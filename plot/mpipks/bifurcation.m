@@ -9,10 +9,10 @@ data_path = sprintf('%s%s', data_path, prefix);
 
 delta = 0.1;
 tt = 1000;
-E = 1.0;
+E = 0.0;
 T = 2*pi;
 A = 1.5;
-N = 500;
+N = 100;
 
 U_begin = 0.01;
 U_step = 0.01;
