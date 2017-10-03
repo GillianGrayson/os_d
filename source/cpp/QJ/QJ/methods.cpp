@@ -150,7 +150,7 @@ double get_mean(
 			current_mean += double(state_id) * adr[state_id];
 		}
 	}
-	else
+	else if (periodic == 1)
 	{
 		if (mc_specific > 0)
 		{
@@ -213,6 +213,10 @@ double get_mean(
 		{
 			current_mean = mean[trajectory_id] + distance_2;
 		}
+	}
+	else if (periodic == 2)
+	{
+		current_mean = double(max_index);
 	}
 
 	return current_mean;
@@ -282,22 +286,28 @@ double get_init_mean(
 )
 {
 	double current_mean = 0.0;
-
-	int index = 0;
-	for (int state_id = 0; state_id < N; state_id++)
-	{
-		if (periodic == 0)
-		{
-			index = state_id;
-		}
-		else
-		{
-			index = periodic_index(state_id, max_index, N);
-		}
-
-		current_mean += double(index) * adr[state_id];
-	}
 	
+	if (periodic <= 1)
+	{
+		int index = 0;
+		for (int state_id = 0; state_id < N; state_id++)
+		{
+			if (periodic == 0)
+			{
+				index = state_id;
+			}
+			else
+			{
+				index = periodic_index(state_id, max_index, N);
+			}
+
+			current_mean += double(index) * adr[state_id];
+		}
+	}
+	else if (periodic == 2)
+	{
+		current_mean = double(max_index);
+	}
 
 	return current_mean;
 }
@@ -1646,6 +1656,35 @@ void dump_statistics_data(
 	FILE * periods_file = fopen(periods_file_name, write_type);
 	fprintf(periods_file, "%d\n", period);
 	fclose(periods_file);
+}
+
+void dump_rho_data(
+	int N,
+	int num_trajectories,
+	char* write_type,
+	int dump_rho,
+	int avg_dump
+)
+{
+	if (dump_rho)
+	{
+		if (avg_dump == 0)
+		{
+			for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+			{
+
+				char abs_rho_diag_file_name[512];
+				sprintf(abs_rho_diag_file_name, "abs_diag_rho_trajectory_%d.txt", trajectory_id);
+				FILE * abs_rho_diag_file = fopen(abs_rho_diag_file_name, write_type);
+				for (int state_id = 0; state_id < N; state_id++)
+				{
+					fprintf(abs_rho_diag_file, "%0.18le\n", abs_rho_diag_all[trajectory_id * N + state_id]);
+				}
+				fclose(abs_rho_diag_file);
+
+			}
+		}
+	}
 }
 
 void dump_aux_statistics_data(
@@ -3374,6 +3413,8 @@ void omp_qj_chaos(char input_file_name[],
 		);
 	}
 
+	dump_rho_data(N, 1, "w", dump_rho, avg_dump);
+
 	if (num_trajectories > 1)
 	{
 		// Copy to variation trajectories with indexes 1,...,(num_trajectories-1)
@@ -3560,6 +3601,8 @@ void omp_qj_chaos(char input_file_name[],
 					mc_type
 				);
 			}
+
+			dump_rho_data(N, 1, "a", dump_rho, avg_dump);
 
 			begin_propagation_loop = end_propagation_loop;
 			period = end_propagation_loop;
