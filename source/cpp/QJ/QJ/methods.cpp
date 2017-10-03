@@ -1186,6 +1186,7 @@ void single_trajectory_statistics_init_prop(
 
 	double * avg_adr = &avg_rho_diag_all[trajectory_id * N];
 
+	// ====== STATIONARY ON =======
 	MKL_Complex16 * phi_n = NULL;
 	MKL_Complex16 * phi_st = NULL;
 	if (stationary == 1)
@@ -1193,6 +1194,7 @@ void single_trajectory_statistics_init_prop(
 		phi_n = &phi_normed[trajectory_id * N];
 		phi_st = &phi_stationary[trajectory_id * N];
 	}
+	// ====== STATIONARY OFF ======
 
 	double eta = 0.0;
 	while (eta == 0.0)
@@ -1222,6 +1224,7 @@ void single_trajectory_statistics_init_prop(
 			max_index_direct = state_id;
 		}
 
+		// ====== STATIONARY ON =======
 		if (stationary == 1)
 		{
 			phi_n[state_id].real = phi[state_id].real / sqrt(curr_norm);
@@ -1230,10 +1233,12 @@ void single_trajectory_statistics_init_prop(
 			phi_st[state_id].real = 0.0;
 			phi_st[state_id].imag = 0.0;
 		}
+		// ====== STATIONARY OFF ======
 	}
 
 	curr_mean = get_init_mean(periodic, N, max_index_direct, adr);
 
+	// ====== STATIONARY ON =======
 	if (stationary == 1)
 	{
 		cblas_zgemv (CblasRowMajor, CblasNoTrans, N, N, &ONE, ev_t_hamiltonian_sorted, N, phi_n, 1, &ZERO, phi_st, 1);
@@ -1252,6 +1257,7 @@ void single_trajectory_statistics_init_prop(
 
 		curr_mean_stationary = get_init_mean_stationary(periodic, N, max_index_stationary, adr_stationary);
 	}
+	// ====== STATIONARY OFF ======
 
 	while (curr_mean < double(N) * mean_low_limit || curr_mean > double(N) * mean_high_limit)
 	{
@@ -1271,6 +1277,7 @@ void single_trajectory_statistics_init_prop(
 				max_index_direct = state_id;
 			}
 
+			// ====== STATIONARY ON =======
 			if (stationary == 1)
 			{
 				phi_n[state_id].real = phi[state_id].real / sqrt(curr_norm);
@@ -1279,10 +1286,12 @@ void single_trajectory_statistics_init_prop(
 				phi_st[state_id].real = 0.0;
 				phi_st[state_id].imag = 0.0;
 			}
+			// ====== STATIONARY OFF ======
 		}
 
 		curr_mean = get_init_mean(periodic, N, max_index_direct, adr);
 
+		// ====== STATIONARY ON =======
 		if (stationary == 1)
 		{
 			cblas_zgemv(CblasRowMajor, CblasNoTrans, N, N, &ONE, ev_t_hamiltonian_sorted, N, phi_n, 1, &ZERO, phi_st, 1);
@@ -1301,6 +1310,7 @@ void single_trajectory_statistics_init_prop(
 
 			curr_mean_stationary = get_init_mean_stationary(periodic, N, max_index_stationary, adr_stationary);
 		}
+		// ====== STATIONARY OFF =======
 	}
 
 	for (int state_id = 0; state_id < N; state_id++)
@@ -1313,6 +1323,7 @@ void single_trajectory_statistics_init_prop(
 	dispersion[trajectory_id] = 0.0;
 	m2[trajectory_id] = 0.0;
 
+	// ====== STATIONARY ON ========
 	if (stationary == 1)
 	{
 		mean_start_stationary[trajectory_id] = curr_mean_stationary;
@@ -1321,6 +1332,7 @@ void single_trajectory_statistics_init_prop(
 		m2_stationary[trajectory_id] = 0.0;
 		max_id_stationary[trajectory_id] = max_index_stationary;
 	}
+	// ====== STATIONARY OFF =======
 
 	etas[trajectory_id] = eta;
 
@@ -1351,7 +1363,6 @@ void single_trajectory_hist_init_prop(
 	{
 		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, rnd_stream, 1, &eta, 0, 1);
 	}
-
 
 	for(int period_id = 0; period_id < num_periods_in_trans_proc; period_id++)
 	{
@@ -3290,21 +3301,26 @@ void omp_qj_chaos(char input_file_name[],
 	double delta_lim
 )
 {
+	// Printing num of threads
 	printf("num_omp_threads: %d\n\n", num_omp_threads);
 	omp_set_num_threads(num_omp_threads);
 
+	// Read QJ structure from file
 	FILE * input_file;
 	input_file = fopen(input_file_name, "rb");
 	split * head = create_struct_bin(input_file);
 	fclose(input_file);
 
+	// Period and size
 	double T = head->dt;
 	int N = head->N;
-
+	
+	// Random generators for all trajectories
 	VSLStreamStatePtr * rnd_streams = new VSLStreamStatePtr[num_trajectories];
 	vslNewStream(&rnd_streams[0], VSL_BRNG_MCG59, 777);
 	vslLeapfrogStream(rnd_streams[0], rnd_cur, rnd_max);
 
+	// In the case of multiple trajectories (and multiple threads) copy QJ data to all threads
 	split * heads = new split[num_omp_threads];
 	for (int i = 0; i < num_omp_threads; i++)
 	{
@@ -3323,9 +3339,11 @@ void omp_qj_chaos(char input_file_name[],
 		vslLeapfrogStream(var_streams[i], i, num_trajectories);
 	}
 
+	// Init data
 	init_main_statistics_data(N, num_trajectories, stationary, num_att_trajectories);
 	init_dump_statistics_data(num_trajectories, btw_jump_times, stationary);
 
+	// Init times
 	double step = double(num_periods) / double(num_dumps - 1);
 	double start = 0.0;
 	if (dump_type == 1)
@@ -3437,8 +3455,6 @@ void omp_qj_chaos(char input_file_name[],
 		for (int state_id = 0; state_id < N; state_id++)
 		{
 			adr[state_id] = Complex_mul(Complex_scalar_mul(&phi_target[state_id], &phi_target[state_id], 1), 1.0 / mod_norm).real;
-
-			avg_rho_diag_all[trajectory_id * N + state_id] = adr[state_id];
 
 			if (adr[state_id] > max_val_direct)
 			{

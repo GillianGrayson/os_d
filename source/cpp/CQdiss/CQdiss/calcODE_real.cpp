@@ -52,15 +52,15 @@ void calcVectValue_real(double t, double h,
 
 	for (i = 0; i < N_mat; i++)
 	{
-		res[i] = (tmp1[i] + A0 * sin(w * t) * tmp2[i] - Ks[i]) * h;
-		//if(sin(w * t) < 0.0)
-		//{
-		//  res[i] = (tmp1[i] + A0 * (-1.0) * tmp2[i] - Ks[i]) * h;
-		//}
-		//else
-		//{
-		//  res[i] = (tmp1[i] + A0 * (+1.0) * tmp2[i] - Ks[i]) * h;
-		//}
+		//res[i] = (tmp1[i] + A0 * sin(w * t) * tmp2[i] - Ks[i]) * h;
+		if(sin(w * t) < 0.0)
+		{
+		  res[i] = (tmp1[i] + A0 * (-1.0) * tmp2[i] - Ks[i]) * h;
+		}
+		else
+		{
+		  res[i] = (tmp1[i] + A0 * (+1.0) * tmp2[i] - Ks[i]) * h;
+		}
 	}
 }
 

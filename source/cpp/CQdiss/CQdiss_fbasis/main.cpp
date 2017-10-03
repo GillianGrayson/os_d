@@ -49,8 +49,8 @@ void* operator new(std::size_t size) throw(std::bad_alloc){
 		}
 		if (ismap_print)
 		{
-			fprintf(mem_time, "%lf \n", map_size);
-			fprintf(mem_time, "%lf \n", -map_size);
+			//fprintf(mem_time, "%lf \n", map_size);
+			//fprintf(mem_time, "%lf \n", -map_size);
 			fflush(mem_time);
 			ismap = false;
 			ismap_print = false;
@@ -62,7 +62,7 @@ void* operator new(std::size_t size) throw(std::bad_alloc){
 			program = false;
 			mem_map.insert(pr);
 
-			fprintf(mem_time, "%lf \n", mem_map[p]);
+			//fprintf(mem_time, "%lf \n", mem_map[p]);
 			fflush(mem_time);
 		}
 	}
@@ -82,8 +82,8 @@ void* operator new   (std::size_t size, const std::nothrow_t&) throw(){
 		}
 		if (ismap_print)
 		{
-			fprintf(mem_time, "%lf \n", map_size);
-			fprintf(mem_time, "%lf \n", -map_size);
+			//fprintf(mem_time, "%lf \n", map_size);
+			//fprintf(mem_time, "%lf \n", -map_size);
 			fflush(mem_time);
 			ismap = false;
 			ismap_print = false;
@@ -95,7 +95,7 @@ void* operator new   (std::size_t size, const std::nothrow_t&) throw(){
 			program = false;
 			mem_map.insert(pr);
 
-			fprintf(mem_time, "%lf \n", mem_map[p]);
+			//fprintf(mem_time, "%lf \n", mem_map[p]);
 			fflush(mem_time);
 		}
 	}
@@ -116,8 +116,8 @@ void* operator new  [](std::size_t size) throw(std::bad_alloc) {
 		}
 		if (ismap_print)
 		{
-			fprintf(mem_time, "%lf \n", map_size);
-			fprintf(mem_time, "%lf \n", -map_size);
+			//fprintf(mem_time, "%lf \n", map_size);
+			//fprintf(mem_time, "%lf \n", -map_size);
 			fflush(mem_time);
 			ismap = false;
 			ismap_print = false;
@@ -129,7 +129,7 @@ void* operator new  [](std::size_t size) throw(std::bad_alloc) {
 			program = false;
 			mem_map.insert(pr);
 
-			fprintf(mem_time, "%lf \n", mem_map[p]);
+			//fprintf(mem_time, "%lf \n", mem_map[p]);
 			fflush(mem_time);
 		}
 	}
@@ -151,8 +151,8 @@ void* operator new  [](std::size_t size, const std::nothrow_t&) throw() {
 		}
 		if (ismap_print)
 		{
-			fprintf(mem_time, "%lf \n", map_size);
-			fprintf(mem_time, "%lf \n", -map_size);
+			//fprintf(mem_time, "%lf \n", map_size);
+			//fprintf(mem_time, "%lf \n", -map_size);
 			fflush(mem_time);
 			ismap = false;
 		}
@@ -163,7 +163,7 @@ void* operator new  [](std::size_t size, const std::nothrow_t&) throw() {
 			program = false;
 			mem_map.insert(pr);
 
-			fprintf(mem_time, "%lf \n", mem_map[p]);
+			//fprintf(mem_time, "%lf \n", mem_map[p]);
 			fflush(mem_time);
 		}
 	}
@@ -175,28 +175,28 @@ void* operator new  [](std::size_t size, const std::nothrow_t&) throw() {
 
 void operator delete(void* ptr) throw() {  
 	if (!isEnd) if (mem_map.count(ptr) > 0){
-		fprintf(mem_time, "%lf \n", -mem_map[ptr]);
+		//fprintf(mem_time, "%lf \n", -mem_map[ptr]);
 		fflush(mem_time);
 	}
 free(ptr);
 }
 void operator delete (void* ptr, const std::nothrow_t&) throw() {  
 	if (!isEnd)if (mem_map.count(ptr) > 0) {
-		fprintf(mem_time, "%lf \n", -mem_map[ptr]);
+		//fprintf(mem_time, "%lf \n", -mem_map[ptr]);
 		fflush(mem_time);
 	}
 free(ptr);
 }
 void operator delete[](void* ptr) throw() { 
 	if (!isEnd)if (mem_map.count(ptr) > 0) {
-		fprintf(mem_time, "%lf \n", -mem_map[ptr]);
+		//fprintf(mem_time, "%lf \n", -mem_map[ptr]);
 		fflush(mem_time);
 	}
 free(ptr);
 }
 void operator delete[](void* ptr, const std::nothrow_t&) throw() { 
 	if (!isEnd)if (mem_map.count(ptr) > 0) {
-		fprintf(mem_time, "%lf \n", -mem_map[ptr]);
+		//fprintf(mem_time, "%lf \n", -mem_map[ptr]);
 		fflush(mem_time);
 	}
 free(ptr);
@@ -206,7 +206,7 @@ free(ptr);
 int main(int argc, char ** argv)
 {
 	mem_time = fopen("mem_time.txt", "w");
-	printf("current path (%s)\n\n", argv[0]);
+	//printf("current path (%s)\n\n", argv[0]);
 	if (argc >1)
 		omp_set_num_threads(atoi(argv[1]));
 
@@ -215,7 +215,7 @@ int main(int argc, char ** argv)
 	read_config(param, "config.txt");
 
 	Model * model;
-	fprintf(mem_time, "model = createModel(param.N, param); \n");
+	//fprintf(mem_time, "model = createModel(param.N, param); \n");
 
 	model = createModel(param.N, param);
 	FILE * memlog = model->memlog;
@@ -227,7 +227,7 @@ int main(int argc, char ** argv)
 
 	number_of_allocs = 0;
 
-	fprintf(mem_time, "init_h_vector(model); \n");
+	//fprintf(mem_time, "init_h_vector(model); \n");
 	time = omp_get_wtime();
 	init_h_vector_opt(model);
 	time = omp_get_wtime() - time;
@@ -238,7 +238,7 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 	
-	fprintf(mem_time, "init_he_vector(model); \n");
+	//fprintf(mem_time, "init_he_vector(model); \n");
 	time = omp_get_wtime();
 	init_he_vector_opt(model);
 	time = omp_get_wtime() - time;
@@ -249,7 +249,7 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 	
-	fprintf(mem_time, "init_a1_a2(model); \n");
+	//fprintf(mem_time, "init_a1_a2(model); \n");
 	time = omp_get_wtime();
 	init_a1_a2_opt(model);
 	time = omp_get_wtime() - time;
@@ -260,7 +260,7 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 
-	fprintf(mem_time, "init_f_d_valentin(model); \n");
+	//fprintf(mem_time, "init_f_d_valentin(model); \n");
 	time = omp_get_wtime();
 	init_f_d_valentin(model);
 	time = omp_get_wtime() - time;
@@ -270,7 +270,7 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 
-	fprintf(mem_time, "calcQs(model); \n");
+	//fprintf(mem_time, "calcQs(model); \n");
 	time = omp_get_wtime();
 	calcQs(model);
 	time = omp_get_wtime() - time;
@@ -281,7 +281,7 @@ int main(int argc, char ** argv)
 	number_of_allocs = 0;
 	
 	
-	fprintf(mem_time, "calcQEs(model); \n");
+	//fprintf(mem_time, "calcQEs(model); \n");
 	time = omp_get_wtime();
 	calcQEs(model);
 	time = omp_get_wtime() - time;
@@ -292,7 +292,7 @@ int main(int argc, char ** argv)
 	number_of_allocs = 0;
 	
 	
-	fprintf(mem_time, "calcKs(model); \n");
+	//fprintf(mem_time, "calcKs(model); \n");
 	time = omp_get_wtime();
 	calcKs(model);
 	time = omp_get_wtime() - time;
@@ -302,7 +302,7 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 
-	fprintf(mem_time, "calcRs(model); \n");
+	//fprintf(mem_time, "calcRs(model); \n");
 	time = omp_get_wtime();
 	calcRs(model);
 	time = omp_get_wtime() - time;
@@ -312,7 +312,7 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 
-	fprintf(mem_time, "calcGs(model); \n");
+	//fprintf(mem_time, "calcGs(model); \n");
 	time = omp_get_wtime();
 	calcGs(model);
 	time = omp_get_wtime() - time;
@@ -329,7 +329,7 @@ int main(int argc, char ** argv)
 	//  printMatrix(model->Rs);
 	//  printMatrixVal(model->Gs);
 
-	fprintf(mem_time, "calcODE(model); \n");
+	//fprintf(mem_time, "calcODE(model); \n");
 
 	if (model->conf.hasDriving == 0)
 	{
@@ -380,7 +380,7 @@ int main(int argc, char ** argv)
 
 	linSolvCheck(model);
 
-	fprintf(mem_time, "calcRho_fill(model); \n");
+	//fprintf(mem_time, "calcRho_fill(model); \n");
 	time = omp_get_wtime();
 	calcRho_fill(model);
 	time = omp_get_wtime() - time;
@@ -396,7 +396,7 @@ int main(int argc, char ** argv)
 	printf("Trace: %lf\n", tr.re);
 	//saveMatrix("Rho.txt", model->Rho);
 
-	fprintf(mem_time, "calcTraseRO2(model); \n");
+	//fprintf(mem_time, "calcTraseRO2(model); \n");
 	time = omp_get_wtime();
 	calcTraseRO2(model);
 	time = omp_get_wtime() - time;
@@ -460,7 +460,7 @@ int main(int argc, char ** argv)
 	}
 
 	
-	fprintf(mem_time, "other \n");
+	//fprintf(mem_time, "other \n");
 	if (model->conf.CalcEig == 1)
 	{
 		time = omp_get_wtime();
