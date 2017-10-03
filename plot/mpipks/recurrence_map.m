@@ -8,15 +8,15 @@ prefix = '/qj_results/';
 data_path = sprintf('%s%s', data_path, prefix);
 
 delta = 0.1;
-tt = 10000;
+tt = 1000;
 E = 0.0;
 T = 2*pi;
 A = 0.0;
 N = 50;
 
-U = 0.92;
+U = 1.0;
 
-J = 1.0;
+J = -1.0;
 g = 0.1;
 
 num_periods = 1000;

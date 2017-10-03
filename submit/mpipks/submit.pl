@@ -9,16 +9,16 @@ $input_path = "qj_input";
 
 $PI = 3.1415926535897932384626433832795;
 
-for($curr_U = 0.1; $curr_U <= 5.000001; $curr_U += 0.1)
+for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
 	$E = 0;
 	$T = 2 * $PI;
-	$A = 0.0;
-	$N = 50;
+	$A = 0;
+	$N = 100;
 	$U = $curr_U;
-	$J = 1.0;
+	$J = -1.0;
 	$g = 0.1;
 	
 	$E_str = sprintf("%.4f", $E);
@@ -33,7 +33,7 @@ for($curr_U = 0.1; $curr_U <= 5.000001; $curr_U += 0.1)
 	$propagation_type = 3;
 	$num_dumps = 1001;
 	$dump_type = 0;
-	$num_periods_in_trans_proc = 5000;
+	$num_periods_in_trans_proc = 1000;
 	$num_omp_threads = 1;
 	$num_trajectories = 2;
 	$rnd_max = 2000000;
