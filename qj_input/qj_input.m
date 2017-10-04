@@ -80,6 +80,8 @@ for U = 0.01 : 0.01 : 1.0
     
     i = sqrt(-1);
     
+    hamiltonian = H1 + E * H2;
+    
     H1 =  H1 - (i/2) * (g * V' * V);
     
     E0 = E + amplitude * e0;
@@ -184,6 +186,24 @@ for U = 0.01 : 0.01 : 1.0
     end
     fwrite(fid, res, 'double');
     
+    fclose(fid);
+    
+    file_name_data = sprintf('%s/aux_data_%s', ...
+        to_data_path , ...
+        out_suffix);
+    fid = fopen(file_name_data,'wb');
+    
+    res_H = zeros(2*N*N,1);
+    cur_id = 1;
+    for state_id_1 = 1:N
+        for state_id_2 = 1:N
+            res_H(cur_id) = real(hamiltonian(state_id_1, state_id_2));
+            res_H(cur_id+1) = imag(hamiltonian(state_id_1, state_id_2));
+            cur_id = cur_id + 2;
+        end
+    end
+    fwrite(fid, res_H, 'double');
+    res_H = 0;
     fclose(fid);
     
 end

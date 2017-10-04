@@ -181,6 +181,37 @@ int main(int argc, char **argv)
 			var_eps,
 			delta_lim);
 	}
+	else if (propagation_type == 4)
+	{
+		omp_qj_chaos_energy(
+			argv[1],
+			argv[2],
+			num_periods,
+			num_dumps,
+			dump_type,
+			num_periods_in_trans_proc,
+			num_omp_threads,
+			num_trajectories,
+			rnd_max,
+			rnd_cur,
+			init_state_id,
+			mean_low_limit,
+			mean_high_limit,
+			dump_rho,
+			avg_dump,
+			dump_characteristics,
+			btw_jump_times,
+			borders_type,
+			stationary,
+			after_dump,
+			double_scale_dump,
+			deep_characteristic,
+			mc_specific,
+			mc_type,
+			num_att_trajectories,
+			var_eps,
+			delta_lim);
+	}
 
 	
 	double time = omp_get_wtime() - start_time;

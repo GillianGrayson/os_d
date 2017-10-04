@@ -133,3 +133,33 @@ void omp_qj_chaos(char input_file_name[],
 	double delta_lim
 );
 
+
+void omp_qj_chaos_energy(
+	char input_file_name[],
+	char aux_file_name[],
+	int num_periods,
+	int num_dumps,
+	int dump_type,
+	int num_periods_in_trans_proc,
+	int num_omp_threads,
+	int num_trajectories,
+	int rnd_max,
+	int rnd_cur,
+	int init_state_id,
+	double mean_low_limit,
+	double mean_high_limit,
+	int dump_rho,
+	int avg_dump,
+	int dump_characteristics,
+	int btw_jump_times,
+	int borders_type,
+	int stationary,
+	int after_dump,
+	int double_scale_dump,
+	int deep_characteristic,
+	int mc_specific,
+	int mc_type,
+	int num_att_trajectories,
+	double var_eps,
+	double delta_lim
+);

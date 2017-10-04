@@ -50,6 +50,8 @@ double * mean;
 double * dispersion;
 double * m2;
 
+double * energy;
+
 double * lambda;
 double * delta_s;
 
@@ -57,6 +59,9 @@ double* mean_evo;
 double* mean_real_evo;
 int* periods_evo;
 double * lambda_evo;
+
+double * energy_evo;
+double * energy_real_evo;
 
 int num_att_peaks;
 double * begins_att_peaks = NULL;
@@ -599,6 +604,8 @@ void init_dump_statistics_data(int num_trajectories, int btw_jump_times, int sta
 	dispersion = new double[num_trajectories];
 	m2 = new double[num_trajectories];
 
+	energy = new double[num_trajectories];
+
 	lambda = new double[num_trajectories];
 	delta_s = new double[num_trajectories];
 
@@ -623,6 +630,8 @@ void init_dump_statistics_data(int num_trajectories, int btw_jump_times, int sta
 		mean[trajectory_id] = 0.0;
 		dispersion[trajectory_id] = 0.0;
 		m2[trajectory_id] = 0.0;
+
+		energy[trajectory_id] = 0.0;
 
 		lambda[trajectory_id] = 0.0;
 		delta_s[trajectory_id] = 0.0;
@@ -687,6 +696,8 @@ void refresh_dump_statistics_data(int num_trajectories)
 		mean[trajectory_id] = 0.0;
 		dispersion[trajectory_id] = 0.0;
 		m2[trajectory_id] = 0.0;
+
+		energy[trajectory_id] = 0.0;
 	}
 }
 
@@ -698,6 +709,8 @@ void delete_dump_statistics_data(int dump_characteristics, int btw_jump_times, i
 	delete[] mean;
 	delete[] dispersion;
 	delete[] m2;
+
+	delete[] energy;
 
 	delete[] lambda;
 	delete[] delta_s;
@@ -1163,6 +1176,39 @@ void single_trajectory_init_prop(split * head,
 	}
 }
 
+void calc_energy(
+	int N,
+	MKL_Complex16 * phi,
+	MKL_Complex16 * sm,
+	int trajectory_id
+)
+{
+	double current_norm = norm_vector2(phi, N);
+
+	for (int state_id_1 = 0; state_id_1 < N; state_id_1++)
+	{
+		MKL_Complex16 tmp;
+		tmp.real = 0;
+		tmp.imag = 0;
+		for (int state_id_2 = 0; state_id_2 < N; state_id_2++)
+		{
+			tmp.real += (hamiltonian[state_id_1 * N + state_id_2].real * phi[state_id_2].real / sqrt(current_norm) - hamiltonian[state_id_1 * N + state_id_2].imag * phi[state_id_2].imag / sqrt(current_norm));
+			tmp.imag += (hamiltonian[state_id_1 * N + state_id_2].real * phi[state_id_2].imag / sqrt(current_norm) + hamiltonian[state_id_1 * N + state_id_2].imag * phi[state_id_2].real / sqrt(current_norm));
+		}
+
+		sm[state_id_1].real = tmp.real;
+		sm[state_id_1].imag = tmp.imag;
+	}
+
+	double current_e = 0.0;
+	for (int state_id_1 = 0; state_id_1 < N; state_id_1++)
+	{
+		current_e += (phi[state_id_1].real / sqrt(current_norm) * sm[state_id_1].real + phi[state_id_1].imag / sqrt(current_norm) * sm[state_id_1].imag);
+	}
+
+	energy[trajectory_id] = current_e;
+}
+
 void single_trajectory_statistics_init_prop(
 	split * head,
 	VSLStreamStatePtr rnd_stream,
@@ -1196,16 +1242,6 @@ void single_trajectory_statistics_init_prop(
 
 	double * avg_adr = &avg_rho_diag_all[trajectory_id * N];
 
-	// ====== STATIONARY ON =======
-	MKL_Complex16 * phi_n = NULL;
-	MKL_Complex16 * phi_st = NULL;
-	if (stationary == 1)
-	{
-		phi_n = &phi_normed[trajectory_id * N];
-		phi_st = &phi_stationary[trajectory_id * N];
-	}
-	// ====== STATIONARY OFF ======
-
 	double eta = 0.0;
 	while (eta == 0.0)
 	{
@@ -1233,41 +1269,9 @@ void single_trajectory_statistics_init_prop(
 			max_val_direct = adr[state_id];
 			max_index_direct = state_id;
 		}
-
-		// ====== STATIONARY ON =======
-		if (stationary == 1)
-		{
-			phi_n[state_id].real = phi[state_id].real / sqrt(curr_norm);
-			phi_n[state_id].imag = phi[state_id].imag / sqrt(curr_norm);
-
-			phi_st[state_id].real = 0.0;
-			phi_st[state_id].imag = 0.0;
-		}
-		// ====== STATIONARY OFF ======
 	}
 
 	curr_mean = get_init_mean(periodic, N, max_index_direct, adr);
-
-	// ====== STATIONARY ON =======
-	if (stationary == 1)
-	{
-		cblas_zgemv (CblasRowMajor, CblasNoTrans, N, N, &ONE, ev_t_hamiltonian_sorted, N, phi_n, 1, &ZERO, phi_st, 1);
-		max_val_stationary = 0.0;
-		max_index_stationary = 0;
-		for(int state_id = 0; state_id < N; state_id++)
-		{
-			adr_stationary[state_id] = Complex_mul(Complex_scalar_mul(&phi_st[state_id], &phi_st[state_id], 1), 1.0).real;
-			
-			if (adr_stationary[state_id] > max_val_stationary)
-			{
-				max_val_stationary = adr_stationary[state_id];
-				max_index_stationary = state_id;
-			}
-		}
-
-		curr_mean_stationary = get_init_mean_stationary(periodic, N, max_index_stationary, adr_stationary);
-	}
-	// ====== STATIONARY OFF ======
 
 	while (curr_mean < double(N) * mean_low_limit || curr_mean > double(N) * mean_high_limit)
 	{
@@ -1286,41 +1290,9 @@ void single_trajectory_statistics_init_prop(
 				max_val_direct = adr[state_id];
 				max_index_direct = state_id;
 			}
-
-			// ====== STATIONARY ON =======
-			if (stationary == 1)
-			{
-				phi_n[state_id].real = phi[state_id].real / sqrt(curr_norm);
-				phi_n[state_id].imag = phi[state_id].imag / sqrt(curr_norm);
-
-				phi_st[state_id].real = 0.0;
-				phi_st[state_id].imag = 0.0;
-			}
-			// ====== STATIONARY OFF ======
 		}
 
 		curr_mean = get_init_mean(periodic, N, max_index_direct, adr);
-
-		// ====== STATIONARY ON =======
-		if (stationary == 1)
-		{
-			cblas_zgemv(CblasRowMajor, CblasNoTrans, N, N, &ONE, ev_t_hamiltonian_sorted, N, phi_n, 1, &ZERO, phi_st, 1);
-			max_val_stationary = 0.0;
-			max_index_stationary = 0;
-			for (int state_id = 0; state_id < N; state_id++)
-			{
-				adr_stationary[state_id] = Complex_mul(Complex_scalar_mul(&phi_st[state_id], &phi_st[state_id], 1), 1.0).real;
-
-				if (adr_stationary[state_id] > max_val_stationary)
-				{
-					max_val_stationary = adr_stationary[state_id];
-					max_index_stationary = state_id;
-				}
-			}
-
-			curr_mean_stationary = get_init_mean_stationary(periodic, N, max_index_stationary, adr_stationary);
-		}
-		// ====== STATIONARY OFF =======
 	}
 
 	for (int state_id = 0; state_id < N; state_id++)
@@ -1333,26 +1305,8 @@ void single_trajectory_statistics_init_prop(
 	dispersion[trajectory_id] = 0.0;
 	m2[trajectory_id] = 0.0;
 
-	// ====== STATIONARY ON ========
-	if (stationary == 1)
-	{
-		mean_start_stationary[trajectory_id] = curr_mean_stationary;
-		mean_stationary[trajectory_id] = curr_mean_stationary;
-		dispersion_stationary[trajectory_id] = 0.0;
-		m2_stationary[trajectory_id] = 0.0;
-		max_id_stationary[trajectory_id] = max_index_stationary;
-	}
-	// ====== STATIONARY OFF =======
-
 	etas[trajectory_id] = eta;
-
-	if (stationary == 1)
-	{
-		phi_n = NULL;
-		phi_st = NULL;
-	}
 }
-
 
 void single_trajectory_hist_init_prop(
 	split * head,
@@ -1684,6 +1638,35 @@ void dump_rho_data(
 
 			}
 		}
+	}
+}
+
+void dump_energy(
+	int N,
+	int num_periods,
+	int num_trajectories,
+	char* write_type
+)
+{
+	for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+	{
+		char energy_evo_fn[512];
+		sprintf(energy_evo_fn, "energy_evo_trajectory_%d.txt", trajectory_id);
+		FILE * energy_evo_f = fopen(energy_evo_fn, write_type);
+		for (int period_id = 0; period_id < num_periods; period_id++)
+		{
+			fprintf(energy_evo_f, "%0.18le\n", energy_evo[trajectory_id * num_periods + period_id]);
+		}
+		fclose(energy_evo_f);
+
+		char energy_real_evo_fn[512];
+		sprintf(energy_real_evo_fn, "energy_real_evo_trajectory_%d.txt", trajectory_id);
+		FILE * energy_real_evo_f = fopen(energy_real_evo_fn, write_type);
+		for (int period_id = 0; period_id < num_periods; period_id++)
+		{
+			fprintf(energy_real_evo_f, "%0.18le\n", energy_real_evo[trajectory_id * num_periods + period_id]);
+		}
+		fclose(energy_real_evo_f);
 	}
 }
 
@@ -2085,17 +2068,7 @@ void single_trajectory_statistics_dump_prop(
 
 		double * avg_adr = &avg_rho_diag_all[trajectory_id * N];
 
-		MKL_Complex16 * phi_n = NULL;
-		MKL_Complex16 * phi_st = NULL;
-		if (stationary == 1)
-		{
-			phi_n = &phi_normed[trajectory_id * N];
-			phi_st = &phi_stationary[trajectory_id * N];
-		}
-
 		double eta = etas[trajectory_id];
-
-		//printf("%0.8le\n", eta);
 
 		for(int period_id = begin_propagation_loop; period_id < end_propagation_loop; period_id++)
 		{
@@ -2114,26 +2087,9 @@ void single_trajectory_statistics_dump_prop(
 					max_val_direct = adr[state_id];
 					max_index_direct = state_id;
 				}
-
-				if (stationary == 1)
-				{
-					phi_n[state_id].real = phi[state_id].real / sqrt(curr_norm);
-					phi_n[state_id].imag = phi[state_id].imag / sqrt(curr_norm);
-
-					phi_st[state_id].real = 0.0;
-					phi_st[state_id].imag = 0.0;
-				}
 			}
 
-			double curr_mean = 0.0;
-			if (mc_type == 0)
-			{
-				curr_mean = mean[trajectory_id];
-			}
-			else
-			{
-				curr_mean = get_mean(periodic, N, max_index_direct, adr, trajectory_id, mc_specific);
-			}
+			double curr_mean = get_mean(periodic, N, max_index_direct, adr, trajectory_id, mc_specific);
 
 			double curr_mean_on_period = get_mean_on_period(N, curr_mean);
 			double curr_dispersion = get_dispersion(curr_mean, trajectory_id);
@@ -2147,39 +2103,6 @@ void single_trajectory_statistics_dump_prop(
 			{
 				st_processing_direct(periodic, N, curr_mean_on_period, trajectory_id);
 			}
-
-			if (stationary == 1)
-			{
-				cblas_zgemv (CblasRowMajor, CblasNoTrans, N, N, &ONE, ev_t_hamiltonian_sorted, N, phi_n, 1, &ZERO, phi_st, 1);
-				max_val_stationary = 0.0;
-				max_index_stationary = 0;
-				for(int state_id = 0; state_id < N; state_id++)
-				{
-					adr_stationary[state_id] = Complex_mul(Complex_scalar_mul(&phi_st[state_id], &phi_st[state_id], 1), 1.0).real;;
-
-					if (adr_stationary[state_id] > max_val_stationary)
-					{
-						max_val_stationary = adr_stationary[state_id];
-						max_index_stationary = state_id;
-					}
-				}
-
-				double current_mean_stationary = get_mean_stationary(periodic, N, max_index_stationary, adr_stationary, trajectory_id, mc_specific);
-				double current_mean_on_period_stationary = get_mean_on_period(N, current_mean_stationary);
-				double current_dispersion_stationary = get_dispersion_stationary(current_mean_stationary, trajectory_id);
-				double curr_m2_stationary = get_m2(periodic, N, current_mean_on_period_stationary, adr_stationary);
-
-				mean_stationary[trajectory_id] = current_mean_stationary;
-				dispersion_stationary[trajectory_id] = current_dispersion_stationary;
-				m2_stationary[trajectory_id] = curr_m2_stationary;
-
-				max_id_stationary[trajectory_id] = max_index_stationary;
-
-				if (dump_characteristics >= 1)
-				{
-					st_processing_stationary(periodic, N, max_index_stationary, trajectory_id);
-				}
-			}
 		}
 
 		for (int state_id = 0; state_id < N; state_id++)
@@ -2188,12 +2111,6 @@ void single_trajectory_statistics_dump_prop(
 		}
 
 		etas[trajectory_id] = eta;
-
-		if (stationary == 1)
-		{
-			phi_n = NULL;
-			phi_st = NULL;
-		}
 	}
 }
 
@@ -2472,6 +2389,32 @@ void init_aux_statistics_data(char aux_file_name[],
 			}
 		}
 	}
+}
+
+void init_hamiltonian(
+	char aux_file_name[],
+	int N)
+{
+	hamiltonian = new MKL_Complex16[N*N];
+
+	for (int state_id_1 = 0; state_id_1 < N; state_id_1++)
+	{
+		for (int state_id_2 = 0; state_id_2 < N; state_id_2++)
+		{
+			hamiltonian[state_id_1 * (N)+state_id_2].real = 0.0;
+			hamiltonian[state_id_1 * (N)+state_id_2].imag = 0.0;
+		}
+	}
+
+	FILE * aux_file = fopen(aux_file_name, "rb");
+	fread(hamiltonian, sizeof(MKL_Complex16), N * N, aux_file);
+
+	fclose(aux_file);
+}
+
+void delete_hamitlonian()
+{
+	delete[] hamiltonian;
 }
 
 void init_aux_hist_data(
@@ -3697,11 +3640,13 @@ void omp_qj_chaos(char input_file_name[],
 					mean[trajectory_id] = curr_mean;
 					delta_s[trajectory_id] = fabs(mean[trajectory_id] - mean[0]) / double(N);
 
-					lambda_evo[trajectory_id * real_num_periods + period_id] = lambda[trajectory_id] / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					double lambda_tmp = lambda[trajectory_id] / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					lambda_evo[trajectory_id * real_num_periods + period_id] = lambda_tmp;
 				}
 				else
 				{
-					lambda_evo[trajectory_id * real_num_periods + period_id] = (lambda[trajectory_id] + log(delta_f / delta_s[trajectory_id] + 1.0e-16)) / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					double lambda_tmp = (lambda[trajectory_id] + log(delta_f / delta_s[trajectory_id] + 1.0e-16)) / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					lambda_evo[trajectory_id * real_num_periods + period_id] = lambda_tmp;
 				}
 			}
 
@@ -3737,3 +3682,499 @@ void omp_qj_chaos(char input_file_name[],
 	delete[] periods_evo;
 	delete[] lambda_evo;
 }
+
+
+void omp_qj_chaos_energy(
+	char input_file_name[],
+	char aux_file_name[],
+	int num_periods,
+	int num_dumps,
+	int dump_type,
+	int num_periods_in_trans_proc,
+	int num_omp_threads,
+	int num_trajectories,
+	int rnd_max,
+	int rnd_cur,
+	int init_state_id,
+	double mean_low_limit,
+	double mean_high_limit,
+	int dump_rho,
+	int avg_dump,
+	int dump_characteristics,
+	int btw_jump_times,
+	int borders_type,
+	int stationary,
+	int after_dump,
+	int double_scale_dump,
+	int deep_characteristic,
+	int mc_specific,
+	int mc_type,
+	int num_att_trajectories,
+	double var_eps,
+	double delta_lim
+)
+{
+	// Printing num of threads
+	printf("num_omp_threads: %d\n\n", num_omp_threads);
+	omp_set_num_threads(num_omp_threads);
+
+	// Read QJ structure from file
+	FILE * input_file;
+	input_file = fopen(input_file_name, "rb");
+	split * head = create_struct_bin(input_file);
+	fclose(input_file);
+
+	// Period and size
+	double T = head->dt;
+	int N = head->N;
+
+	// For energy
+	sub_mult = new MKL_Complex16[num_trajectories * N];
+	for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+	{
+		for (int state_id = 0; state_id < N; state_id++)
+		{
+			sub_mult[trajectory_id * N + state_id].real = 0.0;
+			sub_mult[trajectory_id * N + state_id].imag = 0.0;
+		}
+	}
+
+	init_hamiltonian(aux_file_name, N);
+
+	// Random generators for all trajectories
+	VSLStreamStatePtr * rnd_streams = new VSLStreamStatePtr[num_trajectories];
+	vslNewStream(&rnd_streams[0], VSL_BRNG_MCG59, 777);
+	vslLeapfrogStream(rnd_streams[0], rnd_cur, rnd_max);
+
+	// In the case of multiple trajectories (and multiple threads) copy QJ data to all threads
+	split * heads = new split[num_omp_threads];
+	for (int i = 0; i < num_omp_threads; i++)
+	{
+		cmp_struct_not_member(head, &heads[i]);
+	}
+
+	// Random generator for variance
+	VSLStreamStatePtr * var_streams = new VSLStreamStatePtr[num_trajectories];
+	vslNewStream(&var_streams[0], VSL_BRNG_MCG31, 777);
+	for (int i = 1; i < num_trajectories; i++)
+	{
+		vslCopyStream(&var_streams[i], var_streams[0]);
+	}
+	for (int i = 0; i < num_trajectories; i++)
+	{
+		vslLeapfrogStream(var_streams[i], i, num_trajectories);
+	}
+
+	// Init data
+	init_main_statistics_data(N, num_trajectories, stationary, num_att_trajectories);
+	init_dump_statistics_data(num_trajectories, btw_jump_times, stationary);
+
+	// Init times
+	double step = double(num_periods) / double(num_dumps - 1);
+	double start = 0.0;
+	if (dump_type == 1)
+	{
+		start = 0.0;
+		step = log10(double(num_periods)) / double(num_dumps - 1);
+	}
+
+	// Run only first (!!!) trajecory
+#pragma omp parallel for
+	for (int i = 0; i < 1; i++)
+	{
+		int thread_id = omp_get_thread_num();
+		single_trajectory_statistics_init_prop(
+			&heads[thread_id],
+			rnd_streams[i],
+			&phi_global[i * N],
+			&abs_rho_diag_all[i * N],
+			num_periods_in_trans_proc,
+			i,
+			init_state_id,
+			mean_low_limit,
+			mean_high_limit,
+			dump_characteristics,
+			&abs_rho_diag_all_stationary[i * N],
+			stationary,
+			borders_type
+		);
+
+		calc_energy(
+			N,
+			&phi_global[i * N],
+			&sub_mult[i * N],
+			i
+		);
+	}
+
+	dump_rho_data(N, 1, "w", dump_rho, avg_dump);
+
+	if (num_trajectories > 1)
+	{
+		// Copy to variation trajectories with indexes 1,...,(num_trajectories-1)
+		for (int trajectory_id = 1; trajectory_id < num_trajectories; trajectory_id++)
+		{
+			// Copy random stream
+			vslCopyStream(&rnd_streams[trajectory_id], rnd_streams[0]);
+
+			// Copy eta for random stream
+			etas[trajectory_id] = etas[0];
+
+			// Copy wave function after trans process
+			for (int state_id = 0; state_id < N; state_id++)
+			{
+				phi_global[trajectory_id * N + state_id].real = phi_global[0 * N + state_id].real;
+				phi_global[trajectory_id * N + state_id].imag = phi_global[0 * N + state_id].imag;
+			}
+		}
+	}
+
+	// Quntum jumps moments
+	for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+	{
+		ts[trajectory_id] = 0.0;
+	}
+
+	// Variation of each (except first) trajectory
+	for (int trajectory_id = 1; trajectory_id < num_trajectories; trajectory_id++)
+	{
+		MKL_Complex16 * phi_var = new MKL_Complex16[N];
+
+		double * phi_var_array = new double[2 * N];
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, var_streams[trajectory_id], 2 * N, phi_var_array, -1.0, 1.0);
+		for (int state_id = 0; state_id < N; state_id++)
+		{
+			phi_var[state_id].real = phi_var_array[0 * N + state_id];
+			phi_var[state_id].imag = phi_var_array[1 * N + state_id];
+		}
+		delete[] phi_var_array;
+
+		double var_norm = norm_vector2(phi_var, N);
+		for (int state_id = 0; state_id < N; state_id++)
+		{
+			phi_var[state_id].real = phi_var[state_id].real / sqrt(var_norm);
+			phi_var[state_id].imag = phi_var[state_id].imag / sqrt(var_norm);
+		}
+
+		MKL_Complex16 * phi_target = &phi_global[trajectory_id * N];
+		double norm_target = norm_vector2(phi_target, N);
+
+		for (int state_id = 0; state_id < N; state_id++)
+		{
+			phi_target[state_id].real = (phi_target[state_id].real + var_eps * phi_var[state_id].real);
+			phi_target[state_id].imag = (phi_target[state_id].imag + var_eps * phi_var[state_id].imag);
+		}
+
+		delete[] phi_var;
+
+		double mod_norm = norm_vector2(phi_target, N);
+
+		for (int state_id = 0; state_id < N; state_id++)
+		{
+			phi_target[state_id].real = phi_target[state_id].real / sqrt(mod_norm);
+			phi_target[state_id].imag = phi_target[state_id].imag / sqrt(mod_norm);
+		}
+
+		for (int state_id = 0; state_id < N; state_id++)
+		{
+			phi_target[state_id].real = phi_target[state_id].real * sqrt(norm_target);
+			phi_target[state_id].imag = phi_target[state_id].imag * sqrt(norm_target);
+		}
+
+		mod_norm = norm_vector2(phi_target, N);
+
+		double * adr = &abs_rho_diag_all[trajectory_id * N];
+
+		int max_val_direct = 0.0;
+		int max_index_direct = 0;
+		for (int state_id = 0; state_id < N; state_id++)
+		{
+			adr[state_id] = Complex_mul(Complex_scalar_mul(&phi_target[state_id], &phi_target[state_id], 1), 1.0 / mod_norm).real;
+
+			if (adr[state_id] > max_val_direct)
+			{
+				max_val_direct = adr[state_id];
+				max_index_direct = state_id;
+			}
+		}
+
+		double curr_mean = get_init_mean(0, N, max_index_direct, adr);
+		calc_energy(
+			N,
+			&phi_global[trajectory_id * N],
+			&sub_mult[trajectory_id * N],
+			trajectory_id
+		);
+
+		mean[trajectory_id] = curr_mean;
+		lambda[trajectory_id] = 0;
+		double curr_delta_s = fabs(energy[trajectory_id] - energy[0]);
+		delta_s[trajectory_id] = curr_delta_s;
+	}
+
+	// Init means for every trajectory and periods 
+	int real_num_periods = num_periods;
+	mean_evo = new double[num_trajectories * real_num_periods];
+	mean_real_evo = new double[num_trajectories * real_num_periods];
+	lambda_evo = new double[num_trajectories * real_num_periods];
+
+	energy_evo = new double[num_trajectories * real_num_periods];
+	energy_real_evo = new double[num_trajectories * real_num_periods];
+
+	periods_evo = new int[real_num_periods];
+	for (int period_id = 0; period_id < real_num_periods; period_id++)
+	{
+		for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+		{
+			mean_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+			mean_real_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+			lambda_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+
+			energy_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+			energy_real_evo[trajectory_id * real_num_periods + period_id] = 0.0;
+		}
+
+		periods_evo[period_id] = 0;
+	}
+
+	period = 1;
+	printf("Period = %d\n", period);
+
+	refresh_main_statistics_data(N, num_trajectories, dump_characteristics, stationary);
+
+	int period_id = 0;
+	periods_evo[period_id] = period;
+	for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+	{
+		mean_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+		mean_real_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+
+		energy_evo[trajectory_id * real_num_periods + period_id] = energy[trajectory_id];
+		energy_real_evo[trajectory_id * real_num_periods + period_id] = energy[trajectory_id];
+
+		lambda_evo[trajectory_id * real_num_periods + period_id] = 0;
+	}
+
+	double current_dump_limit = start;
+	int begin_propagation_loop = period;
+	int end_propagation_loop = 0;
+
+	while (begin_propagation_loop != num_periods)
+	{
+		current_dump_limit += step;
+		end_propagation_loop = num_periods;
+
+		if (dump_type == 0)
+		{
+			if (current_dump_limit < double(end_propagation_loop))
+			{
+				end_propagation_loop = int(current_dump_limit);
+			}
+		}
+		else if (dump_type == 1)
+		{
+			int exp_limit = int(pow(10.0, current_dump_limit + 1.0e-10));
+			if (exp_limit < end_propagation_loop)
+			{
+				if (exp_limit <= begin_propagation_loop)
+				{
+					end_propagation_loop = begin_propagation_loop + 1;
+				}
+				else
+				{
+					end_propagation_loop = exp_limit;
+				}
+			}
+		}
+
+		if (end_propagation_loop > begin_propagation_loop)
+		{
+
+#pragma omp parallel for
+			for (int i = 0; i < num_trajectories; i++)
+			{
+				int thread_id = omp_get_thread_num();
+
+				single_trajectory_statistics_dump_prop(
+					&heads[thread_id],
+					rnd_streams[i],
+					&phi_global[i * N],
+					&abs_rho_diag_all[i * N],
+					i,
+					begin_propagation_loop,
+					end_propagation_loop,
+					dump_characteristics,
+					btw_jump_times,
+					&abs_rho_diag_all_stationary[i * N],
+					stationary,
+					borders_type,
+					deep_characteristic,
+					mc_specific,
+					mc_type
+				);
+
+				calc_energy(
+					N,
+					&phi_global[i * N],
+					&sub_mult[i * N],
+					i
+				);
+			}
+
+			dump_rho_data(N, 1, "a", dump_rho, avg_dump);
+
+			begin_propagation_loop = end_propagation_loop;
+			period = end_propagation_loop;
+
+			refresh_main_statistics_data(N, num_trajectories, dump_characteristics, stationary);
+
+			// Now we should check delta
+
+			period_id++;
+			periods_evo[period_id] = period;
+			for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+			{
+				mean_real_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+				energy_real_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+			}
+
+			for (int trajectory_id = 1; trajectory_id < num_trajectories; trajectory_id++)
+			{
+				double delta_f = fabs(energy[0] - energy[trajectory_id]);
+				if ((delta_f > delta_lim) || (delta_f < 1.0e-13))
+				{
+					lambda[trajectory_id] += log(delta_f / delta_s[trajectory_id] + 1.0e-16);
+
+					// Downgrading variance
+					MKL_Complex16 * phi_var = new MKL_Complex16[N];
+
+					double * phi_var_array = new double[2 * N];
+					vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, var_streams[trajectory_id], 2 * N, phi_var_array, -1.0, 1.0);
+					for (int state_id = 0; state_id < N; state_id++)
+					{
+						phi_var[state_id].real = phi_var_array[0 * N + state_id];
+						phi_var[state_id].imag = phi_var_array[1 * N + state_id];
+					}
+					delete[] phi_var_array;
+
+					double var_norm = norm_vector2(phi_var, N);
+					for (int state_id = 0; state_id < N; state_id++)
+					{
+						phi_var[state_id].real = phi_var[state_id].real / sqrt(var_norm);
+						phi_var[state_id].imag = phi_var[state_id].imag / sqrt(var_norm);
+					}
+
+					MKL_Complex16 * phi_target = &phi_global[trajectory_id * N];
+					// Copy from main trajectory
+					for (int state_id = 0; state_id < N; state_id++)
+					{
+						phi_target[state_id].real = phi_global[0 * N + state_id].real;
+						phi_target[state_id].imag = phi_global[0 * N + state_id].imag;
+					}
+
+					double norm_target = norm_vector2(phi_target, N);
+
+					for (int state_id = 0; state_id < N; state_id++)
+					{
+						phi_target[state_id].real = (phi_target[state_id].real + var_eps * phi_var[state_id].real);
+						phi_target[state_id].imag = (phi_target[state_id].imag + var_eps * phi_var[state_id].imag);
+					}
+
+					delete[] phi_var;
+
+					double mod_norm = norm_vector2(phi_target, N);
+
+					for (int state_id = 0; state_id < N; state_id++)
+					{
+						phi_target[state_id].real = phi_target[state_id].real / sqrt(mod_norm);
+						phi_target[state_id].imag = phi_target[state_id].imag / sqrt(mod_norm);
+					}
+
+					for (int state_id = 0; state_id < N; state_id++)
+					{
+						phi_target[state_id].real = phi_target[state_id].real * sqrt(norm_target);
+						phi_target[state_id].imag = phi_target[state_id].imag * sqrt(norm_target);
+					}
+
+					mod_norm = norm_vector2(phi_target, N);
+
+					double * adr = &abs_rho_diag_all[trajectory_id * N];
+
+					int max_val_direct = 0.0;
+					int max_index_direct = 0;
+					for (int state_id = 0; state_id < N; state_id++)
+					{
+						adr[state_id] = Complex_mul(Complex_scalar_mul(&phi_target[state_id], &phi_target[state_id], 1), 1.0 / mod_norm).real;
+
+						if (adr[state_id] > max_val_direct)
+						{
+							max_val_direct = adr[state_id];
+							max_index_direct = state_id;
+						}
+					}
+
+					double curr_mean = get_init_mean(0, N, max_index_direct, adr);
+					mean[trajectory_id] = curr_mean;
+
+					calc_energy(
+						N,
+						&phi_global[trajectory_id * N],
+						&sub_mult[trajectory_id * N],
+						trajectory_id
+					);
+
+					delta_s[trajectory_id] = fabs(energy[trajectory_id] - energy[0]);
+
+					double lambda_tmp = lambda[trajectory_id] / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					lambda_evo[trajectory_id * real_num_periods + period_id] = lambda_tmp;
+				}
+				else
+				{
+					double lambda_tmp = (lambda[trajectory_id] + log(delta_f / delta_s[trajectory_id] + 1.0e-16)) / ((double(periods_evo[period_id]) - double(periods_evo[0])) * T);
+					lambda_evo[trajectory_id * real_num_periods + period_id] = lambda_tmp;
+				}
+			}
+
+			for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+			{
+				mean_evo[trajectory_id * real_num_periods + period_id] = mean[trajectory_id];
+				energy_evo[trajectory_id * real_num_periods + period_id] = energy[trajectory_id];
+			}
+		}
+	}
+
+	for (int trajectory_id = 1; trajectory_id < num_trajectories; trajectory_id++)
+	{
+		lambda[trajectory_id] = lambda[trajectory_id] / ((double(periods_evo[real_num_periods - 1]) - double(periods_evo[0])) * T);
+	}
+
+	dump_aux_statistics_data(N, real_num_periods, num_trajectories, "w", avg_dump, dump_characteristics, btw_jump_times, stationary);
+	dump_energy(N, real_num_periods, num_trajectories, "w");
+
+	delete_main_statistics_data(dump_characteristics, stationary, num_att_trajectories);
+	delete_dump_statistics_data(dump_characteristics, btw_jump_times, stationary);
+
+	for (int i = 0; i < num_omp_threads; i++)
+	{
+		delete_split_struct_not_member(&heads[i]);
+	}
+	delete (heads);
+	delete_split_struct(head);
+	delete[] rnd_streams;
+
+	delete[] var_streams;
+
+	delete[] mean_evo;
+	delete[] mean_real_evo;
+
+	delete[] energy_evo;
+	delete[] energy_real_evo;
+
+	delete[] periods_evo;
+	delete[] lambda_evo;
+
+	delete[] sub_mult;
+
+	delete_hamitlonian();
+}
+
