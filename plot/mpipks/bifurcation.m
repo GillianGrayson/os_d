@@ -7,7 +7,7 @@ prefix = '/qj_results/';
 
 data_path = sprintf('%s%s', data_path, prefix);
 
-delta = 0.1;
+delta = 1;
 tt = 1000;
 E = 0.0;
 T = 2*pi;

@@ -16,7 +16,7 @@ for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
 	$E = 0;
 	$T = 2 * $PI;
 	$A = 0;
-	$N = 100;
+	$N = 50;
 	$U = $curr_U;
 	$J = -1.0;
 	$g = 0.1;
@@ -71,7 +71,7 @@ for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
 		$delta_str = sprintf("%.4f", $delta_lim);
 		
 		$input_file_name = sprintf('%s/main_data_E%0.4f_T%0.4f_A%0.4f_N%d_U%0.4f_J%0.4f_g%0.4f.bin', $input_path, $E, $T, $A, $N, $U, $J, $g);
-		$aux_file_name 	 = sprintf('%s/main_data_E%0.4f_T%0.4f_A%0.4f_N%d_U%0.4f_J%0.4f_g%0.4f.bin', $input_path, $E, $T, $A, $N, $U, $J, $g);
+		$aux_file_name 	 = sprintf('%s/aux_data_E%0.4f_T%0.4f_A%0.4f_N%d_U%0.4f_J%0.4f_g%0.4f.bin', $input_path, $E, $T, $A, $N, $U, $J, $g);
 
 		sub ForderName{
 			$key_str = $_[0];
