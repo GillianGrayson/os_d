@@ -3741,6 +3741,17 @@ void omp_qj_chaos_energy(
 
 	init_hamiltonian(aux_file_name, N);
 
+	double max_energy = 0.0;
+	for (int st_id = 0; st_id < N; st_id++)
+	{
+		if (abs(hamiltonian[st_id * N + st_id].real) > max_energy)
+		{
+			max_energy = abs(hamiltonian[st_id * N + st_id].real);
+		}
+	}
+
+	delta_lim = delta_lim * max_energy;
+
 	// Random generators for all trajectories
 	VSLStreamStatePtr * rnd_streams = new VSLStreamStatePtr[num_trajectories];
 	vslNewStream(&rnd_streams[0], VSL_BRNG_MCG59, 777);
