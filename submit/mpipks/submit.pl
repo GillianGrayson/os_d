@@ -9,7 +9,7 @@ $input_path = "qj_input";
 
 $PI = 3.1415926535897932384626433832795;
 
-for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
+for($curr_U = 0.01; $curr_U <= 1.0000001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
@@ -17,8 +17,8 @@ for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
 	
 	$E = 0;
 	$T = 2 * $PI;
-	$A = 0;
-	$N = 100;
+	$A = 0.0;
+	$N = 400;
 	$U = $curr_U;
 	$J = -1.0;
 	$g = 0.1;

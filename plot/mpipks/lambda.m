@@ -7,18 +7,19 @@ prefix = '/qj_results/';
 
 data_path = sprintf('%s%s', data_path, prefix);
 
+task = 3;
 delta = 0.1;
 tt = 1000;
-E = 1.0;
+E = 0.0;
 T = 2*pi;
-A = 1.5;
-N = 100;
+A = 0.0;
+N = 400;
 
 U_begin = 0.01;
 U_step = 0.01;
-U_num = 75;
+U_num = 100;
 
-J = 1.0;
+J = -1.0;
 g = 0.1;
 
 lambda_id = 1000;
@@ -38,8 +39,9 @@ for U_id = 1:U_num
 	curr_lambda_avg = 0;
    
 	for seed = 1:num_seeds 
-		path_to_folder = sprintf('%s/delta_%0.4f/tt_%d/E_%0.4f/T_%0.4f/A_%0.4f/N_%d/U_%0.4f/J_%0.4f/g_%0.4f/rnd_%d', ...
+		path_to_folder = sprintf('%s/task_%d/delta_%0.4f/tt_%d/E_%0.4f/T_%0.4f/A_%0.4f/N_%d/U_%0.4f/J_%0.4f/g_%0.4f/rnd_%d', ...
 			data_path, ...
+			task, ...
 			delta, ...
 			tt, ...
 			E, ...
@@ -74,7 +76,8 @@ xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$\lambda$', 'Interpreter', 'latex');
 
-fn_suffix = sprintf('delta(%0.4f)_tt(%d)_E(%0.4f)_T(%0.4f)_A(%0.4f)_N(%d)_J(%0.4f)_g(%0.4f)', ...
+fn_suffix = sprintf('task(%d)_delta(%0.4f)_tt(%d)_E(%0.4f)_T(%0.4f)_A(%0.4f)_N(%d)_J(%0.4f)_g(%0.4f)', ...
+		task, ...
 		delta, ...
 		tt, ...
 		E, ...
