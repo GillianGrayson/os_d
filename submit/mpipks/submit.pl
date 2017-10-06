@@ -13,10 +13,12 @@ for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
+	$task = 4;
+	
 	$E = 0;
 	$T = 2 * $PI;
 	$A = 0;
-	$N = 50;
+	$N = 100;
 	$U = $curr_U;
 	$J = -1.0;
 	$g = 0.1;
@@ -30,7 +32,7 @@ for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
 	
 	$num_periods = 1000;
 	$init_state_id = int($N/2);
-	$propagation_type = 3;
+	$propagation_type = $task;
 	$num_dumps = 1001;
 	$dump_type = 0;
 	$num_periods_in_trans_proc = 1000;
@@ -58,7 +60,7 @@ for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
 	$mc_type = 1;
 	$num_att_trajectories = 0;
 	$var_eps = 0.001;
-	$delta_lim = 0.1;
+	$delta_lim = 0.01;
 
 	for($seed = 0; $seed < 1; $seed+=1)
 	{
@@ -76,18 +78,19 @@ for($curr_U = 0.01; $curr_U <= 1.000001; $curr_U += 0.01)
 		sub ForderName{
 			$key_str = $_[0];
 			
-			return  "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}/g_${g_str}/rnd_${key_str}";
+			return  "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}/g_${g_str}/rnd_${key_str}";
 		}
 		
-		mkdir "$data_path/delta_${delta_str}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}";
-		mkdir "$data_path/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}/g_${g_str}";
+		mkdir "$data_path/task_${task}";
+		mkdir "$data_path/task_${task}/delta_${delta_str}";
+		mkdir "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}";
+		mkdir "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/";
+		mkdir "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}";
+		mkdir "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}";
+		mkdir "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}";
+		mkdir "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}";
+		mkdir "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}";
+		mkdir "$data_path/task_${task}/delta_${delta_str}/tt_${num_periods_in_trans_proc}/E_${E_str}/T_${T_str}/A_${A_str}/N_${N}/U_${U_str}/J_${J_str}/g_${g_str}";
 
 		for($val = $start; $val < $finish; $val+=1)
 		{
