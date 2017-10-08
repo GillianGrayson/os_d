@@ -23,8 +23,8 @@ long const n = 3 * N; // dimension of the system
 double const pi = 3.141592653589793238463643;
 int Nstep = 1000;
 
-double gamma = 0.1, J = 1., U = 2.5, E0 = 1, w = 1, A0 = 1.5, phi = 0;
-double h = 2 * pi / w / Nstep, h1, t_tr = 2000 * 2 * pi / w, t_fin = 20000 * 2 * pi / w + t_tr;
+double gamma = 0.1, J = 1.0, U = 0.0, E0 = 1.0, w = 1, A0 = 3.4, phi = 0;
+double h = 2 * pi / w / Nstep, h1, t_tr = 2000 * 2 * pi / w, t_fin = 2000 * 2 * pi / w + t_tr;
 double t = 0;
 
 inline void fun(double[n], double[n]);
@@ -65,13 +65,13 @@ int main()
 	tstart = time(NULL);
 	t0 = clock();
 
-	for (U = 2.6; U <= 2.600001; U += 0.02)
+	for (U = 0.04; U <= 4.000001; U += 0.04)
 	{
 		U_real = U / 4.0;
 
 		printf("U: %0.4le\n", U_real);
 
-		for (int seed = 0; seed < 100; seed++)
+		for (int seed = 0; seed < 10; seed++)
 		{
 			t = 0;
 			count = 0;
@@ -140,16 +140,12 @@ void fun(double ff[], double x[])
 {
 	double ft, rem;
 
-	//	rem = x[2] / (2 * pi / w) - floor(x[2] / (2 * pi / w));
-	//	ft = A0*(2.*(rem > 0.5) - 1.);
-
-	ft = sin(w*x[2] + phi);
-	ft = A0*ft;
-	ft = A0 * (2 * (ft > 0) - 1);
-	//ft = A0*sin(w*t + phi);
-	ff[0] = 2 * J*sin(x[1]) + 4 * gamma*cos(x[1])*cos(x[0]);
-	ff[1] = 2 * J*cos(x[0])*cos(x[1]) / sin(x[0]) - 2 * E0 - 2 * ft + U*cos(x[0]) - 4 * gamma*sin(x[1]) / sin(x[0]);
-	ff[2] = 1.;
+	ft = sin(w * x[2] + phi);
+	ft = A0 * ft;
+	//ft = A0 * (2 * (ft > 0) - 1);
+	ff[0] = 2.0 * J*sin(x[1]) + 4.0 * gamma*cos(x[1])*cos(x[0]);
+	ff[1] = 2.0 * J*cos(x[0])*cos(x[1]) / sin(x[0]) - 2.0 * E0 - 2.0 * ft + U*cos(x[0]) - 4.0 * gamma*sin(x[1]) / sin(x[0]);
+	ff[2] = 1.0;
 
 }
 

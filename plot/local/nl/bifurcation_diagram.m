@@ -2,13 +2,13 @@ clear all;
 
 data_path = '../../../source/cpp/NL/NL';
 
-N = 500;
+N = 1000;
 
-U_start = 0.00;
-U_shift = 0.005;
-U_num = 150;
+U_start = 0.01;
+U_shift = 0.01;
+U_num = 100;
 
-num_periods = 20000;
+num_periods = 2000;
 
 num_seeds = 10;
 

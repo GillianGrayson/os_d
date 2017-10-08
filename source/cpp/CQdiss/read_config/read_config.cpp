@@ -15,6 +15,7 @@ void output_setting(ConfigParam &param)
   printf("CalcEig, %d\n", param.CalcEig);
 
   printf("hasDriving, %d \n", param.hasDriving);
+  printf("driving_type, %d \n", param.driving_type);
   if(param.hasDriving == 1)
   {
      printf("T, %lf\n", param.T);

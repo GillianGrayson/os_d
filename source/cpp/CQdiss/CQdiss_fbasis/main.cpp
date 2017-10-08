@@ -337,7 +337,7 @@ int main(int argc, char ** argv)
 		linSolv(model);
 		time = omp_get_wtime() - time;
 		printf("linSolv: %2.4lf\n", time);
-		saveMatrix("Gs.txt", model->Gs);
+		//saveMatrix("Gs.txt", model->Gs);
 	}
 	else
 	{
@@ -394,7 +394,7 @@ int main(int argc, char ** argv)
 	printf("all time: %2.4lf\n", all_time);
 	dcomplex tr = trace(*(model->Rho));
 	printf("Trace: %lf\n", tr.re);
-	//saveMatrix("Rho.txt", model->Rho);
+	saveMatrix("rho.txt", model->Rho);
 
 	//fprintf(mem_time, "calcTraseRO2(model); \n");
 	time = omp_get_wtime();

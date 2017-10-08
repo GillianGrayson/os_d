@@ -52,6 +52,10 @@ void set_param(ConfigParam &param,char *s, double value)
   {
     param.hasDriving = (int) value;
   }
+  if (strcmp(s, "driving_type,") == 0)
+  {
+	  param.driving_type = (int)value;
+  }
   if(strcmp(s, "CalcEig,") == 0)
   {
     param.CalcEig = (int) value;

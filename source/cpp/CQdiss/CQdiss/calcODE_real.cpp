@@ -47,19 +47,27 @@ void calcVectValue_real(double t, double h,
 	double A0 = m->conf.A0;
 	double w = m->conf.w;
 
+	int driving_type = m->conf.driving_type;
+
 	multMatVec_real(Gs, x, tmp1);
 	multMatVec_real(QEs, x, tmp2);
 
 	for (i = 0; i < N_mat; i++)
 	{
-		//res[i] = (tmp1[i] + A0 * sin(w * t) * tmp2[i] - Ks[i]) * h;
-		if(sin(w * t) < 0.0)
+		if (driving_type == 1)
 		{
-		  res[i] = (tmp1[i] + A0 * (-1.0) * tmp2[i] - Ks[i]) * h;
+			res[i] = (tmp1[i] + A0 * sin(w * t) * tmp2[i] - Ks[i]) * h;
 		}
-		else
+		else if (driving_type == 0)
 		{
-		  res[i] = (tmp1[i] + A0 * (+1.0) * tmp2[i] - Ks[i]) * h;
+			if (sin(w * t) < 0.0)
+			{
+				res[i] = (tmp1[i] + A0 * (-1.0) * tmp2[i] - Ks[i]) * h;
+			}
+			else
+			{
+				res[i] = (tmp1[i] + A0 * (+1.0) * tmp2[i] - Ks[i]) * h;
+			}
 		}
 	}
 }
