@@ -7,13 +7,13 @@ prefix = '/qj_results/';
 
 data_path = sprintf('%s%s', data_path, prefix);
 
-task = 3;
-delta = 0.1;
+task = 4;
+delta = 0.01;
 tt = 1000;
 E = 0.0;
 T = 2*pi;
 A = 0.0;
-N = 400;
+N = 100;
 
 U_begin = 0.01;
 U_step = 0.01;

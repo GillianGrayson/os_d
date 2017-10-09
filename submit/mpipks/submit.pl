@@ -13,14 +13,14 @@ for($curr_U = 0.01; $curr_U <= 1.0000001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
-	$task = 4;
+	$task = 3;
 	
-	$E = 0;
+	$E = 1;
 	$T = 2 * $PI;
-	$A = 0.0;
-	$N = 400;
+	$A = 1.5;
+	$N = 200;
 	$U = $curr_U;
-	$J = -1.0;
+	$J = 1.0;
 	$g = 0.1;
 	
 	$E_str = sprintf("%.4f", $E);
@@ -60,7 +60,7 @@ for($curr_U = 0.01; $curr_U <= 1.0000001; $curr_U += 0.01)
 	$mc_type = 1;
 	$num_att_trajectories = 0;
 	$var_eps = 0.001;
-	$delta_lim = 0.01;
+	$delta_lim = 0.1;
 
 	for($seed = 0; $seed < 1; $seed+=1)
 	{

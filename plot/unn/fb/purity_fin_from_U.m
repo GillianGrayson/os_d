@@ -17,9 +17,7 @@ seed = 1;
 data_path = '../../../data/cluster/unn';
 
 Us = zeros(U_num, 1);
-Ns = linspace(1, N, N);
-
-abs_rho_diag = zeros(U_num, N);
+purity_fin = zeros(U_num, 1);
 
 for U_id = 1:U_num
     
@@ -36,26 +34,20 @@ for U_id = 1:U_num
         omega, ...
         seed);
     
-    fn = sprintf('%s/%s/rho_diag.txt', data_path, local_path);
-    abs_rho_diag_curr = importdata(fn);
+    fn = sprintf('%s/%s/purity_final.txt', data_path, local_path);
+    purity_fin_curr = importdata(fn);
     
-    abs_rho_diag(U_id, :) = abs_rho_diag_curr / max(abs_rho_diag_curr);
+    purity_fin(U_id) = purity_fin_curr(1);
     
 end
 
 fig = figure;
 propertyeditor(fig);
 
-hLine = imagesc(Us, Ns, abs_rho_diag');
+hLine = plot(Us, purity_fin, 'LineWidth', 2);
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$n$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, '\rho_{n,n}', 'FontSize', 33);
-set(gca,'YDir','normal');
-ylim([Ns(1) - 0.5 Ns(end) + 0.5]);
+ylabel('$P(t_{f})$', 'Interpreter', 'latex');
 hold all;
 
