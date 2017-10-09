@@ -24,7 +24,7 @@ double const pi = 3.141592653589793238463643;
 int Nstep = 1000;
 
 double gamma = 0.1, J = 1.0, U = 0.0, E0 = 1.0, w = 1, A0 = 3.4, phi = 0;
-double h = 2 * pi / w / Nstep, h1, t_tr = 2000 * 2 * pi / w, t_fin = 2000 * 2 * pi / w + t_tr;
+double h = 2 * pi / w / Nstep, h1, t_tr = 2000 * 2 * pi / w, t_fin = 10000 * 2 * pi / w + t_tr;
 double t = 0;
 
 inline void fun(double[n], double[n]);
@@ -65,7 +65,7 @@ int main()
 	tstart = time(NULL);
 	t0 = clock();
 
-	for (U = 0.04; U <= 4.000001; U += 0.04)
+	for (U = 0.01; U <= 3.000001; U += 0.01)
 	{
 		U_real = U / 4.0;
 
