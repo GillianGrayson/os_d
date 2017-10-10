@@ -1,7 +1,7 @@
 clear all;
 
 drt = 1;
-N = 51;
+N = 101;
 E = -1;
 J = -1;
 
@@ -17,7 +17,7 @@ seed = 1;
 data_path = '../../../data/cluster/unn';
 
 Us = zeros(U_num, 1);
-purity_avg = zeros(U_num, 1);
+neg_avg = zeros(U_num, 1);
 
 for U_id = 1:U_num
     
@@ -34,20 +34,20 @@ for U_id = 1:U_num
         omega, ...
         seed);
     
-    fn = sprintf('%s/%s/purity_avg.txt', data_path, local_path);
-    purity_avg_curr = importdata(fn);
+    fn = sprintf('%s/%s/negativity_avg.txt', data_path, local_path);
+    neg_avg_curr = importdata(fn);
     
-    purity_avg(U_id) = purity_avg_curr(1);
+    neg_avg(U_id) = neg_avg_curr(1);
     
 end
 
 fig = figure;
 propertyeditor(fig);
 
-hLine = plot(Us, purity_avg, 'LineWidth', 2);
+hLine = plot(Us, neg_avg, 'LineWidth', 2);
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$\bar P$', 'Interpreter', 'latex');
+ylabel('$\bar N$', 'Interpreter', 'latex');
 hold all;
 
