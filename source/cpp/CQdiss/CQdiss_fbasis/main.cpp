@@ -355,10 +355,15 @@ int main(int argc, char ** argv)
 		toOneBase(*(model->Gs));
 		toOneBase(*(model->QEs));
 
+		dcomplex diff_it;
+
 		for (int itr = 0; itr < model->conf.N_T; itr++)
 		{
 			calcODE_real(model, model->conf.h,
 				model->conf.NSTEP, itr * model->conf.T);
+
+			diff_it = calcDiffIter(model);
+			printf("diff on %d is %0.16le %0.16le \n", itr, diff_it.re, diff_it.im);
 		}
 
 		toZeroBase(*(model->Gs));
@@ -371,10 +376,9 @@ int main(int argc, char ** argv)
 		time = omp_get_wtime() - time;
 
 		printf("calcODE: %2.4lf\n", time);
-		fflush(stdout);
-
-		
+		fflush(stdout);	
 	}
+
 	fprintf(memlog, "calcODE_real; %lf\n", number_of_allocs);
 	number_of_allocs = 0;
 
@@ -389,12 +393,14 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 
+	saveMatrix("rho.txt", model->Rho);
+	save_mtx_diag("rho_diag.txt", model->Rho);
+
 	all_time = omp_get_wtime() - all_time;
 
 	printf("all time: %2.4lf\n", all_time);
 	dcomplex tr = trace(*(model->Rho));
 	printf("Trace: %lf\n", tr.re);
-	saveMatrix("rho.txt", model->Rho);
 
 	//fprintf(mem_time, "calcTraseRO2(model); \n");
 	time = omp_get_wtime();
@@ -404,61 +410,80 @@ int main(int argc, char ** argv)
 	fprintf(memlog, "calcTraseRO2(model); %lf\n", number_of_allocs);
 	fflush(memlog);
 	number_of_allocs = 0;
+	calc_negativity_final(model);
 
 	if (model->conf.hasDriving == 1)
 	{
-		//  ================== Last period ===================== 
-
-		int num_dumps = 100;
-		int dump_iter_step = model->conf.NSTEP / num_dumps;
-
-		double * mult_purity = new double[num_dumps];
-
-		// regulat dumps
-		for (int dump_id = 0; dump_id < num_dumps; dump_id++)
+		if (model->conf.avg_purity == 1)
 		{
-			complex_to_real(model->Gs->Value, model->Gs->NZ);
-			complex_to_real(model->QEs->Value, model->QEs->NZ);
-			complex_to_real(model->Ks, model->N_mat);
-			complex_to_real(model->RhoF, model->N_mat);
-			toOneBase(*(model->Gs));
-			toOneBase(*(model->QEs));
+			//  ================== Last period ===================== 
 
-			double time = model->conf.T * double(model->conf.N_T - 1) + double(dump_id * dump_iter_step) * model->conf.h;
+			int num_dumps = 100;
+			int dump_iter_step = model->conf.NSTEP / num_dumps;
 
-			calcODE_real(model, model->conf.h, dump_iter_step, time);
+			double * mult_purity = new double[num_dumps];
+			double * mult_negativity = new double[num_dumps];
 
-			toZeroBase(*(model->Gs));
-			toZeroBase(*(model->QEs));
-			real_to_complex(model->Gs->Value, model->Gs->NZ);
-			real_to_complex(model->QEs->Value, model->QEs->NZ);
-			real_to_complex(model->Ks, model->N_mat);
-			real_to_complex(model->RhoF, model->N_mat);
+			// regular dumps
+			for (int dump_id = 0; dump_id < num_dumps; dump_id++)
+			{
+				complex_to_real(model->Gs->Value, model->Gs->NZ);
+				complex_to_real(model->QEs->Value, model->QEs->NZ);
+				complex_to_real(model->Ks, model->N_mat);
+				complex_to_real(model->RhoF, model->N_mat);
+				toOneBase(*(model->Gs));
+				toOneBase(*(model->QEs));
 
-			calcRho_fill(model);
+				double int_time = model->conf.T * double(model->conf.N_T) + double(dump_id * dump_iter_step) * model->conf.h;
+				
+				printf("int_time: %0.16le\n", int_time);
 
-			double curr_trace = calc_purity(model);
-			mult_purity[dump_id] = curr_trace;
+				calcODE_real(model, model->conf.h, dump_iter_step, int_time);
+
+				toZeroBase(*(model->Gs));
+				toZeroBase(*(model->QEs));
+				real_to_complex(model->Gs->Value, model->Gs->NZ);
+				real_to_complex(model->QEs->Value, model->QEs->NZ);
+				real_to_complex(model->Ks, model->N_mat);
+				real_to_complex(model->RhoF, model->N_mat);
+
+				calcRho_fill(model);
+
+				double curr_trace = calc_purity(model);
+				double curr_neg = calc_negativity(model);
+
+				mult_purity[dump_id] = curr_trace;
+				mult_negativity[dump_id] = curr_neg;
+			}
+
+			double avg_purity = 0.0;
+			double avg_negativity = 0.0;
+			for (int dump_id = 0; dump_id < num_dumps; dump_id++)
+			{
+				avg_purity += mult_purity[dump_id];
+				avg_negativity += mult_negativity[dump_id];
+			}
+			avg_purity = avg_purity / double(num_dumps);
+			avg_negativity = avg_negativity / double(num_dumps);
+
+			FILE * f = fopen("purity_avg.txt", "w");
+			if (f != NULL)
+			{
+				fprintf(f, "%0.16le\n", avg_purity);
+			}
+			fclose(f);
+
+			f = fopen("negativity_avg.txt", "w");
+			if (f != NULL)
+			{
+				fprintf(f, "%0.16le\n", avg_negativity);
+			}
+			fclose(f);
+
+			delete[] mult_purity;
+			delete[] mult_negativity;
 		}
-
-		double avg_purity = 0.0;
-
-		for (int dump_id = 0; dump_id < num_dumps; dump_id++)
-		{
-			avg_purity += mult_purity[dump_id];
-		}
-		avg_purity = avg_purity / double(num_dumps);
-
-		FILE * f = fopen("purity_avg.txt", "w");
-		if (f != NULL)
-		{
-			fprintf(f, "%0.16le\n", avg_purity);
-		}
-		fclose(f);
-
-		delete mult_purity;
 	}
-
 	
 	//fprintf(mem_time, "other \n");
 	if (model->conf.CalcEig == 1)
@@ -469,12 +494,47 @@ int main(int argc, char ** argv)
 		printf("calcEig: %2.4lf\n", time);
 	}
 
-
 	//saveVectorVal("RhoF.txt", model->RhoF, 1, model->N_mat);
-	save_mtx_diag("rho_diag.txt", model->Rho);
 	//saveMatrixVal("rho_f.txt", model->Rho);
 	//saveAbsMatrixVal("absRho.txt", model->Rho);
 	//saveAngleMatrixVal("angleRho.txt", model->Rho);
+
+	if (model->conf.hasDriving == 1)
+	{
+		if (model->conf.multiplicators == 1)
+		{
+			int space_size = model->N_mat;
+			int num_mults = model->N_mat;
+
+			dcomplex * monodromy_mtx = new dcomplex[num_mults * space_size];
+
+			for (int mult_id = 0; mult_id < num_mults; mult_id++)
+			{
+
+				init_multiplicator(model, mult_id);
+
+				complex_to_real(model->Gs->Value, model->Gs->NZ);
+				complex_to_real(model->QEs->Value, model->QEs->NZ);
+				complex_to_real(model->Ks, model->N_mat);
+				complex_to_real(model->RhoF, model->N_mat);
+				toOneBase(*(model->Gs));
+				toOneBase(*(model->QEs));
+
+				calcODE_real(model, model->conf.h, model->conf.NSTEP, 0);
+
+				toZeroBase(*(model->Gs));
+				toZeroBase(*(model->QEs));
+				real_to_complex(model->Gs->Value, model->Gs->NZ);
+				real_to_complex(model->QEs->Value, model->QEs->NZ);
+				real_to_complex(model->Ks, model->N_mat);
+				real_to_complex(model->RhoF, model->N_mat);
+
+				set_monodromy_state(model, mult_id, monodromy_mtx);
+			}
+
+			delete[] monodromy_mtx;
+		}
+	}
 
 	freeModel(model);
 	isEnd = true;

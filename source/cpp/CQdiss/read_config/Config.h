@@ -19,6 +19,8 @@ struct ConfigParam
 	double h;
 	int hasDriving;
 	int driving_type;
+	int avg_purity;
+	int multiplicators;
 	int NSTEP;
 	int N_T;
 	int CalcEig;
@@ -33,7 +35,9 @@ struct ConfigParam
 		int _NSTEP = 1000,
 		int _N_T = 100,
 		int _hasDriving = 0,
-		int _driving_type = 1,
+		int _driving_type = 0,
+		int _avg_purity = 0,
+		int _multiplicators = 0,
 		int _CalcEig = 1
 		)
 	{
@@ -49,6 +53,8 @@ struct ConfigParam
 		h = T / NSTEP;
 		hasDriving = _hasDriving;
 		driving_type = _driving_type;
+		avg_purity = _avg_purity;
+		multiplicators = _multiplicators;
 		N_T = _N_T;
 		CalcEig = _CalcEig;
 	}

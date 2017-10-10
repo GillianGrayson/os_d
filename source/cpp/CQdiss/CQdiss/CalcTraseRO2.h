@@ -4,7 +4,9 @@
 #include "Model.h"
 
 void calcTraseRO2(Model *m);
+void calc_negativity_final(Model *m);
 
 double calc_purity(Model *m);
+double calc_negativity(Model *m);
 
 #endif

@@ -1,12 +1,14 @@
-N, 100 
+N, 50 
 J, -1 
 E0, -1 
-U, 2.0 
+U, 0.55 
 g, 0.1 
 CalcEig, 0 
 hasDriving, 1
 driving_type, 1
+avg_purity, 1
+multiplicators, 0
 A0, -3.4 
 w, 1
 N_T, 21
-NSTEP, 20000
+NSTEP, 10000

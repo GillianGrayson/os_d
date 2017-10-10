@@ -56,6 +56,14 @@ void set_param(ConfigParam &param,char *s, double value)
   {
 	  param.driving_type = (int)value;
   }
+  if (strcmp(s, "avg_purity,") == 0)
+  {
+	  param.avg_purity = (int)value;
+  }
+  if (strcmp(s, "multiplicators,") == 0)
+  {
+	  param.multiplicators = (int)value;
+  }
   if(strcmp(s, "CalcEig,") == 0)
   {
     param.CalcEig = (int) value;
