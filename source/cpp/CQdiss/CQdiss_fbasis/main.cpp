@@ -1,4 +1,5 @@
 #include <omp.h>
+#include <mkl.h>
 
 #include "read_config.h"
 #include "Model.h"
@@ -499,6 +500,8 @@ int main(int argc, char ** argv)
 	//saveAbsMatrixVal("absRho.txt", model->Rho);
 	//saveAngleMatrixVal("angleRho.txt", model->Rho);
 
+	printf("\n", time);
+
 	if (model->conf.hasDriving == 1)
 	{
 		if (model->conf.multiplicators == 1)
@@ -510,6 +513,7 @@ int main(int argc, char ** argv)
 
 			for (int mult_id = 0; mult_id < num_mults; mult_id++)
 			{
+				printf("mult_id: %d\n", mult_id);
 
 				init_multiplicator(model, mult_id);
 
@@ -531,6 +535,28 @@ int main(int argc, char ** argv)
 
 				set_monodromy_state(model, mult_id, monodromy_mtx);
 			}
+
+			dcomplex * mults = new dcomplex[num_mults];
+
+			int info;
+			info = LAPACKE_zgeev(LAPACK_ROW_MAJOR, 'N', 'N', num_mults, (MKL_Complex16 *)monodromy_mtx, num_mults,
+				(MKL_Complex16 *)mults, NULL, num_mults, NULL, num_mults);
+			/* Check for convergence */
+			if (info > 0) {
+				printf("The algorithm failed to compute eigenvalues.\n");
+				exit(1);
+			}
+
+			FILE * file = fopen("multiplicators.txt", "w");
+
+			for (int mult_id = 0; mult_id < num_mults; mult_id++)
+			{
+				fprintf(file, "%1.16lf %1.16lf\n", mults[mult_id].re, mults[mult_id].im);
+			}
+
+			fclose(file);
+
+			delete[] mults;
 
 			delete[] monodromy_mtx;
 		}
