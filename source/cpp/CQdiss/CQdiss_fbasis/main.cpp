@@ -500,7 +500,7 @@ int main(int argc, char ** argv)
 	//saveAbsMatrixVal("absRho.txt", model->Rho);
 	//saveAngleMatrixVal("angleRho.txt", model->Rho);
 
-	printf("\n", time);
+	printf("\n");
 
 	if (model->conf.hasDriving == 1)
 	{

@@ -1,12 +1,12 @@
-N, 20 
+N, 10 
 J, -1 
 E0, -1 
-U, 0.65 
+U, 0.005 
 g, 0.1 
 CalcEig, 0 
 hasDriving, 1
-driving_type, 1
-avg_purity, 1
+driving_type, 0
+avg_purity, 0
 multiplicators, 1
 A0, -1.5 
 w, 1
