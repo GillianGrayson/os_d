@@ -8,11 +8,11 @@ $root = "/home/yusipov_i/Work/os_d";
 
 $PI = 3.14159265358979323846;
 
-for($curr_U = 0.03; $curr_U <= 3.00000001; $curr_U += 0.03)
+for($curr_U = 0.005; $curr_U <= 0.75000001; $curr_U += 0.005)
 {
 	print "curr_U=$curr_U\n";
 	
-	$N = 200;
+	$N = 100;
 	$J = -1.0; 
 	$E0 = -1.0; 
 	$U = $curr_U;
@@ -20,10 +20,12 @@ for($curr_U = 0.03; $curr_U <= 3.00000001; $curr_U += 0.03)
 	$CalcEig = 0; 
 	$hasDriving = 1;
 	$driving_type = 1;
+	$avg_purity = 1;
+	$multiplicators = 0;
 	$A0 = -3.4; 
 	$w = 1;
 	$N_T = 21;
-	$NSTEP = 20000;
+	$NSTEP = 10000;
 	
 	$seed_begin = 1;
 	$seed_end = 2;
@@ -75,6 +77,8 @@ for($curr_U = 0.03; $curr_U <= 3.00000001; $curr_U += 0.03)
 		print WF "CalcEig, $CalcEig \n";
 		print WF "hasDriving, $hasDriving\n";
 		print WF "driving_type, $driving_type\n";
+		print WF "avg_purity, $avg_purity\n";
+		print WF "multiplicators, $multiplicators\n";
 		print WF "A0, $A0 \n";
 		print WF "w, $w\n";
 		print WF "N_T, $N_T\n";
