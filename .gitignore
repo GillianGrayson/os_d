@@ -1,5 +1,7 @@
 *.sh.*
 
+source/cpp/CQdiss/bin/*
+
 *.log
 *.tlog
 *.pdb
@@ -88,3 +90,5 @@ source/cpp/QJ/QJ/*.txt
 *.user
 
 
+
+source/cpp/CQdiss/bin/
