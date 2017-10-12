@@ -79,11 +79,11 @@ void calcODE_real(Model *m, double h, int cntItr, double t)
 	int N_mat = m->N_mat;
 	double * RhoF = (double *)(m->RhoF);
 
-	for (i = 0; i < N_mat; i++)
-	{
-		m->prevRhoF[i].re = m->RhoF[i].re;
-		m->prevRhoF[i].im = m->RhoF[i].im;
-	}
+	//for (i = 0; i < N_mat; i++)
+	//{
+	//	m->prevRhoF[i].re = m->RhoF[i].re;
+	//	m->prevRhoF[i].im = m->RhoF[i].im;
+	//}
 
 	double * k1 = new double[N_mat];
 	double * k2 = new double[N_mat];

@@ -1,6 +1,6 @@
 clear all;
 
-N = 101;
+N = 21;
 
 data_path = '../../../source/cpp/CQdiss/CQdiss_fbasis';
 

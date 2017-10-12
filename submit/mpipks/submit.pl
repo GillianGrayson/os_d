@@ -9,11 +9,11 @@ $input_path = "qj_input";
 
 $PI = 3.1415926535897932384626433832795;
 
-for($curr_U = 0.01; $curr_U <= 1.0000001; $curr_U += 0.01)
+for($curr_U = 0.01; $curr_U <= 0.7500001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
-	$task = 3;
+	$task = 4;
 	
 	$E = 1;
 	$T = 2 * $PI;
@@ -60,7 +60,7 @@ for($curr_U = 0.01; $curr_U <= 1.0000001; $curr_U += 0.01)
 	$mc_type = 1;
 	$num_att_trajectories = 0;
 	$var_eps = 0.001;
-	$delta_lim = 0.1;
+	$delta_lim = 0.01;
 
 	for($seed = 0; $seed < 1; $seed+=1)
 	{

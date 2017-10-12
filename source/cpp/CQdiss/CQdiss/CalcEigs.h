@@ -5,4 +5,6 @@
 
 void calcEig(Model *m);
 
+void check_rho_evals(Model * m);
+
 #endif

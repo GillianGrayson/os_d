@@ -10,16 +10,16 @@ data_path = sprintf('%s%s', data_path, prefix);
 task = 3;
 delta = 0.1;
 tt = 1000;
-E = 0.0;
+E = 1.0;
 T = 2*pi;
-A = 0.0;
+A = 1.5;
 N = 400;
 
 U_begin = 0.01;
 U_step = 0.01;
-U_num = 100
+U_num = 75
 
-J = -1.0;
+J = 1.0;
 g = 0.1;
 
 num_seeds = 100;

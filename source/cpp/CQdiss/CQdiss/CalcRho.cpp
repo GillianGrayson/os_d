@@ -86,8 +86,6 @@ void calcRho_fill(Model *m)
 		k++;
 	}
 
-
-
 	if (m->Rho != NULL) delete m->Rho;
 	m->Rho = mRho;
 }

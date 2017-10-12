@@ -281,7 +281,6 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 	
-	
 	//fprintf(mem_time, "calcQEs(model); \n");
 	time = omp_get_wtime();
 	calcQEs(model);
@@ -363,8 +362,8 @@ int main(int argc, char ** argv)
 			calcODE_real(model, model->conf.h,
 				model->conf.NSTEP, itr * model->conf.T);
 
-			diff_it = calcDiffIter(model);
-			printf("diff on %d is %0.16le %0.16le \n", itr, diff_it.re, diff_it.im);
+			/*diff_it = calcDiffIter(model);
+			printf("diff on %d is %0.16le %0.16le \n", itr, diff_it.re, diff_it.im);*/
 		}
 
 		toZeroBase(*(model->Gs));
@@ -388,6 +387,7 @@ int main(int argc, char ** argv)
 	//fprintf(mem_time, "calcRho_fill(model); \n");
 	time = omp_get_wtime();
 	calcRho_fill(model);
+	check_rho_evals(model);
 	time = omp_get_wtime() - time;
 	printf("calcRho: %2.4lf\n", time);
 	fprintf(memlog, "calcRho(model); %lf\n", number_of_allocs);
@@ -449,6 +449,7 @@ int main(int argc, char ** argv)
 				real_to_complex(model->RhoF, model->N_mat);
 
 				calcRho_fill(model);
+				//check_rho_evals(model);
 
 				double curr_trace = calc_purity(model);
 				double curr_neg = calc_negativity(model);
@@ -510,12 +511,31 @@ int main(int argc, char ** argv)
 			int num_mults = model->N_mat;
 
 			dcomplex * monodromy_mtx = new dcomplex[num_mults * space_size];
+			for (int st_id_1 = 0; st_id_1 < space_size; st_id_1++)
+			{
+				for (int st_id_2 = 0; st_id_2 < space_size; st_id_2++)
+				{
+					monodromy_mtx[st_id_1 * num_mults + st_id_2].re = 0.0;
+					monodromy_mtx[st_id_1 * num_mults + st_id_2].im = 0.0;
+				}
+			}
 
 			for (int mult_id = 0; mult_id < num_mults; mult_id++)
 			{
 				printf("mult_id: %d\n", mult_id);
 
 				init_multiplicator(model, mult_id);
+				//calcRho_fill(model);
+				//check_rho_evals(model);
+
+				if (mult_id == -1)
+				{
+					saveMatrix("rho.txt", model->Rho);
+				}
+
+				char file_name[256];
+				//sprintf(file_name, "vec_%d_init.txt", mult_id);
+				//save_dense_vector(file_name, model->RhoF, model->N_mat);
 
 				complex_to_real(model->Gs->Value, model->Gs->NZ);
 				complex_to_real(model->QEs->Value, model->QEs->NZ);
@@ -524,7 +544,7 @@ int main(int argc, char ** argv)
 				toOneBase(*(model->Gs));
 				toOneBase(*(model->QEs));
 
-				calcODE_real(model, model->conf.h, model->conf.NSTEP, 0);
+				calcODE_real(model, model->conf.h, model->conf.NSTEP, 0.0);
 
 				toZeroBase(*(model->Gs));
 				toZeroBase(*(model->QEs));
@@ -533,7 +553,18 @@ int main(int argc, char ** argv)
 				real_to_complex(model->Ks, model->N_mat);
 				real_to_complex(model->RhoF, model->N_mat);
 
+				//sprintf(file_name, "vec_%d_fin.txt", mult_id);
+				//save_dense_vector(file_name, model->RhoF, model->N_mat);
+
 				set_monodromy_state(model, mult_id, monodromy_mtx);
+
+				//calcRho_fill(model);
+				//check_rho_evals(model);
+
+				if (mult_id == -1)
+				{
+					saveMatrix("rho.txt", model->Rho);
+				}
 			}
 
 			dcomplex * mults = new dcomplex[num_mults];
@@ -551,7 +582,7 @@ int main(int argc, char ** argv)
 
 			for (int mult_id = 0; mult_id < num_mults; mult_id++)
 			{
-				fprintf(file, "%1.16lf %1.16lf\n", mults[mult_id].re, mults[mult_id].im);
+				fprintf(file, "%1.16le %1.16le\n", mults[mult_id].re, mults[mult_id].im);
 			}
 
 			fclose(file);
