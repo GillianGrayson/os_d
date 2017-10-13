@@ -1,6 +1,6 @@
 clear all;
 
-N = 20;
+N = 5;
 NS = (N+1) * (N+1) - 1;
 
 data_path = '../../../source/cpp/CQdiss/CQdiss_fbasis';

@@ -40,6 +40,7 @@ void save_mtx_diag(char* file, crsMatrix *A);
 
 void AbsMatrixDiagVal(crsMatrix *A, double * diag);
 void saveVectorVal(char* file, dcomplex *vec, int N, int M);
+void save_complex_vector(char* file, dcomplex *vec, int N);
 void saveMatrix(char* file, crsMatrix *A);
 
 void save_dense_vector(char* file, dcomplex * vec, int size);

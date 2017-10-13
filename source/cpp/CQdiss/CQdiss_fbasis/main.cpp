@@ -1,5 +1,6 @@
 #include <omp.h>
 #include <mkl.h>
+#include <math.h>
 
 #include "read_config.h"
 #include "Model.h"
@@ -322,6 +323,9 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 
+	saveMatrix("Gs.txt", model->Gs);
+	save_complex_vector("Ks.txt", model->Ks, model->N_mat);
+
 	//  saveMatrix_coor("Gs_p.txt", model->Gs);
 	//  printMatrixVal(model->Gs);
 	//  printVectorVal(model->Ks, model->N_mat);
@@ -343,6 +347,9 @@ int main(int argc, char ** argv)
 	{
 		time = omp_get_wtime();
 		initRhoODE(model);
+
+		//save_complex_vector("rho_f_init.txt", model->RhoF, model->N_mat);
+
 		time = omp_get_wtime() - time;
 		printf("initRhoODE: %2.4lf\n", time);
 
@@ -372,6 +379,8 @@ int main(int argc, char ** argv)
 		real_to_complex(model->QEs->Value, model->QEs->NZ);
 		real_to_complex(model->Ks, model->N_mat);
 		real_to_complex(model->RhoF, model->N_mat);
+
+		//save_complex_vector("rho_f_fin.txt", model->RhoF, model->N_mat);
 
 		time = omp_get_wtime() - time;
 
@@ -412,6 +421,14 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 	calc_negativity_final(model);
+
+	if (model->conf.CalcEig == 1)
+	{
+		time = omp_get_wtime();
+		calcEig(model);
+		time = omp_get_wtime() - time;
+		printf("calcEig: %2.4lf\n", time);
+	}
 
 	if (model->conf.hasDriving == 1)
 	{
@@ -488,13 +505,6 @@ int main(int argc, char ** argv)
 	}
 	
 	//fprintf(mem_time, "other \n");
-	if (model->conf.CalcEig == 1)
-	{
-		time = omp_get_wtime();
-		calcEig(model);
-		time = omp_get_wtime() - time;
-		printf("calcEig: %2.4lf\n", time);
-	}
 
 	//saveVectorVal("RhoF.txt", model->RhoF, 1, model->N_mat);
 	//saveMatrixVal("rho_f.txt", model->Rho);
@@ -511,31 +521,38 @@ int main(int argc, char ** argv)
 			int num_mults = model->N_mat;
 
 			dcomplex * monodromy_mtx = new dcomplex[num_mults * space_size];
-			for (int st_id_1 = 0; st_id_1 < space_size; st_id_1++)
+			dcomplex * mults = new dcomplex[num_mults];
+			for (int st_id_1 = 0; st_id_1 < num_mults; st_id_1++)
 			{
 				for (int st_id_2 = 0; st_id_2 < space_size; st_id_2++)
 				{
 					monodromy_mtx[st_id_1 * num_mults + st_id_2].re = 0.0;
 					monodromy_mtx[st_id_1 * num_mults + st_id_2].im = 0.0;
 				}
+
+				mults[st_id_1].re = 0.0;
+				mults[st_id_1].im = 0.0;
 			}
+
 
 			for (int mult_id = 0; mult_id < num_mults; mult_id++)
 			{
 				printf("mult_id: %d\n", mult_id);
 
 				init_multiplicator(model, mult_id);
-				//calcRho_fill(model);
-				//check_rho_evals(model);
+				calcRho_fill(model);
+				check_rho_evals(model);
+
+				char file_name[256];
+
+				//sprintf(file_name, "vec_%d_init.txt", mult_id);
+				//save_complex_vector(file_name, model->RhoF, model->N_mat);
 
 				if (mult_id == -1)
 				{
-					saveMatrix("rho.txt", model->Rho);
+					sprintf(file_name, "rho_%d_init.txt", mult_id);
+					saveMatrix(file_name, model->Rho);
 				}
-
-				char file_name[256];
-				//sprintf(file_name, "vec_%d_init.txt", mult_id);
-				//save_dense_vector(file_name, model->RhoF, model->N_mat);
 
 				complex_to_real(model->Gs->Value, model->Gs->NZ);
 				complex_to_real(model->QEs->Value, model->QEs->NZ);
@@ -554,20 +571,19 @@ int main(int argc, char ** argv)
 				real_to_complex(model->RhoF, model->N_mat);
 
 				//sprintf(file_name, "vec_%d_fin.txt", mult_id);
-				//save_dense_vector(file_name, model->RhoF, model->N_mat);
+				//save_complex_vector(file_name, model->RhoF, model->N_mat);
 
 				set_monodromy_state(model, mult_id, monodromy_mtx);
 
-				//calcRho_fill(model);
-				//check_rho_evals(model);
+				calcRho_fill(model);
+				check_rho_evals(model);
 
 				if (mult_id == -1)
 				{
-					saveMatrix("rho.txt", model->Rho);
+					sprintf(file_name, "rho_%d_fin.txt", mult_id);
+					saveMatrix(file_name, model->Rho);
 				}
 			}
-
-			dcomplex * mults = new dcomplex[num_mults];
 
 			int info;
 			info = LAPACKE_zgeev(LAPACK_ROW_MAJOR, 'N', 'N', num_mults, (MKL_Complex16 *)monodromy_mtx, num_mults,

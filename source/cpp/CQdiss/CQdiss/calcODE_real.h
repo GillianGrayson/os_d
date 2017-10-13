@@ -6,5 +6,6 @@
 void complex_to_real(dcomplex *mat, int N);
 void real_to_complex(dcomplex *mat, int N);
 void calcODE_real(Model *m, double h, int cntItr, double t = 0.0);
+void calcODE_mult(Model *m, double h, int cntItr, double t);
 
 #endif

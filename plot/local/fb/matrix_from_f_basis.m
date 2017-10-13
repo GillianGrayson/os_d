@@ -11,15 +11,17 @@ d_size = size(rho_data, 1);
 
 states = linspace(1, N, N);
 
-curr_rho = zeros(N, N);
+mtx = zeros(N + 1, N + 1);
 for d_id = 1:d_size
     curr_row = rho_data(d_id, 1);
     curr_col = rho_data(d_id, 2);
-    curr_rho(curr_row, curr_col) = rho_data(d_id, 3) + sqrt(-1) * rho_data(d_id, 4);
+    mtx(curr_row, curr_col) = rho_data(d_id, 3) + sqrt(-1) * rho_data(d_id, 4);
 end
 
+mtx = mtx - eye(N + 1) / (N+1);
+
 fig = figure;
-hLine = imagesc(states, states, curr_rho);
+hLine = imagesc(states, states, mtx);
 set(gca, 'FontSize', 30);
 xlabel('$n$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
@@ -30,8 +32,7 @@ set(gca, 'FontSize', 30);
 title(h, '$|\rho_{n,m}|$', 'Interpreter', 'latex');
 set(gca,'YDir','normal');
 
-rho_2 = curr_rho * curr_rho;
-tr = trace(rho_2)
+tr = trace(mtx)
 
 propertyeditor('on')
 

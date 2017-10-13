@@ -109,7 +109,6 @@ void check_rho_evals(Model * m)
 		exit(1);
 	}
 
-	FILE * file = fopen("eigs.txt", "w");
 
 	double sum = 0.0;
 	double eps_imag = 1.0e-14;
@@ -142,8 +141,6 @@ void check_rho_evals(Model * m)
 	{
 		printf("Evals is ok. Diff: %0.16le \n", sum - 1.0);
 	}
-
-	fclose(file);
 
 	delete[] rho_dense;
 	delete[] evals;

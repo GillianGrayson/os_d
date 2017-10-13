@@ -409,6 +409,20 @@ void saveAngleMatrixVal(char* file, crsMatrix *A)
 	fclose(f);
 }
 
+void save_complex_vector(char* file, dcomplex *vec, int N)
+{
+	FILE *f;
+	f = fopen(file, "w");
+	if (f == NULL) return;
+
+	for (int i = 0; i < N; i++)
+	{
+		fprintf(f, "%0.16le %0.16le\n", vec[i].re, vec[i].im);
+	}
+	
+	fclose(f);
+}
+
 void saveVectorVal(char* file, dcomplex *vec, int N, int M)
 {
 	FILE *f;
@@ -418,7 +432,7 @@ void saveVectorVal(char* file, dcomplex *vec, int N, int M)
 	{
 		for (int j = 0; j < M; j++)
 		{
-			fprintf(f, "%.10lf ", vec[i * M + j].re);
+			fprintf(f, "%0.16le ", vec[i * M + j].re);
 		}
 		fprintf(f, "\n");
 	}
@@ -427,7 +441,7 @@ void saveVectorVal(char* file, dcomplex *vec, int N, int M)
 	{
 		for (int j = 0; j < M; j++)
 		{
-			fprintf(f, "%.10le ", vec[i * M + j].im);
+			fprintf(f, "%.16le ", vec[i * M + j].im);
 		}
 		fprintf(f, "\n");
 	}
