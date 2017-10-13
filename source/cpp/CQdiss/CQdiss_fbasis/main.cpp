@@ -454,7 +454,7 @@ int main(int argc, char ** argv)
 
 				double int_time = model->conf.T * double(model->conf.N_T) + double(dump_id * dump_iter_step) * model->conf.h;
 				
-				printf("int_time: %0.16le\n", int_time);
+				//printf("int_time: %0.16le\n", int_time);
 
 				calcODE_real(model, model->conf.h, dump_iter_step, int_time);
 

@@ -6,7 +6,7 @@ g, 0.1
 CalcEig, 1 
 hasDriving, 1
 driving_type, 0
-avg_purity, 0
+avg_purity, 1
 multiplicators, 1
 A0, 0.0 
 w, 1
