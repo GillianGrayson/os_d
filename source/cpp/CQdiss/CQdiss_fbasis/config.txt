@@ -1,4 +1,4 @@
-N, 10
+N, 5
 J, -1 
 E0, -1 
 U, 0.01 
@@ -7,7 +7,7 @@ CalcEig, 1
 hasDriving, 1
 driving_type, 0
 avg_purity, 0
-multiplicators, 0
+multiplicators, 1
 A0, 0.0 
 w, 1
 N_T, 11

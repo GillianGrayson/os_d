@@ -323,8 +323,8 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 
-	saveMatrix("Gs.txt", model->Gs);
-	save_complex_vector("Ks.txt", model->Ks, model->N_mat);
+	//saveMatrix("Gs.txt", model->Gs);
+	//save_complex_vector("Ks.txt", model->Ks, model->N_mat);
 
 	//  saveMatrix_coor("Gs_p.txt", model->Gs);
 	//  printMatrixVal(model->Gs);
@@ -519,40 +519,83 @@ int main(int argc, char ** argv)
 		{
 			int space_size = model->N_mat;
 			int num_mults = model->N_mat;
+			int full_size = model->N_mat + 1;
 
-			dcomplex * monodromy_mtx = new dcomplex[num_mults * space_size];
-			dcomplex * mults = new dcomplex[num_mults];
-			for (int st_id_1 = 0; st_id_1 < num_mults; st_id_1++)
+			dcomplex * monodromy_mtx = new dcomplex[full_size * full_size];
+			for (int st_id_1 = 0; st_id_1 < full_size; st_id_1++)
 			{
-				for (int st_id_2 = 0; st_id_2 < space_size; st_id_2++)
+				for (int st_id_2 = 0; st_id_2 < full_size; st_id_2++)
 				{
-					monodromy_mtx[st_id_1 * num_mults + st_id_2].re = 0.0;
-					monodromy_mtx[st_id_1 * num_mults + st_id_2].im = 0.0;
+					monodromy_mtx[st_id_1 * full_size + st_id_2].re = 0.0;
+					monodromy_mtx[st_id_1 * full_size + st_id_2].im = 0.0;
 				}
+			}
+			monodromy_mtx[0].re = 1.0;
 
-				mults[st_id_1].re = 0.0;
-				mults[st_id_1].im = 0.0;
+			dcomplex * mults = new dcomplex[full_size];
+			for (int mult_id = 0; mult_id < full_size; mult_id++)
+			{
+				mults[mult_id].re = 0.0;
+				mults[mult_id].im = 0.0;
 			}
 
+			char file_name[256];
+
+			// ======================
+			// Init multiplicator
+			// ======================
+
+			printf("first_multiplicator\n");
+
+			init_first_multiplicator(model);
+			//calcRho_fill(model);
+			//check_rho_evals(model);
+
+			//sprintf(file_name, "vec_first_init.txt");
+			//save_complex_vector(file_name, model->RhoF, model->N_mat);
+			//sprintf(file_name, "rho_first_init.txt");
+			//saveMatrix(file_name, model->Rho);
+
+			complex_to_real(model->Gs->Value, model->Gs->NZ);
+			complex_to_real(model->QEs->Value, model->QEs->NZ);
+			complex_to_real(model->Ks, model->N_mat);
+			complex_to_real(model->RhoF, model->N_mat);
+			toOneBase(*(model->Gs));
+			toOneBase(*(model->QEs));
+
+			calcODE_real(model, model->conf.h, model->conf.NSTEP, 0.0);
+
+			toZeroBase(*(model->Gs));
+			toZeroBase(*(model->QEs));
+			real_to_complex(model->Gs->Value, model->Gs->NZ);
+			real_to_complex(model->QEs->Value, model->QEs->NZ);
+			real_to_complex(model->Ks, model->N_mat);
+			real_to_complex(model->RhoF, model->N_mat);
+
+			//sprintf(file_name, "vec_%d_fin.txt", mult_id);
+			//save_complex_vector(file_name, model->RhoF, model->N_mat);
+			//calcRho_fill(model);
+			//check_rho_evals(model);
+			//sprintf(file_name, "rho_first_fin.txt");
+			//saveMatrix(file_name, model->Rho);
+
+			set_monodromy_state(model, 0, monodromy_mtx);
 
 			for (int mult_id = 0; mult_id < num_mults; mult_id++)
 			{
 				printf("mult_id: %d\n", mult_id);
 
 				init_multiplicator(model, mult_id);
-				calcRho_fill(model);
-				check_rho_evals(model);
 
-				char file_name[256];
-
+				//calcRho_fill(model);
+				//check_rho_evals(model);
 				//sprintf(file_name, "vec_%d_init.txt", mult_id);
 				//save_complex_vector(file_name, model->RhoF, model->N_mat);
-
-				if (mult_id == -1)
-				{
-					sprintf(file_name, "rho_%d_init.txt", mult_id);
-					saveMatrix(file_name, model->Rho);
-				}
+				//if (mult_id == -1)
+				//{
+				//	sprintf(file_name, "rho_%d_init.txt", mult_id);
+				//	saveMatrix(file_name, model->Rho);
+				//}
 
 				complex_to_real(model->Gs->Value, model->Gs->NZ);
 				complex_to_real(model->QEs->Value, model->QEs->NZ);
@@ -570,24 +613,22 @@ int main(int argc, char ** argv)
 				real_to_complex(model->Ks, model->N_mat);
 				real_to_complex(model->RhoF, model->N_mat);
 
+				set_monodromy_state(model, mult_id + 1, monodromy_mtx);
+
 				//sprintf(file_name, "vec_%d_fin.txt", mult_id);
 				//save_complex_vector(file_name, model->RhoF, model->N_mat);
-
-				set_monodromy_state(model, mult_id, monodromy_mtx);
-
-				calcRho_fill(model);
-				check_rho_evals(model);
-
-				if (mult_id == -1)
-				{
-					sprintf(file_name, "rho_%d_fin.txt", mult_id);
-					saveMatrix(file_name, model->Rho);
-				}
+				//calcRho_fill(model);
+				//check_rho_evals(model);
+				//if (mult_id == -1)
+				//{
+				//	sprintf(file_name, "rho_%d_fin.txt", mult_id);
+				//	saveMatrix(file_name, model->Rho);
+				//}
 			}
 
 			int info;
-			info = LAPACKE_zgeev(LAPACK_ROW_MAJOR, 'N', 'N', num_mults, (MKL_Complex16 *)monodromy_mtx, num_mults,
-				(MKL_Complex16 *)mults, NULL, num_mults, NULL, num_mults);
+			info = LAPACKE_zgeev(LAPACK_ROW_MAJOR, 'N', 'N', full_size, (MKL_Complex16 *)monodromy_mtx, full_size,
+				(MKL_Complex16 *)mults, NULL, full_size, NULL, full_size);
 			/* Check for convergence */
 			if (info > 0) {
 				printf("The algorithm failed to compute eigenvalues.\n");
@@ -596,7 +637,7 @@ int main(int argc, char ** argv)
 
 			FILE * file = fopen("multiplicators.txt", "w");
 
-			for (int mult_id = 0; mult_id < num_mults; mult_id++)
+			for (int mult_id = 0; mult_id < full_size; mult_id++)
 			{
 				fprintf(file, "%1.16le %1.16le\n", mults[mult_id].re, mults[mult_id].im);
 			}
@@ -604,7 +645,6 @@ int main(int argc, char ** argv)
 			fclose(file);
 
 			delete[] mults;
-
 			delete[] monodromy_mtx;
 		}
 	}

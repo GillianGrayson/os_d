@@ -238,13 +238,30 @@ void init_multiplicator(Model *m, int mult_id)
 	RhoF[mult_id].re = 1.0;
 	RhoF[mult_id].im = 0.0;
 
-	//  printVectorVal(RhoF, N_mat);
+	//printVectorVal(RhoF, N_mat);
+}
+
+void init_first_multiplicator(Model *m)
+{
+	int N = m->N;
+	int N_mat = m->N_mat;
+	FMatrixs  * Fs = m->Fs;
+	dcomplex  * RhoF = m->RhoF;
+
+	for (int i = 0; i < N_mat; i++)
+	{
+		RhoF[i].re = 0.0;
+		RhoF[i].im = 0.0;
+	}
+
+	//printVectorVal(RhoF, N_mat);
 }
 
 void set_monodromy_state(Model *m, int mult_id, dcomplex * monodromy_mtx)
 {
 	int N = m->N;
 	int N_mat = m->N_mat;
+	int size = N_mat + 1;
 	FMatrixs  * Fs = m->Fs;
 	dcomplex  * RhoF = m->RhoF;
 
@@ -252,8 +269,8 @@ void set_monodromy_state(Model *m, int mult_id, dcomplex * monodromy_mtx)
 
 	for (int st_id = 0; st_id < N_mat; st_id++)
 	{
-		monodromy_mtx[st_id * num_mults + mult_id].re = RhoF[st_id].re;
-		monodromy_mtx[st_id * num_mults + mult_id].im = RhoF[st_id].im;
+		monodromy_mtx[(st_id + 1) * num_mults + mult_id].re = RhoF[st_id].re;
+		monodromy_mtx[(st_id + 1) * num_mults + mult_id].im = RhoF[st_id].im;
 	}
 }
 
