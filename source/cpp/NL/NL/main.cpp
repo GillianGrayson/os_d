@@ -21,10 +21,10 @@ using namespace std;
 long const N = 1; //number of units
 long const n = 3 * N; // dimension of the system
 double const pi = 3.141592653589793238463643;
-int Nstep = 1000;
+int Nstep = 10;
 
-double gamma = 0.1, J = 1.0, U = 0.0, E0 = 1.0, w = 1, A0 = 3.4, phi = 0;
-double h = 2 * pi / w / Nstep, h1, t_tr = 2000 * 2 * pi / w, t_fin = 10000 * 2 * pi / w + t_tr;
+double gamma = 0.1, J = 1.0, U = 0.0, E0 = 1.0, w = 1, A0 = 1.5, phi = 0;
+double h = 2 * pi / w / Nstep, h1, t_tr = 0 * 2 * pi / w, t_fin = 10000 * 2 * pi / w + t_tr;
 double t = 0;
 
 inline void fun(double[n], double[n]);
@@ -47,8 +47,9 @@ string file_name_suffix(int seed, double U)
 int main()
 {
 	long i, j, k, l;
-	double count = 0, flag, flag1;
+	double flag, flag1;
 	double x[n], dx[n];
+	int count = 0;
 
 	double U_real = 0.50;
 	U = 4.0 * U_real;
@@ -65,13 +66,13 @@ int main()
 	tstart = time(NULL);
 	t0 = clock();
 
-	for (U = 0.01; U <= 3.000001; U += 0.01)
+	for (U = 2.00; U <= 2.000001; U += 0.01)
 	{
 		U_real = U / 4.0;
 
 		printf("U: %0.4le\n", U_real);
 
-		for (int seed = 0; seed < 10; seed++)
+		for (int seed = 0; seed < 1; seed++)
 		{
 			t = 0;
 			count = 0;
@@ -85,7 +86,7 @@ int main()
 				VSLStreamStatePtr stream;
 				vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
 				vslLeapfrogStream(stream, seed, 1000000);
-				vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, stream, n, x, -0.5, 0.5);
+				vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, stream, n, x, -pi, pi);
 
 				for (i = 0; i < n; i++)
 				{
@@ -141,8 +142,8 @@ void fun(double ff[], double x[])
 	double ft, rem;
 
 	ft = sin(w * x[2] + phi);
-	ft = A0 * ft;
-	//ft = A0 * (2 * (ft > 0) - 1);
+	//ft = A0 * ft;
+	ft = A0 * (2 * (ft > 0) - 1);
 	ff[0] = 2.0 * J*sin(x[1]) + 4.0 * gamma*cos(x[1])*cos(x[0]);
 	ff[1] = 2.0 * J*cos(x[0])*cos(x[1]) / sin(x[0]) - 2.0 * E0 - 2.0 * ft + U*cos(x[0]) - 4.0 * gamma*sin(x[1]) / sin(x[0]);
 	ff[2] = 1.0;
