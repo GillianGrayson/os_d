@@ -4,6 +4,10 @@
 #include "utils.h"
 #include "integration.h"
 
-void only_data_exp(RunParam &rp, ConfigParam &cp);
+void basic_exp(RunParam &rp, ConfigParam &cp);
 
-void lpn_exp(RunParam &rp, ConfigParam &cp);
+void lpn_fin_exp(RunParam &rp, ConfigParam &cp);
+
+void cd_exp(RunParam &rp, ConfigParam &cp);
+
+void basic_and_lpn_fin_exp(RunParam &rp, ConfigParam &cp);

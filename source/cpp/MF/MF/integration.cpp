@@ -156,6 +156,26 @@ void int_period_lpn(ConfigParam &cp, MainData &md, int per_id)
 	}
 }
 
+void int_period_cd(ConfigParam &cp, MainData &md, int per_id)
+{
+	int curr_point_id = 0;
+
+	for (int step_id = 0; step_id < cp.num_steps; step_id++)
+	{
+		if (step_id == md.cd_ti[curr_point_id])
+		{
+			md.cd_obs = cos(md.data[0]) + 1.0;
+			md.cd_rd[per_id][curr_point_id] = md.cd_obs;
+
+			curr_point_id++;
+		}
+
+		md.time = per_id * cp.T + step_id * md.step;
+		md.data[2] = md.time;
+		rk_step(cp, md);
+	}
+}
+
 void int_trans_proc(ConfigParam &cp, MainData &md)
 {
 	for (int per_id = 0; per_id < cp.npt; per_id++)

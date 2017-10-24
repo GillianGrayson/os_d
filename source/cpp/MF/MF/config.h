@@ -16,11 +16,18 @@
 #define PI 3.1415926535897932384626433832795
 #define EPS 1.0e-14
 
+#define BASIC_EXP_ID 0
+#define LPN_FIN_EXP_ID 1
+#define CD_EXP_ID 2
+#define BASIC_AND_LPN_FIN_EXP_ID 3
+
 using namespace std;
 
 struct RunParam
 {
 	int		task;				// Task id	
+
+	string	path;				// Path to files (if nessesary)
 
 	double	U_start;			// Start value of interaction
 	double	U_shift;			// Shift of interaction
@@ -30,10 +37,15 @@ struct RunParam
 	int		seed_num;			// Number of seeds
 	int		max_num_seeds;		// Maximum number of seeds
 
-	string	path;				// Path to files (if nessesary)
+	int	cd_eps_bd;			// Begin decade exp for eps
+	int	cd_eps_ed;			// End value for eps
+	int	cd_eps_ndpd;		// Number of dumps per decade
 
 	RunParam(
 		int _task = 0,
+
+		string _path = "",
+
 		double _U_start = 0.5,
 		double _U_shift = 0.1,
 		int _U_num = 1,
@@ -42,10 +54,14 @@ struct RunParam
 		int _seed_num = 1,
 		int _max_num_seeds = 1000000,
 
-		string _path = ""
+		int _cd_eps_bd = -4,
+		int _cd_eps_ed = -1,
+		int _cd_eps_ndpd = 10
 	)
 	{
 		task = _task;
+
+		path = _path;
 
 		U_start = _U_start;
 		U_shift = _U_shift;
@@ -55,7 +71,9 @@ struct RunParam
 		seed_num = _seed_num;
 		max_num_seeds = _max_num_seeds;
 
-		path = _path;
+		cd_eps_bd = _cd_eps_bd;
+		cd_eps_ed = _cd_eps_ed;
+		cd_eps_ndpd = _cd_eps_ndpd;
 	}
 };
 
@@ -72,10 +90,13 @@ struct ConfigParam
 	double	gamma;				// Dissipation parameter
 	double	J;					// Hopping
 
-	double U;					// Interaction
-	int seed;					// Seed
+	double	cd_eps;				// Epsilon for correlated dimension
+	int		cd_dim;					// Dimension of space for correlated dimension
 
-	double T;					// Period
+	double	U;					// Interaction
+	int		seed;					// Seed
+
+	double	T;					// Period
 
 	ConfigParam(
 		int	_task = 0,
@@ -101,6 +122,9 @@ struct ConfigParam
 		phase = _phase;
 		gamma = _gamma;
 		J = _J;
+
+		cd_eps = 0.1;
+		cd_dim = 2;
 
 		U = 0.0;
 		seed = 0.0;

@@ -15,9 +15,14 @@ void print_int_array(int * data, int N)
 	}
 }
 
-string file_name_suffix(ConfigParam &cp, int precision)
+string file_name_suffix(RunParam &rp, ConfigParam &cp, int precision)
 {
 	stringstream fns;
+	if (rp.task == CD_EXP_ID)
+	{
+		fns << "_eps(" << setprecision(8) << fixed << cp.cd_eps << ")";
+		fns << "_m(" << cp.cd_dim << ")";
+	}
 	fns << "_mt(" << cp.mt << ")";
 	fns << "_omega(" << setprecision(precision) << fixed << cp.omega << ")";
 	fns << "_phase(" << setprecision(precision) << fixed << cp.phase << ")";
@@ -193,6 +198,16 @@ vector<int> sort_doubles_with_order(vector<double> &v)
 	return order;
 }
 
+double calc_norm(double * vec, int size)
+{
+	double sum = 0.0;
+	for (int i = 0; i < size; i++)
+	{
+		sum += vec[i] * vec[i];
+	}
+
+	return sqrt(sum);
+}
 
 void delete_data(double * data)
 {

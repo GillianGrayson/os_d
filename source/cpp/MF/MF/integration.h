@@ -19,4 +19,6 @@ void int_period(ConfigParam &cp, MainData &md, int per_id);
 
 void int_period_lpn(ConfigParam &cp, MainData &md, int per_id);
 
+void int_period_cd(ConfigParam &cp, MainData &md, int per_id);
+
 void int_trans_proc(ConfigParam &cp, MainData &md);

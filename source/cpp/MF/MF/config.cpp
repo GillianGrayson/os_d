@@ -34,6 +34,10 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		rp.task = atoi(val.c_str());
 	}
+	if (str.compare("path") == 0)
+	{
+		rp.path = val;
+	}
 	if (str.compare("U_start") == 0)
 	{
 		rp.U_start = atof(val.c_str());
@@ -58,11 +62,18 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		rp.max_num_seeds = atoi(val.c_str());
 	}
-	if (str.compare("path") == 0)
+	if (str.compare("cd_eps_bd") == 0)
 	{
-		rp.path = val;
+		rp.cd_eps_bd = atoi(val.c_str());
 	}
-
+	if (str.compare("cd_eps_ed") == 0)
+	{
+		rp.cd_eps_ed = atoi(val.c_str());
+	}
+	if (str.compare("cd_eps_ndpd") == 0)
+	{
+		rp.cd_eps_ndpd = atoi(val.c_str());
+	}
 
 	if (str.compare("mt") == 0)
 	{
@@ -105,6 +116,10 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		cp.J = atof(val.c_str());
 	}
+	if (str.compare("cd_dim") == 0)
+	{
+		cp.cd_dim = atoi(val.c_str());
+	}
 }
 
 void init_params(RunParam &rp, ConfigParam &cp, char * file_name)
@@ -126,8 +141,8 @@ void init_params(RunParam &rp, ConfigParam &cp, char * file_name)
 	}
 	else
 	{
-		cout << "unable to open file" << endl;
-		cout << "init with default params" << endl;
+		cout << "Unable to open file" << endl;
+		cout << "Init with default params" << endl;
 	}
 
 	output_params(rp, cp);
@@ -139,6 +154,8 @@ void output_params(RunParam &rp, ConfigParam &cp)
 
 	cout << "task = " << rp.task << endl;
 
+	cout << "path = " << rp.path << endl;
+
 	cout << "U_start = " << rp.U_start << endl;
 	cout << "U_shift = " << rp.U_shift << endl;
 	cout << "U_num = " << rp.U_num << endl;
@@ -148,8 +165,9 @@ void output_params(RunParam &rp, ConfigParam &cp)
 	cout << "seed_num = " << rp.seed_num << endl;
 	cout << "max_num_seeds = " << rp.max_num_seeds << endl;
 
-	cout << "path = " << rp.path << endl;
-
+	cout << "cd_eps_bd = " << rp.cd_eps_bd << endl;
+	cout << "cd_eps_ed = " << rp.cd_eps_ed << endl;
+	cout << "cd_eps_ndpd = " << rp.cd_eps_ndpd << endl;
 
 	cout << "mt = " << cp.mt << endl;
 	cout << "num_steps = " << cp.num_steps << endl;
@@ -161,6 +179,8 @@ void output_params(RunParam &rp, ConfigParam &cp)
 	cout << "phase = " << cp.phase << endl;
 	cout << "gamma = " << cp.gamma << endl;
 	cout << "J = " << cp.J << endl;
+
+	cout << "cd_dim = " << cp.cd_dim << endl;
 
 	cout << "######################################" << endl;
 }

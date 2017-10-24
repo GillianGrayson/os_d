@@ -16,13 +16,21 @@ int main(int argc, char ** argv)
 
 	double time = omp_get_wtime();
 
-	if (rp.task == 0)
+	if (rp.task == BASIC_EXP_ID)
 	{
-		only_data_exp(rp, cp);
+		basic_exp(rp, cp);
 	}
-	else if (rp.task == 1)
+	else if (rp.task == LPN_FIN_EXP_ID)
 	{
-		lpn_exp(rp, cp);
+		lpn_fin_exp(rp, cp);
+	}
+	else if (rp.task == CD_EXP_ID)
+	{
+		cd_exp(rp, cp);
+	}
+	else if (rp.task == BASIC_AND_LPN_FIN_EXP_ID)
+	{
+		basic_and_lpn_fin_exp(rp, cp);
 	}
 	else
 	{

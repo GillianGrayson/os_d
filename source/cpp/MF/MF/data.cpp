@@ -66,6 +66,33 @@ void init_lpn_data(ConfigParam &cp, MainData &md)
 	}
 }
 
+void init_cd_data(ConfigParam &cp, MainData &md)
+{
+	md.cd_ps = cp.num_steps / cp.cd_dim;
+	md.cd_M = cp.np;
+
+	md.cd_size = cp.cd_dim;
+
+	md.cd_obs = 0.0;
+
+	md.cd_ti = new int[md.cd_size];
+	for (int cd_st_id = 0; cd_st_id < md.cd_size; cd_st_id++)
+	{
+		md.cd_ti[cd_st_id] = cd_st_id * md.cd_ps;
+	}
+
+	md.cd_rd = new double *[md.cd_M];
+	for (int cd_p_id = 0; cd_p_id < md.cd_M; cd_p_id++)
+	{
+		md.cd_rd[cd_p_id] = new double[md.cd_size];
+
+		for (int cd_st_id = 0; cd_st_id < md.cd_size; cd_st_id++)
+		{
+			md.cd_rd[cd_p_id][cd_st_id] = 0.0;
+		}
+	}
+}
+
 void delete_main_data(MainData &md)
 {
 	delete_data(md.data);
@@ -98,6 +125,17 @@ void delete_lpn_data(MainData &md)
 	delete[] md.norms_lpn;
 	delete[] md.exps_lpn;
 	delete[] md.rvm_lpn;
+}
+
+void delete_cd_data(MainData &md)
+{
+	delete[] md.cd_ti;
+	
+	for (int cd_p_id = 0; cd_p_id < md.cd_size; cd_p_id++)
+	{
+		delete[] md.cd_rd[cd_p_id];
+	}
+	delete[] md.cd_rd;
 }
 
 void init_cond(RunParam &rp, ConfigParam &cp, MainData &md)
@@ -200,5 +238,40 @@ void gsorth_lpn(MainData &md)
 		md.rvm_lpn[lpn_id] += log(md.norms_lpn[lpn_id]);
 		md.exps_lpn[lpn_id] = md.rvm_lpn[lpn_id] / md.time;
 	}
+}
+
+void calc_ci(ConfigParam &cp, MainData &md)
+{
+	double * curr_diff = new double[md.cd_size];
+	double curr_norm = 0.0;
+
+	double integral = 0.0;
+
+	for (int cd_p_id_1 = 0; cd_p_id_1 < md.cd_M; cd_p_id_1++)
+	{
+		for (int cd_p_id_2 = 0; cd_p_id_2 < md.cd_M; cd_p_id_2++)
+		{
+			if (cd_p_id_1 != cd_p_id_2)
+			{
+				for (int cd_st_id = 0; cd_st_id < md.cd_size; cd_st_id++)
+				{
+					curr_diff[cd_st_id] = md.cd_rd[cd_p_id_1][cd_st_id] - md.cd_rd[cd_p_id_2][cd_st_id];
+				}
+
+				curr_norm = calc_norm(curr_diff, md.cd_size);
+
+				if (curr_norm < cp.cd_eps)
+				{
+					integral += 1.0;
+				}
+			}
+		}
+	}
+
+	integral /= (double(md.cd_M) * double(md.cd_M - 1));
+
+	md.cd_ci = integral;
+
+	delete curr_diff;
 }
 

@@ -1,11 +1,14 @@
-task 1
-U_start 0.36
+task 2
+path 
+U_start 2.0000
 U_shift 0.0001
 U_num 1
+cd_eps_bd -4
+cd_eps_ed 0
+cd_eps_ndpd 1
 seed_start 0
-seed_num 10
+seed_num 1
 max_num_seeds 1000000
-path 
 mt 0
 num_steps 10000
 npt 2000
@@ -16,3 +19,4 @@ omega 1.0
 phase 0.0
 gamma 0.1
 J 1.0
+cd_dim 2
