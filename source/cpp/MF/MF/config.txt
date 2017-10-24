@@ -1,13 +1,13 @@
-task 2
+task 3
 path 
-U_start 2.0000
-U_shift 0.0001
-U_num 1
+U_start 0.03
+U_shift 0.03
+U_num 100
 cd_eps_bd -4
 cd_eps_ed 0
 cd_eps_ndpd 1
 seed_start 0
-seed_num 1
+seed_num 10
 max_num_seeds 1000000
 mt 0
 num_steps 10000
