@@ -28,6 +28,7 @@ struct RunParam
 
 	int		seed_start;			// Start seed for rng
 	int		seed_num;			// Number of seeds
+	int		max_num_seeds;		// Maximum number of seeds
 
 	string	path;				// Path to files (if nessesary)
 
@@ -39,6 +40,7 @@ struct RunParam
 
 		int _seed_start = 0,
 		int _seed_num = 1,
+		int _max_num_seeds = 1000000,
 
 		string _path = ""
 	)
@@ -51,6 +53,7 @@ struct RunParam
 
 		seed_start = _seed_start;
 		seed_num = _seed_num;
+		max_num_seeds = _max_num_seeds;
 
 		path = _path;
 	}

@@ -7,7 +7,7 @@ U_start = 0.03;
 U_shift = 0.03;
 U_num = 100;
 seed_start = 0;
-seed_num = 10;
+seed_num = 1;
 path = ''; 
 mt = 0;
 num_steps = 1000;
@@ -20,12 +20,11 @@ phase = 0.0;
 gamma = 0.1;
 J = 1.0;
 
-N = 1000;
+num_lpns = 2;
 
-states = linspace(1, N, N);
+lpn_exps = zeros(U_num, num_lpns);
 
 Us = zeros(U_num, 1);
-BD = zeros(U_num , N);
 
 for U_id = 1 : U_num
     
@@ -45,38 +44,27 @@ for U_id = 1 : U_num
             U, ...
             seed-1);
         
-        fn = sprintf('%s/nu_%s', data_path, fn_suffix);
+        fn = sprintf('%s/exps_lpn_%s', data_path, fn_suffix);
         data = importdata(fn);
         
-        nu = data(2:end,1);
-        
-        coordinate = N/2*(cos(nu)+1);
-        
-        for per_id = 1 : np
-            tmp = coordinate(per_id) / N * (N-1);
-            id = floor(tmp) + 1;
-            BD(U_id, id) = BD(U_id, id) + 1;
+        for lpn_id = 1:num_lpns
+            lpn_exps(U_id, lpn_id) = lpn_exps(U_id, lpn_id) + data(end, lpn_id) / seed_num;
         end
-        
-        coordinate = 0;
-        data = 0;
         
     end
     
-    BD(U_id, :) = BD(U_id, :) / max(BD(U_id, :));
-    
 end
 
-BD = BD';
 
 fig = figure;
-hLine = imagesc(Us, states, BD);
+
+propertyeditor(fig);
+
+for lpn_id = 1:num_lpns
+    hLine = plot(Us, lpn_exps(:, lpn_id), 'LineWidth', 2);
+    legend(hLine, sprintf('\lambda #%d', lpn_id))
+    hold all;
+end
+
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
-set(gca, 'FontSize', 30);
-ylabel('$n$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-%title(h, '$PDF$', 'Interpreter', 'latex');
-set(gca,'YDir','normal');

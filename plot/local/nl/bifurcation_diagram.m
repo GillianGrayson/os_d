@@ -4,11 +4,11 @@ data_path = '../../../source/cpp/NL/NL';
 
 N = 1000;
 
-U_start = 0.0025;
-U_shift = 0.0025;
-U_num = 300;
+U_start = 0.0075;
+U_shift = 0.0075;
+U_num = 100;
 
-num_periods = 10000;
+num_periods = 2000;
 
 num_seeds = 10;
 

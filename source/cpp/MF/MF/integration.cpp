@@ -17,6 +17,17 @@ void right_part(ConfigParam &cp, double * ks, double * x, double time)
 	ks[1] = 2.0 * cp.J * cos(x[0]) * cos(x[1]) / sin(x[0]) - 2.0 * cp.E - 2.0 * driving + cp.U * cos(x[0]) - 4.0 * cp.gamma * sin(x[1]) / sin(x[0]);
 }
 
+void right_part_lpn(ConfigParam &cp, double * ks_lpn, double * x_lpn, double time, double * x)
+{
+	double F1_x = (-4.0 * cp.gamma * cos(x[1]) * sin(x[0]));
+	double F1_y = (2.0 * cp.J * cos(x[1]) - 4.0 * cp.gamma * cos(x[0]) * sin(x[1]));
+	double F2_x = (-2.0 * cp.J * cos(x[1]) / pow(sin(x[0]), 2.0) - cp.U * sin(x[0]) + 4.0 * cp.gamma * sin(x[1]) * cos(x[0]) / pow(sin(x[0]), 2.0));
+	double F2_y = (-2.0 * cp.J * cos(x[0]) / sin(x[0]) * sin(x[1]) - 4.0 * cp.gamma * cos(x[1]) / sin(x[0]));
+
+	ks_lpn[0] = F1_x * x_lpn[0] + F1_y * x_lpn[1];
+	ks_lpn[1] = F2_x * x_lpn[0] + F2_y * x_lpn[1];
+}
+
 void upd_arg(int size, double * x_arg, double * x, double * ks, double coeff)
 {
 	for (int st_id = 0; st_id < size; st_id++)
@@ -33,40 +44,109 @@ void rk_final(int size, double * x, double * k1s, double * k2s, double * k3s, do
 	}
 }
 
-void rk_step(ConfigParam &cp, Data &dt)
+void rk_step(ConfigParam &cp, MainData &md)
 {
+	right_part(cp, md.k1s, md.data, md.time);
+	upd_arg(md.size, md.args, md.data, md.k1s, md.step * 0.5);
 
-	right_part(cp, dt.k1s, dt.data, dt.time);
-	upd_arg(dt.size, dt.args, dt.data, dt.k1s, dt.step * 0.5);
+	md.time += md.step * 0.5;
 
-	dt.time += dt.step * 0.5;
+	right_part(cp, md.k2s, md.args, md.time);
+	upd_arg(md.size, md.args, md.data, md.k2s, md.step * 0.5);
 
-	right_part(cp, dt.k2s, dt.args, dt.time);
-	upd_arg(dt.size, dt.args, dt.data, dt.k2s, dt.step * 0.5);
+	right_part(cp, md.k3s, md.args, md.time);
+	upd_arg(md.size, md.args, md.data, md.k3s, md.step * 1.0);
 
-	right_part(cp, dt.k3s, dt.args, dt.time);
-	upd_arg(dt.size, dt.args, dt.data, dt.k3s, dt.step * 1.0);
+	md.time += md.step * 0.5;
 
-	dt.time += dt.step * 0.5;
+	right_part(cp, md.k4s, md.args, md.time);
 
-	right_part(cp, dt.k4s, dt.args, dt.time);
-
-	rk_final(dt.size, dt.data, dt.k1s, dt.k2s, dt.k3s, dt.k4s, dt.step);
+	rk_final(md.size, md.data, md.k1s, md.k2s, md.k3s, md.k4s, md.step);
 }
 
-void int_period(ConfigParam &cp, Data &dt, int per_id)
+void rk_step_lpn(ConfigParam &cp, MainData &md)
+{
+	// ========= K1 ==========
+	right_part(cp, md.k1s, md.data, md.time);
+	for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+	{
+		right_part_lpn(cp, md.k1s_lpn[lpn_id], md.data_lpn[lpn_id], md.time, md.data);
+	}
+
+	upd_arg(md.size, md.args, md.data, md.k1s, md.step * 0.5);
+	for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+	{
+		upd_arg(md.size, md.args_lpn[lpn_id], md.data_lpn[lpn_id], md.k1s_lpn[lpn_id], md.step * 0.5);
+	}
+
+	md.time += md.step * 0.5;
+
+	// ========= K2 ==========
+	right_part(cp, md.k2s, md.args, md.time);
+	for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+	{
+		right_part_lpn(cp, md.k2s_lpn[lpn_id], md.args_lpn[lpn_id], md.time, md.args);
+	}
+
+	upd_arg(md.size, md.args, md.data, md.k2s, md.step * 0.5);
+	for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+	{
+		upd_arg(md.size, md.args_lpn[lpn_id], md.data_lpn[lpn_id], md.k2s_lpn[lpn_id], md.step * 0.5);
+	}
+
+	// ========= K3 ==========
+	right_part(cp, md.k3s, md.args, md.time);
+	for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+	{
+		right_part_lpn(cp, md.k3s_lpn[lpn_id], md.args_lpn[lpn_id], md.time, md.args);
+	}
+
+	upd_arg(md.size, md.args, md.data, md.k3s, md.step * 1.0);
+	for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+	{
+		upd_arg(md.size, md.args_lpn[lpn_id], md.data_lpn[lpn_id], md.k3s_lpn[lpn_id], md.step * 1.0);
+	}
+
+	md.time += md.step * 0.5;
+
+	// ========= K4 ==========
+	right_part(cp, md.k4s, md.args, md.time);
+	for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+	{
+		right_part_lpn(cp, md.k4s_lpn[lpn_id], md.args_lpn[lpn_id], md.time, md.args);
+	}
+
+	rk_final(md.size, md.data, md.k1s, md.k2s, md.k3s, md.k4s, md.step);
+	for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+	{
+		rk_final(md.size, md.data_lpn[lpn_id], md.k1s_lpn[lpn_id], md.k2s_lpn[lpn_id], md.k3s_lpn[lpn_id], md.k4s_lpn[lpn_id], md.step);
+	}
+
+	gsorth_lpn(md);
+}
+
+void int_period(ConfigParam &cp, MainData &md, int per_id)
 {
 	for (int step_id = 0; step_id < cp.num_steps; step_id++)
 	{
-		dt.time = per_id * cp.T + step_id * dt.step;
-		rk_step(cp, dt);
+		md.time = per_id * cp.T + step_id * md.step;
+		rk_step(cp, md);
 	}
 }
 
-void int_trans_proc(ConfigParam &cp, Data &dt)
+void int_period_lpn(ConfigParam &cp, MainData &md, int per_id)
+{
+	for (int step_id = 0; step_id < cp.num_steps; step_id++)
+	{
+		md.time = per_id * cp.T + step_id * md.step;
+		rk_step_lpn(cp, md);
+	}
+}
+
+void int_trans_proc(ConfigParam &cp, MainData &md)
 {
 	for (int per_id = 0; per_id < cp.npt; per_id++)
 	{
-		int_period(cp, dt, per_id);
+		int_period(cp, md, per_id);
 	}
 }

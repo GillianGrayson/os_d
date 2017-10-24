@@ -5,3 +5,5 @@
 #include "integration.h"
 
 void only_data_exp(RunParam &rp, ConfigParam &cp);
+
+void lpn_exp(RunParam &rp, ConfigParam &cp);

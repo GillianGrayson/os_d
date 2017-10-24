@@ -2,7 +2,7 @@
 #include "config.h"
 #include "utils.h"
 
-struct Data
+struct MainData
 {
 	double step;			// Integration step
 
@@ -18,17 +18,38 @@ struct Data
 	double * k3s;			// Integration routines data
 	double * k4s;			// Integration routines data
 
-	double * data_lpn;		// Data for Lyapunov exps
-	double * args_lpn;		// Integration Lyapunov routines data
-	double * k1s_lpn;		// Integration Lyapunov routines data
-	double * k2s_lpn;		// Integration Lyapunov routines data
-	double * k3s_lpn;		// Integration Lyapunov routines data
-	double * k4s_lpn;		// Integration Lyapunov routines data
+	int num_lpn;
+
+	double ** data_lpn;		// Data for Lyapunov exps
+	double ** args_lpn;		// Integration Lyapunov routines data
+	double ** k1s_lpn;		// Integration Lyapunov routines data
+	double ** k2s_lpn;		// Integration Lyapunov routines data
+	double ** k3s_lpn;		// Integration Lyapunov routines data
+	double ** k4s_lpn;		// Integration Lyapunov routines data
+	double * norms_lpn;		// Norms for Lyapunov vectors
+	double * exps_lpn;		// Lyapunov exponents
+	double * rvm_lpn;		// Aux data for Lyapunov exponents
 };
 
 
-void init_main_data(ConfigParam &cp, Data &dt);
+void init_main_data(ConfigParam &cp, MainData &md);
 
-void delete_main_data(Data &dt);
+void init_lpn_data(ConfigParam &cp, MainData &md);
 
-void init_cond(ConfigParam &cp, Data &dt);
+void delete_main_data(MainData &dt);
+
+void delete_lpn_data(MainData &md);
+
+void init_cond(RunParam &rp, ConfigParam &cp, MainData &dt);
+
+void init_cond_lpn(ConfigParam &cp, MainData &md);
+
+void calc_norm_lpn(MainData &md, int lpn_id);
+
+void normalization_lpn(MainData &md, int lpn_id);
+
+void scalar_mult_lpn(MainData &md, double * mults, int lpn_id, int lpn_id_tmp);
+
+void sub_lpn(MainData &md, double* mults, int lpn_id, int lpn_id_tmp);
+
+void gsorth_lpn(MainData &md);

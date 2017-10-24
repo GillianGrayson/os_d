@@ -63,6 +63,62 @@ void write_double_data(string file_name, double * data, int size, int precision,
 	}
 }
 
+void write_2d_double_data(string file_name, double ** data, int size_1, int size_2, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int row = 0; row < size_2; row++)
+			{
+				for (int col = 0; col < size_1; col++)
+				{
+					ofs << data[col][row] << " ";
+				}
+				ofs << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int row = 0; row < size_2; row++)
+			{
+				for (int col = 0; col < size_1; col++)
+				{
+					ofs << data[col][row] << " ";
+				}
+				ofs << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+}
+
 void write_int_data(string file_name, int * data, int size, bool append)
 {
 	ofstream ofs;

@@ -20,6 +20,10 @@ int main(int argc, char ** argv)
 	{
 		only_data_exp(rp, cp);
 	}
+	else if (rp.task == 1)
+	{
+		lpn_exp(rp, cp);
+	}
 	else
 	{
 		stringstream msg;

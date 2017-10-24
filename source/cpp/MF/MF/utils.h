@@ -11,6 +11,8 @@ string file_name_suffix(ConfigParam &cp, int precision);
 
 void write_double_data(string file_name, double * data, int size, int precision, bool append);
 
+void write_2d_double_data(string file_name, double ** data, int size_1, int size_2, int precision, bool append);
+
 void write_int_data(string file_name, int * data, int size, bool append);
 
 void write_complex_data(string file_name, MKL_Complex16 * data, int size, int precision, bool append);
