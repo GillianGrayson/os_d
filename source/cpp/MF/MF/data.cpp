@@ -2,7 +2,7 @@
 
 void init_main_data(ConfigParam &cp, MainData &md)
 {
-	md.size = 2;
+	md.size = 3;
 
 	md.step = (2.0 * PI) / (cp.omega * cp.num_steps);
 
@@ -110,6 +110,8 @@ void init_cond(RunParam &rp, ConfigParam &cp, MainData &md)
 	vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
 	vslLeapfrogStream(stream, cp.seed, max_num_seeds);
 	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, stream, md.size, md.data, left_border, right_border);
+
+	md.data[2] = 0.0;
 }
 
 void init_cond_lpn(ConfigParam &cp, MainData &md)

@@ -1,13 +1,13 @@
 task 1
 U_start 0.36
-U_shift 0.03
-U_num 100
+U_shift 0.0001
+U_num 1
 seed_start 0
 seed_num 10
 max_num_seeds 1000000
 path 
-mt 1
-num_steps 1000
+mt 0
+num_steps 10000
 npt 2000
 np 2000
 E 1.0

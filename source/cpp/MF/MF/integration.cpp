@@ -15,17 +15,28 @@ void right_part(ConfigParam &cp, double * ks, double * x, double time)
 
 	ks[0] = 2.0 * cp.J * sin(x[1]) + 4.0 * cp.gamma * cos(x[1]) * cos(x[0]);
 	ks[1] = 2.0 * cp.J * cos(x[0]) * cos(x[1]) / sin(x[0]) - 2.0 * cp.E - 2.0 * driving + cp.U * cos(x[0]) - 4.0 * cp.gamma * sin(x[1]) / sin(x[0]);
+	ks[2] = 1.0;
 }
 
 void right_part_lpn(ConfigParam &cp, double * ks_lpn, double * x_lpn, double time, double * x)
 {
 	double F1_x = (-4.0 * cp.gamma * cos(x[1]) * sin(x[0]));
 	double F1_y = (2.0 * cp.J * cos(x[1]) - 4.0 * cp.gamma * cos(x[0]) * sin(x[1]));
+	double F1_t = 0.0;
 	double F2_x = (-2.0 * cp.J * cos(x[1]) / pow(sin(x[0]), 2.0) - cp.U * sin(x[0]) + 4.0 * cp.gamma * sin(x[1]) * cos(x[0]) / pow(sin(x[0]), 2.0));
 	double F2_y = (-2.0 * cp.J * cos(x[0]) / sin(x[0]) * sin(x[1]) - 4.0 * cp.gamma * cos(x[1]) / sin(x[0]));
+	double F2_t = 0.0;
+	if (cp.mt == 1)
+	{
+		F2_t = -2.0 * cp.A * cp.omega *  cos(cp.omega * time + cp.phase);
+	}
+	double F3_x = 0.0;
+	double F3_y = 0.0;
+	double F3_t = 0.0;
 
-	ks_lpn[0] = F1_x * x_lpn[0] + F1_y * x_lpn[1];
-	ks_lpn[1] = F2_x * x_lpn[0] + F2_y * x_lpn[1];
+	ks_lpn[0] = F1_x * x_lpn[0] + F1_y * x_lpn[1] + F1_t * x_lpn[2];
+	ks_lpn[1] = F2_x * x_lpn[0] + F2_y * x_lpn[1] + F2_t * x_lpn[2];
+	ks_lpn[2] = F3_x * x_lpn[0] + F3_y * x_lpn[1] + F3_t * x_lpn[2];
 }
 
 void upd_arg(int size, double * x_arg, double * x, double * ks, double coeff)
@@ -130,6 +141,7 @@ void int_period(ConfigParam &cp, MainData &md, int per_id)
 	for (int step_id = 0; step_id < cp.num_steps; step_id++)
 	{
 		md.time = per_id * cp.T + step_id * md.step;
+		md.data[2] = md.time;
 		rk_step(cp, md);
 	}
 }
@@ -139,6 +151,7 @@ void int_period_lpn(ConfigParam &cp, MainData &md, int per_id)
 	for (int step_id = 0; step_id < cp.num_steps; step_id++)
 	{
 		md.time = per_id * cp.T + step_id * md.step;
+		md.data[2] = md.time;
 		rk_step_lpn(cp, md);
 	}
 }
