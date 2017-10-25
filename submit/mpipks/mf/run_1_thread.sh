@@ -3,7 +3,7 @@
 
 # --- Mandatory qsub arguments
 # Hardware requirements.
-#$ -l h_rss=1500M,h_fsize=1000M,h_cpu=10:00:00,hw=x86_64
+#$ -l h_rss=1500M,h_fsize=1000M,h_cpu=1:00:00,hw=x86_64
 
 # --- Optional qsub arguments
 # Change working directory - your job will be run from the directory
@@ -14,7 +14,6 @@
 # For faster disk access copy files to / scratch first .
 module load mkl
 
-data_path=/data/biophys/yusipov/os_d/mf
 scratch=/scratch/yusipov/os_d/$1
 code_base=$HOME/Work/os_d/source/cpp/MF/MF
 mkdir -p $scratch
@@ -29,7 +28,7 @@ echo " Running on $(hostname)"
 echo " We are in $(pwd) "
 
 cat config.txt
-$code_base/MD.out
+$code_base/MF.out
 
 # Finish - Copy files back to your home directory , clean up .
 cp -r $scratch/* $1 # Better use a subdirectory of $HOME .

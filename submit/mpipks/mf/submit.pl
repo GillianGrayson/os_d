@@ -8,7 +8,7 @@ $data_path = "/data/biophys/yusipov/os_d/mf_results";
 
 $PI = 3.1415926535897932384626433832795;
 
-for($curr_U = 0.03; $curr_U <= 0.3000001; $curr_U += 0.03)
+for($curr_U = 0.03; $curr_U <= 3.0000001; $curr_U += 0.03)
 {
 	print "curr_U = $curr_U\n";
 	
@@ -25,8 +25,8 @@ for($curr_U = 0.03; $curr_U <= 0.3000001; $curr_U += 0.03)
 	$max_num_seeds = 1000000;
 	$mt = 0;
 	$num_steps = 10000;
-	$npt = 2000;
-	$np = 2000;
+	$npt = 10000;
+	$np = 10000;
 	$E = 1.0;
 	$A = 1.5; 
 	$omega = 1.0;
@@ -41,11 +41,11 @@ for($curr_U = 0.03; $curr_U <= 0.3000001; $curr_U += 0.03)
 	$J_str = sprintf("%.4f", $J);
 	$E_str = sprintf("%.4f", $E);
 	$A_str = sprintf("%.4f", $A);
-	$U_str = sprintf("%.4f", $U);
+	$U_str = sprintf("%.4f", $U_start);
 	
 
 	$start = 1;
-	$finish = 2;
+	$finish = 51;
 	%exp = ();
 	$i = 0;
 	$i = $start;
@@ -55,17 +55,18 @@ for($curr_U = 0.03; $curr_U <= 0.3000001; $curr_U += 0.03)
 	sub ForderName{
 		$key_str = $_[0];
 		
-		return  "$data_path/task_${task}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}/E_${E_str}/A_${A_str}/U_${U_str}/seed_${key_str}";
+		return  "$data_path/task_${task}/mt_${mt}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}/E_${E_str}/A_${A_str}/U_${U_str}/seed_${key_str}";
 	}
-		
+	
 	mkdir "$data_path/task_${task}";
-	mkdir "$data_path/task_${task}/omega_${omega_str}";
-	mkdir "$data_path/task_${task}/omega_${omega_str}/phase_${phase_str}";
-	mkdir "$data_path/task_${task}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/";
-	mkdir "$data_path/task_${task}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}";
-	mkdir "$data_path/task_${task}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}/E_${E_str}";
-	mkdir "$data_path/task_${task}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}/E_${E_str}/A_${A_str}";
-	mkdir "$data_path/task_${task}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}/E_${E_str}/A_${A_str}/U_${U_str}";
+	mkdir "$data_path/task_${task}/mt_${mt}";
+	mkdir "$data_path/task_${task}/mt_${mt}/omega_${omega_str}";
+	mkdir "$data_path/task_${task}/mt_${mt}/omega_${omega_str}/phase_${phase_str}";
+	mkdir "$data_path/task_${task}/mt_${mt}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/";
+	mkdir "$data_path/task_${task}/mt_${mt}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}";
+	mkdir "$data_path/task_${task}/mt_${mt}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}/E_${E_str}";
+	mkdir "$data_path/task_${task}/mt_${mt}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}/E_${E_str}/A_${A_str}";
+	mkdir "$data_path/task_${task}/mt_${mt}/omega_${omega_str}/phase_${phase_str}/g_${gamma_str}/J_${J_str}/E_${E_str}/A_${A_str}/U_${U_str}";
 
 	for($val = $start; $val < $finish; $val+=1)
 	{
@@ -107,9 +108,9 @@ for($curr_U = 0.03; $curr_U <= 0.3000001; $curr_U += 0.03)
 		print WF "cd_dim $cd_dim \n";
 		close WF;
 
-		$test_file = sprintf('%s/exps_lpn_mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)_A(%0.4f)_U(%0.4f)_seed(%d).txt', $key, $mt, $omega, $phase, $gamma, $J, $E, $A, $U, $i);
+		$test_file = sprintf('%s/exps_lpn_mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)_A(%0.4f)_U(%0.4f)_seed(%d).txt', $key, $mt, $omega, $phase, $gamma, $J, $E, $A, $U_start, $i);
 			
-		unless (-e "$key/$test_file")
+		unless (-e "$test_file")
 		{	
 			print "qsub -wd $dir run_1_thread.sh $key \n";
 			system "qsub -wd $dir run_1_thread.sh $key";
