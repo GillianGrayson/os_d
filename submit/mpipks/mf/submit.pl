@@ -9,7 +9,7 @@ $data_path = "/data/biophys/yusipov/os_d/mf_results";
 
 $PI = 3.1415926535897932384626433832795;
 
-for($curr_U = 2.8; $curr_U <= 2.8000001; $curr_U += 0.03)
+for($curr_U = 0.3; $curr_U <= 3.0000001; $curr_U += 0.3)
 {
 	print "curr_U = $curr_U\n";
 	
@@ -46,7 +46,7 @@ for($curr_U = 2.8; $curr_U <= 2.8000001; $curr_U += 0.03)
 		$phase = 0.0;
 		$gamma = 0.1;
 		$J = 1.0;
-		$cd_dim = 4;
+		$cd_dim = 1;
 		
 		$omega_str = sprintf("%.4f", $omega);
 		$phase_str = sprintf("%.4f", $phase);
