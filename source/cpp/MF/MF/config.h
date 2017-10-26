@@ -37,9 +37,9 @@ struct RunParam
 	int		seed_num;			// Number of seeds
 	int		max_num_seeds;		// Maximum number of seeds
 
-	int	cd_eps_bd;			// Begin decade exp for eps
-	int	cd_eps_ed;			// End value for eps
-	int	cd_eps_ndpd;		// Number of dumps per decade
+	double	cd_eps;				// Start value of eps
+	int	cd_eps_num;				// Number of eps
+	int	cd_eps_ndpd;			// Number of dumps per decade
 
 	RunParam(
 		int _task = 0,
@@ -54,8 +54,8 @@ struct RunParam
 		int _seed_num = 1,
 		int _max_num_seeds = 1000000,
 
-		int _cd_eps_bd = -4,
-		int _cd_eps_ed = -1,
+		double _cd_eps = 0.0001,
+		int _cd_eps_num = 1,
 		int _cd_eps_ndpd = 10
 	)
 	{
@@ -71,8 +71,8 @@ struct RunParam
 		seed_num = _seed_num;
 		max_num_seeds = _max_num_seeds;
 
-		cd_eps_bd = _cd_eps_bd;
-		cd_eps_ed = _cd_eps_ed;
+		cd_eps = _cd_eps;
+		cd_eps_num = _cd_eps_num;
 		cd_eps_ndpd = _cd_eps_ndpd;
 	}
 };
@@ -91,10 +91,10 @@ struct ConfigParam
 	double	J;					// Hopping
 
 	double	cd_eps;				// Epsilon for correlated dimension
-	int		cd_dim;					// Dimension of space for correlated dimension
+	int		cd_dim;				// Dimension of space for correlated dimension
 
 	double	U;					// Interaction
-	int		seed;					// Seed
+	int		seed;				// Seed
 
 	double	T;					// Period
 

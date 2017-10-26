@@ -20,7 +20,7 @@ string file_name_suffix(RunParam &rp, ConfigParam &cp, int precision)
 	stringstream fns;
 	if (rp.task == CD_EXP_ID)
 	{
-		fns << "_eps(" << setprecision(8) << fixed << cp.cd_eps << ")";
+		fns << "_eps(" << setprecision(10) << fixed << cp.cd_eps << ")";
 		fns << "_m(" << cp.cd_dim << ")";
 	}
 	fns << "_mt(" << cp.mt << ")";

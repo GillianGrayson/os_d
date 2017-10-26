@@ -99,12 +99,8 @@ void lpn_fin_exp(RunParam &rp, ConfigParam &cp)
 
 void cd_exp(RunParam &rp, ConfigParam &cp)
 {
-	int cd_eps_num_decs = rp.cd_eps_ed - rp.cd_eps_bd;
-	int cd_num_eps = cd_eps_num_decs * rp.cd_eps_ndpd + 1;
-
-	double * cd_eps = new double[cd_num_eps];
+	double * cd_eps = new double[rp.cd_eps_num];
 	
-
 	for (int U_id = 0; U_id < rp.U_num; U_id++)
 	{
 		cp.U = rp.U_start + double(U_id) * rp.U_shift;
@@ -113,9 +109,9 @@ void cd_exp(RunParam &rp, ConfigParam &cp)
 		{
 			cp.seed = seed;
 
-			for (int eps_id = 0; eps_id < cd_num_eps; eps_id++)
+			for (int eps_id = 0; eps_id < rp.cd_eps_num; eps_id++)
 			{
-				cd_eps[eps_id] = pow(10.0, double(rp.cd_eps_bd)) * pow(10.0, (1.0 / double(rp.cd_eps_ndpd)) * double(eps_id));
+				cd_eps[eps_id] = rp.cd_eps * pow(10.0, (1.0 / double(rp.cd_eps_ndpd)) * double(eps_id));
 
 				cp.cd_eps = cd_eps[eps_id];
 

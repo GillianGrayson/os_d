@@ -62,13 +62,13 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		rp.max_num_seeds = atoi(val.c_str());
 	}
-	if (str.compare("cd_eps_bd") == 0)
+	if (str.compare("cd_eps") == 0)
 	{
-		rp.cd_eps_bd = atoi(val.c_str());
+		rp.cd_eps = atof(val.c_str());
 	}
-	if (str.compare("cd_eps_ed") == 0)
+	if (str.compare("cd_eps_num") == 0)
 	{
-		rp.cd_eps_ed = atoi(val.c_str());
+		rp.cd_eps_num = atoi(val.c_str());
 	}
 	if (str.compare("cd_eps_ndpd") == 0)
 	{
@@ -165,8 +165,8 @@ void output_params(RunParam &rp, ConfigParam &cp)
 	cout << "seed_num = " << rp.seed_num << endl;
 	cout << "max_num_seeds = " << rp.max_num_seeds << endl;
 
-	cout << "cd_eps_bd = " << rp.cd_eps_bd << endl;
-	cout << "cd_eps_ed = " << rp.cd_eps_ed << endl;
+	cout << "cd_eps = " << rp.cd_eps << endl;
+	cout << "cd_eps_num = " << rp.cd_eps_num << endl;
 	cout << "cd_eps_ndpd = " << rp.cd_eps_ndpd << endl;
 
 	cout << "mt = " << cp.mt << endl;
