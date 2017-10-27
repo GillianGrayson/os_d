@@ -369,8 +369,8 @@ int main(int argc, char ** argv)
 			calcODE_real(model, model->conf.h,
 				model->conf.NSTEP, itr * model->conf.T);
 
-			/*diff_it = calcDiffIter(model);
-			printf("diff on %d is %0.16le %0.16le \n", itr, diff_it.re, diff_it.im);*/
+			diff_it = calcDiffIter(model);
+			printf("diff on %d is %0.16le %0.16le \n", itr, diff_it.re, diff_it.im);
 		}
 
 		toZeroBase(*(model->Gs));
@@ -396,7 +396,7 @@ int main(int argc, char ** argv)
 	//fprintf(mem_time, "calcRho_fill(model); \n");
 	time = omp_get_wtime();
 	calcRho_fill(model);
-	check_rho_evals(model);
+	//check_rho_evals(model);
 	time = omp_get_wtime() - time;
 	printf("calcRho: %2.4lf\n", time);
 	fprintf(memlog, "calcRho(model); %lf\n", number_of_allocs);
