@@ -25,7 +25,7 @@ for($curr_U = 0.3; $curr_U <= 3.0000001; $curr_U += 0.3)
 	
 		print "curr_cd_eps = $curr_cd_eps\n";
 		
-		$task = 2;
+		$task = 4;
 		$path = "";
 		$U_start = $curr_U;
 		$U_shift = 0.03;
@@ -39,14 +39,14 @@ for($curr_U = 0.3; $curr_U <= 3.0000001; $curr_U += 0.3)
 		$mt = 0;
 		$num_steps = 10000;
 		$npt = 2000;
-		$np = 100000;
+		$np = 10;
 		$E = 1.0;
 		$A = 1.5; 
 		$omega = 1.0;
 		$phase = 0.0;
 		$gamma = 0.1;
 		$J = 1.0;
-		$cd_dim = 1;
+		$cd_dim = 4;
 		
 		$omega_str = sprintf("%.4f", $omega);
 		$phase_str = sprintf("%.4f", $phase);
