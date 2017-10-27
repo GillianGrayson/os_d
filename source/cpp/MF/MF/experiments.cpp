@@ -13,8 +13,10 @@ void basic_exp(RunParam &rp, ConfigParam &cp)
 			cout << "U = " << cp.U << " seed = " << seed << endl;
 			string fn_data = rp.path + "data" + file_name_suffix(rp, cp, 4);
 
-			double ** data = new double* [2];
-			for (int d_id = 0; d_id < 2; d_id++)
+			int num_vars = 3;
+
+			double ** data = new double* [num_vars];
+			for (int d_id = 0; d_id < num_vars; d_id++)
 			{
 				data[d_id] = new double[cp.np + 1];
 			}
@@ -27,19 +29,21 @@ void basic_exp(RunParam &rp, ConfigParam &cp)
 			int_trans_proc(cp, dt);
 			data[0][0] = dt.time;
 			data[0][1] = dt.data[0];
+			data[0][2] = dt.data[1];
 
 			for (int per_id = 0; per_id < cp.np; per_id++)
 			{
 				int_period(cp, dt, cp.npt + per_id);
 				data[0][per_id + 1] = dt.time;
 				data[1][per_id + 1] = dt.data[0];
+				data[2][per_id + 1] = dt.data[1];
 			}
 
-			write_2d_double_data(fn_data, data, 2, cp.np + 1, 16, 0);
+			write_2d_double_data(fn_data, data, num_vars, cp.np + 1, 16, 0);
 
 			delete_main_data(dt);
 
-			for (int d_id = 0; d_id < 2; d_id++)
+			for (int d_id = 0; d_id < num_vars; d_id++)
 			{
 				delete[] data[d_id];
 			}
