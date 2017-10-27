@@ -369,8 +369,8 @@ int main(int argc, char ** argv)
 			calcODE_real(model, model->conf.h,
 				model->conf.NSTEP, itr * model->conf.T);
 
-			/*diff_it = calcDiffIter(model);
-			printf("diff on %d is %0.16le %0.16le \n", itr, diff_it.re, diff_it.im);*/
+			diff_it = calcDiffIter(model);
+			printf("diff on %d is %0.16le %0.16le \n", itr, diff_it.re, diff_it.im);
 		}
 
 		toZeroBase(*(model->Gs));
