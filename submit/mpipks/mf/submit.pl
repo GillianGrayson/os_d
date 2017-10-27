@@ -25,7 +25,7 @@ for($curr_U = 0.3; $curr_U <= 3.0000001; $curr_U += 0.3)
 	
 		print "curr_cd_eps = $curr_cd_eps\n";
 		
-		$task = 4;
+		$task = 5;
 		$path = "";
 		$U_start = $curr_U;
 		$U_shift = 0.03;
@@ -39,7 +39,7 @@ for($curr_U = 0.3; $curr_U <= 3.0000001; $curr_U += 0.3)
 		$mt = 0;
 		$num_steps = 10000;
 		$npt = 2000;
-		$np = 10;
+		$np = 1000;
 		$E = 1.0;
 		$A = 1.5; 
 		$omega = 1.0;
@@ -47,6 +47,7 @@ for($curr_U = 0.3; $curr_U <= 3.0000001; $curr_U += 0.3)
 		$gamma = 0.1;
 		$J = 1.0;
 		$cd_dim = 4;
+		$cd_nppp = 100;
 		
 		$omega_str = sprintf("%.4f", $omega);
 		$phase_str = sprintf("%.4f", $phase);
@@ -120,6 +121,7 @@ for($curr_U = 0.3; $curr_U <= 3.0000001; $curr_U += 0.3)
 			print WF "gamma $gamma \n";
 			print WF "J $J \n";
 			print WF "cd_dim $cd_dim \n";
+			print WF "cd_nppp $cd_nppp \n";
 			close WF;
 
 			$test_file = sprintf('%s/exps_lpn_mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)_A(%0.4f)_U(%0.4f)_seed(%d).txt', $key, $mt, $omega, $phase, $gamma, $J, $E, $A, $U_start, $i);
