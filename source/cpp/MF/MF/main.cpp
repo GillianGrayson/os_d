@@ -36,6 +36,10 @@ int main(int argc, char ** argv)
 	{
 		cd_d_exp(rp, cp);
 	}
+	else if (rp.task == CD_SD_EXP_ID)
+	{
+		cd_sd_exp(rp, cp);
+	}
 	else
 	{
 		stringstream msg;

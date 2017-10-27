@@ -47,6 +47,8 @@ void init_cd_data(ConfigParam &cp, MainData &md);
 
 void init_cd_d_data(ConfigParam &cp, MainData &md);
 
+void init_cd_sd_data(ConfigParam &cp, MainData &md);
+
 void delete_main_data(MainData &dt);
 
 void delete_lpn_data(MainData &md);
@@ -55,7 +57,9 @@ void delete_cd_data(MainData &md);
 
 void delete_cd_d_data(MainData &md);
 
-void init_cond(RunParam &rp, ConfigParam &cp, MainData &dt);
+void delete_cd_sd_data(MainData &md);
+
+void init_cond(RunParam &rp, ConfigParam &cp, MainData &md);
 
 void init_cond_lpn(ConfigParam &cp, MainData &md);
 

@@ -120,6 +120,10 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		cp.cd_dim = atoi(val.c_str());
 	}
+	if (str.compare("cd_nppp") == 0)
+	{
+		cp.cd_nppp = atoi(val.c_str());
+	}
 }
 
 void init_params(RunParam &rp, ConfigParam &cp, char * file_name)
@@ -181,6 +185,7 @@ void output_params(RunParam &rp, ConfigParam &cp)
 	cout << "J = " << cp.J << endl;
 
 	cout << "cd_dim = " << cp.cd_dim << endl;
+	cout << "cd_nppp = " << cp.cd_nppp << endl;
 
 	cout << "######################################" << endl;
 }

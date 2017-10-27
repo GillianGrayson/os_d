@@ -21,6 +21,7 @@
 #define CD_EXP_ID 2
 #define BASIC_AND_LPN_FIN_EXP_ID 3
 #define CD_D_EXP_ID 4
+#define CD_SD_EXP_ID 5
 
 using namespace std;
 
@@ -93,6 +94,7 @@ struct ConfigParam
 
 	double	cd_eps;				// Epsilon for correlated dimension
 	int		cd_dim;				// Dimension of space for correlated dimension
+	int		cd_nppp;				// Number of points per period
 
 	double	U;					// Interaction
 	int		seed;				// Seed
@@ -126,6 +128,7 @@ struct ConfigParam
 
 		cd_eps = 0.1;
 		cd_dim = 2;
+		cd_nppp = 100;
 
 		U = 0.0;
 		seed = 0.0;

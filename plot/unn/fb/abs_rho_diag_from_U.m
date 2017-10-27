@@ -1,13 +1,13 @@
 clear all;
 
 drt = 1;
-N = 201;
-E = -1;
+N = 101;
+E = 0;
 J = -1;
 
-U_start = 0.005;
-U_shift = 0.005;
-U_num = 150;
+U_start = 0.01;
+U_shift = 0.01;
+U_num = 75;
 
 g = 0.1;
 A = -3.4;
@@ -22,6 +22,8 @@ Ns = linspace(1, N, N);
 abs_rho_diag = zeros(U_num, N);
 
 for U_id = 1:U_num
+    
+    U_id = U_id
     
     Us(U_id) = U_start + (U_id-1) * U_shift;
     
