@@ -32,6 +32,10 @@ int main(int argc, char ** argv)
 	{
 		basic_and_lpn_fin_exp(rp, cp);
 	}
+	else if (rp.task == CD_D_EXP_ID)
+	{
+		cd_d_exp(rp, cp);
+	}
 	else
 	{
 		stringstream msg;

@@ -20,6 +20,7 @@
 #define LPN_FIN_EXP_ID 1
 #define CD_EXP_ID 2
 #define BASIC_AND_LPN_FIN_EXP_ID 3
+#define CD_D_EXP_ID 4
 
 using namespace std;
 

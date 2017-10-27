@@ -93,6 +93,26 @@ void init_cd_data(ConfigParam &cp, MainData &md)
 	}
 }
 
+void init_cd_d_data(ConfigParam &cp, MainData &md)
+{
+	md.cd_ps = 1;
+	md.cd_size = cp.cd_dim;
+	md.cd_M = cp.np * cp.num_steps - md.cd_size + 1;
+
+	md.cd_obs = 0.0;
+
+	md.cd_rd = new double *[md.cd_M];
+	for (int cd_p_id = 0; cd_p_id < md.cd_M; cd_p_id++)
+	{
+		md.cd_rd[cd_p_id] = new double[md.cd_size];
+
+		for (int cd_st_id = 0; cd_st_id < md.cd_size; cd_st_id++)
+		{
+			md.cd_rd[cd_p_id][cd_st_id] = 0.0;
+		}
+	}
+}
+
 void delete_main_data(MainData &md)
 {
 	delete_data(md.data);
@@ -131,6 +151,15 @@ void delete_cd_data(MainData &md)
 {
 	delete[] md.cd_ti;
 	
+	for (int cd_p_id = 0; cd_p_id < md.cd_size; cd_p_id++)
+	{
+		delete[] md.cd_rd[cd_p_id];
+	}
+	delete[] md.cd_rd;
+}
+
+void delete_cd_d_data(MainData &md)
+{
 	for (int cd_p_id = 0; cd_p_id < md.cd_size; cd_p_id++)
 	{
 		delete[] md.cd_rd[cd_p_id];

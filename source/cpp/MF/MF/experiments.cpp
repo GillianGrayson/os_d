@@ -145,6 +145,54 @@ void cd_exp(RunParam &rp, ConfigParam &cp)
 	delete[] cd_eps;
 }
 
+void cd_d_exp(RunParam &rp, ConfigParam &cp)
+{
+	double * cd_eps = new double[rp.cd_eps_num];
+
+	for (int U_id = 0; U_id < rp.U_num; U_id++)
+	{
+		cp.U = rp.U_start + double(U_id) * rp.U_shift;
+
+		for (int seed = rp.seed_start; seed < rp.seed_start + rp.seed_num; seed++)
+		{
+			cp.seed = seed;
+
+			for (int eps_id = 0; eps_id < rp.cd_eps_num; eps_id++)
+			{
+				cd_eps[eps_id] = rp.cd_eps * pow(10.0, (1.0 / double(rp.cd_eps_ndpd)) * double(eps_id));
+
+				cp.cd_eps = cd_eps[eps_id];
+
+				cout << "U = " << cp.U << " seed = " << cp.seed << " eps = " << cp.cd_eps << endl;
+
+				MainData md;
+
+				init_main_data(cp, md);
+				init_cd_d_data(cp, md);
+
+				init_cond(rp, cp, md);
+
+				int_trans_proc(cp, md);
+
+				for (int per_id = 0; per_id < cp.np; per_id++)
+				{
+					int_period_cd_d(cp, md, per_id);
+				}
+
+				calc_ci(cp, md);
+
+				string fn_ci = rp.path + "ci" + file_name_suffix(rp, cp, 4);
+				write_double_data(fn_ci, &md.cd_ci, 1, 16, 0);
+
+				delete_main_data(md);
+				delete_cd_d_data(md);
+			}
+		}
+	}
+
+	delete[] cd_eps;
+}
+
 void basic_and_lpn_fin_exp(RunParam &rp, ConfigParam &cp)
 {
 	for (int U_id = 0; U_id < rp.U_num; U_id++)

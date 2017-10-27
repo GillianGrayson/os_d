@@ -10,4 +10,6 @@ void lpn_fin_exp(RunParam &rp, ConfigParam &cp);
 
 void cd_exp(RunParam &rp, ConfigParam &cp);
 
+void cd_d_exp(RunParam &rp, ConfigParam &cp);
+
 void basic_and_lpn_fin_exp(RunParam &rp, ConfigParam &cp);
