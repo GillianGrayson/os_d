@@ -5,7 +5,7 @@ N = 501;
 E = 0;
 J = -1;
 
-U = 0.15;
+U = 0.05;
 
 g = 0.1;
 A = -3.4;
@@ -20,6 +20,7 @@ nus = linspace(0, pi, nu_size)';
 
 data_path = '../../../data/cluster/unn';
 
+warning('off', 'all');
 
 local_path = sprintf('drt_%d/N_%d/E0_%0.4f/J_%0.4f/U_%0.4f/g_%0.4f/A0_%0.4f/omega_%0.4f/seed_%d', ...
     drt, ...
