@@ -3,13 +3,13 @@ clear all;
 data_path = '../../../source/cpp/MF/MF';
 
 task = 0;
-U = 0.5;
+U = 0.05;
 seed_start = 0;
 seed_num = 1;
 path = ''; 
 mt = 1;
 num_steps = 1000;
-npt = 2000;
+npt = 1000;
 np = 10000;
 E = 0.0;
 A = 3.4 ;

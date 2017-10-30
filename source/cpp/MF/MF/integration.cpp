@@ -14,7 +14,7 @@ void right_part(ConfigParam &cp, double * ks, double * x, double time)
 	}
 
 	ks[0] = 2.0 * cp.J * sin(x[1]) + 4.0 * cp.gamma * cos(x[1]) * cos(x[0]);
-	ks[1] = 2.0 * cp.J * cos(x[0]) * cos(x[1]) / sin(x[0]) - 2.0 * cp.E - 2.0 * driving + cp.U * cos(x[0]) - 4.0 * cp.gamma * sin(x[1]) / sin(x[0]);
+	ks[1] = 2.0 * cp.J * cos(x[0]) * cos(x[1]) / sin(x[0]) - 2.0 * cp.E - 2.0 * driving + 4.0 * cp.U * cos(x[0]) - 4.0 * cp.gamma * sin(x[1]) / sin(x[0]);
 	ks[2] = 1.0;
 }
 
@@ -23,7 +23,7 @@ void right_part_lpn(ConfigParam &cp, double * ks_lpn, double * x_lpn, double tim
 	double F1_x = (-4.0 * cp.gamma * cos(x[1]) * sin(x[0]));
 	double F1_y = (2.0 * cp.J * cos(x[1]) - 4.0 * cp.gamma * cos(x[0]) * sin(x[1]));
 	double F1_t = 0.0;
-	double F2_x = (-2.0 * cp.J * cos(x[1]) / pow(sin(x[0]), 2.0) - cp.U * sin(x[0]) + 4.0 * cp.gamma * sin(x[1]) * cos(x[0]) / pow(sin(x[0]), 2.0));
+	double F2_x = (-2.0 * cp.J * cos(x[1]) / pow(sin(x[0]), 2.0) - 4.0 * cp.U * sin(x[0]) + 4.0 * cp.gamma * sin(x[1]) * cos(x[0]) / pow(sin(x[0]), 2.0));
 	double F2_y = (-2.0 * cp.J * cos(x[0]) / sin(x[0]) * sin(x[1]) - 4.0 * cp.gamma * cos(x[1]) / sin(x[0]));
 	double F2_t = 0.0;
 	if (cp.mt == 1)
