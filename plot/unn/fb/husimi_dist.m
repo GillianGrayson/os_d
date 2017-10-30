@@ -12,11 +12,11 @@ A = -3.4;
 omega = 1;
 seed = 1;
 
-phi_size = 500;
-nu_size = 500;
+phi_size = 100;
+nu_size = 100;
 
-phis = linspace(0, 2*pi, phi_size);
-nus = linspace(0, pi, nu_size);
+phis = linspace(0, 2*pi, phi_size)';
+nus = linspace(0, pi, nu_size)';
 
 data_path = '../../../data/cluster/unn';
 
@@ -26,7 +26,7 @@ local_path = sprintf('drt_%d/N_%d/E0_%0.4f/J_%0.4f/U_%0.4f/g_%0.4f/A0_%0.4f/omeg
     N-1, ...
     E, ...
     J, ...
-    Us(U_id), ...
+    U, ...
     g, ...
     A, ...
     omega, ...
@@ -42,13 +42,14 @@ for s_id = 1 : size(rho_data, 1)
     rho(curr_row, curr_col) = rho_data(s_id, 3) + sqrt(-1) * rho_data(s_id, 4);
 end
 
+tic
 hus = husimi(nus, phis, rho);
-    
+toc 
 
 fig = figure;
 propertyeditor(fig);
 
-hLine = imagesc(nus, phis, hus);
+hLine = imagesc(nus, phis, real(hus'));
 set(gca, 'FontSize', 30);
 xlabel('$\nu$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
@@ -58,6 +59,5 @@ h = colorbar;
 set(gca, 'FontSize', 30);
 title(h, 'H', 'FontSize', 33);
 set(gca,'YDir','normal');
-ylim([Ns(1) - 0.5 Ns(end) + 0.5]);
 hold all;
 
