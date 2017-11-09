@@ -11,7 +11,6 @@ exp_iphi = exp(sqrt(-1)*phi);
 y = zeros(Ngrid,Mgrid);
 
 for i=1:Ngrid
-    i = i
     for j=1:Mgrid
         for n=0:N
             coherent(n+1,1) = sqrt(nchoosek(N,n))*cos_theta(i)^n*(sin_theta(i)*exp_iphi(j))^(N-n);

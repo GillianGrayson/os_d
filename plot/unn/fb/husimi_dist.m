@@ -5,12 +5,14 @@ N = 501;
 E = 0;
 J = -1;
 
-U = 0.05;
+U = 0.10;
 
 g = 0.1;
 A = -3.4;
 omega = 1;
 seed = 1;
+
+np = 41;
 
 phi_size = 100;
 nu_size = 100;
@@ -22,7 +24,8 @@ data_path = '../../../data/cluster/unn';
 
 warning('off', 'all');
 
-local_path = sprintf('drt_%d/N_%d/E0_%0.4f/J_%0.4f/U_%0.4f/g_%0.4f/A0_%0.4f/omega_%0.4f/seed_%d', ...
+local_path = sprintf('np_%d/drt_%d/N_%d/E0_%0.4f/J_%0.4f/U_%0.4f/g_%0.4f/A0_%0.4f/omega_%0.4f/seed_%d', ...
+    np, ...
     drt, ...
     N-1, ...
     E, ...
