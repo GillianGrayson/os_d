@@ -18,6 +18,7 @@ void output_setting(ConfigParam &param)
   printf("driving_type, %d \n", param.driving_type);
   printf("avg_purity, %d \n", param.avg_purity);
   printf("multiplicators, %d \n", param.multiplicators);
+  printf("deep_dump, %d \n", param.deep_dump);
 
   if(param.hasDriving == 1)
   {

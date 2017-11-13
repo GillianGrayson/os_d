@@ -64,6 +64,10 @@ void set_param(ConfigParam &param,char *s, double value)
   {
 	  param.multiplicators = (int)value;
   }
+  if (strcmp(s, "deep_dump,") == 0)
+  {
+	  param.deep_dump = (int)value;
+  }
   if(strcmp(s, "CalcEig,") == 0)
   {
     param.CalcEig = (int) value;

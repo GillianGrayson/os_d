@@ -8,7 +8,8 @@ hasDriving, 1
 driving_type, 1
 avg_purity, 0
 multiplicators, 0
+deep_dump, 1
 A0, -3.4 
 w, 1
-N_T, 11
+N_T, 10
 NSTEP, 10000

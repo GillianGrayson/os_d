@@ -21,6 +21,7 @@ struct ConfigParam
 	int driving_type;
 	int avg_purity;
 	int multiplicators;
+	int deep_dump;
 	int NSTEP;
 	int N_T;
 	int CalcEig;
@@ -38,6 +39,7 @@ struct ConfigParam
 		int _driving_type = 0,
 		int _avg_purity = 0,
 		int _multiplicators = 0,
+		int _deep_dump = 0,
 		int _CalcEig = 1
 		)
 	{
@@ -55,6 +57,7 @@ struct ConfigParam
 		driving_type = _driving_type;
 		avg_purity = _avg_purity;
 		multiplicators = _multiplicators;
+		deep_dump = _deep_dump;
 		N_T = _N_T;
 		CalcEig = _CalcEig;
 	}

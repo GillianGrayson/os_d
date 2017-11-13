@@ -323,6 +323,8 @@ int main(int argc, char ** argv)
 	fflush(memlog);
 	number_of_allocs = 0;
 
+	char file_name[512];
+
 	//saveMatrix("Gs.txt", model->Gs);
 	//save_complex_vector("Ks.txt", model->Ks, model->N_mat);
 
@@ -364,6 +366,8 @@ int main(int argc, char ** argv)
 
 		dcomplex diff_it;
 
+		
+
 		for (int itr = 0; itr < model->conf.N_T; itr++)
 		{
 			calcODE_real(model, model->conf.h,
@@ -371,6 +375,17 @@ int main(int argc, char ** argv)
 
 			diff_it = calcDiffIter(model);
 			printf("diff on %d is %0.16le %0.16le \n", itr, diff_it.re, diff_it.im);
+
+			if (model->conf.deep_dump == 1)
+			{
+				real_to_complex(model->RhoF, model->N_mat);
+
+				sprintf(file_name, "rho_p%d.txt", itr);
+				calcRho_fill(model);
+				saveMatrix(file_name, model->Rho);
+
+				complex_to_real(model->RhoF, model->N_mat);
+			}
 		}
 
 		toZeroBase(*(model->Gs));
@@ -393,7 +408,6 @@ int main(int argc, char ** argv)
 
 	linSolvCheck(model);
 
-	//fprintf(mem_time, "calcRho_fill(model); \n");
 	time = omp_get_wtime();
 	calcRho_fill(model);
 	//check_rho_evals(model);
@@ -405,6 +419,13 @@ int main(int argc, char ** argv)
 
 	saveMatrix("rho.txt", model->Rho);
 	save_mtx_diag("rho_diag.txt", model->Rho);
+
+	if (model->conf.deep_dump == 1)
+	{
+		sprintf(file_name, "rho_p%d.txt", model->conf.N_T);
+		calcRho_fill(model);
+		saveMatrix(file_name, model->Rho);
+	}
 
 	all_time = omp_get_wtime() - all_time;
 
