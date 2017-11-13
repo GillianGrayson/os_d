@@ -1,13 +1,13 @@
 clear all;
 
 drt = 1;
-N_begin = 6;
-N_shift = 5;
-N_num = 100;
+N = 501;
 E = 0;
 J = -1;
 
-U = 0.10;
+U_begin = 0.005;
+U_shift = 0.005;
+U_num = 100;
 
 g = 0.1;
 A = -3.4;
@@ -26,14 +26,14 @@ data_path = '../../../data/cluster/unn';
 
 warning('off', 'all');
 
-Ns = zeros(N_num, 1);
+Us = zeros(U_num, 1);
 
-husimis = zeros(N_num, nu_size);
+husimis = zeros(U_num, nu_size);
 
-for N_id = 1 : N_num
+for U_id = 1 : U_num
     
-    N = N_begin + (N_id-1) * N_shift
-    Ns(N_id) = N;
+    U = U_begin + (U_id-1) * U_shift
+    Us(U_id) = U;
     
     local_path = sprintf('np_%d/drt_%d/N_%d/E0_%0.4f/J_%0.4f/U_%0.4f/g_%0.4f/A0_%0.4f/omega_%0.4f/seed_%d', ...
         np, ...
@@ -61,16 +61,16 @@ for N_id = 1 : N_num
     hus = husimi(nus, phis, rho);
     toc
     
-    husimis(:, N_id) = hus;
+    husimis(:, U_id) = hus;
 
 end
 
 fig = figure;
 propertyeditor(fig);
 
-hLine = imagesc(Ns, nus, real(husimis));
+hLine = imagesc(Us, nus, real(husimis));
 set(gca, 'FontSize', 30);
-xlabel('$N$', 'Interpreter', 'latex');
+xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$\nu$', 'Interpreter', 'latex');
 colormap hot;
