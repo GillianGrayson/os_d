@@ -1,7 +1,7 @@
 clear all;
 
 drt = 1;
-N = 501;
+N = 101;
 E = 0;
 J = -1;
 
@@ -24,11 +24,11 @@ data_path = '../../../data/cluster/unn';
 
 warning('off', 'all');
 
-periods = zeros(0, np, np + 1);
+periods = linspace(0, np, np + 1);
 
 husimis = zeros(np + 1, nu_size);
 
-for per_id = 0 : (np + 1)
+for per_id = 0 : np
     
     per_id = per_id
     
@@ -65,7 +65,7 @@ end
 fig = figure;
 propertyeditor(fig);
 
-hLine = imagesc(periods, nus, real(husimis));
+hLine = imagesc(periods, nus, real(husimis'));
 set(gca, 'FontSize', 30);
 xlabel('$t/T$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
