@@ -8,9 +8,9 @@ $root = "/home/yusipov_i/Work/os_d";
 
 $PI = 3.14159265358979323846;
 
-for($curr_N = 50; $curr_N <= 500; $curr_N += 50)
+for($curr_N = 500; $curr_N <= 500; $curr_N += 50)
 {
-	for($curr_U = 0.1000; $curr_U <= 0.10000001; $curr_U += 0.005)
+	for($curr_U = 0.005; $curr_U <= 0.75000001; $curr_U += 0.005)
 	{
 		print "N = $curr_N\n";
 		print "U = $curr_U\n";
@@ -25,10 +25,10 @@ for($curr_N = 50; $curr_N <= 500; $curr_N += 50)
 		$driving_type = 1;
 		$avg_purity = 0;
 		$multiplicators = 0;
-		$deep_dump = 1;
+		$deep_dump = 0;
 		$A0 = -3.4; 
 		$w = 1;
-		$N_T = 200;
+		$N_T = 100;
 		$NSTEP = 20000;
 		
 		$seed_begin = 1;
