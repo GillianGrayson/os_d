@@ -24,13 +24,13 @@ int main(int argc, char ** argv)
 	{
 		lpn_fin_exp(rp, cp);
 	}
-	else if (rp.task == CD_EXP_ID)
-	{
-		cd_exp(rp, cp);
-	}
 	else if (rp.task == BASIC_AND_LPN_FIN_EXP_ID)
 	{
 		basic_and_lpn_fin_exp(rp, cp);
+	}
+	else if (rp.task == CD_EXP_ID)
+	{
+		cd_exp(rp, cp);
 	}
 	else if (rp.task == CD_D_EXP_ID)
 	{

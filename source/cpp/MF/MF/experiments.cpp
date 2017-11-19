@@ -101,6 +101,72 @@ void lpn_fin_exp(RunParam &rp, ConfigParam &cp)
 	}
 }
 
+void basic_and_lpn_fin_exp(RunParam &rp, ConfigParam &cp)
+{
+	for (int U_id = 0; U_id < rp.U_num; U_id++)
+	{
+		cp.U = rp.U_start + double(U_id) * rp.U_shift;
+
+		for (int seed = rp.seed_start; seed < rp.seed_start + rp.seed_num; seed++)
+		{
+			cp.seed = seed;
+
+			cout << "U = " << cp.U << " seed = " << seed << endl;
+			string fn_exps_lpn = rp.path + "exps_lpn" + file_name_suffix(rp, cp, 4);
+			string fn_data = rp.path + "data" + file_name_suffix(rp, cp, 4);
+
+			double ** data = new double*[2];
+			for (int d_id = 0; d_id < 2; d_id++)
+			{
+				data[d_id] = new double[cp.np + 1];
+			}
+
+			MainData md;
+
+			init_main_data(cp, md);
+			init_lpn_data(cp, md);
+
+			double * exps_lpn = new double[md.num_lpn];
+			for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+			{
+				exps_lpn[lpn_id] = 0.0;
+			}
+
+			init_cond(rp, cp, md);
+			init_cond_lpn(cp, md);
+
+			int_trans_proc(cp, md);
+
+			for (int per_id = 0; per_id < cp.np; per_id++)
+			{
+				int_period_lpn(cp, md, per_id);
+
+				data[0][per_id + 1] = md.time;
+				data[1][per_id + 1] = md.data[0];
+			}
+
+			for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
+			{
+				exps_lpn[lpn_id] = md.exps_lpn[lpn_id];
+			}
+
+			write_2d_double_data(fn_data, data, 2, cp.np + 1, 16, 0);
+			write_double_data(fn_exps_lpn, exps_lpn, md.num_lpn, 16, 0);
+
+			delete_main_data(md);
+			delete_lpn_data(md);
+
+			for (int d_id = 0; d_id < 2; d_id++)
+			{
+				delete[] data[d_id];
+			}
+			delete[] data;
+
+			delete[] exps_lpn;
+		}
+	}
+}
+
 void cd_exp(RunParam &rp, ConfigParam &cp)
 {
 	double * cd_eps = new double[rp.cd_eps_num];
@@ -245,68 +311,3 @@ void cd_sd_exp(RunParam &rp, ConfigParam &cp)
 	delete[] cd_eps;
 }
 
-void basic_and_lpn_fin_exp(RunParam &rp, ConfigParam &cp)
-{
-	for (int U_id = 0; U_id < rp.U_num; U_id++)
-	{
-		cp.U = rp.U_start + double(U_id) * rp.U_shift;
-
-		for (int seed = rp.seed_start; seed < rp.seed_start + rp.seed_num; seed++)
-		{
-			cp.seed = seed;
-
-			cout << "U = " << cp.U << " seed = " << seed << endl;
-			string fn_exps_lpn = rp.path + "exps_lpn" + file_name_suffix(rp, cp, 4);
-			string fn_data = rp.path + "data" + file_name_suffix(rp, cp, 4);
-
-			double ** data = new double*[2];
-			for (int d_id = 0; d_id < 2; d_id++)
-			{
-				data[d_id] = new double[cp.np + 1];
-			}
-
-			MainData md;
-
-			init_main_data(cp, md);
-			init_lpn_data(cp, md);
-
-			double * exps_lpn = new double[md.num_lpn];
-			for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
-			{
-				exps_lpn[lpn_id] = 0.0;
-			}
-
-			init_cond(rp, cp, md);
-			init_cond_lpn(cp, md);
-
-			int_trans_proc(cp, md);
-
-			for (int per_id = 0; per_id < cp.np; per_id++)
-			{
-				int_period_lpn(cp, md, per_id);
-
-				data[0][per_id + 1] = md.time;
-				data[1][per_id + 1] = md.data[0];
-			}
-
-			for (int lpn_id = 0; lpn_id < md.num_lpn; lpn_id++)
-			{
-				exps_lpn[lpn_id] = md.exps_lpn[lpn_id];
-			}
-
-			write_2d_double_data(fn_data, data, 2, cp.np + 1, 16, 0);
-			write_double_data(fn_exps_lpn, exps_lpn, md.num_lpn, 16, 0);
-
-			delete_main_data(md);
-			delete_lpn_data(md);
-
-			for (int d_id = 0; d_id < 2; d_id++)
-			{
-				delete[] data[d_id];
-			}
-			delete[] data;
-
-			delete[] exps_lpn;
-		}
-	}
-}
