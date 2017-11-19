@@ -7,14 +7,14 @@ J = -1;
 
 U_begin = 0.005;
 U_shift = 0.005;
-U_num = 100;
+U_num = 150;
 
 g = 0.1;
 A = -3.4;
 omega = 1;
 seed = 1;
 
-np = 41;
+np = 100;
 
 nu_size = 100;
 
@@ -61,18 +61,18 @@ for U_id = 1 : U_num
     hus = husimi(nus, phis, rho);
     toc
     
-    husimis(:, U_id) = hus;
+    husimis(U_id, :) = hus;
 
 end
 
 fig = figure;
 propertyeditor(fig);
 
-hLine = imagesc(Us, nus, real(husimis));
+hLine = imagesc(Us, nus, real(husimis'));
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$\nu$', 'Interpreter', 'latex');
+ylabel('$\theta$', 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);

@@ -1,18 +1,20 @@
 clear all;
 
 drt = 1;
-N = 101;
+N = 501;
 E = 0;
 J = -1;
 
-U_start = 0.01;
-U_shift = 0.01;
-U_num = 75;
+U_start = 0.005;
+U_shift = 0.005;
+U_num = 150;
 
 g = 0.1;
 A = -3.4;
 omega = 1;
 seed = 1;
+
+np = 100;
 
 data_path = '../../../data/cluster/unn';
 
@@ -27,7 +29,8 @@ for U_id = 1:U_num
     
     Us(U_id) = U_start + (U_id-1) * U_shift;
     
-    local_path = sprintf('drt_%d/N_%d/E0_%0.4f/J_%0.4f/U_%0.4f/g_%0.4f/A0_%0.4f/omega_%0.4f/seed_%d', ...
+   local_path = sprintf('np_%d/drt_%d/N_%d/E0_%0.4f/J_%0.4f/U_%0.4f/g_%0.4f/A0_%0.4f/omega_%0.4f/seed_%d', ...
+        np, ...
         drt, ...
         N-1, ...
         E, ...

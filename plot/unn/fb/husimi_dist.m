@@ -5,14 +5,14 @@ N = 501;
 E = 0;
 J = -1;
 
-U = 0.10;
+U = 0.15;
 
 g = 0.1;
 A = -3.4;
 omega = 1;
 seed = 1;
 
-np = 41;
+np = 100;
 
 phi_size = 100;
 nu_size = 100;
@@ -55,7 +55,7 @@ propertyeditor(fig);
 
 hLine = imagesc(nus, phis, real(hus'));
 set(gca, 'FontSize', 30);
-xlabel('$\nu$', 'Interpreter', 'latex');
+xlabel('$\theta$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$\phi$', 'Interpreter', 'latex');
 colormap hot;

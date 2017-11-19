@@ -72,7 +72,7 @@ hLine = imagesc(Ns, nus, real(husimis));
 set(gca, 'FontSize', 30);
 xlabel('$N$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$\nu$', 'Interpreter', 'latex');
+ylabel('$\theta$', 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);
