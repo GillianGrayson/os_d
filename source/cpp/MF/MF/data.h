@@ -49,6 +49,8 @@ void init_cd_d_data(ConfigParam &cp, MainData &md);
 
 void init_cd_sd_data(ConfigParam &cp, MainData &md);
 
+void print_cd_info(MainData &md);
+
 void delete_main_data(MainData &dt);
 
 void delete_lpn_data(MainData &md);

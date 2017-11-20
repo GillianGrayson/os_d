@@ -133,6 +133,13 @@ void init_cd_sd_data(ConfigParam &cp, MainData &md)
 	}
 }
 
+void print_cd_info(MainData &md)
+{
+	cout << "cd_ps = " << md.cd_ps << endl;
+	cout << "cd_size = " << md.cd_size << endl;
+	cout << "cd_M = " << md.cd_M << endl;
+}
+
 void delete_main_data(MainData &md)
 {
 	delete_data(md.data);
@@ -321,6 +328,8 @@ void calc_ci(ConfigParam &cp, MainData &md)
 			}
 		}
 	}
+
+	cout << "unnormed integral = " << integral << endl;
 
 	integral /= (double(md.cd_M) * double(md.cd_M - 1));
 

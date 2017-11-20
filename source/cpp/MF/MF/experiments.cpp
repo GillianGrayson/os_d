@@ -192,6 +192,8 @@ void cd_exp(RunParam &rp, ConfigParam &cp)
 				init_main_data(cp, md);
 				init_cd_data(cp, md);
 
+				print_cd_info(md);
+
 				init_cond(rp, cp, md);
 
 				int_trans_proc(cp, md);
@@ -240,6 +242,8 @@ void cd_d_exp(RunParam &rp, ConfigParam &cp)
 				init_main_data(cp, md);
 				init_cd_d_data(cp, md);
 
+				print_cd_info(md);
+
 				init_cond(rp, cp, md);
 
 				int_trans_proc(cp, md);
@@ -287,6 +291,8 @@ void cd_sd_exp(RunParam &rp, ConfigParam &cp)
 
 				init_main_data(cp, md);
 				init_cd_sd_data(cp, md);
+
+				print_cd_info(md);
 
 				init_cond(rp, cp, md);
 

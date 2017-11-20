@@ -18,7 +18,8 @@ void print_int_array(int * data, int N)
 string file_name_suffix(RunParam &rp, ConfigParam &cp, int precision)
 {
 	stringstream fns;
-	if (rp.task == CD_EXP_ID)
+	fns << "_t(" << rp.task << ")";
+	if (rp.task >= 3)
 	{
 		fns << "_eps(" << setprecision(10) << fixed << cp.cd_eps << ")";
 		fns << "_m(" << cp.cd_dim << ")";
