@@ -65,16 +65,9 @@ string file_name_suffix(ConfigParam &cp)
 {
 	stringstream fns;
 
-	for (std::map<string, pair<double, int>>::iterator it = cp.fn_suffixes.begin(); it != cp.fn_suffixes.end(); ++it)
+	for (std::map<string, string>::iterator it = cp.fn_suffixes.begin(); it != cp.fn_suffixes.end(); ++it)
 	{
-		if (it->second.second > 0)
-		{
-			fns << "_" << it->first << "(" << setprecision(it->second.second) << fixed << it->second.first << ")";
-		}
-		else
-		{
-			fns << "_" << it->first << "(" << int(it->second.first) << ")";
-		}
+		fns << "_" << it->first << "(" << it->second << ")";
 	}
 
 	fns << ".txt";
