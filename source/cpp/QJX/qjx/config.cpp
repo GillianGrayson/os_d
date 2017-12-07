@@ -56,6 +56,34 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		rp.path = val;
 	}
+
+
+	if (str.compare("qj_num_tp_periods") == 0)
+	{
+		cp.qj_num_tp_periods = atoi(val.c_str());
+	}
+	if (str.compare("qj_num_obs_periods") == 0)
+	{
+		cp.qj_num_obs_periods = atoi(val.c_str());
+	}
+	if (str.compare("qj_num_steps") == 0)
+	{
+		cp.qj_num_steps = atoi(val.c_str());
+	}
+	if (str.compare("qj_deep") == 0)
+	{
+		cp.qj_deep = atoi(val.c_str());
+	}
+
+
+	if (str.compare("dump_type") == 0)
+	{
+		cp.dump_type = atoi(val.c_str());
+	}
+	if (str.compare("dump_num") == 0)
+	{
+		cp.dump_num = atoi(val.c_str());
+	}
 }
 
 void init_params(RunParam &rp, ConfigParam &cp, char * fn_config, char * fn_param)
@@ -117,10 +145,56 @@ void output_params(RunParam &rp, ConfigParam &cp)
 	cout << "init_fn = " << rp.init_fn << endl;
 	cout << "path = " << rp.path << endl;
 
+	cout << "qj_num_tp_periods = " << cp.qj_num_tp_periods << endl;
+	cout << "qj_num_obs_periods = " << cp.qj_num_obs_periods << endl;
+	cout << "qj_num_steps = " << cp.qj_num_steps << endl;
+	cout << "qj_deep = " << cp.qj_deep << endl;
+
+	cout << "dump_type = " << cp.dump_type << endl;
+	cout << "dump_num = " << cp.dump_num << endl;
+
 	for (std::map<string, double>::iterator it = cp.params.begin(); it != cp.params.end(); ++it)
 	{
 		std::cout << it->first << ": " << it->second << endl;
 	}
 		
 	cout << "######################################" << endl;
+}
+
+void init_fn_suffixes(RunParam &rp, ConfigParam &cp, int precision)
+{
+	stringstream suffix;
+
+	suffix << "_N(" << cp.params.find("N")->second << ")";
+
+	suffix << "_diss("
+		<< cp.params.find("diss_type")->second << "_"
+		<< setprecision(precision) << cp.params.find("diss_gamma")->second << "_"
+		<< setprecision(precision) << cp.params.find("diss_phase")->second << ")";
+
+	suffix << "_drv("
+		<< cp.params.find("drv_type")->second << "_"
+		<< setprecision(precision) << cp.params.find("drv_ampl")->second << "_"
+		<< setprecision(precision) << cp.params.find("drv_freq")->second << "_"
+		<< setprecision(precision) << cp.params.find("drv_phase")->second << ")";
+
+	suffix << "_init("
+		<< cp.params.find("init_type")->second << "_"
+		<< cp.params.find("init_state")->second << ")";
+
+	if (rp.sys_id == 0)
+	{
+		suffix << "_prm("
+			<< setprecision(precision) << cp.params.find("prm_E")->second << "_"
+			<< setprecision(precision) << cp.params.find("prm_U")->second << "_"
+			<< setprecision(precision) << cp.params.find("prm_J")->second << ")";
+	}
+
+	suffix << "_rnd("
+		<< cp.params.find("rdn_seed")->second << "_"
+		<< cp.params.find("rnd_mns")->second << ")";
+
+	suffix << ".txt";
+
+	cp.fn_suffix = suffix.str();
 }

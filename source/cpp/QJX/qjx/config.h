@@ -55,7 +55,7 @@ struct ConfigParam
 {
 	map<string, double> params;					// System params
 
-	map<string, string> fn_suffixes;			// File name suffixes
+	string fn_suffix;							// File name suffixes
 
 	int	qj_num_tp_periods;						// Number of periods in trans process
 	int	qj_num_obs_periods;						// Number of observable propagation periods
@@ -92,3 +92,5 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val);
 void init_params(RunParam &rp, ConfigParam &cp, char * fn_config, char * fn_param);
 
 void output_params(RunParam &rp, ConfigParam &param);
+
+void init_fn_suffixes(RunParam &rp, ConfigParam &cp, int precision);

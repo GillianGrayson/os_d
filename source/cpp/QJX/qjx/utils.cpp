@@ -61,20 +61,6 @@ void print_int_array(int * data, int N)
 	}
 }
 
-string file_name_suffix(ConfigParam &cp)
-{
-	stringstream fns;
-
-	for (std::map<string, string>::iterator it = cp.fn_suffixes.begin(); it != cp.fn_suffixes.end(); ++it)
-	{
-		fns << "_" << it->first << "(" << it->second << ")";
-	}
-
-	fns << ".txt";
-
-	return fns.str();
-}
-
 void save_double_data(string file_name, double * data, int size, int precision, bool append)
 {
 	if (append)
