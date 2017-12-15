@@ -4,13 +4,12 @@
 
 struct MainData
 {
-	int sys_size;
+	int sys_size;					// Number of states in system
+	int num_diss;					// Number of dissipators
 
-	double * hamiltonian;		// Hamiltonian
-	double * hamiltonian_drv;	// Hamiltonian driving
+	double * hamiltonian;			// Hamiltonian
+	double * hamiltonian_drv;		// Hamiltonian driving
+
+	MKL_Complex16 ** dissipators;	// Dissipators
 };
 
-void init_main_data_0(RunParam &rp, ConfigParam &cp, MainData &md);
-void delete_main_data(MainData &md);
-
-void f_basis_prop(RunParam &rp, ConfigParam &cp, MainData &md);

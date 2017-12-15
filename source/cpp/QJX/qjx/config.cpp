@@ -190,9 +190,9 @@ void init_fn_suffixes(RunParam &rp, ConfigParam &cp, int precision)
 			<< setprecision(precision) << cp.params.find("prm_J")->second << ")";
 	}
 
-	suffix << "_rnd("
-		<< cp.params.find("rdn_seed")->second << "_"
-		<< cp.params.find("rnd_mns")->second << ")";
+	suffix << "_rndqj("
+		<< cp.params.find("rdnqj_seed")->second << "_"
+		<< cp.params.find("rndqj_mns")->second << ")";
 
 	suffix << ".txt";
 

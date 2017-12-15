@@ -13,8 +13,6 @@ int bit_at(int value, int position);
 
 void print_int_array(int * data, int N);
 
-string file_name_suffix(ConfigParam &cp);
-
 void save_double_data(string file_name, double * data, int size, int precision, bool append);
 
 void save_2d_double_data(string file_name, double ** data, int size_1, int size_2, int precision, bool append);

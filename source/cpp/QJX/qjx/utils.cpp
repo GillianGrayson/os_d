@@ -209,7 +209,6 @@ void save_int_data(string file_name, int * data, int size, bool append)
 	}
 }
 
-
 void save_complex_data(string file_name, MKL_Complex16 * data, int size, int precision, bool append)
 {
 	if (append)
