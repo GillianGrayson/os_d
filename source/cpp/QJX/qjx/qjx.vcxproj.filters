@@ -36,15 +36,21 @@
     <ClInclude Include="outputter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="destructor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="split.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quantum_jumps.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="debugger.cpp">
@@ -54,6 +60,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="outputter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="destructor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="quantum_jumps.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

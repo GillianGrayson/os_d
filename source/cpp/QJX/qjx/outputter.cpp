@@ -21,14 +21,14 @@ void DimerIOuputBehavior::init_suffix(ConfigParam * cp, int precision) const
 		<< cp->params.find("init_type")->second << "_"
 		<< cp->params.find("init_state")->second << ")";
 
+	suffix << "_rndqj("
+		<< cp->params.find("rdnqj_seed")->second << "_"
+		<< cp->params.find("rndqj_mns")->second << ")";
+
 	suffix << "_prm("
 		<< setprecision(precision) << cp->params.find("prm_E")->second << "_"
 		<< setprecision(precision) << cp->params.find("prm_U")->second << "_"
 		<< setprecision(precision) << cp->params.find("prm_J")->second << ")";
-
-	suffix << "_rndqj("
-		<< cp->params.find("rdnqj_seed")->second << "_"
-		<< cp->params.find("rndqj_mns")->second << ")";
 
 	suffix << ".txt";
 

@@ -13,6 +13,9 @@
 #include <math.h>
 #include <map>
 
+#include <Eigen/Dense>
+#include <unsupported/Eigen/MatrixFunctions>
+
 #define PI 3.1415926535897932384626433832795
 #define EPS 1.0e-14
 
@@ -92,5 +95,3 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val);
 void init_params(RunParam &rp, ConfigParam &cp, char * fn_config, char * fn_param);
 
 void output_params(RunParam &rp, ConfigParam &param);
-
-void init_fn_suffixes(RunParam &rp, ConfigParam &cp, int precision);

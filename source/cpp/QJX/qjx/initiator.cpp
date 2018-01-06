@@ -5,10 +5,13 @@ void DimerInitBehaviour::init_sizes(RunParam * rp, ConfigParam * cp, MainData * 
 	int N = int(cp->params.find("N")->second);
 	
 	md->sys_size = N + 1;
+
 	md->num_diss = 1;
+
+	md->num_ham_qj = 2;
 }
 
-void DimerInitBehaviour::init_hamiltonian(RunParam * rp, ConfigParam * cp, MainData * md) const
+void DimerInitBehaviour::init_hamiltonians(RunParam * rp, ConfigParam * cp, MainData * md) const
 {
 	int N = int(cp->params.find("N")->second);
 
@@ -49,7 +52,7 @@ void DimerInitBehaviour::init_hamiltonian(RunParam * rp, ConfigParam * cp, MainD
 	}
 }
 
-void DimerInitBehaviour::init_dissipator(RunParam * rp, ConfigParam * cp, MainData * md) const
+void DimerInitBehaviour::init_dissipators(RunParam * rp, ConfigParam * cp, MainData * md) const
 {
 	int N = int(cp->params.find("N")->second);
 
@@ -89,4 +92,92 @@ void DimerInitBehaviour::init_dissipator(RunParam * rp, ConfigParam * cp, MainDa
 		md->dissipators[0][down_left].real -= sqrt(double((md->sys_size - (st_id + 1)) * (st_id + 1)));
 		md->dissipators[0][up_right].real += sqrt(double((st_id + 1) * (md->sys_size - (st_id + 1))));
 	}
+}
+
+void DimerInitBehaviour::init_hamiltonians_qj(RunParam * rp, ConfigParam * cp, MainData * md) const
+{
+	int N = int(cp->params.find("N")->second);
+
+	double prm_E = double(cp->params.find("prm_E")->second);
+	double drv_ampl = double(cp->params.find("drv_ampl")->second);
+
+	double diss_gamma = double(cp->params.find("diss_gamma")->second);
+
+	MKL_Complex16 diss_gamma_cmplx = { diss_gamma, 0.0 };
+	MKL_Complex16 zero_cmplx = { 0.0, 0.0 };
+
+	md->hamiltonians_qj = new MKL_Complex16*[md->num_ham_qj];
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		md->hamiltonians_qj[qj_ham_id] = new MKL_Complex16[md->num_ham_qj];
+	}
+
+	MKL_Complex16 * diss_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	MKL_Complex16 * hamitlonian_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			diss_part[index].real = 0.0;
+			diss_part[index].imag = 0.0;
+
+			hamitlonian_part[index].real = 0.0;
+			hamitlonian_part[index].imag = 0.0;
+
+			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+			{
+				md->hamiltonians_qj[qj_ham_id][index].real = 0.0;
+				md->hamiltonians_qj[qj_ham_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	cblas_zgemm(
+		CblasRowMajor,
+		CblasConjTrans,
+		CblasNoTrans,
+		md->sys_size,
+		md->sys_size,
+		md->sys_size,
+		&diss_gamma_cmplx,
+		md->dissipators[0],
+		md->sys_size,
+		md->dissipators[0],
+		md->sys_size,
+		&zero_cmplx,
+		diss_part,
+		md->sys_size
+	);
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			hamitlonian_part[index].real += 0.5 * diss_part[index].imag;
+			hamitlonian_part[index].imag -= 0.5 * diss_part[index].real;
+		}
+	}
+
+	double E_0 = prm_E + drv_ampl;
+	double E_1 = prm_E - drv_ampl;
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonians_qj[0][index].real += (hamitlonian_part[index].imag + E_0 * 0.0);
+			md->hamiltonians_qj[0][index].imag -= (hamitlonian_part[index].real + E_0 * md->hamiltonian_drv[index]);
+
+			md->hamiltonians_qj[1][index].real += (hamitlonian_part[index].imag + E_1 * 0.0);
+			md->hamiltonians_qj[1][index].imag -= (hamitlonian_part[index].real + E_1 * md->hamiltonian_drv[index]);
+		}
+	}
+
+	delete[] diss_part;
+	delete[] hamitlonian_part;
 }
