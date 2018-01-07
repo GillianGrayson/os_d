@@ -32,6 +32,8 @@ struct RunParam
 	string	init_fn;			// Name of init file (if nessesary)
 	string	path;				// Path to files (if nessesary)
 
+	int		num_threads;		// Number of threads
+
 	RunParam(
 		int _sys_id = 0,
 		int	_task_id = 0,
@@ -40,7 +42,9 @@ struct RunParam
 		int _is_pp = 0,
 
 		string _init_fn = "",
-		string _path = ""
+		string _path = "",
+
+		int _num_threads = 1
 	)
 	{
 		sys_id = _sys_id;
@@ -51,6 +55,8 @@ struct RunParam
 
 		init_fn = _init_fn;
 		path = _path;
+
+		num_threads = _num_threads;
 	}
 };
 
@@ -62,8 +68,8 @@ struct ConfigParam
 
 	int	qj_num_tp_periods;						// Number of periods in trans process
 	int	qj_num_obs_periods;						// Number of observable propagation periods
-	int	qj_num_steps;							// Num splits or num integration steps per period
 	int	qj_deep;								// Deep
+	int qj_num_trajectories;					// Number of trajectories
 
 	int	dump_type;								// Dump type
 	int	dump_num;								// Number of dumps
@@ -72,8 +78,8 @@ struct ConfigParam
 	ConfigParam(
 		int _qj_num_tp_periods = 0,
 		int _qj_num_obs_periods = 10,
-		int _qj_num_steps = 2,
 		int _qj_deep = 16,
+		int _qj_num_trajectories = 1,
 
 		int _dump_type = 0,
 		int _dump_num = 0
@@ -81,8 +87,8 @@ struct ConfigParam
 	{
 		qj_num_tp_periods = _qj_num_tp_periods;
 		qj_num_obs_periods = _qj_num_obs_periods;
-		qj_num_steps = _qj_num_steps;
 		qj_deep = _qj_deep;
+		qj_num_trajectories = _qj_num_trajectories;
 
 		dump_type = _dump_type;
 		dump_num = _dump_num;

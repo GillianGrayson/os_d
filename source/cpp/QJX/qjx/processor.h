@@ -4,17 +4,19 @@
 #include "debugger.h"
 #include "outputter.h"
 #include "initiator.h"
+#include "destructor.h"
 
 class Processor
 {
 private:
 	RunParam * rp;
 	ConfigParam * cp;
-	MainData *md;
+	MainData * md;
 
 	DebugBehavior * db;
 	OuputBehavior * ob;
 	InitBehavior * ib;
+	FreeBehavior * fb;
 
 public:
 	Processor(RunParam * rp, ConfigParam * cp, MainData *md)
@@ -37,6 +39,11 @@ public:
 	void set_init_behaviour(InitBehavior* ib) 
 	{
 		this->ib = ib;
+	}
+
+	void set_free_behaviour(FreeBehavior* fb)
+	{
+		this->fb = fb;
 	}
 
 	void debug_save()

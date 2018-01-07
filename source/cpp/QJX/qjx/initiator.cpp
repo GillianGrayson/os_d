@@ -3,12 +3,12 @@
 void DimerInitBehaviour::init_sizes(RunParam * rp, ConfigParam * cp, MainData * md) const
 {
 	int N = int(cp->params.find("N")->second);
+	double T = 2.0 * PI / double(cp->params.find("drv_freq")->second);
 	
 	md->sys_size = N + 1;
-
 	md->num_diss = 1;
-
 	md->num_ham_qj = 2;
+	md->T = T;
 }
 
 void DimerInitBehaviour::init_hamiltonians(RunParam * rp, ConfigParam * cp, MainData * md) const

@@ -9,6 +9,8 @@ struct MainData
 	int num_diss;						// Number of dissipators
 	int num_ham_qj;						// Number of qj hamiltonians
 
+	double T;							// Period
+
 	double * hamiltonian;				// Hamiltonian
 	double * hamiltonian_drv;			// Hamiltonian driving
 

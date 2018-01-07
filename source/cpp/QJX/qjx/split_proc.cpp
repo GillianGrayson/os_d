@@ -1,11 +1,11 @@
-#include "quantum_jumps.h"
+#include "split_proc.h"
 
 Split * init_split_structure(RunParam * rp, ConfigParam * cp, MainData * md)
 {
 	Split * head = md->structure;
 	head = new Split[1];
 
-	double T = 2.0 * PI / double(cp->params.find("drv_freq")->second);
+	double T = md->T;
 	int N = md->sys_size;
 	int num_branches = md->num_ham_qj;
 
@@ -179,7 +179,7 @@ void delete_branch(Split * branch)
 	delete (branch);
 }
 
-void delete_split_struct(split * head)
+void delete_split_struct(Split * head)
 {
 	for (unsigned int i = 0; i < head->counter; i++)
 	{
@@ -190,7 +190,7 @@ void delete_split_struct(split * head)
 	delete (head->g);
 }
 
-void delete_branch_not_member(split * branch)
+void delete_branch_not_member(Split * branch)
 {
 	branch->prev = 0;
 	branch->matrix = 0;
@@ -225,7 +225,7 @@ void delete_branch_not_member(split * branch)
 	delete (branch);
 }
 
-void delete_split_struct_not_member(split * head)
+void delete_split_struct_not_member(Split * head)
 {
 	for (unsigned int i = 0; i < head->counter; i++)
 	{

@@ -42,7 +42,13 @@
     <ClInclude Include="split.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="quantum_jumps.h">
+    <ClInclude Include="qj_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="split_proc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qj_initiator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,7 +71,10 @@
     <ClCompile Include="destructor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="quantum_jumps.cpp">
+    <ClCompile Include="split_proc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qj_initiator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

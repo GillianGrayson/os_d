@@ -58,6 +58,12 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	}
 
 
+	if (str.compare("num_threads") == 0)
+	{
+		rp.num_threads = atoi(val.c_str());
+	}
+
+
 	if (str.compare("qj_num_tp_periods") == 0)
 	{
 		cp.qj_num_tp_periods = atoi(val.c_str());
@@ -66,13 +72,13 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		cp.qj_num_obs_periods = atoi(val.c_str());
 	}
-	if (str.compare("qj_num_steps") == 0)
-	{
-		cp.qj_num_steps = atoi(val.c_str());
-	}
 	if (str.compare("qj_deep") == 0)
 	{
 		cp.qj_deep = atoi(val.c_str());
+	}
+	if (str.compare("qj_num_trajectories") == 0)
+	{
+		cp.qj_num_trajectories = atoi(val.c_str());
 	}
 
 
@@ -145,10 +151,12 @@ void output_params(RunParam &rp, ConfigParam &cp)
 	cout << "init_fn = " << rp.init_fn << endl;
 	cout << "path = " << rp.path << endl;
 
+	cout << "num_threads = " << rp.num_threads << endl;
+
 	cout << "qj_num_tp_periods = " << cp.qj_num_tp_periods << endl;
 	cout << "qj_num_obs_periods = " << cp.qj_num_obs_periods << endl;
-	cout << "qj_num_steps = " << cp.qj_num_steps << endl;
 	cout << "qj_deep = " << cp.qj_deep << endl;
+	cout << "qj_num_trajectories = " << cp.qj_num_trajectories << endl;
 
 	cout << "dump_type = " << cp.dump_type << endl;
 	cout << "dump_num = " << cp.dump_num << endl;
