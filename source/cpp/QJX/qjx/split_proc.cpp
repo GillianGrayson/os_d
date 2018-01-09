@@ -141,6 +141,53 @@ void init_split_branches(Split * branch, int branch_id, RunParam * rp, ConfigPar
 	node->next = 0;
 }
 
+void copy_branch_not_member(Split * src, Split * dst)
+{
+	Split * node1 = src;
+	Split * node2 = dst;
+	while (node1->next)
+	{
+		node2->dt = node1->dt;
+		node2->steps = node1->steps;
+		node2->counter = node1->counter;
+		node2->g = node1->g;
+		node2->N = node1->N;
+		node2->type = node1->type;
+		node2->matrix = node1->matrix;
+		node2->next = new Split;
+		node2->next->prev = node2;
+		node2 = node2->next;
+		node1 = node1->next;
+	}
+	node2->dt = node1->dt;
+	node2->steps = node1->steps;
+	node2->counter = node1->counter;
+	node2->g = node1->g;
+	node2->N = node1->N;
+	node2->type = node1->type;
+	node2->matrix = node1->matrix;
+	node2->next = 0;
+}
+
+void copy_struct_not_member(Split * src, Split * dst)
+{
+	dst->prev = src->prev;
+	dst->type = src->type;
+	dst->dt = src->dt;
+	dst->counter = src->counter;
+	dst->N = src->N;
+	dst->next = new Split[dst->counter];
+	for (unsigned int i = 0; i < dst->counter; i++)
+	{
+		(dst->next)[i].prev = dst;
+		copy_branch_not_member(&((src->next)[i]), &((dst->next)[i]));
+	}
+
+	dst->steps = src->steps;
+	dst->matrix = src->matrix;
+	dst->g = src->g;
+}
+
 void delete_branch(Split * branch)
 {
 	delete (branch->matrix);

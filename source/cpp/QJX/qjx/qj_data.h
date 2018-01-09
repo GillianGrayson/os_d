@@ -11,10 +11,11 @@ struct QJData
 	MKL_Complex16 * phi_all;					// Phi for all trajectories
 	double * abs_diag_rho_all;					// Abs diag rho for all trajectories
 
-	double * etas;								// Etas
+	double * eta_all;							// Etas
 
 	int * dump_periods;							// Dump periods
 
+	// ======== Standart observables ========
 	double * mean_start;						
 	double * mean;
 	double * dispersion;
@@ -22,4 +23,14 @@ struct QJData
 	double * energy;
 	double * lambda;
 	double * delta_s;
+	// ======================================
+
+	// ======== Lyapunov observables ========
+	int * periods_evo;
+	double * mean_evo_lpn;
+	double * mean_evo_real;
+	double * energy_evo_lpn;
+	double * energy_evo_real;
+	double * lambda_evo;
+	// ======================================
 };

@@ -5,11 +5,11 @@
 class OuputBehavior
 {
 public:
-	virtual void init_suffix(ConfigParam * cp, int precision) const = 0;
+	virtual string suffix(ConfigParam * cp, int precision) const = 0;
 };
 
 class DimerIOuputBehavior : public OuputBehavior
 {
 public:
-	virtual void init_suffix(ConfigParam * cp, int precision) const;
+	virtual string suffix(ConfigParam * cp, int precision) const;
 };

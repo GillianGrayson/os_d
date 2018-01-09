@@ -18,16 +18,13 @@
     <ClInclude Include="config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="debugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="processor.h">
+    <ClInclude Include="destructor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="initiator.h">
@@ -36,19 +33,22 @@
     <ClInclude Include="outputter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="destructor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="split.h">
+    <ClInclude Include="processor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="qj_data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="qj_initiator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="split.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="split_proc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="qj_initiator.h">
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,10 +56,10 @@
     <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils.cpp">
+    <ClCompile Include="debugger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="debugger.cpp">
+    <ClCompile Include="destructor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="initiator.cpp">
@@ -68,13 +68,13 @@
     <ClCompile Include="outputter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="destructor.cpp">
+    <ClCompile Include="qj_initiator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="split_proc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="qj_initiator.cpp">
+    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

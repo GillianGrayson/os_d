@@ -80,15 +80,13 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		cp.qj_num_trajectories = atoi(val.c_str());
 	}
-
-
-	if (str.compare("dump_type") == 0)
+	if (str.compare("qj_seed") == 0)
 	{
-		cp.dump_type = atoi(val.c_str());
+		cp.qj_seed = atoi(val.c_str());
 	}
-	if (str.compare("dump_num") == 0)
+	if (str.compare("qj_mns") == 0)
 	{
-		cp.dump_num = atoi(val.c_str());
+		cp.qj_mns = atoi(val.c_str());
 	}
 }
 
@@ -157,9 +155,8 @@ void output_params(RunParam &rp, ConfigParam &cp)
 	cout << "qj_num_obs_periods = " << cp.qj_num_obs_periods << endl;
 	cout << "qj_deep = " << cp.qj_deep << endl;
 	cout << "qj_num_trajectories = " << cp.qj_num_trajectories << endl;
-
-	cout << "dump_type = " << cp.dump_type << endl;
-	cout << "dump_num = " << cp.dump_num << endl;
+	cout << "qj_seed = " << cp.qj_seed << endl;
+	cout << "qj_mns = " << cp.qj_mns << endl;
 
 	for (std::map<string, double>::iterator it = cp.params.begin(); it != cp.params.end(); ++it)
 	{
