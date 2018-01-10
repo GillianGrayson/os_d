@@ -63,6 +63,7 @@ void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 
 	qjd->phi_all = new MKL_Complex16[num_trajectories * N];
 	qjd->abs_diag_rho_all = new double[num_trajectories * N];
+	qjd->times_all = new double[num_trajectories];
 	qjd->eta_all = new double[num_trajectories];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -76,6 +77,7 @@ void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 			qjd->abs_diag_rho_all[tr_id * N + st_id] = 0.0;
 		}
 
+		qjd->times_all[tr_id] = 0.0;
 		qjd->eta_all[tr_id] = 0.0;
 	}
 }
@@ -118,16 +120,6 @@ void init_obs_lpn_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
-	qjd->energy = new double[num_trajectories];
-	qjd->lambda = new double[num_trajectories];
-	qjd->delta_s = new double[num_trajectories];
-
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		qjd->energy[tr_id] = 0.0;
-		qjd->lambda[tr_id] = 0.0;
-		qjd->delta_s[tr_id] = 0.0;
-	}
 }
 
 
