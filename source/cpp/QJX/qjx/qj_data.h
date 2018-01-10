@@ -20,17 +20,20 @@ struct QJData
 	double * mean;
 	double * dispersion;
 	double * m2;
+	// ======================================
+
+	// ======== Lyapunov observables ========
 	double * energy;
 	double * lambda;
 	double * delta_s;
 	// ======================================
 
-	// ======== Lyapunov observables ========
+	// ======== Lyapunov evolution observables ========
 	int * periods_evo;
 	double * mean_evo_lpn;
 	double * mean_evo_real;
 	double * energy_evo_lpn;
 	double * energy_evo_real;
 	double * lambda_evo;
-	// ======================================
+	// =================================================
 };

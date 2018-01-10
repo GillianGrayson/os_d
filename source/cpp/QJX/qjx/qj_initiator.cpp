@@ -82,58 +82,51 @@ void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 
 void init_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
-	qjd->
+	int num_trajectories = cp->qj_num_trajectories;
 
-	
+	qjd->mean_start = new double[num_trajectories];
+	qjd->mean = new double[num_trajectories];
+	qjd->dispersion = new double[num_trajectories];
+	qjd->m2 = new double[num_trajectories];
 
-	trans_process_end_period = new int[num_trajectories];
-	mean_start = new double[num_trajectories];
-
-	mean = new double[num_trajectories];
-	dispersion = new double[num_trajectories];
-	m2 = new double[num_trajectories];
-
-	energy = new double[num_trajectories];
-
-	lambda = new double[num_trajectories];
-	delta_s = new double[num_trajectories];
-
-	jump_times = new vector<double>[num_trajectories];
-	jump_means = new vector<double>[num_trajectories];
-
-	if (stationary == 1)
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		mean_start_stationary = new double[num_trajectories];
-
-		mean_stationary = new double[num_trajectories];
-		dispersion_stationary = new double[num_trajectories];
-		m2_stationary = new double[num_trajectories];
-		max_id_stationary = new int[num_trajectories];
+		qjd->mean_start[tr_id] = 0.0;
+		qjd->mean[tr_id] = 0.0;
+		qjd->dispersion[tr_id] = 0.0;
+		qjd->m2[tr_id] = 0.0;
 	}
+}
 
-	for (int trajectory_id = 0; trajectory_id < num_trajectories; trajectory_id++)
+void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	qjd->energy = new double[num_trajectories];
+	qjd->lambda = new double[num_trajectories];
+	qjd->delta_s = new double[num_trajectories];
+
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		trans_process_end_period[trajectory_id] = 0;
-		mean_start[trajectory_id] = 0.0;
+		qjd->energy[tr_id] = 0.0;
+		qjd->lambda[tr_id] = 0.0;
+		qjd->delta_s[tr_id] = 0.0;
+	}
+}
 
-		mean[trajectory_id] = 0.0;
-		dispersion[trajectory_id] = 0.0;
-		m2[trajectory_id] = 0.0;
+void init_obs_lpn_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
 
-		energy[trajectory_id] = 0.0;
+	qjd->energy = new double[num_trajectories];
+	qjd->lambda = new double[num_trajectories];
+	qjd->delta_s = new double[num_trajectories];
 
-		lambda[trajectory_id] = 0.0;
-		delta_s[trajectory_id] = 0.0;
-
-		if (stationary == 1)
-		{
-			mean_start_stationary[trajectory_id] = 0.0;
-
-			mean_stationary[trajectory_id] = 0.0;
-			dispersion_stationary[trajectory_id] = 0.0;
-			m2_stationary[trajectory_id] = 0.0;
-			max_id_stationary[trajectory_id] = 0;
-		}
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		qjd->energy[tr_id] = 0.0;
+		qjd->lambda[tr_id] = 0.0;
+		qjd->delta_s[tr_id] = 0.0;
 	}
 }
 
