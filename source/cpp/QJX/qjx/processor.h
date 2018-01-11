@@ -1,10 +1,13 @@
 #pragma once
 #include "config.h"
 #include "data.h"
+#include "qj_data.h"
 #include "debugger.h"
 #include "outputter.h"
 #include "initiator.h"
 #include "destructor.h"
+#include "qj_initiator.h"
+#include "qj_destructor.h"
 
 class Processor
 {
@@ -12,18 +15,22 @@ private:
 	RunParam * rp;
 	ConfigParam * cp;
 	MainData * md;
+	QJData * qjd;
 
 	DebugBehavior * db;
 	OuputBehavior * ob;
 	InitBehavior * ib;
 	FreeBehavior * fb;
-
+	QJInitBehavior * qj_ib;
+	QJFreeBehavior * qj_fb;
+	
 public:
-	Processor(RunParam * rp, ConfigParam * cp, MainData *md)
+	Processor(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	{
 		this->rp = rp;
 		this->cp = cp;
 		this->md = md;
+		this->qjd = qjd;
 	}
 
 	void set_debug_behaviour(DebugBehavior* db) 
@@ -46,13 +53,13 @@ public:
 		this->fb = fb;
 	}
 
-	void debug_save()
+	void set_qj_init_behaviour(QJInitBehavior* qj_ib)
 	{
-		db->save(rp, cp, md);
+		this->qj_ib = qj_ib;
 	}
 
-	void init_suffix()
+	void set_qj_free_behaviour(QJFreeBehavior* fb)
 	{
-		ob->init_suffix(cp, 4);
+		this->qj_fb = qj_fb;
 	}
 };

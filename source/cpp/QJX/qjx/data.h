@@ -19,5 +19,6 @@ struct MainData
 	MKL_Complex16 ** hamiltonians_qj;	// Non-Hermitian Hamiltonians for qj
 
 	Split * structure;					// Split structure
+	Split * splits;						// Splits
 };
 

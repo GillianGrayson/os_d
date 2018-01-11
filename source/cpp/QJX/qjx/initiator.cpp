@@ -96,8 +96,6 @@ void DimerInitBehaviour::init_dissipators(RunParam * rp, ConfigParam * cp, MainD
 
 void DimerInitBehaviour::init_hamiltonians_qj(RunParam * rp, ConfigParam * cp, MainData * md) const
 {
-	int N = int(cp->params.find("N")->second);
-
 	double prm_E = double(cp->params.find("prm_E")->second);
 	double drv_ampl = double(cp->params.find("drv_ampl")->second);
 

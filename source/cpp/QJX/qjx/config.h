@@ -18,6 +18,8 @@
 
 #define PI 3.1415926535897932384626433832795
 #define EPS 1.0e-14
+#define IND(a,b)  (a) * N + (b)
+#define IND2(a,b) (a) * N * N + (b)
 
 using namespace std;
 
