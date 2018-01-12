@@ -10,11 +10,22 @@ void LyapunovMCExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * c
 		int thread_id = omp_get_thread_num();
 
 		tp_single_std(rp, cp, md, qjd, tr_id, thread_id);
-		calc_chars_start(rp, cp, md, qjd, tr_id);
 	}
 
+	resresh_times(rp, cp, md, qjd);
+	copy_trajectories_lpn(rp, cp, md, qjd);
+	var_trajectories_lpn(rp, cp, md, qjd);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+	}
+
+	
+
 	// dump_adr_single(rp, cp, md, qjd, tr_id);
-	//dump_adr_avg(rp, cp, md, qjd);
+	// dump_adr_avg(rp, cp, md, qjd);
 }
 
 inline void QJ_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
@@ -249,7 +260,67 @@ double get_mean_std(double * adr, int sys_size)
 	return mean;
 }
 
-void calc_chars_start(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+double get_dispersion_std(double mean_curr, double mean_start)
+{
+	double dispersion = (mean_curr - mean_start) * (mean_curr - mean_start);
+	return dispersion;
+}
+
+double get_m2(double * adr, int sys_size, double mean)
+{
+	double m2 = 0.0;
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		m2 += (double(st_id) - mean) * (double(st_id) - mean) * adr[st_id];
+	}
+
+	return m2;
+}
+
+double get_energy(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+{
+	int sys_size = md->sys_size;
+
+	double prm_E = double(cp->params.find("prm_E")->second);
+
+	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+	double * hamiltonian = md->hamiltonian;
+	double * hamiltonian_drv = md->hamiltonian_drv;
+
+	double norm_2 = norm_square(phi, sys_size);
+
+	MKL_Complex16 * sm = new MKL_Complex16[sys_size];
+
+	for (int st_id_1 = 0; st_id_1 < sys_size; st_id_1++)
+	{
+		MKL_Complex16 tmp;
+		tmp.real = 0;
+		tmp.imag = 0;
+		for (int st_id_2 = 0; st_id_2 < sys_size; st_id_2++)
+		{
+			int index = st_id_1 * sys_size + st_id_2;
+
+			double ham_val = (hamiltonian[index] + prm_E * hamiltonian_drv[index]);
+
+			tmp.real += (ham_val * phi[st_id_2].real / sqrt(norm_2) - (0.0) * phi[st_id_2].imag / sqrt(norm_2));
+			tmp.imag += (ham_val * phi[st_id_2].imag / sqrt(norm_2) + (0.0) * phi[st_id_2].real / sqrt(norm_2));
+		}
+
+		sm[st_id_1].real = tmp.real;
+		sm[st_id_1].imag = tmp.imag;
+	}
+
+	double energy = 0.0;
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		energy += (phi[st_id].real / sqrt(norm_2) * sm[st_id].real + phi[st_id].imag / sqrt(norm_2) * sm[st_id].imag);
+	}
+
+	return energy;
+}
+
+
+void calc_chars_start_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
 {
 	int sys_size = md->sys_size;
 	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
@@ -263,11 +334,39 @@ void calc_chars_start(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 	}
 
 	double mean = get_mean_std(adr, sys_size);
+	double dispersion = get_dispersion_std(mean, mean);
+	double m2 = get_m2(adr, sys_size, mean);
 
-	qjd->mean_start[tr_id] = mean;
-	qjd->mean[tr_id] = mean;
-	qjd->dispersion[tr_id] = 0.0;
-	qjd->m2[tr_id] = 0.0;
+	qjd->mean_start[tr_id]		= mean;
+	qjd->mean[tr_id]			= mean;
+	qjd->dispersion[tr_id]		= dispersion;
+	qjd->m2[tr_id]				= m2;
+}
+
+void calc_chars_start_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+{
+	int sys_size = md->sys_size;
+	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+	double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm_2 = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
+	}
+
+	double energy = get_energy(rp, cp, md, qjd, tr_id);
+	double lambda = 0.0;
+	double mean_lpn = qjd->mean[tr_id];
+	double energy_lpn = energy;
+	double lambda_lpn = lambda;
+
+	qjd->energy[tr_id] = ;
+	qjd->lambda[tr_id] = ;
+	qjd->mean_lpn[tr_id] = ;
+	qjd->energy_lpn[tr_id] = ;
+	qjd->lambda_lpn[tr_id] = ;
 }
 
 void resresh_times(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
@@ -277,6 +376,84 @@ void resresh_times(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		qjd->times_all[tr_id] = 0.0;
+	}
+}
+
+void copy_trajectories_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->qj_num_trajectories;
+
+	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+	{
+		VSLStreamStatePtr * streams = qjd->streams;
+		MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+		MKL_Complex16 * phi_original = &(qjd->phi_all[0]);
+		double * etas = qjd->etas_all;
+
+		vslCopyStream(&streams[tr_id], streams[0]);
+		etas[tr_id] = etas[0];
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real = phi_original[st_id].real;
+			phi[st_id].imag = phi_original[st_id].imag;
+		}
+	}
+}
+
+void var_trajectories_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->qj_num_trajectories;
+
+	double eps_lpn = double(cp->params.find("eps_lpn")->second);
+
+	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+	{
+		VSLStreamStatePtr * streams_var = qjd->streams_var;
+		MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+
+		MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
+
+		double * phi_var_double = new double[2 * sys_size];
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[tr_id], 2 * sys_size, phi_var_double, -1.0, 1.0);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
+			phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
+		}
+		delete[] phi_var_double;
+
+		double norm_var_2 = norm_square(phi_var, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
+			phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
+		}
+
+		double norm_2 = norm_square(phi, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real += eps_lpn * phi_var[st_id].real;
+			phi[st_id].imag += eps_lpn * phi_var[st_id].imag;
+		}
+
+		delete[] phi_var;
+
+		double norm_mod_2 = norm_square(phi, sys_size);
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real /= sqrt(norm_mod_2);
+			phi[st_id].imag /= sqrt(norm_mod_2);
+		}
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real *= sqrt(norm_2);
+			phi[st_id].imag *= sqrt(norm_2);
+		}
 	}
 }
 

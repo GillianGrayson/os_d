@@ -34,9 +34,15 @@ void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, in
 
 double get_mean_std(double * adr, int sys_size);
 
-void calc_chars_start(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+double get_energy(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+
+void calc_chars_start_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
 void resresh_times(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+
+void copy_trajectories_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+
+void var_trajectories_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void tp_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
 

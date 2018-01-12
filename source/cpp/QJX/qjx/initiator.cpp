@@ -121,7 +121,7 @@ void DimerInitBehaviour::init_hamiltonians_qj(RunParam * rp, ConfigParam * cp, M
 			diss_part[index].real = 0.0;
 			diss_part[index].imag = 0.0;
 
-			hamitlonian_part[index].real = 0.0;
+			hamitlonian_part[index].real = md->hamiltonian[index];
 			hamitlonian_part[index].imag = 0.0;
 
 			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
