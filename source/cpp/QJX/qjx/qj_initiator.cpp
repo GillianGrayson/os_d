@@ -10,7 +10,6 @@ void LyapunovMCInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainDat
 	init_dump_priods(rp, cp, md, qjd);
 	init_obs_std(rp, cp, md, qjd);
 	init_obs_lpn(rp, cp, md, qjd);
-	init_obs_lpn_evo(rp, cp, md, qjd);
 
 	init_start_state(rp, cp, md, qjd, 0);
 }
@@ -66,9 +65,9 @@ void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 
 void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
-	int num_trajectories = cp->qj_num_trajectories;
 	int sys_size = md->sys_size;
-
+	int num_trajectories = cp->qj_num_trajectories;
+	
 	qjd->phi_all = new MKL_Complex16[num_trajectories * sys_size];
 	qjd->phi_all_aux = new MKL_Complex16[num_trajectories * sys_size];
 	qjd->abs_diag_rho_all = new double[num_trajectories * sys_size];
@@ -96,6 +95,8 @@ void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 
 void init_dump_priods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
+	qjd->period = 0;
+
 	qjd->dump_type = int(cp->params.find("dump_type")->second);
 	int num_dumps = int(cp->params.find("num_dumps")->second);
 	int num_obs_periods = cp->qj_num_obs_periods;
@@ -174,22 +175,36 @@ void init_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 
 void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
+	int sys_size = md->sys_size;
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
+
+	double prm_E = double(cp->params.find("prm_E")->second);
+	double * hamiltonian = md->hamiltonian;
+	double * hamiltonian_drv = md->hamiltonian_drv;
+	qjd->max_energy = 0.0;
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		int index = st_id * sys_size + st_id;
+		double ham_val = (hamiltonian[index] + prm_E * hamiltonian_drv[index]);
+		if (abs(ham_val) > qjd->max_energy)
+		{
+			qjd->max_energy = abs(ham_val);
+		}
+	}
 
 	qjd->delta_s = new double[num_trajectories];
 
 	qjd->energy = new double[num_trajectories];
 	qjd->lambda = new double[num_trajectories];
+	qjd->lambda_now = new double[num_trajectories];
 	qjd->mean_lpn = new double[num_trajectories];
 	qjd->energy_lpn = new double[num_trajectories];
-	qjd->lambda_lpn = new double[num_trajectories];
 
 	qjd->energy_evo = new double[num_trajectories * num_dumps_total];
 	qjd->lambda_evo = new double[num_trajectories * num_dumps_total];
 	qjd->mean_lpn_evo = new double[num_trajectories * num_dumps_total];
 	qjd->energy_lpn_evo = new double[num_trajectories * num_dumps_total];
-	qjd->lambda_lpn_evo = new double[num_trajectories * num_dumps_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
@@ -197,9 +212,9 @@ void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 
 		qjd->energy[tr_id] = 0.0;
 		qjd->lambda[tr_id] = 0.0;
+		qjd->lambda_now[tr_id] = 0.0;
 		qjd->mean_lpn[tr_id] = 0.0;
 		qjd->energy_lpn[tr_id] = 0.0;
-		qjd->lambda_lpn[tr_id] = 0.0;
 
 		for (int dump_id = 0; dump_id < num_dumps_total; dump_id++)
 		{
@@ -207,7 +222,6 @@ void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 			qjd->lambda_evo[tr_id * num_dumps_total + dump_id] = 0.0;
 			qjd->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
 			qjd->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			qjd->lambda_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
 		}	
 	}
 }

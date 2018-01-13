@@ -15,6 +15,7 @@ struct QJData
 	double * times_all;							// Curr times for each trajectory
 	double * etas_all;							// Etas
 	
+	int period;									// Curr period
 	int dump_type;								// Type of dumping
 	int num_dumps_total;						// Total number of dumps
 	int * dump_periods;							// Dump periods
@@ -32,18 +33,19 @@ struct QJData
 	// ======================================
 
 	// ======== Lyapunov observables ========
+	double max_energy;
+
 	double * delta_s;
 
 	double * energy;
 	double * lambda;
+	double * lambda_now;
 	double * mean_lpn;
 	double * energy_lpn;
-	double * lambda_lpn;
 
 	double * energy_evo;
 	double * lambda_evo;
 	double * mean_lpn_evo;
 	double * energy_lpn_evo;
-	double * lambda_lpn_evo;
 	// ======================================
 };

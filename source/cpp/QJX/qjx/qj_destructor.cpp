@@ -72,13 +72,12 @@ void free_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 
 	delete[] qjd->energy;
 	delete[] qjd->lambda;
+	delete[] qjd->lambda_now;
 	delete[] qjd->mean_lpn;
 	delete[] qjd->energy_lpn;
-	delete[] qjd->lambda_lpn;
 
 	delete[] qjd->energy_evo;
 	delete[] qjd->lambda_evo;
 	delete[] qjd->mean_lpn_evo;
 	delete[] qjd->energy_lpn_evo;
-	delete[] qjd->lambda_lpn_evo;
 }

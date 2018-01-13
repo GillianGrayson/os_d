@@ -59,18 +59,11 @@ void update_lpn_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
 
-	double * energy_evo;
-	double * lambda_evo;
-	double * mean_lpn_evo;
-	double * energy_lpn_evo;
-	double * lambda_lpn_evo;
-
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		qjd->energy_evo[tr_id * num_dumps_total + dump_id] = qjd->energy[tr_id];
-		qjd->lambda_evo[tr_id * num_dumps_total + dump_id] = qjd->lambda[tr_id];
+		qjd->lambda_evo[tr_id * num_dumps_total + dump_id] = qjd->lambda_now[tr_id];
 		qjd->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = qjd->mean_lpn[tr_id];
 		qjd->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = qjd->energy_lpn[tr_id];
-		qjd->lambda_lpn_evo[tr_id * num_dumps_total + dump_id] = qjd->lambda_lpn[tr_id];
 	}
 }

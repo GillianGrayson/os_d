@@ -8,12 +8,14 @@ class QJExperimentBehavior
 {
 public:
 	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
+	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
 };
 
 class LyapunovMCExperimentBehaviour : public QJExperimentBehavior
 {
 public:
 	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
 inline void QJ_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);
@@ -38,11 +40,17 @@ double get_energy(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, 
 
 void calc_chars_start_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
-void resresh_times(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+void evo_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int dump_id);
 
-void copy_trajectories_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+void calc_chars_start_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
-void var_trajectories_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+void evo_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int dump_id);
 
-void tp_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
+void resresh_times(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, , int tr_id);
+
+void copy_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+
+void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+
+void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
 
