@@ -109,7 +109,7 @@ void save_double_data(string file_name, double * data, int size, int precision, 
 
 }
 
-void save_2d_double_data(string file_name, double ** data, int size_1, int size_2, int precision, bool append)
+void save_2d_double_data(string file_name, double * data, int num_rows, int num_cols, int precision, bool append)
 {
 	if (append)
 	{
@@ -119,11 +119,12 @@ void save_2d_double_data(string file_name, double ** data, int size_1, int size_
 		{
 			ofs << setprecision(precision) << scientific;
 
-			for (int row = 0; row < size_2; row++)
+			for (int row = 0; row < num_rows; row++)
 			{
-				for (int col = 0; col < size_1; col++)
+				for (int col = 0; col < num_cols; col++)
 				{
-					ofs << data[col][row] << " ";
+					int index = row * num_cols + col;
+					ofs << data[index] << " ";
 				}
 				ofs << endl;
 			}
@@ -145,11 +146,12 @@ void save_2d_double_data(string file_name, double ** data, int size_1, int size_
 		{
 			ofs << setprecision(precision) << scientific;
 
-			for (int row = 0; row < size_2; row++)
+			for (int row = 0; row < num_rows; row++)
 			{
-				for (int col = 0; col < size_1; col++)
+				for (int col = 0; col < num_cols; col++)
 				{
-					ofs << data[col][row] << " ";
+					int index = row * num_cols + col;
+					ofs << data[index] << " ";
 				}
 				ofs << endl;
 			}

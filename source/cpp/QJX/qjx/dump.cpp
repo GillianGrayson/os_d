@@ -67,3 +67,5 @@ void update_lpn_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 		qjd->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = qjd->energy_lpn[tr_id];
 	}
 }
+
+void dump_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)

@@ -62,13 +62,23 @@ void LyapunovMCExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp,
 
 			qjd->period_id = (period_id - 1);
 
-			asdasda
-
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				if (tr_id > 0)
+				{
+					lambda_lpn(rp, cp, md, qjd, tr_id);
+					calc_chars_lpn(rp, cp, md, qjd, tr_id);
+				}
+			}
 		}
 
 #pragma omp parallel for
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
+			evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+			evo_chars_lpn(rp, cp, md, qjd, tr_id, dump_id);
+
 			dump_adr_single(rp, cp, md, qjd, tr_id);
 		}
 
