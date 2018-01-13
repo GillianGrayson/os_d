@@ -15,7 +15,9 @@ void print_int_array(int * data, int N);
 
 void save_double_data(string file_name, double * data, int size, int precision, bool append);
 
-void save_2d_double_data(string file_name, double ** data, int size_1, int size_2, int precision, bool append);
+void save_2d_double_data(string file_name, double * data, int num_rows, int num_cols, int precision, bool append);
+
+void save_2d_inv_double_data(string file_name, double * data, int num_rows, int num_cols, int precision, bool append);
 
 void save_int_data(string file_name, int * data, int size, bool append);
 

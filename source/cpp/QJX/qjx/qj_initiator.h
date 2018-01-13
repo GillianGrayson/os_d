@@ -23,7 +23,7 @@ void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 
 void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
-void init_dump_priods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+void init_dump_periods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void init_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 

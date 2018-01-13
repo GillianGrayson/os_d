@@ -167,6 +167,64 @@ void save_2d_double_data(string file_name, double * data, int num_rows, int num_
 	}
 }
 
+void save_2d_inv_double_data(string file_name, double * data, int num_rows, int num_cols, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int row = 0; row < num_rows; row++)
+			{
+				for (int col = 0; col < num_cols; col++)
+				{
+					int index = col * num_cols + row;
+					ofs << data[index] << " ";
+				}
+				ofs << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int row = 0; row < num_rows; row++)
+			{
+				for (int col = 0; col < num_cols; col++)
+				{
+					int index = col * num_rows + row;
+					ofs << data[index] << " ";
+				}
+				ofs << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+}
+
 void save_int_data(string file_name, int * data, int size, bool append)
 {
 	if (append)

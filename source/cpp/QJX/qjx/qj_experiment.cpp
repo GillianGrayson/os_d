@@ -28,10 +28,10 @@ void LyapunovMCExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * c
 		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
 		evo_chars_lpn(rp, cp, md, qjd, tr_id, 0);
 
-		dump_adr_single(rp, cp, md, qjd, tr_id);
+		dump_adr_single(rp, cp, md, qjd, tr_id, false);
 	}
 
-	dump_adr_avg(rp, cp, md, qjd);
+	dump_adr_avg(rp, cp, md, qjd, false);
 }
 
 void LyapunovMCExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
@@ -79,21 +79,26 @@ void LyapunovMCExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp,
 			evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
 			evo_chars_lpn(rp, cp, md, qjd, tr_id, dump_id);
 
-			dump_adr_single(rp, cp, md, qjd, tr_id);
+			dump_adr_single(rp, cp, md, qjd, tr_id, true);
 		}
 
-		dump_adr_avg(rp, cp, md, qjd);
+		dump_adr_avg(rp, cp, md, qjd, true);
 	}
+
+	dump_std(rp, cp, md, qjd);
+	dump_lpn(rp, cp, md, qjd);
+	dump_evo_std(rp, cp, md, qjd);
+	dump_evo_lpn(rp, cp, md, qjd);
 }
 
-inline void QJ_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
+void QJ_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
 {
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
 	MKL_Complex16 ONE = { 1.0, 0.0 };
 	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, matrix, sys_size, phi, 1, &ZERO, res, 1);
 }
 
-inline MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b)
+MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b)
 {
 	MKL_Complex16 res = { 0.0, 0.0 };
 	res.real = a.real * b;
@@ -101,7 +106,7 @@ inline MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b)
 	return res;
 }
 
-inline MKL_Complex16 mult_scalar_complex(MKL_Complex16 * a, MKL_Complex16 * b, int N)
+MKL_Complex16 mult_scalar_complex(MKL_Complex16 * a, MKL_Complex16 * b, int N)
 {
 	MKL_Complex16 res = { 0.0, 0.0 };
 	for (int i = 0; i < N; i++)
@@ -307,7 +312,7 @@ void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, in
 	}
 }
 
-double get_mean_std(double * adr, int sys_size)
+double get_mean_simple(double * adr, int sys_size)
 {
 	double mean = 0.0;
 	for (int st_id = 0; st_id < sys_size; st_id++)
@@ -318,7 +323,7 @@ double get_mean_std(double * adr, int sys_size)
 	return mean;
 }
 
-double get_dispersion_std(double mean_curr, double mean_start)
+double get_dispersion_simple(double mean_curr, double mean_start)
 {
 	double dispersion = (mean_curr - mean_start) * (mean_curr - mean_start);
 	return dispersion;
@@ -390,8 +395,8 @@ void calc_chars_start_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData
 		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
 	}
 
-	double mean = get_mean_std(adr, sys_size);
-	double dispersion = get_dispersion_std(mean, mean);
+	double mean = get_mean_simple(adr, sys_size);
+	double dispersion = get_dispersion_simple(mean, mean);
 	double m2 = get_m2(adr, sys_size, mean);
 
 	qjd->mean_start[tr_id]		= mean;
@@ -413,8 +418,8 @@ void calc_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
 	}
 
-	double mean = get_mean_std(adr, sys_size);
-	double dispersion = get_dispersion_std(mean, mean);
+	double mean = get_mean_simple(adr, sys_size);
+	double dispersion = get_dispersion_simple(mean, mean);
 	double m2 = get_m2(adr, sys_size, mean);
 
 	qjd->mean[tr_id] = mean;
@@ -494,7 +499,7 @@ void calc_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
 	}
 
-	double mean_lpn = get_mean_std(adr, sys_size);
+	double mean_lpn = get_mean_simple(adr, sys_size);
 	double energy_lpn = get_energy(rp, cp, md, qjd, tr_id);
 
 	qjd->mean_lpn[tr_id] = mean_lpn;

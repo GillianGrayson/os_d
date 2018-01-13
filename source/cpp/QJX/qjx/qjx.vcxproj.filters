@@ -92,5 +92,14 @@
     <ClCompile Include="qj_experiment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dump.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="processor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

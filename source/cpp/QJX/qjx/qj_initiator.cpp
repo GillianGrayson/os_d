@@ -7,7 +7,7 @@ void LyapunovMCInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainDat
 	init_streams(rp, cp, md, qjd);
 	init_streams_var(rp, cp, md, qjd);
 	init_basic_data(rp, cp, md, qjd);
-	init_dump_priods(rp, cp, md, qjd);
+	init_dump_periods(rp, cp, md, qjd);
 	init_obs_std(rp, cp, md, qjd);
 	init_obs_lpn(rp, cp, md, qjd);
 
@@ -50,8 +50,7 @@ void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 	int mns = cp->qj_mns;
 
 	VSLStreamStatePtr * streams_var = qjd->streams_var;
-
-	VSLStreamStatePtr * streams_var = new VSLStreamStatePtr[num_trajectories];
+	streams_var = new VSLStreamStatePtr[num_trajectories];
 	vslNewStream(&streams_var[0], VSL_BRNG_MCG31, 777);
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{
@@ -93,9 +92,9 @@ void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 	}
 }
 
-void init_dump_priods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_dump_periods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
-	qjd->period = 0;
+	qjd->period_id = 0;
 
 	qjd->dump_type = int(cp->params.find("dump_type")->second);
 	int num_dumps = int(cp->params.find("num_dumps")->second);

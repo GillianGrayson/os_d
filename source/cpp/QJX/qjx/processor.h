@@ -8,6 +8,7 @@
 #include "destructor.h"
 #include "qj_initiator.h"
 #include "qj_destructor.h"
+#include "qj_experiment.h"
 
 class Processor
 {
@@ -23,43 +24,24 @@ private:
 	FreeBehavior * fb;
 	QJInitBehavior * qj_ib;
 	QJFreeBehavior * qj_fb;
-	
+	QJExperimentBehavior * qj_eb;
+
 public:
-	Processor(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
-	{
-		this->rp = rp;
-		this->cp = cp;
-		this->md = md;
-		this->qjd = qjd;
-	}
+	Processor(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
-	void set_debug_behaviour(DebugBehavior* db) 
-	{
-		this->db = db;
-	}
+	void set_debug_behaviour(DebugBehavior* db);
 
-	void set_output_behaviour(OuputBehavior* ob) 
-	{
-		this->ob = ob;
-	}
+	void set_output_behaviour(OuputBehavior* ob);
 
-	void set_init_behaviour(InitBehavior* ib) 
-	{
-		this->ib = ib;
-	}
+	void set_init_behaviour(InitBehavior* ib);
 
-	void set_free_behaviour(FreeBehavior* fb)
-	{
-		this->fb = fb;
-	}
+	void set_free_behaviour(FreeBehavior* fb);
 
-	void set_qj_init_behaviour(QJInitBehavior* qj_ib)
-	{
-		this->qj_ib = qj_ib;
-	}
+	void set_qj_init_behaviour(QJInitBehavior* qj_ib);
 
-	void set_qj_free_behaviour(QJFreeBehavior* fb)
-	{
-		this->qj_fb = qj_fb;
-	}
+	void set_qj_free_behaviour(QJFreeBehavior* fb);
+
+	void set_qj_experiment_behaviour(QJExperimentBehavior* eb);
+
+	void process();
 };

@@ -1,6 +1,6 @@
 #include "dump.h"
 
-void dump_adr_single(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void dump_adr_single(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, bool append)
 {
 	int is_adr_dump_sep = int(cp->params.find("is_adr_dump_sep")->second);
 
@@ -10,11 +10,11 @@ void dump_adr_single(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 		double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
 
 		string fn = rp->path + "_adr_" + to_string(tr_id) + cp->fn_suffix;
-		save_double_data(fn, adr, sys_size, 16, false);
+		save_double_data(fn, adr, sys_size, 16, append);
 	}
 }
 
-void dump_adr_avg(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void dump_adr_avg(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, bool append)
 {
 	int is_adr_dump_avg = int(cp->params.find("is_adr_dump_avg")->second);
 
@@ -35,13 +35,13 @@ void dump_adr_avg(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 		}
 
 		string fn = rp->path + "_adr_avg" + cp->fn_suffix;
-		save_double_data(fn, adr_avg, sys_size, 16, false);
+		save_double_data(fn, adr_avg, sys_size, 16, append);
 
 		delete[] adr_avg;
 	}
 }
 
-void update_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int dump_id)
+void update_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int dump_id)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
@@ -54,7 +54,7 @@ void update_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, in
 	}
 }
 
-void update_lpn_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int dump_id)
+void update_evo_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int dump_id)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
@@ -68,4 +68,101 @@ void update_lpn_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 	}
 }
 
-void dump_evo(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void dump_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	double * mean_start = qjd->mean_start;
+	double * mean = qjd->mean;
+	double * dispersion = qjd->dispersion;
+	double * m2 = qjd->m2;
+
+	string fn;
+
+	fn = rp->path + "_mean_start" + cp->fn_suffix;
+	save_double_data(fn, mean_start, num_trajectories, 16, false);
+
+	fn = rp->path + "_mean" + cp->fn_suffix;
+	save_double_data(fn, mean, num_trajectories, 16, false);
+
+	fn = rp->path + "_dispersion" + cp->fn_suffix;
+	save_double_data(fn, dispersion, num_trajectories, 16, false);
+
+	fn = rp->path + "_m2" + cp->fn_suffix;
+	save_double_data(fn, m2, num_trajectories, 16, false);
+}
+
+void dump_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	double * energy = qjd->energy;
+	double * lambda = qjd->lambda_now;
+	double * mean_lpn = qjd->mean_lpn;
+	double * energy_lpn = qjd->energy_lpn;
+
+	string fn;
+
+	fn = rp->path + "_energy" + cp->fn_suffix;
+	save_double_data(fn, energy, num_trajectories, 16, false);
+
+	fn = rp->path + "_lambda" + cp->fn_suffix;
+	save_double_data(fn, lambda, num_trajectories, 16, false);
+
+	fn = rp->path + "_mean_lpn" + cp->fn_suffix;
+	save_double_data(fn, mean_lpn, num_trajectories, 16, false);
+
+	fn = rp->path + "_energy_lpn" + cp->fn_suffix;
+	save_double_data(fn, energy_lpn, num_trajectories, 16, false);
+}
+
+void dump_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
+	int num_dumps_total = qjd->num_dumps_total;
+
+	int * dump_periods = qjd->dump_periods;
+
+	double * mean_evo = qjd->mean_evo;
+	double * dispersion_evo = qjd->dispersion_evo;
+	double * m2_evo = qjd->m2_evo;
+
+	string fn;
+
+	fn = rp->path + "_periods" + cp->fn_suffix;
+	save_int_data(fn, dump_periods, num_dumps_total, false);
+
+	fn = rp->path + "_mean_evo" + cp->fn_suffix;
+	save_2d_inv_double_data(fn, mean_evo, num_dumps_total, num_trajectories, 16, false);
+
+	fn = rp->path + "_dispersion_evo" + cp->fn_suffix;
+	save_2d_inv_double_data(fn, dispersion_evo, num_dumps_total, num_trajectories, 16, false);
+
+	fn = rp->path + "_m2_evo" + cp->fn_suffix;
+	save_2d_inv_double_data(fn, m2_evo, num_dumps_total, num_trajectories, 16, false);
+}
+
+void dump_evo_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
+	int num_dumps_total = qjd->num_dumps_total;
+
+	double * energy_evo = qjd->energy_evo;
+	double * lambda_evo = qjd->lambda_evo;
+	double * mean_lpn_evo = qjd->mean_lpn_evo;
+	double * energy_lpn_evo = qjd->energy_lpn_evo;
+
+	string fn;
+
+	fn = rp->path + "_energy_evo" + cp->fn_suffix;
+	save_2d_inv_double_data(fn, energy_evo, num_dumps_total, num_trajectories, 16, false);
+
+	fn = rp->path + "_lambda_evo" + cp->fn_suffix;
+	save_2d_inv_double_data(fn, lambda_evo, num_dumps_total, num_trajectories, 16, false);
+
+	fn = rp->path + "_mean_lpn_evo" + cp->fn_suffix;
+	save_2d_inv_double_data(fn, mean_lpn_evo, num_dumps_total, num_trajectories, 16, false);
+
+	fn = rp->path + "_energy_lpn_evo" + cp->fn_suffix;
+	save_2d_inv_double_data(fn, energy_lpn_evo, num_dumps_total, num_trajectories, 16, false);
+}
