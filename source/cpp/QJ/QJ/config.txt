@@ -1,12 +1,12 @@
 num_periods = 100
 init_state_id = 0 
-propagation_type = 4
+propagation_type = 3
 num_dumps = 101 
 dump_type = 0
-num_periods_in_trans_proc = 0
+num_periods_in_trans_proc = 100
 num_omp_threads = 1
 num_trajectories = 2
-rnd_max = 2000000 
+rnd_max = 1000000 
 rnd_cur = 0
 calc_characteristics = 0 
 dump_rho = 1

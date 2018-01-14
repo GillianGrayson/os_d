@@ -9,9 +9,9 @@ void dump_adr_single(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 		int sys_size = md->sys_size;
 		double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
 
-		string fn = rp->path + "_adr_" + to_string(tr_id) + cp->fn_suffix;
+		string fn = rp->path + "adr_" + to_string(tr_id) + cp->fn_suffix;
 		save_double_data(fn, adr, sys_size, 16, append);
-	}
+	} 
 }
 
 void dump_adr_avg(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, bool append)
@@ -34,7 +34,7 @@ void dump_adr_avg(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, 
 			}
 		}
 
-		string fn = rp->path + "_adr_avg" + cp->fn_suffix;
+		string fn = rp->path + "adr_avg" + cp->fn_suffix;
 		save_double_data(fn, adr_avg, sys_size, 16, append);
 
 		delete[] adr_avg;
@@ -79,16 +79,16 @@ void dump_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 
 	string fn;
 
-	fn = rp->path + "_mean_start" + cp->fn_suffix;
+	fn = rp->path + "mean_start" + cp->fn_suffix;
 	save_double_data(fn, mean_start, num_trajectories, 16, false);
 
-	fn = rp->path + "_mean" + cp->fn_suffix;
+	fn = rp->path + "mean" + cp->fn_suffix;
 	save_double_data(fn, mean, num_trajectories, 16, false);
 
-	fn = rp->path + "_dispersion" + cp->fn_suffix;
+	fn = rp->path + "dispersion" + cp->fn_suffix;
 	save_double_data(fn, dispersion, num_trajectories, 16, false);
 
-	fn = rp->path + "_m2" + cp->fn_suffix;
+	fn = rp->path + "m2" + cp->fn_suffix;
 	save_double_data(fn, m2, num_trajectories, 16, false);
 }
 
@@ -103,16 +103,16 @@ void dump_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 
 	string fn;
 
-	fn = rp->path + "_energy" + cp->fn_suffix;
+	fn = rp->path + "energy" + cp->fn_suffix;
 	save_double_data(fn, energy, num_trajectories, 16, false);
 
-	fn = rp->path + "_lambda" + cp->fn_suffix;
+	fn = rp->path + "lambda" + cp->fn_suffix;
 	save_double_data(fn, lambda, num_trajectories, 16, false);
 
-	fn = rp->path + "_mean_lpn" + cp->fn_suffix;
+	fn = rp->path + "mean_lpn" + cp->fn_suffix;
 	save_double_data(fn, mean_lpn, num_trajectories, 16, false);
 
-	fn = rp->path + "_energy_lpn" + cp->fn_suffix;
+	fn = rp->path + "energy_lpn" + cp->fn_suffix;
 	save_double_data(fn, energy_lpn, num_trajectories, 16, false);
 }
 
@@ -129,16 +129,16 @@ void dump_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 
 	string fn;
 
-	fn = rp->path + "_periods" + cp->fn_suffix;
+	fn = rp->path + "periods" + cp->fn_suffix;
 	save_int_data(fn, dump_periods, num_dumps_total, false);
 
-	fn = rp->path + "_mean_evo" + cp->fn_suffix;
+	fn = rp->path + "mean_evo" + cp->fn_suffix;
 	save_2d_inv_double_data(fn, mean_evo, num_dumps_total, num_trajectories, 16, false);
 
-	fn = rp->path + "_dispersion_evo" + cp->fn_suffix;
+	fn = rp->path + "dispersion_evo" + cp->fn_suffix;
 	save_2d_inv_double_data(fn, dispersion_evo, num_dumps_total, num_trajectories, 16, false);
 
-	fn = rp->path + "_m2_evo" + cp->fn_suffix;
+	fn = rp->path + "m2_evo" + cp->fn_suffix;
 	save_2d_inv_double_data(fn, m2_evo, num_dumps_total, num_trajectories, 16, false);
 }
 
@@ -154,15 +154,15 @@ void dump_evo_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 
 	string fn;
 
-	fn = rp->path + "_energy_evo" + cp->fn_suffix;
+	fn = rp->path + "energy_evo" + cp->fn_suffix;
 	save_2d_inv_double_data(fn, energy_evo, num_dumps_total, num_trajectories, 16, false);
 
-	fn = rp->path + "_lambda_evo" + cp->fn_suffix;
+	fn = rp->path + "lambda_evo" + cp->fn_suffix;
 	save_2d_inv_double_data(fn, lambda_evo, num_dumps_total, num_trajectories, 16, false);
 
-	fn = rp->path + "_mean_lpn_evo" + cp->fn_suffix;
+	fn = rp->path + "mean_lpn_evo" + cp->fn_suffix;
 	save_2d_inv_double_data(fn, mean_lpn_evo, num_dumps_total, num_trajectories, 16, false);
 
-	fn = rp->path + "_energy_lpn_evo" + cp->fn_suffix;
+	fn = rp->path + "energy_lpn_evo" + cp->fn_suffix;
 	save_2d_inv_double_data(fn, energy_lpn_evo, num_dumps_total, num_trajectories, 16, false);
 }

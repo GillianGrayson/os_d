@@ -38,12 +38,12 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
-	int num_obs_periods = cp->qj_num_obs_periods;
+	int num_dumps_total = qjd->num_dumps_total;
 	int * dump_periods = qjd->dump_periods;
 
 	int begin_period_id = 0;
 	int end_period_id = 0;
-	for (int dump_id = 1; dump_id < num_obs_periods; dump_id++)
+	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
 	{
 		begin_period_id = dump_periods[dump_id - 1];
 		end_period_id = dump_periods[dump_id];

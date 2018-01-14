@@ -90,7 +90,7 @@ void init_split_branches(Split * branch, int branch_id, RunParam * rp, ConfigPar
 			{
 				int index = st_id_1 * sys_size + st_id_2;
 
-				std::complex<double> val = ham_qj_eigen(st_id_1, st_id_2);
+				std::complex<double> val = matrix_eigen(st_id_1, st_id_2);
 				node->matrix[index].real = val.real();
 				node->matrix[index].imag = val.imag();
 			}
@@ -132,7 +132,7 @@ void init_split_branches(Split * branch, int branch_id, RunParam * rp, ConfigPar
 		{
 			int index = st_id_1 * sys_size + st_id_2;
 
-			std::complex<double> val = ham_qj_eigen(st_id_1, st_id_2);
+			std::complex<double> val = matrix_eigen(st_id_1, st_id_2);
 			node->matrix[index].real = val.real();
 			node->matrix[index].imag = val.imag();
 		}
