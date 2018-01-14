@@ -4,14 +4,14 @@ void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Main
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
 		trans_process_single_std(rp, cp, md, qjd, tr_id, thread_id);
 	}
 
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		if (tr_id > 0)
@@ -50,7 +50,7 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
-#pragma omp parallel for
+//#pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
@@ -62,7 +62,7 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 
 			qjd->period_id = (period_id - 1);
 
-#pragma omp parallel for
+//#pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				if (tr_id > 0)
@@ -73,7 +73,7 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 			}
 		}
 
-#pragma omp parallel for
+//#pragma omp parallel for
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
 			evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
@@ -170,7 +170,7 @@ void recovery(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Spli
 	double * gnorms = new double[k];
 	double tmp = 0.0;
 	double ran = 0.0;
-	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, &stream, 1, &ran, 0.0, 1.0);
+	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, &ran, 0.0, 1.0);
 
 	for (unsigned int i = 0; i < k; i++)
 	{
@@ -266,10 +266,10 @@ void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
 				recovery(rp, cp, md, qjd, head, tr_id);
-				vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, &stream, 1, eta, 0.0, 1.0);
+				vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
 				while (*eta == 0.0)
 				{
-					vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, &stream, 1, eta, 0.0, 1.0);
+					vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
 				}
 			}
 
@@ -647,7 +647,7 @@ void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJ
 	*eta = 0.0;
 	while (*eta == 0.0)
 	{
-		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, &stream, 1, eta, 0.0, 1.0);
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
 	}
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)

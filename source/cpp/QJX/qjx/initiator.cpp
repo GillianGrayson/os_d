@@ -2,6 +2,9 @@
 
 void DimerInitBehaviour::init_sizes(RunParam * rp, ConfigParam * cp, MainData * md) const
 {
+	int num_threads = rp->num_threads;
+	omp_set_num_threads(num_threads);
+
 	int N = int(cp->params.find("N")->second);
 	double T = 2.0 * PI / double(cp->params.find("drv_freq")->second);
 	

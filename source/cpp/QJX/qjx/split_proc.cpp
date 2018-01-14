@@ -84,9 +84,9 @@ void init_split_branches(Split * branch, int branch_id, RunParam * rp, ConfigPar
 		Eigen::MatrixXcd matrix_eigen = ham_qj_eigen.exp();
 
 		node->matrix = new MKL_Complex16[sys_size * sys_size];
-		for (int st_id_1 = 0; st_id_1 < sys_size; sys_size++)
+		for (int st_id_1 = 0; st_id_1 < sys_size; st_id_1++)
 		{
-			for (int st_id_2 = 0; st_id_2 < sys_size; sys_size++)
+			for (int st_id_2 = 0; st_id_2 < sys_size; st_id_2++)
 			{
 				int index = st_id_1 * sys_size + st_id_2;
 
@@ -110,9 +110,9 @@ void init_split_branches(Split * branch, int branch_id, RunParam * rp, ConfigPar
 	node->type = true;
 
 	Eigen::MatrixXcd ham_qj_eigen(sys_size, sys_size);
-	for (int st_id_1 = 0; st_id_1 < sys_size; sys_size++)
+	for (int st_id_1 = 0; st_id_1 < sys_size; st_id_1++)
 	{
-		for (int st_id_2 = 0; st_id_2 < sys_size; sys_size++)
+		for (int st_id_2 = 0; st_id_2 < sys_size; st_id_2++)
 		{
 			int index = st_id_1 * sys_size + st_id_2;
 
@@ -126,9 +126,9 @@ void init_split_branches(Split * branch, int branch_id, RunParam * rp, ConfigPar
 	Eigen::MatrixXcd matrix_eigen = ham_qj_eigen.exp();
 
 	node->matrix = new MKL_Complex16[sys_size * sys_size];
-	for (int st_id_1 = 0; st_id_1 < sys_size; sys_size++)
+	for (int st_id_1 = 0; st_id_1 < sys_size; st_id_1++)
 	{
-		for (int st_id_2 = 0; st_id_2 < sys_size; sys_size++)
+		for (int st_id_2 = 0; st_id_2 < sys_size; st_id_2++)
 		{
 			int index = st_id_1 * sys_size + st_id_2;
 

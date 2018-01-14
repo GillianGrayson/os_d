@@ -33,12 +33,12 @@ void Processor::set_qj_init_behaviour(QJInitBehavior* qj_ib)
 	this->qj_ib = qj_ib;
 }
 
-void Processor::set_qj_free_behaviour(QJFreeBehavior* fb)
+void Processor::set_qj_free_behaviour(QJFreeBehavior* qj_fb)
 {
 	this->qj_fb = qj_fb;
 }
 
-void Processor::set_qj_experiment_behaviour(QJExperimentBehavior* eb)
+void Processor::set_qj_experiment_behaviour(QJExperimentBehavior* qj_eb)
 {
 	this->qj_eb = qj_eb;
 }

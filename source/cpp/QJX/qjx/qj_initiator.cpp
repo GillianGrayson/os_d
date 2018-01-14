@@ -18,15 +18,11 @@ void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_threads = rp->num_threads;
 
-	Split * structure = md->structure;
-	Split * splits = md->splits;
-
-	structure = init_split_structure(rp, cp, md);
-
-	splits = new Split[num_threads];
+	md->structure = init_split_structure(rp, cp, md);
+	md->splits = new Split[num_threads];
 	for (int th_id = 0; th_id < num_threads; th_id++)
 	{
-		copy_struct_not_member(structure, &splits[th_id]);
+		copy_struct_not_member(md->structure, &(md->splits)[th_id]);
 	}
 }
 
@@ -36,11 +32,9 @@ void init_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
 
-	VSLStreamStatePtr * streams = qjd->streams;
-
-	streams = new VSLStreamStatePtr[num_trajectories];
-	vslNewStream(&streams[0], VSL_BRNG_MCG59, 777);
-	vslLeapfrogStream(streams[0], seed, mns);
+	qjd->streams = new VSLStreamStatePtr[num_trajectories];
+	vslNewStream(&(qjd->streams)[0], VSL_BRNG_MCG59, 777);
+	vslLeapfrogStream((qjd->streams)[0], seed, mns);
 }
 
 void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
@@ -49,16 +43,15 @@ void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
 
-	VSLStreamStatePtr * streams_var = qjd->streams_var;
-	streams_var = new VSLStreamStatePtr[num_trajectories];
-	vslNewStream(&streams_var[0], VSL_BRNG_MCG31, 777);
+	qjd->streams_var = new VSLStreamStatePtr[num_trajectories];
+	vslNewStream(&(qjd->streams_var)[0], VSL_BRNG_MCG31, 777);
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{
-		vslCopyStream(&streams_var[tr_id], streams_var[0]);
+		vslCopyStream(&(qjd->streams_var)[tr_id], (qjd->streams_var)[0]);
 	}
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		vslLeapfrogStream(streams_var[tr_id], tr_id, num_trajectories);
+		vslLeapfrogStream((qjd->streams_var)[tr_id], tr_id, num_trajectories);
 	}
 }
 
