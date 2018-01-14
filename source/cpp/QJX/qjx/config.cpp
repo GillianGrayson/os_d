@@ -26,71 +26,71 @@ vector<string> split(const string& str, const string& delim)
 	return tokens;
 }
 
-void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
+void set_param(RunParam * rp, ConfigParam * cp, string str, string val)
 {
 	if (str.compare("sys_id") == 0)
 	{
-		rp.sys_id = atoi(val.c_str());
+		rp->sys_id = atoi(val.c_str());
 	}
 	if (str.compare("task_id") == 0)
 	{
-		rp.task_id = atoi(val.c_str());
+		rp->task_id = atoi(val.c_str());
 	}
 
 
 	if (str.compare("is_debug") == 0)
 	{
-		rp.is_debug = atoi(val.c_str());
+		rp->is_debug = atoi(val.c_str());
 	}
 	if (str.compare("is_pp") == 0)
 	{
-		rp.is_pp = atoi(val.c_str());
+		rp->is_pp = atoi(val.c_str());
 	}
 
 
 	if (str.compare("init_fn") == 0)
 	{
-		rp.init_fn = val;
+		rp->init_fn = val;
 	}
 	if (str.compare("path") == 0)
 	{
-		rp.path = val;
+		rp->path = val;
 	}
 
 
 	if (str.compare("num_threads") == 0)
 	{
-		rp.num_threads = atoi(val.c_str());
+		rp->num_threads = atoi(val.c_str());
 	}
 
 
 	if (str.compare("qj_num_tp_periods") == 0)
 	{
-		cp.qj_num_tp_periods = atoi(val.c_str());
+		cp->qj_num_tp_periods = atoi(val.c_str());
 	}
 	if (str.compare("qj_num_obs_periods") == 0)
 	{
-		cp.qj_num_obs_periods = atoi(val.c_str());
+		cp->qj_num_obs_periods = atoi(val.c_str());
 	}
 	if (str.compare("qj_deep") == 0)
 	{
-		cp.qj_deep = atoi(val.c_str());
+		cp->qj_deep = atoi(val.c_str());
 	}
 	if (str.compare("qj_num_trajectories") == 0)
 	{
-		cp.qj_num_trajectories = atoi(val.c_str());
+		cp->qj_num_trajectories = atoi(val.c_str());
 	}
 	if (str.compare("qj_seed") == 0)
 	{
-		cp.qj_seed = atoi(val.c_str());
+		cp->qj_seed = atoi(val.c_str());
 	}
 	if (str.compare("qj_mns") == 0)
 	{
-		cp.qj_mns = atoi(val.c_str());
+		cp->qj_mns = atoi(val.c_str());
 	}
 }
 
-void init_params(RunParam &rp, ConfigParam &cp, char * fn_config, char * fn_param)
+void init_params(RunParam *rp, ConfigParam *cp, char * fn_config, char * fn_param)
 {
 	string line;
 	ifstream config_file(fn_config);
@@ -122,7 +122,7 @@ void init_params(RunParam &rp, ConfigParam &cp, char * fn_config, char * fn_para
 		{
 			std::istringstream iss(line);
 			iss >> key >> val;
-			cp.params[key] = val;
+			cp->params[key] = val;
 		}
 
 		param_file.close();
@@ -136,29 +136,31 @@ void init_params(RunParam &rp, ConfigParam &cp, char * fn_config, char * fn_para
 	output_params(rp, cp);
 }
 
-void output_params(RunParam &rp, ConfigParam &cp)
+void output_params(RunParam * rp, ConfigParam * cp)
 {
 	cout << "############# parameters #############" << endl;
 
-	cout << "sys_id = " << rp.sys_id << endl;
-	cout << "task_id = " << rp.task_id << endl;
+	cout << "sys_id = " << rp->sys_id << endl;
+	cout << "task_id = " << rp->task_id << endl;
 
-	cout << "is_debug = " << rp.is_debug << endl;
-	cout << "is_pp = " << rp.is_pp << endl;
+	cout << "is_debug = " << rp->is_debug << endl;
+	cout << "is_pp = " << rp->is_pp << endl;
 
-	cout << "init_fn = " << rp.init_fn << endl;
-	cout << "path = " << rp.path << endl;
+	cout << "init_fn = " << rp->init_fn << endl;
+	cout << "path = " << rp->path << endl;
 
-	cout << "num_threads = " << rp.num_threads << endl;
+	cout << "num_threads = " << rp->num_threads << endl;
 
-	cout << "qj_num_tp_periods = " << cp.qj_num_tp_periods << endl;
-	cout << "qj_num_obs_periods = " << cp.qj_num_obs_periods << endl;
-	cout << "qj_deep = " << cp.qj_deep << endl;
-	cout << "qj_num_trajectories = " << cp.qj_num_trajectories << endl;
-	cout << "qj_seed = " << cp.qj_seed << endl;
-	cout << "qj_mns = " << cp.qj_mns << endl;
+	cout << "qj_num_tp_periods = " << cp->qj_num_tp_periods << endl;
+	cout << "qj_num_obs_periods = " << cp->qj_num_obs_periods << endl;
+	cout << "qj_deep = " << cp->qj_deep << endl;
+	cout << "qj_num_trajectories = " << cp->qj_num_trajectories << endl;
+	cout << "qj_seed = " << cp->qj_seed << endl;
+	cout << "qj_mns = " << cp->qj_mns << endl;
 
-	for (std::map<string, double>::iterator it = cp.params.begin(); it != cp.params.end(); ++it)
+	cout << endl;
+
+	for (std::map<string, double>::iterator it = cp->params.begin(); it != cp->params.end(); ++it)
 	{
 		std::cout << it->first << ": " << it->second << endl;
 	}

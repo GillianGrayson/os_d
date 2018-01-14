@@ -1,7 +1,7 @@
 #include "qj_destructor.h"
 #include "split_proc.h"
 
-void LyapunovMCFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void LpnFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	free_splits(rp, cp, md, qjd);
 	free_streams(rp, cp, md, qjd);

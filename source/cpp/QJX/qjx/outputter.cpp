@@ -6,27 +6,27 @@ void DimerIOuputBehavior::suffix_param(ConfigParam * cp, int precision) const
 
 	stringstream params;
 
-	params << "_N(" << cp->params.find("N")->second << ")";
+	params << "_N(" << int(cp->params.find("N")->second) << ")";
 
 	params << "_diss("
-		<< cp->params.find("diss_type")->second << "_"
-		<< setprecision(precision) << cp->params.find("diss_gamma")->second << "_"
-		<< setprecision(precision) << cp->params.find("diss_phase")->second << ")";
+		<< int(cp->params.find("diss_type")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("diss_gamma")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("diss_phase")->second) << ")";
 
 	params << "_drv("
-		<< cp->params.find("drv_type")->second << "_"
-		<< setprecision(precision) << cp->params.find("drv_ampl")->second << "_"
-		<< setprecision(precision) << cp->params.find("drv_freq")->second << "_"
-		<< setprecision(precision) << cp->params.find("drv_phase")->second << ")";
+		<< int(cp->params.find("drv_type")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("drv_ampl")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("drv_freq")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("drv_phase")->second) << ")";
 
 	params << "_start("
-		<< cp->params.find("start_type")->second << "_"
-		<< cp->params.find("start_state")->second << ")";
+		<< int(cp->params.find("start_type")->second) << "_"
+		<< int(cp->params.find("start_state")->second) << ")";
 
 	params << "_prm("
-		<< setprecision(precision) << cp->params.find("prm_E")->second << "_"
-		<< setprecision(precision) << cp->params.find("prm_U")->second << "_"
-		<< setprecision(precision) << cp->params.find("prm_J")->second << ")";
+		<< setprecision(precision) << fixed << double(cp->params.find("prm_E")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("prm_U")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("prm_J")->second) << ")";
 
 	string ext = extension();
 

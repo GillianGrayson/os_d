@@ -1,6 +1,6 @@
 #include "qj_experiment.h"
 
-void LyapunovMCExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -34,7 +34,7 @@ void LyapunovMCExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * c
 	dump_adr_avg(rp, cp, md, qjd, false);
 }
 
-void LyapunovMCExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
 

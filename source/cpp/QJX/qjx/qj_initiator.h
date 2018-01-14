@@ -9,7 +9,7 @@ public:
 	virtual void init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
 };
 
-class LyapunovMCInitBehaviour : public QJInitBehavior
+class LpnInitBehaviour : public QJInitBehavior
 {
 public:
 	virtual void init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;

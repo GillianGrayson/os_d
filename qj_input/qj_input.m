@@ -1,9 +1,9 @@
 clear all;
 
-N = 10;
-J = -1;
+N = 11;
+J = 1;
 
-for U = 0.01 : 0.01 : 1.00
+for U = 0.1 : 0.01 : 0.1
     
     U = U
     
@@ -17,8 +17,8 @@ for U = 0.01 : 0.01 : 1.00
     tau1 = pi;
     T = 2*pi;
     
-    E = 0.0;
-    amplitude = 0.0;
+    E = 1.0;
+    amplitude = 1.5;
     period = T;
     
     out_suffix = sprintf('E%0.4f_T%0.4f_A%0.4f_N%d_U%0.4f_J%0.4f_g%0.4f.bin', ...
@@ -88,6 +88,9 @@ for U = 0.01 : 0.01 : 1.00
     E1 = E + amplitude * e1;
     t1 = tau1; %????? ??????????, ????? F ?? ????? 0
     t2 = T - t1; %????? ??????????, ????? F ????? 0
+    
+    hamiltonians_qj_0 = -i*(H1+E0*H2);
+    hamiltonians_qj_1 = -i*(H1+E1*H2);
     
     res = zeros(2*N*N,1);
     

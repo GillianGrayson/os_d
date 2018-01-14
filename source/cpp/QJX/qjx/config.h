@@ -16,10 +16,10 @@
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 
+#define DIMER_SYS_ID 0
+#define LPN_TASK_ID 0 
 #define PI 3.1415926535897932384626433832795
 #define EPS 1.0e-14
-#define IND(a,b)  (a) * N + (b)
-#define IND2(a,b) (a) * N * N + (b)
 
 using namespace std;
 
@@ -97,8 +97,8 @@ struct ConfigParam
 };
 
 
-void set_param(RunParam &rp, ConfigParam &cp, string str, string val);
+void set_param(RunParam * rp, ConfigParam * cp, string str, string val);
 
-void init_params(RunParam &rp, ConfigParam &cp, char * fn_config, char * fn_param);
+void init_params(RunParam * rp, ConfigParam * cp, char * fn_config, char * fn_param);
 
-void output_params(RunParam &rp, ConfigParam &param);
+void output_params(RunParam * rp, ConfigParam * cp);

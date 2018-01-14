@@ -9,7 +9,7 @@ public:
 	virtual void free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
 };
 
-class LyapunovMCFreeBehaviour : public QJFreeBehavior
+class LpnFreeBehaviour : public QJFreeBehavior
 {
 public:
 	virtual void free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;

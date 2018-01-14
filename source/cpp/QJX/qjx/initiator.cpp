@@ -14,6 +14,7 @@ void DimerInitBehaviour::init_sizes(RunParam * rp, ConfigParam * cp, MainData * 
 void DimerInitBehaviour::init_hamiltonians(RunParam * rp, ConfigParam * cp, MainData * md) const
 {
 	int N = int(cp->params.find("N")->second);
+	int sys_size = md->sys_size;
 
 	double prm_E = double(cp->params.find("prm_E")->second);
 	double prm_U = double(cp->params.find("prm_U")->second);
@@ -38,8 +39,8 @@ void DimerInitBehaviour::init_hamiltonians(RunParam * rp, ConfigParam * cp, Main
 	{
 		int index = st_id * md->sys_size + st_id;
 
-		md->hamiltonian[index] = 2.0 * prm_U * double(st_id * (st_id - 1) + (N - (st_id + 1)) * (N - (st_id + 1) - 1));
-		md->hamiltonian_drv[index] = double((N - (st_id + 1)) - st_id);
+		md->hamiltonian[index] = 2.0 * prm_U * double(st_id * (st_id - 1) + (sys_size - (st_id + 1)) * (sys_size - (st_id + 1) - 1));
+		md->hamiltonian_drv[index] = double((sys_size - (st_id + 1)) - st_id);
 	}
 
 	for (int st_id = 0; st_id < (md->sys_size - 1); st_id++)
@@ -55,6 +56,7 @@ void DimerInitBehaviour::init_hamiltonians(RunParam * rp, ConfigParam * cp, Main
 void DimerInitBehaviour::init_dissipators(RunParam * rp, ConfigParam * cp, MainData * md) const
 {
 	int N = int(cp->params.find("N")->second);
+	int sys_size = md->sys_size;
 
 	md->dissipators = new MKL_Complex16 *[md->num_diss];
 	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
@@ -80,7 +82,7 @@ void DimerInitBehaviour::init_dissipators(RunParam * rp, ConfigParam * cp, MainD
 	{
 		int index = st_id * md->sys_size + st_id;
 
-		md->dissipators[0][index].real = double(st_id - (N - (st_id + 1)));
+		md->dissipators[0][index].real = double(st_id - (sys_size - (st_id + 1)));
 		md->dissipators[0][index].imag = 0.0;
 	}
 
@@ -100,6 +102,7 @@ void DimerInitBehaviour::init_hamiltonians_qj(RunParam * rp, ConfigParam * cp, M
 	double drv_ampl = double(cp->params.find("drv_ampl")->second);
 
 	double diss_gamma = double(cp->params.find("diss_gamma")->second);
+	diss_gamma = diss_gamma / double(md->sys_size - 1);
 
 	MKL_Complex16 diss_gamma_cmplx = { diss_gamma, 0.0 };
 	MKL_Complex16 zero_cmplx = { 0.0, 0.0 };
@@ -107,7 +110,7 @@ void DimerInitBehaviour::init_hamiltonians_qj(RunParam * rp, ConfigParam * cp, M
 	md->hamiltonians_qj = new MKL_Complex16*[md->num_ham_qj];
 	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
 	{
-		md->hamiltonians_qj[qj_ham_id] = new MKL_Complex16[md->num_ham_qj];
+		md->hamiltonians_qj[qj_ham_id] = new MKL_Complex16[md->sys_size * md->sys_size];
 	}
 
 	MKL_Complex16 * diss_part = new MKL_Complex16[md->sys_size * md->sys_size];

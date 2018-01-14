@@ -11,7 +11,7 @@ public:
 	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
 };
 
-class LyapunovMCExperimentBehaviour : public QJExperimentBehavior
+class LpnExperimentBehaviour : public QJExperimentBehavior
 {
 public:
 	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;

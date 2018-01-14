@@ -1,7 +1,7 @@
 #include "qj_initiator.h"
 #include "split_proc.h"
 
-void LyapunovMCInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void LpnInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	init_splits(rp, cp, md, qjd);
 	init_streams(rp, cp, md, qjd);
