@@ -60,7 +60,9 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 				qjd->energy[tr_id] = get_energy(rp, cp, md, qjd, tr_id);
 			}
 
-			qjd->period_id = (period_id - 1);
+			calc_chars_lpn(rp, cp, md, qjd, 0);
+
+			qjd->period_id = (period_id + 1);
 
 //#pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -68,7 +70,6 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 				if (tr_id > 0)
 				{
 					lambda_lpn(rp, cp, md, qjd, tr_id);
-					calc_chars_lpn(rp, cp, md, qjd, tr_id);
 				}
 			}
 		}
@@ -580,7 +581,6 @@ void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData *
 	delete[] phi_var;
 
 	double norm_mod_2 = norm_square(phi, sys_size);
-
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
 		phi[st_id].real /= sqrt(norm_mod_2);
@@ -622,16 +622,17 @@ void lambda_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, in
 
 		var_trajectory_lpn(rp, cp, md, qjd, tr_id);
 
-		qjd->delta_s[tr_id] = delta_f;
+		calc_chars_lpn(rp, cp, md, qjd, tr_id);
+
+		qjd->delta_s[tr_id] = fabs(qjd->mean_lpn[tr_id] - qjd->mean_lpn[0]) / double(sys_size);
 
 		qjd->lambda_now[tr_id] = qjd->lambda[tr_id] / (double(qjd->period_id) * md->T);
 	}
 	else
 	{
+		calc_chars_lpn(rp, cp, md, qjd, tr_id);
 		qjd->lambda_now[tr_id] = (qjd->lambda[tr_id] + log(delta_f / qjd->delta_s[tr_id] + 1.0e-16)) / (double(qjd->period_id) * md->T);
 	}
-
-	calc_chars_lpn(rp, cp, md, qjd, tr_id);
 }
 
 void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id)
