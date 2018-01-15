@@ -551,6 +551,7 @@ void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData *
 	double eps_lpn = double(cp->params.find("eps_lpn")->second);
 
 	VSLStreamStatePtr * streams_var = qjd->streams_var;
+	MKL_Complex16 * phi_original = &(qjd->phi_all[0]);
 	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
 
 	MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
@@ -571,11 +572,11 @@ void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData *
 		phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
 	}
 
-	double norm_2 = norm_square(phi, sys_size);
+	double norm_2 = norm_square(phi_original, sys_size);
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
-		phi[st_id].real += eps_lpn * phi_var[st_id].real;
-		phi[st_id].imag += eps_lpn * phi_var[st_id].imag;
+		phi[st_id].real = phi_original[st_id].real + eps_lpn * phi_var[st_id].real;
+		phi[st_id].imag = phi_original[st_id].imag + eps_lpn * phi_var[st_id].imag;
 	}
 
 	delete[] phi_var;
