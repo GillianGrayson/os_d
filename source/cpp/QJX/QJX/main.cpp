@@ -2,6 +2,8 @@
 
 int main()
 {
+	double start_time = omp_get_wtime();
+
 	RunParam * rp = new RunParam();
 	ConfigParam * cp = new ConfigParam();
 	MainData * md = new MainData();
@@ -70,6 +72,9 @@ int main()
 	delete cp;
 	delete md;
 	delete qjd;
+
+	double time = omp_get_wtime() - start_time;
+	cout << "Elapsed time: " << time << endl;
 
 	return 0;
 }
