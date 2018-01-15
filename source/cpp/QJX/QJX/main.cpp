@@ -39,6 +39,12 @@ int main()
 		qj_fb = new LpnFreeBehaviour();
 		qj_eb = new LpnExperimentBehaviour();
 	}
+	else if (rp->task_id == STD_TASK_ID)
+	{
+		qj_ib = new StdInitBehaviour();
+		qj_fb = new StdFreeBehaviour();
+		qj_eb = new StdExperimentBehaviour();
+	}
 	else
 	{
 		stringstream msg;

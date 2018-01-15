@@ -2,16 +2,20 @@
 
 void dump_adr_single(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, bool append)
 {
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_adr_dump_sep = int(cp->params.find("is_adr_dump_sep")->second);
 
-	if (is_adr_dump_sep == 1)
+	if(is_evo_dump_sep == 1)
 	{
-		int sys_size = md->sys_size;
-		double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
+		if (is_adr_dump_sep == 1)
+		{
+			int sys_size = md->sys_size;
+			double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
 
-		string fn = rp->path + "adr_" + to_string(tr_id) + cp->fn_suffix;
-		save_double_data(fn, adr, sys_size, 16, append);
-	} 
+			string fn = rp->path + "adr_" + to_string(tr_id) + cp->fn_suffix;
+			save_double_data(fn, adr, sys_size, 16, append);
+		}
+	}
 }
 
 void dump_adr_avg(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, bool append)

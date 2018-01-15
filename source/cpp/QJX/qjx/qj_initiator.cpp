@@ -14,6 +14,23 @@ void LpnInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md,
 	init_start_state(rp, cp, md, qjd, 0);
 }
 
+void StdInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	init_splits(rp, cp, md, qjd);
+	init_streams(rp, cp, md, qjd);
+	copy_streams(rp, cp, md, qjd);
+	init_basic_data(rp, cp, md, qjd);
+	init_dump_periods(rp, cp, md, qjd);
+	init_obs_std(rp, cp, md, qjd);
+
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		init_start_state(rp, cp, md, qjd, tr_id);
+	}
+}
+
 void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_threads = rp->num_threads;
@@ -37,11 +54,26 @@ void init_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	vslLeapfrogStream((qjd->streams)[0], seed, mns);
 }
 
-void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void copy_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
+
+	qjd->streams = new VSLStreamStatePtr[num_trajectories];
+	vslNewStream(&(qjd->streams)[0], VSL_BRNG_MCG59, 777);
+	vslLeapfrogStream((qjd->streams)[0], seed, mns);
+
+	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+	{
+		vslCopyStream(&(qjd->streams)[tr_id], (qjd->streams)[0]);
+		vslLeapfrogStream((qjd->streams)[tr_id], seed + tr_id, mns);
+	}
+}
+
+void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
 
 	qjd->streams_var = new VSLStreamStatePtr[num_trajectories];
 	vslNewStream(&(qjd->streams_var)[0], VSL_BRNG_MCG31, 777);

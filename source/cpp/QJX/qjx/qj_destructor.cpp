@@ -12,6 +12,15 @@ void LpnFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md,
 	free_obs_lpn(rp, cp, md, qjd);
 }
 
+void StdFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	free_splits(rp, cp, md, qjd);
+	free_streams(rp, cp, md, qjd);
+	free_basic_data(rp, cp, md, qjd);
+	free_dump_priods(rp, cp, md, qjd);
+	free_obs_std(rp, cp, md, qjd);
+}
+
 void free_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_threads = rp->num_threads;

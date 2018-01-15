@@ -4,14 +4,17 @@ void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Main
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
-//#pragma omp parallel for
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+#pragma omp parallel for
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
 		trans_process_single_std(rp, cp, md, qjd, tr_id, thread_id);
 	}
 
-//#pragma omp parallel for
+#pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		if (tr_id > 0)
@@ -28,10 +31,51 @@ void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Main
 		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
 		evo_chars_lpn(rp, cp, md, qjd, tr_id, 0);
 
-		dump_adr_single(rp, cp, md, qjd, tr_id, false);
+		if (is_evo_dump_sep == 1)
+		{
+			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+		}
 	}
 
-	dump_adr_avg(rp, cp, md, qjd, false);
+	if (is_evo_dump_avg == 1)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
+void StdExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single_std(rp, cp, md, qjd, tr_id, thread_id);
+	}
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		resresh_times(rp, cp, md, qjd, tr_id);
+
+		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+
+		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+
+		if (is_evo_dump_sep == 1)
+		{
+			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+		}
+	}
+
+	if (is_evo_dump_avg == 1)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
 }
 
 void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
@@ -40,6 +84,9 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 
 	int num_dumps_total = qjd->num_dumps_total;
 	int * dump_periods = qjd->dump_periods;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
 
 	int begin_period_id = 0;
 	int end_period_id = 0;
@@ -50,7 +97,7 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
-//#pragma omp parallel for
+#pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
@@ -64,7 +111,7 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 
 			qjd->period_id = (period_id + 1);
 
-//#pragma omp parallel for
+#pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				if (tr_id > 0)
@@ -74,25 +121,99 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 			}
 		}
 
-//#pragma omp parallel for
+#pragma omp parallel for
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
 			evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
 			evo_chars_lpn(rp, cp, md, qjd, tr_id, dump_id);
 
-			dump_adr_single(rp, cp, md, qjd, tr_id, true);
+			if (is_evo_dump_sep == 1)
+			{
+				dump_adr_single(rp, cp, md, qjd, tr_id, true);
+			}
 		}
 
-		dump_adr_avg(rp, cp, md, qjd, true);
+		if (is_evo_dump_avg == 1)
+		{
+			dump_adr_avg(rp, cp, md, qjd, true);
+		}
 	}
+
 
 	dump_std(rp, cp, md, qjd);
 	dump_lpn(rp, cp, md, qjd);
-	dump_evo_std(rp, cp, md, qjd);
-	dump_evo_lpn(rp, cp, md, qjd);
+
+	if (is_evo_dump_sep == 1)
+	{
+		dump_evo_std(rp, cp, md, qjd);
+		dump_evo_lpn(rp, cp, md, qjd);
+	}
+
+	if (is_evo_dump_avg == 0)
+	{
+		dump_adr_avg(rp, cp, md, qjd, true);
+	}
+
 }
 
-void QJ_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
+void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int num_dumps_total = qjd->num_dumps_total;
+	int * dump_periods = qjd->dump_periods;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+	int begin_period_id = 0;
+	int end_period_id = 0;
+	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
+	{
+		cout << "dump_id: " << dump_id << endl;
+
+		begin_period_id = dump_periods[dump_id - 1];
+		end_period_id = dump_periods[dump_id];
+
+		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
+		{
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				int thread_id = omp_get_thread_num();
+				one_period(rp, cp, md, qjd, tr_id, thread_id);
+
+				calc_chars_std(rp, cp, md, qjd, tr_id);
+
+				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+
+				if (is_evo_dump_sep == 1)
+				{
+					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+				}
+			}
+		}
+
+		if (is_evo_dump_avg == 1)
+		{
+			dump_adr_avg(rp, cp, md, qjd, true);
+		}
+	}
+
+	dump_std(rp, cp, md, qjd);
+
+	if (is_evo_dump_sep == 1)
+	{
+		dump_evo_std(rp, cp, md, qjd);
+	}
+
+	if (is_evo_dump_avg == 0)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
+void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
 {
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
 	MKL_Complex16 ONE = { 1.0, 0.0 };
@@ -243,8 +364,8 @@ void recovery(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Spli
 		phi[st_id].imag = res[st_id].imag / sqrt(gnorms[index] / g[index]);
 	}
 
-	delete[] res;
-	delete[] gnorms;
+	delete(res);
+	delete(gnorms);
 }
 
 void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Split * head, int tr_id, Split * branch)
@@ -263,7 +384,7 @@ void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 	{
 		while (branch->counter != branch->steps)
 		{
-			QJ_step(phi, branch->matrix, phi_aux, branch->N);
+			prop_step(phi, branch->matrix, phi_aux, branch->N);
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
 				recovery(rp, cp, md, qjd, head, tr_id);
@@ -284,7 +405,7 @@ void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 	{
 		while (branch->counter != branch->steps)
 		{
-			QJ_step(phi, branch->matrix, phi_aux, branch->N);
+			prop_step(phi, branch->matrix, phi_aux, branch->N);
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
 				one_period_branch(rp, cp, md, qjd, head, tr_id, branch->next);
@@ -379,6 +500,8 @@ double get_energy(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, 
 	{
 		energy += (phi[st_id].real / sqrt(norm_2) * sm[st_id].real + phi[st_id].imag / sqrt(norm_2) * sm[st_id].imag);
 	}
+
+	delete[] sm;
 
 	return energy;
 }
@@ -535,6 +658,7 @@ void copy_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData 
 	double * etas = qjd->etas_all;
 
 	vslCopyStream(&streams[tr_id], streams[0]);
+
 	etas[tr_id] = etas[0];
 
 	for (int st_id = 0; st_id < sys_size; st_id++)
@@ -641,15 +765,13 @@ void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJ
 	int sys_size = md->sys_size;
 	int num_tp_periods = cp->qj_num_tp_periods;
 
-	VSLStreamStatePtr * stream = &(qjd->streams[tr_id]);
 	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
 	double * eta = &(qjd->etas_all[tr_id]);
 
 	*eta = 0.0;
 	while (*eta == 0.0)
 	{
-		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, qjd->streams[tr_id], 1, eta, 0.0, 1.0);
 	}
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)

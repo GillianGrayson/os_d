@@ -18,7 +18,14 @@ public:
 	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
-void QJ_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);
+class StdExperimentBehaviour : public QJExperimentBehavior
+{
+public:
+	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+};
+
+void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);
 
 MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b);
 
