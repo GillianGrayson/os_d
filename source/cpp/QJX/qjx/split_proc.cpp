@@ -19,7 +19,7 @@ Split * init_split_structure(RunParam * rp, ConfigParam * cp, MainData * md)
 	for (unsigned int i = 0; i < num_branches; i++)
 	{
 		(head->next)[i].prev = head;
-		init_split_branches(&((head->next)[i]), 0, rp, cp, md);
+		init_split_branches(&((head->next)[i]), i, rp, cp, md);
 	}
 
 	head->steps = md->num_diss;
