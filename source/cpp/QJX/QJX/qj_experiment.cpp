@@ -92,6 +92,11 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 	int end_period_id = 0;
 	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
 	{
+		if (rp->is_pp == 1)
+		{
+			cout << "dump_id: " << dump_id << endl;
+		}
+
 		begin_period_id = dump_periods[dump_id - 1];
 		end_period_id = dump_periods[dump_id];
 
@@ -170,8 +175,11 @@ void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 	int end_period_id = 0;
 	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
 	{
-		cout << "dump_id: " << dump_id << endl;
-
+		if (rp->is_pp == 1)
+		{
+			cout << "dump_id: " << dump_id << endl;
+		}
+		
 		begin_period_id = dump_periods[dump_id - 1];
 		end_period_id = dump_periods[dump_id];
 

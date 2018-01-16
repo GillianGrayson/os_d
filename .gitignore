@@ -12,6 +12,8 @@ source/cpp/CQdiss/bin/*
 figures/
 !draft/*.pdf
 
+source/cpp/QJX/QJX/eigen/*
+
 # Data files
 *.bin
 

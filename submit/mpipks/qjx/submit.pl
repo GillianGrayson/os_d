@@ -1,0 +1,158 @@
+use File::Copy;
+use Data::Dumper;
+use Cwd;
+use Math::Trig;
+$dir = getcwd;
+
+$data_path = "/data/biophys/yusipov/os_d/qjx_results";
+
+$PI = 3.1415926535897932384626433832795;
+
+for($curr_U = 0.01; $curr_U <= 0.01; $curr_U += 0.01)
+{
+	print "curr_U = $curr_U\n";
+	
+	$sys_id = 0;
+	$task_id = 1;
+	$is_debug = 0;
+	$is_pp = 1;
+	$init_fn = "";
+	$path = "";
+	$num_threads = 1;
+	$qj_num_tp_periods = 1000;
+	$qj_num_obs_periods = 1000;
+	$qj_deep = 16;
+	$qj_num_trajectories = 100;
+	$qj_seed = 0;
+	$qj_mns 1000000;
+	
+	$type_lpn = 0;
+	$eps_lpn = 1.0e-3;
+	$delta_up_lpn = 1.0e-2;
+	$delta_down_lpn = 1.0e-13;
+	$is_adr_dump_sep = 0;
+	$is_adr_dump_avg = 1;
+	$is_evo_dump_sep = 0;
+	$is_evo_dump_avg = 0;
+	$dump_type = 0;
+	$num_dumps = 10;
+	$N = 100;
+	$diss_type = 1;
+	$diss_gamma = 0.1;
+	$diss_phase = 0.0;
+	$drv_type = 0;
+	$drv_ampl = 1.5;
+	$drv_freq = 1.0;
+	$drv_phase = 0.0;
+	$start_type = 0;
+	$start_state = 0;
+	$prm_E = 1.0;
+	$prm_U = $curr_U;
+	$prm_J = 1.0;
+	
+	$diss_gamma_str = sprintf("%.4f", $diss_gamma);
+	$diss_phase_str = sprintf("%.4f", $diss_phase);
+
+	$drv_ampl_str = sprintf("%.4f", $drv_ampl);
+	$drv_freq_str = sprintf("%.4f", $drv_freq);
+	$drv_phase_str = sprintf("%.4f", $drv_phase);
+	
+	$prm_E_str = sprintf("%.4f", $prm_E);
+	$prm_U_str = sprintf("%.4f", $prm_U);
+	$prm_J_str = sprintf("%.4f", $prm_J);
+
+	for($seed = 0; $seed < 1; $seed += 1)
+	{
+		$start = 1;
+		$finish = $start + $qj_num_trajectories;
+		%exp = ();
+		$i = $start;
+	
+		$delta_str = sprintf("%.4f", $delta_lim);
+		
+
+		sub ForderName{
+			$key_str = $_[0];
+			
+			return  "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}/seed_${key_str}";
+		}
+		
+		mkdir "$data_path";
+		mkdir "$data_path/main_${sys_id}_${task_id}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}/N_${N}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}";
+		
+
+		for($val = $start; $val < $finish; $val+=1)
+		{
+			$exp{ForderName($i)} = $val;
+			$i++;
+		}
+
+		for($i = $start; $i < $finish; $i++)
+		{
+			$key = ForderName($i);    
+			mkdir "$key";
+			
+			$rnd = $qj_seed + $exp{$key} * $num_trajectories;
+			
+			print "$rnd \n";
+			
+			open( WF,">$key/config.txt"); 
+			print WF "sys_id $sys_id \n"; 
+			print WF "task_id $task_id \n";
+			print WF "is_debug $is_debug \n";
+			print WF "init_fn $init_fn \n";
+			print WF "path $path \n";
+			print WF "num_threads $num_threads \n";
+			print WF "qj_num_tp_periods $qj_num_tp_periods \n";
+			print WF "qj_num_obs_periods $qj_num_obs_periods \n";
+			print WF "qj_deep $qj_deep \n";
+			print WF "qj_num_trajectories $qj_num_trajectories \n";
+			print WF "qj_seed $rnd \n";
+			print WF "qj_mns $qj_mns \n";
+			close WF;
+			
+			open( WF,">$key/params.txt"); 
+			print WF "type_lpn $type_lpn \n"; 
+			print WF "eps_lpn $eps_lpn \n";
+			print WF "delta_up_lpn $delta_up_lpn \n";
+			print WF "delta_down_lpn $delta_down_lpn \n";
+			print WF "is_adr_dump_sep $is_adr_dump_sep \n";
+			print WF "is_adr_dump_avg $is_adr_dump_avg \n";
+			print WF "is_evo_dump_sep $is_evo_dump_sep \n";
+			print WF "is_evo_dump_avg $is_evo_dump_avg \n";
+			print WF "dump_type $dump_type \n";
+			print WF "num_dumps $num_dumps \n";
+			print WF "N $N \n";
+			print WF "diss_type $diss_type \n";
+			print WF "diss_gamma $diss_gamma \n";
+			print WF "diss_phase $diss_phase \n";
+			print WF "drv_type $drv_type \n";
+			print WF "drv_ampl $drv_ampl \n";
+			print WF "drv_freq $drv_freq \n";
+			print WF "drv_phase $drv_phase \n";
+			print WF "prm_E $prm_E \n";
+			print WF "prm_U $prm_U \n";
+			print WF "prm_J $prm_J \n";
+			print WF "start_type $start_type \n";
+			print WF "start_state $start_state \n";
+			close WF;
+
+			$test_file = "periods_evo.txt";
+			
+			$test_file = sprintf('%s/mean_qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_start(%d_%d)_prm(%0.4f_%0.4f_%0.4f).txt', $key, $rnd, $qj_mns, $N, $diss_type, $diss_gamma, $diss_phase, $drv_type, $drv_ampl, $drv_freq, $drv_phase, $start_type, $start_state, $prm_E, $prm_U, $prm_J);
+			
+			unless (-e "$key/$test_file")
+			{	
+				print "qsub -wd $dir run_1_thread.sh $key \n";
+				system "qsub -wd $dir run_1_thread.sh $key";
+			}
+		}
+	}
+
+}

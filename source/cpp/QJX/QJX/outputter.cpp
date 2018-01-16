@@ -19,14 +19,14 @@ void DimerIOuputBehavior::suffix_param(ConfigParam * cp, int precision) const
 		<< setprecision(precision) << fixed << double(cp->params.find("drv_freq")->second) << "_"
 		<< setprecision(precision) << fixed << double(cp->params.find("drv_phase")->second) << ")";
 
-	params << "_start("
-		<< int(cp->params.find("start_type")->second) << "_"
-		<< int(cp->params.find("start_state")->second) << ")";
-
 	params << "_prm("
 		<< setprecision(precision) << fixed << double(cp->params.find("prm_E")->second) << "_"
 		<< setprecision(precision) << fixed << double(cp->params.find("prm_U")->second) << "_"
 		<< setprecision(precision) << fixed << double(cp->params.find("prm_J")->second) << ")";
+
+	params << "_start("
+		<< int(cp->params.find("start_type")->second) << "_"
+		<< int(cp->params.find("start_state")->second) << ")";
 
 	string ext = extension();
 

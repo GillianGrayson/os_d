@@ -7,6 +7,7 @@ path
 num_threads 4
 qj_num_tp_periods 1000
 qj_num_obs_periods 1000
+qj_deep 16
 qj_num_trajectories 10
 qj_seed 0
 qj_mns 1000000
