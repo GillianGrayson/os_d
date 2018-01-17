@@ -10,7 +10,7 @@ $PI = 3.1415926535897932384626433832795;
 
 $num_runs = 100;
 
-for($curr_U = 0.25; $curr_U <= 0.75000001; $curr_U += 0.01)
+for($curr_U = 0.01; $curr_U <= 0.75000001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
@@ -32,6 +32,7 @@ for($curr_U = 0.25; $curr_U <= 0.75000001; $curr_U += 0.01)
 	$eps_lpn = 1.0e-3;
 	$delta_up_lpn = 1.0e-2;
 	$delta_down_lpn = 1.0e-13;
+	$is_obs_dump = 0;
 	$is_adr_dump_sep = 0;
 	$is_adr_dump_avg = 1;
 	$is_evo_dump_sep = 0;
@@ -124,6 +125,7 @@ for($curr_U = 0.25; $curr_U <= 0.75000001; $curr_U += 0.01)
 			print WF "eps_lpn $eps_lpn \n";
 			print WF "delta_up_lpn $delta_up_lpn \n";
 			print WF "delta_down_lpn $delta_down_lpn \n";
+			print WF "is_obs_dump $is_obs_dump \n";
 			print WF "is_adr_dump_sep $is_adr_dump_sep \n";
 			print WF "is_adr_dump_avg $is_adr_dump_avg \n";
 			print WF "is_evo_dump_sep $is_evo_dump_sep \n";
@@ -144,12 +146,10 @@ for($curr_U = 0.25; $curr_U <= 0.75000001; $curr_U += 0.01)
 			print WF "start_type $start_type \n";
 			print WF "start_state $start_state \n";
 			close WF;
-
-			$test_file = "periods_evo.txt";
 			
-			$test_file = sprintf('%s/mean_qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', $key, $i, $qj_mns, $N, $diss_type, $diss_gamma, $diss_phase, $drv_type, $drv_ampl, $drv_freq, $drv_phase, $prm_E, $prm_U, $prm_J, $start_type, $start_state);
+			$test_file = sprintf('%s/adr_avg_qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', $key, $i, $qj_mns, $N, $diss_type, $diss_gamma, $diss_phase, $drv_type, $drv_ampl, $drv_freq, $drv_phase, $prm_E, $prm_U, $prm_J, $start_type, $start_state);
 			
-			unless (-e "$key/$test_file")
+			unless (-e "$test_file")
 			{	
 				print "qsub -wd $dir run_1_thread.sh $key \n";
 				system "qsub -wd $dir run_1_thread.sh $key";
