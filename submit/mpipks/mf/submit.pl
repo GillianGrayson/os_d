@@ -9,9 +9,9 @@ $data_path = "/data/biophys/yusipov/os_d/mf_results";
 
 $PI = 3.1415926535897932384626433832795;
 
-for($dim = 1; $dim <= 4; $dim += 1)
+for($dim = 4; $dim <= 4; $dim += 1)
 {
-	for($curr_U = 0.6; $curr_U <= 0.60000001; $curr_U += 0.05)
+	for($curr_U = 0.05; $curr_U <= 0.750000001; $curr_U += 0.05)
 	{
 		print "curr_U = $curr_U\n";
 		
@@ -30,7 +30,7 @@ for($dim = 1; $dim <= 4; $dim += 1)
 			$task = 5;
 			$path = "";
 			$U_start = $curr_U;
-			$U_shift = 0.03;
+			$U_shift = 0.01;
 			$U_num = 1;
 			$cd_eps = $curr_cd_eps;
 			$cd_eps_num = 1;
@@ -40,8 +40,8 @@ for($dim = 1; $dim <= 4; $dim += 1)
 			$max_num_seeds = 1000000;
 			$mt = 0;
 			$num_steps = 10000;
-			$npt = 2000;
-			$np = 10000;
+			$npt = 1000;
+			$np = 10;
 			$E = 1.0;
 			$A = 1.5; 
 			$omega = 1.0;
@@ -49,7 +49,7 @@ for($dim = 1; $dim <= 4; $dim += 1)
 			$gamma = 0.1;
 			$J = 1.0;
 			$cd_dim = $dim;
-			$cd_nppp = 10;
+			$cd_nppp = 10000;
 			
 			$omega_str = sprintf("%.4f", $omega);
 			$phase_str = sprintf("%.4f", $phase);
