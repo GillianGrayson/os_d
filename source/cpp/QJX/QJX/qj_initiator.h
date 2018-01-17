@@ -25,6 +25,10 @@ void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void init_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
+void leap_frog_single_stream(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+
+void leap_frog_all_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+
 void copy_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
