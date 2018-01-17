@@ -10,7 +10,7 @@ $PI = 3.1415926535897932384626433832795;
 
 $num_runs = 100;
 
-for($curr_U = 0.25; $curr_U <= 0.25000001; $curr_U += 0.01)
+for($curr_U = 0.25; $curr_U <= 0.75000001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
@@ -21,9 +21,9 @@ for($curr_U = 0.25; $curr_U <= 0.25000001; $curr_U += 0.01)
 	$init_fn = "";
 	$path = "";
 	$num_threads = 1;
+	$qj_deep = 16;
 	$qj_num_tp_periods = 100;
 	$qj_num_obs_periods = 1;
-	$qj_deep = 16;
 	$qj_num_trajectories = 1000;
 	$qj_seed = 0;
 	$qj_mns = 1000000;
@@ -77,17 +77,17 @@ for($curr_U = 0.25; $curr_U <= 0.25000001; $curr_U += 0.01)
 		sub ForderName{
 			$key_str = $_[0];
 			
-			return  "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}/ss_${key_str}";
+			return  "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}/ss_${key_str}";
 		}
 		
 		mkdir "$data_path";
 		mkdir "$data_path/main_${sys_id}_${task_id}";
 		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}";
 		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}";
-		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}";
-		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}";
-		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}";
-		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_gamma_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}";
+		mkdir "$data_path/main_${sys_id}_${task_id}/qj_${qj_deep}_${qj_num_tp_periods}_${qj_num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}";
 		
 
 		for($val = $start; $val < $finish; $val += $step)
@@ -111,9 +111,9 @@ for($curr_U = 0.25; $curr_U <= 0.25000001; $curr_U += 0.01)
 			print WF "init_fn $init_fn \n";
 			print WF "path $path \n";
 			print WF "num_threads $num_threads \n";
+			print WF "qj_deep $qj_deep \n";
 			print WF "qj_num_tp_periods $qj_num_tp_periods \n";
 			print WF "qj_num_obs_periods $qj_num_obs_periods \n";
-			print WF "qj_deep $qj_deep \n";
 			print WF "qj_num_trajectories $qj_num_trajectories \n";
 			print WF "qj_seed $i \n";
 			print WF "qj_mns $qj_mns \n";
@@ -147,7 +147,7 @@ for($curr_U = 0.25; $curr_U <= 0.25000001; $curr_U += 0.01)
 
 			$test_file = "periods_evo.txt";
 			
-			$test_file = sprintf('%s/mean_qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', $key, $rnd, $qj_mns, $N, $diss_type, $diss_gamma, $diss_phase, $drv_type, $drv_ampl, $drv_freq, $drv_phase, $prm_E, $prm_U, $prm_J, $start_type, $start_state);
+			$test_file = sprintf('%s/mean_qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', $key, $i, $qj_mns, $N, $diss_type, $diss_gamma, $diss_phase, $drv_type, $drv_ampl, $drv_freq, $drv_phase, $prm_E, $prm_U, $prm_J, $start_type, $start_state);
 			
 			unless (-e "$key/$test_file")
 			{	

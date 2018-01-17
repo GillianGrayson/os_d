@@ -9,16 +9,16 @@ $input_path = "qj_input";
 
 $PI = 3.1415926535897932384626433832795;
 
-for($curr_U = 0.01; $curr_U <= 0.7500001; $curr_U += 0.01)
+for($curr_U = 0.1; $curr_U <= 0.100001; $curr_U += 0.01)
 {
 	print "curr_U = $curr_U\n";
 	
-	$task = 4;
+	$task = 0;
 	
 	$E = 1;
 	$T = 2 * $PI;
 	$A = 1.5;
-	$N = 200;
+	$N = 100;
 	$U = $curr_U;
 	$J = 1.0;
 	$g = 0.1;
@@ -30,15 +30,15 @@ for($curr_U = 0.01; $curr_U <= 0.7500001; $curr_U += 0.01)
 	$J_str = sprintf("%.4f", $J);
 	$g_str = sprintf("%.4f", $g);
 	
-	$num_periods = 1000;
+	$num_periods = 1;
 	$init_state_id = int($N/2);
 	$propagation_type = $task;
-	$num_dumps = 1001;
+	$num_dumps = 1;
 	$dump_type = 0;
-	$num_periods_in_trans_proc = 1000;
+	$num_periods_in_trans_proc = 100;
 	$num_omp_threads = 1;
-	$num_trajectories = 2;
-	$rnd_max = 2000000;
+	$num_trajectories = 1000;
+	$rnd_max = 1000000;
 	$rnd_cur = 0;
 	$calc_characteristics = 0;
 	$dump_rho = 0;
@@ -65,7 +65,7 @@ for($curr_U = 0.01; $curr_U <= 0.7500001; $curr_U += 0.01)
 	for($seed = 0; $seed < 1; $seed+=1)
 	{
 		$start = 0;
-		$finish = 100;
+		$finish = 1;
 		%exp = ();
 		$i = 0;
 		$i = $start;
