@@ -68,7 +68,7 @@ for U_id = 1:U_num
    
 	for run_id = 1:num_runs
         
-        ss = (run_id - 1) * qj_num_trajectories
+        ss = (run_id - 1) * qj_num_trajectories;
         
 		path_to_folder = sprintf('%s/main_%d_%d/qj_%d_%d_%d/N_%d/diss_%d_%0.4f_%0.4f/drv_%d_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
 			data_path, ...
@@ -160,4 +160,4 @@ suffix = sprintf('qj(%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_pr
             start_type, ...
             start_state);
 		
-savefig(sprintf('%s/adr_avg_%s.fig', home_figures_path, fn_suffix));
+savefig(sprintf('%s/adr_avg_%s.fig', home_figures_path, suffix));

@@ -15,16 +15,16 @@ for($curr_U = 0.01; $curr_U <= 0.75000001; $curr_U += 0.01)
 	print "curr_U = $curr_U\n";
 	
 	$sys_id = 0;
-	$task_id = 1;
+	$task_id = 0;
 	$is_debug = 0;
 	$is_pp = 1;
 	$init_fn = "";
 	$path = "";
 	$num_threads = 1;
 	$qj_deep = 16;
-	$qj_num_tp_periods = 100;
-	$qj_num_obs_periods = 1;
-	$qj_num_trajectories = 1000;
+	$qj_num_tp_periods = 1000;
+	$qj_num_obs_periods = 100;
+	$qj_num_trajectories = 2;
 	$qj_seed = 0;
 	$qj_mns = 1000000;
 	
@@ -32,14 +32,14 @@ for($curr_U = 0.01; $curr_U <= 0.75000001; $curr_U += 0.01)
 	$eps_lpn = 1.0e-3;
 	$delta_up_lpn = 1.0e-2;
 	$delta_down_lpn = 1.0e-13;
-	$is_obs_dump = 0;
+	$is_obs_dump = 1;
 	$is_adr_dump_sep = 0;
-	$is_adr_dump_avg = 1;
-	$is_evo_dump_sep = 0;
+	$is_adr_dump_avg = 0;
+	$is_evo_dump_sep = 1;
 	$is_evo_dump_avg = 0;
 	$dump_type = 0;
-	$num_dumps = 1;
-	$N = 100;
+	$num_dumps = 100;
+	$N = 200;
 	$diss_type = 1;
 	$diss_gamma = 0.1;
 	$diss_phase = 0.0;
