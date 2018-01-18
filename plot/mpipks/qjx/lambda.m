@@ -8,16 +8,16 @@ prefix = 'qjx_results';
 data_path = sprintf('%s/%s', data_path, prefix);
 
 sys_id = 0;
-task_id = 1;
+task_id = 0;
 is_debug = 0;
 is_pp = 1;
 init_fn = '';
 path = '';
 num_threads = 1;
 qj_deep = 16;
-qj_num_tp_periods = 100;
-qj_num_obs_periods = 1;
-qj_num_trajectories = 1000;
+qj_num_tp_periods = 1000;
+qj_num_obs_periods = 100;
+qj_num_trajectories = 2;
 qj_seed = 0;
 qj_mns = 1000000;
 
@@ -27,12 +27,12 @@ delta_up_lpn = 1.0e-2;
 delta_down_lpn = 1.0e-13;
 is_obs_dump = 1;
 is_adr_dump_sep = 0;
-is_adr_dump_avg = 1;
-is_evo_dump_sep = 0;
+is_adr_dump_avg = 0;
+is_evo_dump_sep = 1;
 is_evo_dump_avg = 0;
 dump_type = 0;
 num_dumps = 1;
-N = 100;
+N = 200;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
@@ -55,9 +55,7 @@ U_step = 0.01;
 U_num = 75;
 
 Us = zeros(U_num, 1);
-states = linspace(1, sys_size, sys_size);
-
-rho = zeros(U_num, sys_size);
+lambdas = zeros(U_num, 1);
 
 for U_id = 1:U_num
 	
@@ -65,7 +63,7 @@ for U_id = 1:U_num
 	U = U_begin + U_step * (U_id - 1);
 	Us(U_id) = U;
    
-	curr_rho_avg = zeros(sys_size,1);
+	curr_lambda_avg = 0;
    
 	for run_id = 1:num_runs
         
@@ -111,39 +109,24 @@ for U_id = 1:U_num
             start_state);
        
       
-		path = sprintf('%s/adr_avg_%s.txt', path_to_folder, suffix);
+		path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
 		data = importdata(path);
        
-		curr_rho_avg = curr_rho_avg + data;
+		curr_lambda_avg = curr_lambda_avg + data(2);
 	end
    
-	curr_rho_avg = curr_rho_avg / num_runs;
+	curr_lambda_avg = curr_lambda_avg / num_runs;
    
-	norm = sum(curr_rho_avg);
-    norm_diff = 1.0 - norm
-   
-	rho(U_id, :) = curr_rho_avg;
+	lambdas(U_id) = curr_lambda_avg;
     
 end
 
-for U_id = 1:U_num
-	curr_max = max(rho(U_id, :));
-	rho(U_id, :) = rho(U_id, :) / curr_max; 
-end
-
-rho = rho';
-
 fig = figure;
-hLine = imagesc(Us, states, rho + eps);
+hLine = plot(Us, lambdas);
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$n$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, '\rho_{n,n}');
-set(gca,'YDir','normal');
+ylabel('$\lambda$', 'Interpreter', 'latex');
 
 suffix = sprintf('qj(%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', ...
             num_runs * qj_num_trajectories, ...
@@ -161,4 +144,4 @@ suffix = sprintf('qj(%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_pr
             start_type, ...
             start_state);
 		
-savefig(sprintf('%s/adr_avg_%s.fig', home_figures_path, suffix));
+savefig(sprintf('%s/lambda_%s.fig', home_figures_path, suffix));
