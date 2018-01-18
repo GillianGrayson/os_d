@@ -33,6 +33,31 @@ void StdInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md,
 	}
 }
 
+void CorrDimInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+
+}
+
+void init_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_branches = md->num_ham_qj;
+	int num_threads = rp->num_threads;
+	
+	int num_total = num_threads * num_branches;
+
+	md->structure = init_split_structure_deep(rp, cp, md);
+	md->splits = new Split[num_total];
+
+	for (int b_id = 0; b_id < num_branches; b_id++)
+	{
+		for (int th_id = 0; th_id < num_threads; th_id++)
+		{
+			int index = b_id * num_threads + th_id;
+			copy_struct_not_member(&(md->structure)[b_id], &(md->splits)[index]);
+		}
+	}
+}
+
 void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_threads = rp->num_threads;

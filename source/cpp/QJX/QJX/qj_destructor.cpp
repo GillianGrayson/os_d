@@ -21,19 +21,35 @@ void StdFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md,
 	free_obs_std(rp, cp, md, qjd);
 }
 
+void free_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_branches = md->num_ham_qj;
+	int num_threads = rp->num_threads;
+
+	for (int b_id = 0; b_id < num_branches; b_id++)
+	{
+		for (int th_id = 0; th_id < num_threads; th_id++)
+		{
+			int index = b_id * num_threads + th_id;
+			delete_split_struct_not_member(&(md->splits[index]));
+		}
+	}
+
+	delete(md->splits);
+	delete_split_struct(md->structure);
+}
+
 void free_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_threads = rp->num_threads;
 
-	Split * head = md->structure;
-	Split * heads = md->splits;
-
 	for (int i = 0; i < num_threads; i++)
 	{
-		delete_split_struct_not_member(&heads[i]);
+		delete_split_struct_not_member(&(md->splits[i]));
 	}
-	delete(heads);
-	delete_split_struct(head);
+
+	delete(md->splits);
+	delete_split_struct(md->structure);
 }
 
 void free_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)

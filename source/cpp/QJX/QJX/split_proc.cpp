@@ -1,9 +1,58 @@
 #include "split_proc.h"
 
+Split * init_split_structure_deep(RunParam * rp, ConfigParam * cp, MainData * md)
+{
+	double T = md->T;
+	int N = md->sys_size;
+	int num_branches = md->num_ham_qj;
+
+	Split * head = new Split[num_branches];
+
+	for (int br_id = 0; br_id < num_branches; br_id++)
+	{
+		Split * branch = (&head[br_id]);
+		branch->prev = 0;
+		branch->type = false;
+		branch->dt = T;
+		branch->counter = 2;
+		branch->N = N;
+		branch->next = new Split[2];
+
+		for (unsigned int i = 0; i < 2; i++)
+		{
+			(branch->next)[i].prev = branch;
+			init_split_branches(&((branch->next)[i]), br_id, rp, cp, md);
+		}
+
+		branch->steps = md->num_diss;
+
+		branch->matrix = new MKL_Complex16[branch->steps * N * N];
+		branch->g = new double[branch->steps];
+
+		for (int diss_id = 0; diss_id < branch->steps; diss_id++)
+		{
+			branch->g[diss_id] = 1.0;
+
+			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+			{
+				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+				{
+					int index_xtd = diss_id * (md->sys_size * md->sys_size) + st_id_1 * md->sys_size + st_id_2;
+					int index = st_id_1 * md->sys_size + st_id_2;
+
+					branch->matrix[index_xtd].real = md->dissipators[diss_id][index].real;
+					branch->matrix[index_xtd].imag = md->dissipators[diss_id][index].imag;
+				}
+			}
+		}
+	}
+
+	return head;
+}
+
 Split * init_split_structure(RunParam * rp, ConfigParam * cp, MainData * md)
 {
-	Split * head = md->structure;
-	head = new Split[1];
+	Split * head = new Split[1];
 
 	double T = md->T;
 	int N = md->sys_size;
