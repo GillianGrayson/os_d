@@ -35,17 +35,32 @@ void StdInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md,
 
 void CorrDimInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
+	int num_trajectories = cp->qj_num_trajectories;
+
+	init_splits_cd(rp, cp, md, qjd);
+	init_streams(rp, cp, md, qjd);
+	copy_streams(rp, cp, md, qjd);
+	leap_frog_all_streams(rp, cp, md, qjd);
+	init_basic_data(rp, cp, md, qjd);
+	init_dump_periods(rp, cp, md, qjd);
+	init_obs_std(rp, cp, md, qjd);
+	init_obs_cd(rp, cp, md, qjd);
+
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		init_start_state(rp, cp, md, qjd, tr_id);
+	}
 
 }
 
-void init_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_splits_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_branches = md->num_ham_qj;
 	int num_threads = rp->num_threads;
 	
 	int num_total = num_threads * num_branches;
 
-	md->structure = init_split_structure_deep(rp, cp, md);
+	md->structure = init_split_structure_cd(rp, cp, md);
 	md->splits = new Split[num_total];
 
 	for (int b_id = 0; b_id < num_branches; b_id++)
@@ -288,6 +303,39 @@ void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 			qjd->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
 			qjd->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
 		}	
+	}
+}
+
+void init_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps = num_branches * int(cp->params.find("num_sub_steps")->second);
+	int cd_dim = int(cp->params.find("cd_dim")->second);
+
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->qj_num_trajectories;
+	int num_periods = cp->qj_num_obs_periods;
+
+	qjd->cd_shift_size = 1;
+	qjd->cd_dim = cd_dim;
+	qjd->cd_num_points = num_periods * num_sub_steps - cd_dim + 1;
+
+	qjd->corr_dim = new double[num_trajectories];
+	qjd->cd_rec_data = new double**[num_trajectories];
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		qjd->corr_dim[tr_id] = 0.0;
+		qjd->cd_rec_data[tr_id] = new double*[qjd->cd_num_points];
+
+		for (int p_id = 0; p_id < qjd->cd_num_points; p_id++)
+		{
+			qjd->cd_rec_data[tr_id][p_id] = new double[qjd->cd_dim];
+
+			for (int st_id = 0; st_id < qjd->cd_dim; st_id++)
+			{
+				qjd->cd_rec_data[tr_id][p_id][st_id] = 0.0;
+			}
+		}
 	}
 }
 

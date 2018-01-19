@@ -25,6 +25,13 @@ public:
 	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
+class CorrDimExperimentBehaviour : public QJExperimentBehavior
+{
+public:
+	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+};
+
 void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);
 
 MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b);
@@ -38,6 +45,12 @@ double norm_square(MKL_Complex16 * phi, int sys_size);
 void recovery(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Split * head, int tr_id);
 
 void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Split * head, int tr_id, Split * branch);
+
+void one_sub_period_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int part_id, int thread_id);
+
+void one_period_cd_tp(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
+
+void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id);
 
 void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
 
@@ -70,3 +83,5 @@ void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData *
 void lambda_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
 void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
+
+void trans_process_single_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);

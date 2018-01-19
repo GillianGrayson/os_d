@@ -78,6 +78,41 @@ void StdExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Main
 	}
 }
 
+void CorrDimExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single_cd(rp, cp, md, qjd, tr_id, thread_id);
+	}
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		resresh_times(rp, cp, md, qjd, tr_id);
+
+		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+
+		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+
+		if (is_evo_dump_sep == 1)
+		{
+			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+		}
+	}
+
+	if (is_evo_dump_avg == 1)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
 void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
@@ -191,6 +226,66 @@ void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 				int thread_id = omp_get_thread_num();
 				one_period(rp, cp, md, qjd, tr_id, thread_id);
 
+				calc_chars_std(rp, cp, md, qjd, tr_id);
+
+				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+
+				if (is_evo_dump_sep == 1)
+				{
+					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+				}
+			}
+		}
+
+		if (is_evo_dump_avg == 1)
+		{
+			dump_adr_avg(rp, cp, md, qjd, true);
+		}
+	}
+
+	dump_std(rp, cp, md, qjd);
+
+	if (is_evo_dump_sep == 1)
+	{
+		dump_evo_std(rp, cp, md, qjd);
+	}
+
+	if (is_evo_dump_avg == 0)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
+void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int num_dumps_total = qjd->num_dumps_total;
+	int * dump_periods = qjd->dump_periods;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+	int begin_period_id = 0;
+	int end_period_id = 0;
+	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
+	{
+		if (rp->is_pp == 1)
+		{
+			cout << "dump_id: " << dump_id << endl;
+		}
+
+		begin_period_id = dump_periods[dump_id - 1];
+		end_period_id = dump_periods[dump_id];
+
+		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
+		{
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				int thread_id = omp_get_thread_num();
+				one_period_cd_obs(rp, cp, md, qjd, tr_id, thread_id, period_id);
+				
 				calc_chars_std(rp, cp, md, qjd, tr_id);
 
 				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
@@ -431,6 +526,72 @@ void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 	branch->counter = 0;
 }
 
+void one_sub_period_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int part_id, int thread_id)
+{
+	int num_threads = rp->num_threads;
+
+	int split_id = num_threads * part_id + thread_id;
+
+	Split * head = &(md->splits)[split_id];
+
+	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
+	{
+		one_period_branch(rp, cp, md, qjd, head, tr_id, &(head->next)[b_id]);
+	}
+}
+
+void one_period_cd_tp(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id)
+{
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps = int(cp->params.find("cd_num_sub_steps")->second);
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps; sub_step_id++)
+		{
+			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
+		}
+	}
+}
+
+void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id)
+{
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("num_sub_steps")->second);
+
+	int dump_point_id = 0;
+	int curr_point_id = 0;
+	int global_point_id = 0;
+
+	int step_id = 0;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			step_id = part_id * num_sub_steps_per_part + sub_step_id;
+
+			global_point_id = period_id * num_sub_steps + dump_point_id;
+
+			dump_point_id++;
+
+			for (int cd_st_id = 0; cd_st_id < qjd->cd_dim; cd_st_id++)
+			{
+				curr_point_id = global_point_id - cd_st_id;
+
+				if (curr_point_id >= 0 && curr_point_id < qjd->cd_num_points)
+				{
+					qjd->cd_rec_data[tr_id][curr_point_id][cd_st_id] = qjd->mean[tr_id];
+				}
+			}
+
+			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
+			calc_chars_std(rp, cp, md, qjd, tr_id);
+		}
+	}
+}
+
 void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id)
 {
 	int sys_size = md->sys_size;
@@ -440,6 +601,53 @@ void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, in
 	{
 		one_period_branch(rp, cp, md, qjd, head, tr_id, &(head->next)[b_id]);
 	}
+}
+
+double calc_norm_cd(double * vec, int size)
+{
+	double sum = 0.0;
+	for (int i = 0; i < size; i++)
+	{
+		sum += vec[i] * vec[i];
+	}
+
+	return sqrt(sum);
+}
+
+double get_ci(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+{
+	double * curr_diff = new double[qjd->cd_dim];
+	double curr_norm = 0.0;
+	double integral = 0.0;
+
+	for (int cd_p_id_1 = 0; cd_p_id_1 < qjd->cd_num_points; cd_p_id_1++)
+	{
+		for (int cd_p_id_2 = 0; cd_p_id_2 < qjd->cd_num_points; cd_p_id_2++)
+		{
+			if (cd_p_id_1 != cd_p_id_2)
+			{
+				for (int cd_st_id = 0; cd_st_id < qjd->cd_dim; cd_st_id++)
+				{
+					curr_diff[cd_st_id] = qjd->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - qjd->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
+				}
+
+				curr_norm = calc_norm_cd(curr_diff, qjd->cd_dim);
+
+				if (curr_norm < cp.cd_eps)
+				{
+					integral += 1.0;
+				}
+			}
+		}
+	}
+
+	cout << "unnormed integral = " << integral << endl;
+
+	integral /= (double(md.cd_M) * double(md.cd_M - 1));
+
+	md.cd_ci = integral;
+
+	delete curr_diff;
 }
 
 double get_mean_simple(double * adr, int sys_size)
@@ -785,5 +993,25 @@ void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJ
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
 		one_period(rp, cp, md, qjd, tr_id, thread_id);
+	}
+}
+
+void trans_process_single_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id)
+{
+	int sys_size = md->sys_size;
+	int num_tp_periods = cp->qj_num_tp_periods;
+
+	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+	double * eta = &(qjd->etas_all[tr_id]);
+
+	*eta = 0.0;
+	while (*eta == 0.0)
+	{
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, qjd->streams[tr_id], 1, eta, 0.0, 1.0);
+	}
+
+	for (int period_id = 0; period_id < num_tp_periods; period_id++)
+	{
+		one_period_cd_tp(rp, cp, md, qjd, tr_id, thread_id);
 	}
 }

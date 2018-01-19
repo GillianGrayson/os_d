@@ -2,7 +2,7 @@
 #include "config.h"
 #include "data.h"
 
-Split * init_split_structure_deep(RunParam * rp, ConfigParam * cp, MainData * md);
+Split * init_split_structure_cd(RunParam * rp, ConfigParam * cp, MainData * md);
 
 Split * init_split_structure(RunParam * rp, ConfigParam * cp, MainData * md);
 

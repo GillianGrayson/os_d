@@ -21,6 +21,16 @@ void StdFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md,
 	free_obs_std(rp, cp, md, qjd);
 }
 
+void CorrDimFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	free_splits_deep(rp, cp, md, qjd);
+	free_streams(rp, cp, md, qjd);
+	free_basic_data(rp, cp, md, qjd);
+	free_dump_priods(rp, cp, md, qjd);
+	free_obs_std(rp, cp, md, qjd);
+	free_obs_cd(rp, cp, md, qjd);
+}
+
 void free_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_branches = md->num_ham_qj;
@@ -105,4 +115,21 @@ void free_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	delete[] qjd->lambda_evo;
 	delete[] qjd->mean_lpn_evo;
 	delete[] qjd->energy_lpn_evo;
+}
+
+void free_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	delete[] qjd->corr_dim;
+
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		for (int p_id = 0; p_id < qjd->cd_num_points; p_id++)
+		{
+			delete[] qjd->cd_rec_data[tr_id][p_id];
+		}
+		delete[] qjd->cd_rec_data[tr_id];
+	}
+	delete[] qjd->cd_rec_data;
 }

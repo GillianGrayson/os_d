@@ -1,8 +1,10 @@
 #include "split_proc.h"
 
-Split * init_split_structure_deep(RunParam * rp, ConfigParam * cp, MainData * md)
+Split * init_split_structure_cd(RunParam * rp, ConfigParam * cp, MainData * md)
 {
-	double T = md->T;
+	int cd_num_sub_steps = int(cp->params.find("cd_num_sub_steps")->second);
+
+	double T = md->T / double(cd_num_sub_steps);
 	int N = md->sys_size;
 	int num_branches = md->num_ham_qj;
 

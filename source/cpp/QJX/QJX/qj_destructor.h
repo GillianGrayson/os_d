@@ -21,6 +21,12 @@ public:
 	virtual void free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
+class CorrDimFreeBehaviour : public QJFreeBehavior
+{
+public:
+	virtual void free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+};
+
 void free_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void free_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
@@ -36,3 +42,5 @@ void free_dump_priods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 void free_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void free_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+
+void free_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);

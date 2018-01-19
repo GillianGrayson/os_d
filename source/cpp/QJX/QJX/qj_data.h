@@ -48,4 +48,12 @@ struct QJData
 	double * mean_lpn_evo;
 	double * energy_lpn_evo;
 	// ======================================
+
+	// ===== Corr dimension observables =====
+	int cd_shift_size;
+	int cd_dim;
+	int cd_num_points;
+	double *** cd_rec_data;
+	double * corr_dim;
+	// ======================================
 };

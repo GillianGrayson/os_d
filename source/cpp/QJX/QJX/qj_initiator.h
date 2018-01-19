@@ -27,7 +27,7 @@ public:
 	virtual void init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
-void init_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+void init_splits_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
@@ -48,6 +48,8 @@ void init_dump_periods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 void init_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+
+void init_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void init_start_state(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
