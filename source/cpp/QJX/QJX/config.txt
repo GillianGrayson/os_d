@@ -5,7 +5,7 @@ is_pp 1
 init_fn
 path
 num_threads 1
-qj_deep 13
+qj_deep 8
 qj_num_tp_periods 100
 qj_num_obs_periods 10
 qj_num_trajectories 10
