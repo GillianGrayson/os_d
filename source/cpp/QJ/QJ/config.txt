@@ -1,6 +1,6 @@
 num_periods = 10
 init_state_id = 0
-propagation_type = 3
+propagation_type = 0
 num_dumps = 11 
 dump_type = 0
 num_periods_in_trans_proc = 100
