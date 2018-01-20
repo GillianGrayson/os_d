@@ -22,5 +22,6 @@ prm_U 0.1
 prm_J 1.0
 start_type 0
 start_state 0
-cd_num_sub_steps 100
+cd_num_sub_steps 128
 cd_dim 1
+cd_eps 1.0e-4

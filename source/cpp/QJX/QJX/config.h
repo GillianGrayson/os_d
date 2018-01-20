@@ -19,6 +19,7 @@
 #define DIMER_SYS_ID 0
 #define LPN_TASK_ID 0 
 #define STD_TASK_ID 1 
+#define CD_TASK_ID 2 
 #define PI 3.1415926535897932384626433832795
 #define EPS 1.0e-14
 

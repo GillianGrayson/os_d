@@ -54,6 +54,8 @@ void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 
 void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
 
+double get_norm_cd(double * vec, int size);
+
 double get_mean_simple(double * adr, int sys_size);
 
 double get_dispersion_simple(double mean_curr, double mean_start);
@@ -71,6 +73,8 @@ void evo_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd,
 void calc_chars_start_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
 void calc_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+
+void calc_ci(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
 void evo_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int dump_id);
 

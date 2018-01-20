@@ -54,6 +54,6 @@ struct QJData
 	int cd_dim;
 	int cd_num_points;
 	double *** cd_rec_data;
-	double * corr_dim;
+	double * cd_i;
 	// ======================================
 };

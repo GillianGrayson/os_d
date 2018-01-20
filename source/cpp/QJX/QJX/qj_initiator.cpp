@@ -50,7 +50,6 @@ void CorrDimInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData *
 	{
 		init_start_state(rp, cp, md, qjd, tr_id);
 	}
-
 }
 
 void init_splits_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
@@ -309,7 +308,7 @@ void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 void init_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps = num_branches * int(cp->params.find("num_sub_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
 	int cd_dim = int(cp->params.find("cd_dim")->second);
 
 	int sys_size = md->sys_size;
@@ -320,11 +319,11 @@ void init_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	qjd->cd_dim = cd_dim;
 	qjd->cd_num_points = num_periods * num_sub_steps - cd_dim + 1;
 
-	qjd->corr_dim = new double[num_trajectories];
+	qjd->cd_i = new double[num_trajectories];
 	qjd->cd_rec_data = new double**[num_trajectories];
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		qjd->corr_dim[tr_id] = 0.0;
+		qjd->cd_i[tr_id] = 0.0;
 		qjd->cd_rec_data[tr_id] = new double*[qjd->cd_num_points];
 
 		for (int p_id = 0; p_id < qjd->cd_num_points; p_id++)

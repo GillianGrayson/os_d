@@ -303,7 +303,15 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 		}
 	}
 
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		calc_ci(rp, cp, md, qjd, tr_id);
+	}
+
 	dump_std(rp, cp, md, qjd);
+
+	dump_cd(rp, cp, md, qjd);
 
 	if (is_evo_dump_sep == 1)
 	{
@@ -558,7 +566,7 @@ void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 {
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("num_sub_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
 
 	int dump_point_id = 0;
 	int curr_point_id = 0;
@@ -603,7 +611,7 @@ void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, in
 	}
 }
 
-double calc_norm_cd(double * vec, int size)
+double get_norm_cd(double * vec, int size)
 {
 	double sum = 0.0;
 	for (int i = 0; i < size; i++)
@@ -612,42 +620,6 @@ double calc_norm_cd(double * vec, int size)
 	}
 
 	return sqrt(sum);
-}
-
-double get_ci(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
-{
-	double * curr_diff = new double[qjd->cd_dim];
-	double curr_norm = 0.0;
-	double integral = 0.0;
-
-	for (int cd_p_id_1 = 0; cd_p_id_1 < qjd->cd_num_points; cd_p_id_1++)
-	{
-		for (int cd_p_id_2 = 0; cd_p_id_2 < qjd->cd_num_points; cd_p_id_2++)
-		{
-			if (cd_p_id_1 != cd_p_id_2)
-			{
-				for (int cd_st_id = 0; cd_st_id < qjd->cd_dim; cd_st_id++)
-				{
-					curr_diff[cd_st_id] = qjd->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - qjd->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
-				}
-
-				curr_norm = calc_norm_cd(curr_diff, qjd->cd_dim);
-
-				if (curr_norm < cp.cd_eps)
-				{
-					integral += 1.0;
-				}
-			}
-		}
-	}
-
-	cout << "unnormed integral = " << integral << endl;
-
-	integral /= (double(md.cd_M) * double(md.cd_M - 1));
-
-	md.cd_ci = integral;
-
-	delete curr_diff;
 }
 
 double get_mean_simple(double * adr, int sys_size)
@@ -844,6 +816,43 @@ void calc_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 
 	qjd->mean_lpn[tr_id] = mean_lpn;
 	qjd->energy_lpn[tr_id] = energy_lpn;
+}
+
+void calc_ci(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+{
+	double eps = double(cp->params.find("cd_eps")->second);
+
+	double * curr_diff = new double[qjd->cd_dim];
+	double curr_norm = 0.0;
+	double integral = 0.0;
+
+	for (int cd_p_id_1 = 0; cd_p_id_1 < qjd->cd_num_points; cd_p_id_1++)
+	{
+		for (int cd_p_id_2 = 0; cd_p_id_2 < qjd->cd_num_points; cd_p_id_2++)
+		{
+			if (cd_p_id_1 != cd_p_id_2)
+			{
+				for (int cd_st_id = 0; cd_st_id < qjd->cd_dim; cd_st_id++)
+				{
+					curr_diff[cd_st_id] = qjd->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - qjd->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
+				}
+
+				curr_norm = get_norm_cd(curr_diff, qjd->cd_dim);
+
+				if (curr_norm < eps)
+				{
+					integral += 1.0;
+				}
+			}
+		}
+	}
+
+
+	integral /= (double(qjd->cd_num_points) * double(qjd->cd_num_points - 1));
+
+	qjd->cd_i[tr_id] = integral;
+
+	delete curr_diff;
 }
 
 void evo_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int dump_id)

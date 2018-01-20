@@ -136,6 +136,18 @@ void dump_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	}
 }
 
+void dump_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	double * ci = qjd->cd_i;
+
+	string fn;
+
+	fn = rp->path + "ci" + cp->fn_suffix;
+	save_double_data(fn, ci, num_trajectories, 16, false);
+}
+
 void dump_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_trajectories = cp->qj_num_trajectories;

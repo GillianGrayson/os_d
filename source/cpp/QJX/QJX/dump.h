@@ -15,6 +15,8 @@ void dump_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void dump_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
+void dump_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+
 void dump_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void dump_evo_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);

@@ -45,6 +45,12 @@ int main()
 		qj_fb = new StdFreeBehaviour();
 		qj_eb = new StdExperimentBehaviour();
 	}
+	else if (rp->task_id == CD_TASK_ID)
+	{
+		qj_ib = new CorrDimInitBehaviour();
+		qj_fb = new CorrDimFreeBehaviour();
+		qj_eb = new CorrDimExperimentBehaviour();
+	}
 	else
 	{
 		stringstream msg;

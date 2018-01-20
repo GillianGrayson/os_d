@@ -121,7 +121,7 @@ void free_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
-	delete[] qjd->corr_dim;
+	delete[] qjd->cd_i;
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
