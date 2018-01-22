@@ -20,9 +20,9 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 	$curr_cd_eps = $eps_start * $eps_mult;
 
-	for ($curr_cd_dim = 1; $curr_cd_dim <= 1; $curr_cd_dim += 1)
+	for ($curr_cd_dim = 5; $curr_cd_dim <= 55; $curr_cd_dim += 10)
 	{
-		for($curr_U = 0.01; $curr_U <= 0.75000001; $curr_U += 0.01)
+		for($curr_U = 0.05; $curr_U <= 0.75000001; $curr_U += 0.05)
 		{
 			print "curr_U = $curr_U\n";
 			print "curr_cd_eps = $curr_cd_eps\n";
@@ -49,7 +49,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$is_obs_dump = 1;
 			$is_adr_dump_sep = 0;
 			$is_adr_dump_avg = 0;
-			$is_evo_dump_sep = 0;
+			$is_evo_dump_sep = 1;
 			$is_evo_dump_avg = 0;
 			$dump_type = 0;
 			$num_dumps = 1;
@@ -202,7 +202,16 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 					print WF "cd_eps $cd_eps \n";
 					close WF;
 					
-					$test_file = sprintf('%s/adr_avg_qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', $key, $i, $qj_mns, $N, $diss_type, $diss_gamma, $diss_phase, $drv_type, $drv_ampl, $drv_freq, $drv_phase, $prm_E, $prm_U, $prm_J, $start_type, $start_state);
+					if ($task_id == 2)
+					{
+						$test_file = sprintf('%s/ci_qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', $key, $i, $qj_mns, $N, $diss_type, $diss_gamma, $diss_phase, $drv_type, $drv_ampl, $drv_freq, $drv_phase, $prm_E, $prm_U, $prm_J, $start_type, $start_state);
+
+					}
+					else
+					{
+						$test_file = sprintf('%s/adr_avg_qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', $key, $i, $qj_mns, $N, $diss_type, $diss_gamma, $diss_phase, $drv_type, $drv_ampl, $drv_freq, $drv_phase, $prm_E, $prm_U, $prm_J, $start_type, $start_state);
+
+					}
 					
 					unless (-e "$test_file")
 					{	
