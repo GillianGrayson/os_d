@@ -224,16 +224,20 @@ void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				one_period(rp, cp, md, qjd, tr_id, thread_id);
+				one_period(rp, cp, md, qjd, tr_id, thread_id);			
+			}
+		}
 
-				calc_chars_std(rp, cp, md, qjd, tr_id);
+#pragma omp parallel for
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			calc_chars_std(rp, cp, md, qjd, tr_id);
 
-				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+			evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
 
-				if (is_evo_dump_sep == 1)
-				{
-					dump_adr_single(rp, cp, md, qjd, tr_id, true);
-				}
+			if (is_evo_dump_sep == 1)
+			{
+				dump_adr_single(rp, cp, md, qjd, tr_id, true);
 			}
 		}
 
@@ -258,6 +262,8 @@ void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 
 void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
+	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int num_dumps_total = qjd->num_dumps_total;
@@ -285,7 +291,14 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 			{
 				int thread_id = omp_get_thread_num();
 				one_period_cd_obs(rp, cp, md, qjd, tr_id, thread_id, period_id);
-				
+			}
+		}
+
+		if (cd_dump_deep == 0)
+		{
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
 				calc_chars_std(rp, cp, md, qjd, tr_id);
 
 				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
@@ -315,7 +328,14 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 
 	if (is_evo_dump_sep == 1)
 	{
-		dump_evo_std(rp, cp, md, qjd);
+		if (cd_dump_deep == 0)
+		{
+			dump_evo_std(rp, cp, md, qjd);
+		}
+		else
+		{
+			dump_evo_cd_deep(rp, cp, md, qjd);
+		}
 	}
 
 	if (is_evo_dump_avg == 0)
@@ -564,6 +584,9 @@ void one_period_cd_tp(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 
 void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id)
 {
+	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
 	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
@@ -596,6 +619,18 @@ void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 
 			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
 			calc_chars_std(rp, cp, md, qjd, tr_id);
+
+			if (cd_dump_deep == 1)
+			{
+				int dump_id = global_point_id + 1;
+
+				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+
+				if (is_evo_dump_sep == 1)
+				{
+					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+				}
+			}
 		}
 	}
 }

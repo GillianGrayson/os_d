@@ -45,6 +45,8 @@ void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 
 void init_dump_periods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
+void init_obs_cd_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+
 void init_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
