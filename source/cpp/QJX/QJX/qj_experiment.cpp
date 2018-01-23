@@ -766,7 +766,7 @@ void calc_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 	}
 
 	double mean = get_mean_simple(adr, sys_size);
-	double dispersion = get_dispersion_simple(mean, mean);
+	double dispersion = get_dispersion_simple(mean, qjd->mean_start[tr_id]);
 	double m2 = get_m2(adr, sys_size, mean);
 
 	qjd->mean[tr_id] = mean;

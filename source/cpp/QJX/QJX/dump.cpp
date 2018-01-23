@@ -161,7 +161,6 @@ void dump_evo_cd_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 
 	if (is_obs_dump == 1)
 	{
-
 		int * dump_periods = qjd->dump_periods;
 
 		double * mean_evo = qjd->mean_evo;
@@ -171,7 +170,7 @@ void dump_evo_cd_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 		string fn;
 
 		fn = rp->path + "periods" + cp->fn_suffix;
-		save_int_data(fn, dump_periods, num_dumps_total, false);
+		save_int_data(fn, dump_periods, qjd->num_dumps_total, false);
 
 		fn = rp->path + "mean_evo" + cp->fn_suffix;
 		save_2d_inv_double_data(fn, mean_evo, num_dumps_total, num_trajectories, 16, false);
