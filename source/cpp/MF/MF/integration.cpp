@@ -191,7 +191,7 @@ void int_period_cd_d(ConfigParam &cp, MainData &md, int per_id)
 
 			if (curr_point_id >= 0 && curr_point_id < md.cd_M)
 			{
-				md.cd_obs = cos(md.data[0]) + 1.0;
+				md.cd_obs = (cos(md.data[0]) + 1.0) * 0.5;
 
 				md.cd_rd[curr_point_id][cd_st_id] = md.cd_obs;
 			}
