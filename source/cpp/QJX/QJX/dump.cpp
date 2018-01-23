@@ -148,41 +148,6 @@ void dump_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	save_double_data(fn, ci, num_trajectories, 16, false);
 }
 
-void dump_evo_cd_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
-{
-	int num_trajectories = cp->qj_num_trajectories;
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
-
-	int num_dumps_total = num_sub_steps * cp->qj_num_obs_periods + 1;
-
-	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
-
-	if (is_obs_dump == 1)
-	{
-		int * dump_periods = qjd->dump_periods;
-
-		double * mean_evo = qjd->mean_evo;
-		double * dispersion_evo = qjd->dispersion_evo;
-		double * m2_evo = qjd->m2_evo;
-
-		string fn;
-
-		fn = rp->path + "periods" + cp->fn_suffix;
-		save_int_data(fn, dump_periods, qjd->num_dumps_total, false);
-
-		fn = rp->path + "mean_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, mean_evo, num_dumps_total, num_trajectories, 16, false);
-
-		fn = rp->path + "dispersion_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, dispersion_evo, num_dumps_total, num_trajectories, 16, false);
-
-		fn = rp->path + "m2_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, m2_evo, num_dumps_total, num_trajectories, 16, false);
-	}
-}
-
 void dump_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_trajectories = cp->qj_num_trajectories;

@@ -44,17 +44,17 @@ void CorrDimInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData *
 	copy_streams(rp, cp, md, qjd);
 	leap_frog_all_streams(rp, cp, md, qjd);
 	init_basic_data(rp, cp, md, qjd);
-	init_dump_periods(rp, cp, md, qjd);
-
+	
 	if(cd_dump_deep == 1)
 	{
-		init_obs_cd_deep(rp, cp, md, qjd);
+		init_dump_periods_cd_deep(rp, cp, md, qjd);
 	}
 	else
 	{
-		init_obs_std(rp, cp, md, qjd);
+		init_dump_periods(rp, cp, md, qjd);
 	}
 	
+	init_obs_std(rp, cp, md, qjd);
 	init_obs_cd(rp, cp, md, qjd);
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -183,6 +183,34 @@ void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 	}
 }
 
+void init_dump_periods_cd_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+{
+	qjd->period_id = 0;
+
+	qjd->dump_type = int(cp->params.find("dump_type")->second);
+	int num_dumps = int(cp->params.find("num_dumps")->second);
+	int num_obs_periods = cp->qj_num_obs_periods;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_dumps_total = num_sub_steps * cp->qj_num_obs_periods + 1;
+
+	qjd->num_dumps_total = num_dumps_total;
+	qjd->dump_periods = new int[qjd->num_dumps_total];
+
+	qjd->dump_periods[0] = 0;
+
+	int dump_shift = md->T / double(num_sub_steps);
+	for (int period_id = 0; period_id < num_obs_periods; period_id++)
+	{
+		for (int step_id = 0; step_id < num_sub_steps; step_id++)
+		{
+			int index = period_id * num_sub_steps + step_id + 1;
+			qjd->dump_periods[index] = period_id;
+		}
+	}
+}
+
 void init_dump_periods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	qjd->period_id = 0;
@@ -227,42 +255,6 @@ void init_dump_periods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 			{
 				qjd->dump_periods[dump_id + 1] = qjd->dump_periods[dump_id] + 1;
 			}
-		}
-	}
-}
-
-void init_obs_cd_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
-{
-	int num_trajectories = cp->qj_num_trajectories;
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
-
-	int num_dumps_total = num_sub_steps * cp->qj_num_obs_periods + 1;
-
-	qjd->mean_start = new double[num_trajectories];
-
-	qjd->mean = new double[num_trajectories];
-	qjd->dispersion = new double[num_trajectories];
-	qjd->m2 = new double[num_trajectories];
-
-	qjd->mean_evo = new double[num_trajectories * num_dumps_total];
-	qjd->dispersion_evo = new double[num_trajectories * num_dumps_total];
-	qjd->m2_evo = new double[num_trajectories * num_dumps_total];
-
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		qjd->mean_start[tr_id] = 0.0;
-
-		qjd->mean[tr_id] = 0.0;
-		qjd->dispersion[tr_id] = 0.0;
-		qjd->m2[tr_id] = 0.0;
-
-		for (int dump_id = 0; dump_id < num_dumps_total; dump_id++)
-		{
-			qjd->mean_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			qjd->dispersion_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			qjd->m2_evo[tr_id * num_dumps_total + dump_id] = 0.0;
 		}
 	}
 }

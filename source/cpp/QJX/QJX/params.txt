@@ -25,4 +25,4 @@ start_state 0
 cd_num_sub_steps 128
 cd_dim 1
 cd_eps 1.0e-4
-cd_dump_deep 1
+cd_dump_deep 0

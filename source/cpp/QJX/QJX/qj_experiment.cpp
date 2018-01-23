@@ -267,6 +267,11 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int num_dumps_total = qjd->num_dumps_total;
+	if (cd_dump_deep == 1)
+	{
+		num_dumps_total = cp->qj_num_obs_periods + 1;
+	}
+
 	int * dump_periods = qjd->dump_periods;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
@@ -281,8 +286,16 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 			cout << "dump_id: " << dump_id << endl;
 		}
 
-		begin_period_id = dump_periods[dump_id - 1];
-		end_period_id = dump_periods[dump_id];
+		if (cd_dump_deep == 1)
+		{
+			begin_period_id = dump_id - 1;
+			end_period_id = dump_id;
+		}
+		else
+		{
+			begin_period_id = dump_periods[dump_id - 1];
+			end_period_id = dump_periods[dump_id];
+		}
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
@@ -299,8 +312,6 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				calc_chars_std(rp, cp, md, qjd, tr_id);
-
 				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
 
 				if (is_evo_dump_sep == 1)
@@ -328,14 +339,7 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 
 	if (is_evo_dump_sep == 1)
 	{
-		if (cd_dump_deep == 0)
-		{
-			dump_evo_std(rp, cp, md, qjd);
-		}
-		else
-		{
-			dump_evo_cd_deep(rp, cp, md, qjd);
-		}
+		dump_evo_std(rp, cp, md, qjd);
 	}
 
 	if (is_evo_dump_avg == 0)
