@@ -16,9 +16,12 @@ prm_J = 1.0;
 start_type = 0;
 start_state = 0;
 
+cd_dump_deep = 1;
+cd_num_sub_steps = 128;
+
 size_sys = N + 1;
 
-tr_id = 0;
+tr_id = 1;
 
 is_mean = 1;
 
@@ -44,6 +47,15 @@ suffix = sprintf('qjrnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.
 fn = sprintf('%s/periods_%s.txt', data_path, suffix);
 dump_periods = importdata(fn);
 num_dumps = size(dump_periods, 1);
+
+if(cd_dump_deep == 1)
+    num_periods = (num_dumps - 1) / (2 * cd_num_sub_steps);
+    dump_shift = 1 / (2 * cd_num_sub_steps);
+    dump_periods(1) = 0;
+    for dump_id = 2:num_dumps
+        dump_periods(dump_id) = dump_shift * (dump_id - 1);
+    end
+end
 
 adr = zeros(size_sys, num_dumps);
 
