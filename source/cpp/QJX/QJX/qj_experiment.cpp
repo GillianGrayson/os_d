@@ -876,7 +876,7 @@ void calc_ci(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int t
 					curr_diff[cd_st_id] = qjd->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - qjd->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
 				}
 
-				curr_norm = get_norm_cd(curr_diff, qjd->cd_dim);
+				curr_norm = get_norm_cd(curr_diff, qjd->cd_dim) / double(md->sys_size);
 
 				if (curr_norm < eps)
 				{
