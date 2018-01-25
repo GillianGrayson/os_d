@@ -53,7 +53,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$is_evo_dump_avg = 0;
 			$dump_type = 0;
 			$num_dumps = 1000;
-			$N = 400;
+			$N = 500;
 			$diss_type = 1;
 			$diss_gamma = 0.1;
 			$diss_phase = 0.0;
