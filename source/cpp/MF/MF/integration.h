@@ -15,6 +15,8 @@ void rk_step(ConfigParam &cp, MainData &md);
 
 void rk_step_lpn(ConfigParam &cp, MainData &md);
 
+void int_period_tp(ConfigParam &cp, MainData &md, int per_id);
+
 void int_period(ConfigParam &cp, MainData &md, int per_id);
 
 void int_period_lpn(ConfigParam &cp, MainData &md, int per_id);

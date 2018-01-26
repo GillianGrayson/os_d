@@ -91,6 +91,10 @@ void set_param(RunParam &rp, ConfigParam &cp, string str, string val)
 	{
 		cp.np = atoi(val.c_str());
 	}
+	if (str.compare("ndpp") == 0)
+	{
+		cp.ndpp = atoi(val.c_str());
+	}
 	if (str.compare("E") == 0)
 	{
 		cp.E = atof(val.c_str());
@@ -177,6 +181,7 @@ void output_params(RunParam &rp, ConfigParam &cp)
 	cout << "num_steps = " << cp.num_steps << endl;
 	cout << "npt = " << cp.npt << endl;
 	cout << "np = " << cp.np << endl;
+	cout << "ndpp = " << cp.ndpp << endl;
 	cout << "E = " << cp.E << endl;
 	cout << "A = " << cp.A << endl;
 	cout << "omega = " << cp.omega << endl;

@@ -36,10 +36,16 @@ struct MainData
 	int * cd_ti;			// Time iterations
 	double ** cd_rd;		// Reconstruction data
 	double cd_ci;			// Correlated integral
+
+	int num_dumps;
+	double ** data_evo;
+	int dump_id;
 };
 
 
 void init_main_data(ConfigParam &cp, MainData &md);
+
+void init_evo_data(ConfigParam &cp, MainData &md);
 
 void init_lpn_data(ConfigParam &cp, MainData &md);
 
@@ -52,6 +58,8 @@ void init_cd_sd_data(ConfigParam &cp, MainData &md);
 void print_cd_info(MainData &md);
 
 void delete_main_data(MainData &dt);
+
+void delete_evo_data(MainData &md);
 
 void delete_lpn_data(MainData &md);
 

@@ -1,6 +1,6 @@
-task 5
+task 2
 path 
-U_start 0.01
+U_start 0.1
 U_shift 0.01
 U_num 1
 cd_eps 1.0e-5
@@ -12,7 +12,8 @@ max_num_seeds 1000000
 mt 0
 num_steps 10000
 npt 1000
-np 1
+np 10
+ndpp 250
 E 1.0
 A 1.5
 omega 1.0

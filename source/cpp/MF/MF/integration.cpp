@@ -136,7 +136,7 @@ void rk_step_lpn(ConfigParam &cp, MainData &md)
 	gsorth_lpn(md);
 }
 
-void int_period(ConfigParam &cp, MainData &md, int per_id)
+void int_period_tp(ConfigParam &cp, MainData &md, int per_id)
 {
 	for (int step_id = 0; step_id < cp.num_steps; step_id++)
 	{
@@ -146,19 +146,53 @@ void int_period(ConfigParam &cp, MainData &md, int per_id)
 	}
 }
 
+void int_period(ConfigParam &cp, MainData &md, int per_id)
+{
+	int dump_shift = cp.num_steps / cp.ndpp;
+
+	for (int step_id = 0; step_id < cp.num_steps; step_id++)
+	{
+		md.time = per_id * cp.T + step_id * md.step;
+		md.data[2] = md.time;
+		rk_step(cp, md);
+
+		if ((step_id + 1) % dump_shift == 0)
+		{
+			for (int s_id = 0; s_id < md.size; s_id++)
+			{
+				md.data_evo[s_id][md.dump_id] = md.data[s_id];
+			}
+			md.dump_id++;
+		}
+	}
+}
+
 void int_period_lpn(ConfigParam &cp, MainData &md, int per_id)
 {
+	int dump_shift = cp.num_steps / cp.ndpp;
+
 	for (int step_id = 0; step_id < cp.num_steps; step_id++)
 	{
 		md.time = per_id * cp.T + step_id * md.step;
 		md.data[2] = md.time;
 		rk_step_lpn(cp, md);
+
+		if ((step_id + 1) % dump_shift == 0)
+		{
+			for (int s_id = 0; s_id < md.size; s_id++)
+			{
+				md.data_evo[s_id][md.dump_id] = md.data[s_id];
+			}
+			md.dump_id++;
+		}
 	}
 }
 
 void int_period_cd(ConfigParam &cp, MainData &md, int per_id)
 {
 	int curr_point_id = 0;
+
+	int dump_shift = cp.num_steps / cp.ndpp;
 
 	for (int step_id = 0; step_id < cp.num_steps; step_id++)
 	{
@@ -173,11 +207,22 @@ void int_period_cd(ConfigParam &cp, MainData &md, int per_id)
 		md.time = per_id * cp.T + step_id * md.step;
 		md.data[2] = md.time;
 		rk_step(cp, md);
+
+		if ((step_id + 1) % dump_shift == 0)
+		{
+			for (int s_id = 0; s_id < md.size; s_id++)
+			{
+				md.data_evo[s_id][md.dump_id] = md.data[s_id];
+			}
+			md.dump_id++;
+		}
 	}
 }
 
 void int_period_cd_d(ConfigParam &cp, MainData &md, int per_id)
 {
+	int dump_shift = cp.num_steps / cp.ndpp;
+
 	int curr_point_id = 0;
 	int global_point_id = 0;
 
@@ -200,11 +245,22 @@ void int_period_cd_d(ConfigParam &cp, MainData &md, int per_id)
 		md.time = per_id * cp.T + step_id * md.step;
 		md.data[2] = md.time;
 		rk_step(cp, md);
+
+		if ((step_id + 1) % dump_shift == 0)
+		{
+			for (int s_id = 0; s_id < md.size; s_id++)
+			{
+				md.data_evo[s_id][md.dump_id] = md.data[s_id];
+			}
+			md.dump_id++;
+		}
 	}
 }
 
 void int_period_cd_sd(ConfigParam &cp, MainData &md, int per_id)
 {
+	int dump_shift = cp.num_steps / cp.ndpp;
+
 	int dump_point_id = 0;
 	int curr_point_id = 0;
 	int global_point_id = 0;
@@ -233,6 +289,15 @@ void int_period_cd_sd(ConfigParam &cp, MainData &md, int per_id)
 		md.time = per_id * cp.T + step_id * md.step;
 		md.data[2] = md.time;
 		rk_step(cp, md);
+
+		if ((step_id + 1) % dump_shift == 0)
+		{
+			for (int s_id = 0; s_id < md.size; s_id++)
+			{
+				md.data_evo[s_id][md.dump_id] = md.data[s_id];
+			}
+			md.dump_id++;
+		}
 	}
 }
 
@@ -240,6 +305,6 @@ void int_trans_proc(ConfigParam &cp, MainData &md)
 {
 	for (int per_id = 0; per_id < cp.npt; per_id++)
 	{
-		int_period(cp, md, per_id);
+		int_period_tp(cp, md, per_id);
 	}
 }

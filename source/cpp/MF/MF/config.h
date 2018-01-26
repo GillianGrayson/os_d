@@ -85,6 +85,7 @@ struct ConfigParam
 	int		num_steps;			// Number of integration steps
 	int		npt;				// Number of periods in trans process
 	int		np;					// Number of periods
+	int		ndpp;				// Number of dumps per period
 	double	E;					// Bias in local potential
 	double	A;					// Amplitude of modulation
 	double	omega;				// Frequency of modulation
@@ -94,7 +95,7 @@ struct ConfigParam
 
 	double	cd_eps;				// Epsilon for correlated dimension
 	int		cd_dim;				// Dimension of space for correlated dimension
-	int		cd_nppp;				// Number of points per period
+	int		cd_nppp;			// Number of points per period
 
 	double	U;					// Interaction
 	int		seed;				// Seed
@@ -107,6 +108,7 @@ struct ConfigParam
 		int	_num_steps = 1000,
 		int	_npt = 1000,
 		int	_np = 1000,
+		int _ndpp = 100,
 		double _E = 1,
 		double _A = 1.5,
 		double _omega = 1.0,
@@ -119,6 +121,7 @@ struct ConfigParam
 		num_steps = _num_steps;
 		npt = _npt;
 		np = _np;
+		ndpp = _ndpp;
 		E = _E;
 		A = _A;
 		omega = _omega;

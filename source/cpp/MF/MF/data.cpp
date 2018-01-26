@@ -26,6 +26,24 @@ void init_main_data(ConfigParam &cp, MainData &md)
 	}
 }
 
+void init_evo_data(ConfigParam &cp, MainData &md)
+{
+	md.num_dumps = cp.np * cp.ndpp + 1;
+
+	md.data_evo = new double*[md.size];
+	for (int d_id = 0; d_id < md.size; d_id++)
+	{
+		md.data_evo[d_id] = new double[md.num_dumps];
+	}
+
+	for (int s_id = 0; s_id < md.size; s_id++)
+	{
+		md.data_evo[s_id][0] = md.data[s_id];
+	}
+
+	md.dump_id = 1;
+}
+
 void init_lpn_data(ConfigParam &cp, MainData &md)
 {
 	md.num_lpn = md.size;
@@ -148,6 +166,15 @@ void delete_main_data(MainData &md)
 	delete_data(md.k2s);
 	delete_data(md.k3s);
 	delete_data(md.k4s);
+}
+
+void delete_evo_data(MainData &md)
+{
+	for (int d_id = 0; d_id < md.size; d_id++)
+	{
+		delete[] md.data_evo[d_id];
+	}
+	delete[] md.data_evo;
 }
 
 void delete_lpn_data(MainData &md)

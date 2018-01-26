@@ -11,7 +11,7 @@ drv_ampl = 1.5;
 drv_freq = 1.0;
 drv_phase = 0.0;
 prm_E = 1.0;
-prm_U = 0.7;
+prm_U = 0.1;
 prm_J = 1.0;
 start_type = 0;
 start_state = 0;
@@ -68,7 +68,7 @@ for dump_id = 1:num_dumps
     end
 end
 
-states = linspace(1, size_sys, size_sys);
+states = linspace(1, size_sys, size_sys) / size_sys;
 
 fig = figure;
 hLine = imagesc(dump_periods, states, adr);
@@ -93,7 +93,7 @@ if(is_mean == 1)
     fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
     mean_evo_data = importdata(fn);
     mean_evo = mean_evo_data(:, tr_id + 1);
-    hLine = plot(dump_periods, mean_evo);
+    hLine = plot(dump_periods, mean_evo / size_sys);
 end
 
 propertyeditor(fig)
