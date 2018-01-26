@@ -16,7 +16,7 @@ path = '';
 num_threads = 1;
 qj_deep = 16;
 qj_num_tp_periods = 1000;
-qj_num_obs_periods = 100;
+qj_num_obs_periods = 1000;
 qj_num_trajectories = 2;
 qj_seed = 0;
 qj_mns = 1000000;
@@ -32,7 +32,7 @@ is_evo_dump_sep = 1;
 is_evo_dump_avg = 0;
 dump_type = 0;
 num_dumps = 1;
-N = 200;
+N = 400;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
@@ -53,6 +53,8 @@ num_runs = 100;
 U_begin = 0.01;
 U_step = 0.01;
 U_num = 75;
+
+dump_id = 101;
 
 Us = zeros(U_num, 1);
 lambdas = zeros(U_num, 1);
@@ -109,10 +111,10 @@ for U_id = 1:U_num
             start_state);
        
       
-		path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
+		path = sprintf('%s/lambda_evo_%s.txt', path_to_folder, suffix);
 		data = importdata(path);
        
-		curr_lambda_avg = curr_lambda_avg + data(2);
+		curr_lambda_avg = curr_lambda_avg + data(dump_id, 2);
 	end
    
 	curr_lambda_avg = curr_lambda_avg / num_runs;

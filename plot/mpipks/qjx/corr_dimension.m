@@ -15,9 +15,9 @@ is_pp = 1;
 init_fn = '';
 path = '';
 num_threads = 1;
-qj_deep = 8;
+qj_deep = 4;
 qj_num_tp_periods = 1000;
-qj_num_obs_periods = 1000;
+qj_num_obs_periods = 10;
 qj_num_trajectories = 1;
 qj_seed = 0;
 qj_mns = 1000000;
@@ -46,7 +46,7 @@ start_state = 0;
 prm_E = 1.0;
 prm_U = 0;
 prm_J = 1.0;
-cd_num_sub_steps = 128; 
+cd_num_sub_steps = 5000; 
 cd_dim = 1; 
 cd_eps = 1e-08; 
 
@@ -54,9 +54,9 @@ sys_size = N + 1;
 
 num_runs = 1;
 
-U_begin = 0.05;
+U_begin = 0.7;
 U_step = 0.05;
-U_num = 15;
+U_num = 1;
 
 eps_start = 1.0e-8;
 eps_per_decade = 10;
