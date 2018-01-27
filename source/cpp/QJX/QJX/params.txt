@@ -3,8 +3,8 @@ eps_lpn 1.0e-3
 delta_up_lpn 1.0e-2
 delta_down_lpn 1.0e-13
 is_obs_dump 1
-is_adr_dump_sep 1
-is_adr_dump_avg 1
+is_adr_dump_sep 0
+is_adr_dump_avg 0
 is_evo_dump_sep 1
 is_evo_dump_avg 1
 dump_type 0
@@ -18,11 +18,11 @@ drv_ampl 1.5
 drv_freq 1.0
 drv_phase 0.0
 prm_E 1.0
-prm_U 0.7
+prm_U 0.1
 prm_J 1.0
 start_type 0
 start_state 0
-cd_num_sub_steps 128
-cd_dim 1
+cd_num_sub_steps 10000
+cd_dim 2
 cd_eps 1.0e-4
 cd_dump_deep 1

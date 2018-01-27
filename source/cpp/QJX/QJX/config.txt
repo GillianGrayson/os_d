@@ -4,10 +4,10 @@ is_debug 0
 is_pp 1
 init_fn
 path
-num_threads 4
-qj_deep 8
+num_threads 1
+qj_deep 4
 qj_num_tp_periods 1000
 qj_num_obs_periods 10
-qj_num_trajectories 10
+qj_num_trajectories 1
 qj_seed 0
 qj_mns 1000000
