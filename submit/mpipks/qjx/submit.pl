@@ -8,11 +8,11 @@ $data_path = "/data/biophys/yusipov/os_d/qjx_results";
 
 $PI = 3.1415926535897932384626433832795;
 
-$num_runs = 100;
+$num_runs = 1;
 
 $eps_exp_shift = 0.1;
 $eps_start = 1.0e-8;
-$eps_num = 1;
+$eps_num = 81;
 
 for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 {	
@@ -20,25 +20,25 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 	$curr_cd_eps = $eps_start * $eps_mult;
 
-	for ($curr_cd_dim = 1; $curr_cd_dim <= 1; $curr_cd_dim += 1)
+	for ($curr_cd_dim = 1; $curr_cd_dim <= 5; $curr_cd_dim += 1)
 	{
-		for($curr_U = 0.01; $curr_U <= 0.75000001; $curr_U += 0.01)
+		for($curr_U = 0.7; $curr_U <= 0.7000001; $curr_U += 0.01)
 		{
 			print "curr_U = $curr_U\n";
 			print "curr_cd_eps = $curr_cd_eps\n";
 			print "curr_cd_dim = $curr_cd_dim\n";
 			
 			$sys_id = 0;
-			$task_id = 0;
+			$task_id = 2;
 			$is_debug = 0;
 			$is_pp = 1;
 			$init_fn = "";
 			$path = "";
 			$num_threads = 1;
-			$qj_deep = 16;
+			$qj_deep = 4;
 			$qj_num_tp_periods = 1000;
-			$qj_num_obs_periods = 1000;
-			$qj_num_trajectories = 2;
+			$qj_num_obs_periods = 10;
+			$qj_num_trajectories = 1;
 			$qj_seed = 0;
 			$qj_mns = 1000000;
 			
@@ -52,8 +52,8 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$is_evo_dump_sep = 1;
 			$is_evo_dump_avg = 0;
 			$dump_type = 0;
-			$num_dumps = 1000;
-			$N = 500;
+			$num_dumps = 10;
+			$N = 200;
 			$diss_type = 1;
 			$diss_gamma = 0.1;
 			$diss_phase = 0.0;
@@ -66,7 +66,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$prm_J = 1.0;
 			$start_type = 0;
 			$start_state = 0;
-			$cd_num_sub_steps = 128;
+			$cd_num_sub_steps = 10000;
 			$cd_dim = $curr_cd_dim;
 			$cd_eps = $curr_cd_eps;
 			$cd_dump_deep = 0;

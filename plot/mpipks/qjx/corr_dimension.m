@@ -46,7 +46,7 @@ start_state = 0;
 prm_E = 1.0;
 prm_U = 0;
 prm_J = 1.0;
-cd_num_sub_steps = 5000; 
+cd_num_sub_steps = 10000; 
 cd_dim = 1; 
 cd_eps = 1e-08; 
 
@@ -54,7 +54,7 @@ sys_size = N + 1;
 
 num_runs = 1;
 
-U_begin = 0.7;
+U_begin = 0.1;
 U_step = 0.05;
 U_num = 1;
 
