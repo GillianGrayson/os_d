@@ -27,6 +27,12 @@ public:
 	virtual void init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
+class SigmaInitBehaviour : public QJInitBehavior
+{
+public:
+	virtual void init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+};
+
 void init_splits_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);

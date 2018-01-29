@@ -113,6 +113,46 @@ void CorrDimExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, 
 	}
 }
 
+void SigmaExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < 1; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single_cd(rp, cp, md, qjd, tr_id, thread_id);
+	}
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		if (tr_id > 0)
+		{
+			copy_trajectory_data(rp, cp, md, qjd, tr_id);
+		}
+
+		resresh_times(rp, cp, md, qjd, tr_id);
+
+		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+
+		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+
+		if (is_evo_dump_sep == 1)
+		{
+			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+		}
+	}
+
+	if (is_evo_dump_avg == 1)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
 void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
@@ -348,6 +388,87 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 	}
 }
 
+void SigmaExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int num_dumps_total = qjd->num_dumps_total;
+	if (cd_dump_deep == 1)
+	{
+		num_dumps_total = cp->qj_num_obs_periods + 1;
+	}
+
+	int * dump_periods = qjd->dump_periods;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+	int begin_period_id = 0;
+	int end_period_id = 0;
+	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
+	{
+		if (rp->is_pp == 1)
+		{
+			cout << "dump_id: " << dump_id << endl;
+		}
+
+		if (cd_dump_deep == 1)
+		{
+			begin_period_id = dump_id - 1;
+			end_period_id = dump_id;
+		}
+		else
+		{
+			begin_period_id = dump_periods[dump_id - 1];
+			end_period_id = dump_periods[dump_id];
+		}
+
+		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
+		{
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				int thread_id = omp_get_thread_num();
+				one_period_sigma_obs(rp, cp, md, qjd, tr_id, thread_id, period_id);
+			}
+		}
+
+		if (cd_dump_deep == 0)
+		{
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+
+				if (is_evo_dump_sep == 1)
+				{
+					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+				}
+			}
+		}
+
+		if (is_evo_dump_avg == 1)
+		{
+			dump_adr_avg(rp, cp, md, qjd, true);
+		}
+	}
+
+	dump_std(rp, cp, md, qjd);
+
+	if (is_evo_dump_sep == 1)
+	{
+		dump_evo_std(rp, cp, md, qjd);
+	}
+
+	if (is_evo_dump_avg == 0)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
+
 void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
 {
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
@@ -582,6 +703,47 @@ void one_period_cd_tp(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 		for (int sub_step_id = 0; sub_step_id < num_sub_steps; sub_step_id++)
 		{
 			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
+		}
+	}
+}
+
+void one_period_sigma_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id)
+{
+	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+
+	int dump_point_id = 0;
+	int curr_point_id = 0;
+	int global_point_id = 0;
+
+	int step_id = 0;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			global_point_id = period_id * num_sub_steps + dump_point_id;
+
+			dump_point_id++;
+
+			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
+			calc_chars_std(rp, cp, md, qjd, tr_id);
+
+			if (cd_dump_deep == 1)
+			{
+				int dump_id = global_point_id + 1;
+
+				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+
+				if (is_evo_dump_sep == 1)
+				{
+					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+				}
+			}
 		}
 	}
 }
@@ -922,6 +1084,24 @@ void copy_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData 
 	double * etas = qjd->etas_all;
 
 	vslCopyStream(&streams[tr_id], streams[0]);
+
+	etas[tr_id] = etas[0];
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi[st_id].real = phi_original[st_id].real;
+		phi[st_id].imag = phi_original[st_id].imag;
+	}
+}
+
+void copy_trajectory_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+{
+	int sys_size = md->sys_size;
+
+	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi_original = &(qjd->phi_all[0]);
+
+	double * etas = qjd->etas_all;
 
 	etas[tr_id] = etas[0];
 

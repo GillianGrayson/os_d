@@ -32,6 +32,13 @@ public:
 	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
+class SigmaExperimentBehaviour : public QJExperimentBehavior
+{
+public:
+	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+};
+
 void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);
 
 MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b);
@@ -49,6 +56,8 @@ void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 void one_sub_period_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int part_id, int thread_id);
 
 void one_period_cd_tp(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
+
+void one_period_sigma_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id);
 
 void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id);
 
@@ -81,6 +90,8 @@ void evo_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd,
 void resresh_times(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
 void copy_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+
+void copy_trajectory_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 
 void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
 

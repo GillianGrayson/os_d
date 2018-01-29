@@ -27,6 +27,12 @@ public:
 	virtual void free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
+class SigmaFreeBehaviour : public QJFreeBehavior
+{
+public:
+	virtual void free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+};
+
 void free_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
 
 void free_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);

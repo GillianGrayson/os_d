@@ -51,6 +51,12 @@ int main()
 		qj_fb = new CorrDimFreeBehaviour();
 		qj_eb = new CorrDimExperimentBehaviour();
 	}
+	else if (rp->task_id == SIGMA_TASK_ID)
+	{
+		qj_ib = new SigmaInitBehaviour();
+		qj_fb = new SigmaFreeBehaviour();
+		qj_eb = new SigmaExperimentBehaviour();
+	}
 	else
 	{
 		stringstream msg;

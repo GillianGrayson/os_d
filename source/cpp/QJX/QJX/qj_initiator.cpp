@@ -63,6 +63,34 @@ void CorrDimInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData *
 	}
 }
 
+void SigmaInitBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+
+	init_splits_cd(rp, cp, md, qjd);
+
+	init_streams(rp, cp, md, qjd);
+	copy_streams(rp, cp, md, qjd);
+	leap_frog_all_streams(rp, cp, md, qjd);
+
+	init_basic_data(rp, cp, md, qjd);
+
+	if (cd_dump_deep == 1)
+	{
+		init_dump_periods_cd_deep(rp, cp, md, qjd);
+	}
+	else
+	{
+		init_dump_periods(rp, cp, md, qjd);
+	}
+
+	init_obs_std(rp, cp, md, qjd);
+
+	init_start_state(rp, cp, md, qjd, 0);
+}
+
 void init_splits_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_branches = md->num_ham_qj;
@@ -93,6 +121,8 @@ void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	{
 		copy_struct_not_member(md->structure, &(md->splits)[th_id]);
 	}
+
+	cout << "Split initialization complete" << endl;
 }
 
 void init_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)

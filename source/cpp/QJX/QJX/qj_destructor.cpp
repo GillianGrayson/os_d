@@ -31,6 +31,15 @@ void CorrDimFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData *
 	free_obs_cd(rp, cp, md, qjd);
 }
 
+void SigmaFreeBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	free_splits_deep(rp, cp, md, qjd);
+	free_streams(rp, cp, md, qjd);
+	free_basic_data(rp, cp, md, qjd);
+	free_dump_priods(rp, cp, md, qjd);
+	free_obs_std(rp, cp, md, qjd);
+}
+
 void free_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 {
 	int num_branches = md->num_ham_qj;
