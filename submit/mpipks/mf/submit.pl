@@ -11,13 +11,13 @@ $PI = 3.1415926535897932384626433832795;
 
 for($dim = 4; $dim <= 4; $dim += 1)
 {
-	for($curr_U = 0.05; $curr_U <= 0.750000001; $curr_U += 0.05)
+	for($curr_U = 0.005; $curr_U <= 0.250000001; $curr_U += 0.005)
 	{
 		print "curr_U = $curr_U\n";
 		
 		$eps_exp_shift = 0.1;
 		$eps_start = 1.0e-8;
-		$eps_num = 81;
+		$eps_num = 1;
 		
 		for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 		{	
@@ -27,7 +27,7 @@ for($dim = 4; $dim <= 4; $dim += 1)
 		
 			print "curr_cd_eps = $curr_cd_eps\n";
 			
-			$task = 5;
+			$task = 2;
 			$path = "";
 			$U_start = $curr_U;
 			$U_shift = 0.01;
@@ -38,18 +38,19 @@ for($dim = 4; $dim <= 4; $dim += 1)
 			$seed_start = 0;
 			$seed_num = 1;
 			$max_num_seeds = 1000000;
-			$mt = 0;
+			$mt = 1;
 			$num_steps = 10000;
-			$npt = 1000;
-			$np = 10;
-			$E = 1.0;
-			$A = 1.5; 
+			$npt = 2000;
+			$np = 2000;
+			$ndpp = 1;
+			$E = 0.0;
+			$A = 3.4; 
 			$omega = 1.0;
 			$phase = 0.0;
 			$gamma = 0.1;
 			$J = 1.0;
 			$cd_dim = $dim;
-			$cd_nppp = 10000;
+			$cd_nppp = 100;
 			
 			$omega_str = sprintf("%.4f", $omega);
 			$phase_str = sprintf("%.4f", $phase);
@@ -62,7 +63,7 @@ for($dim = 4; $dim <= 4; $dim += 1)
 			$eps_str = sprintf("%.10f", $cd_eps);
 			
 			$start = 1;
-			$finish = 2;
+			$finish = 101;
 			%exp = ();
 			$i = 0;
 			$i = $start;
@@ -118,6 +119,7 @@ for($dim = 4; $dim <= 4; $dim += 1)
 				print WF "num_steps $num_steps \n";
 				print WF "npt $npt \n";
 				print WF "np $np \n";
+				print WF "ndpp $ndpp \n";
 				print WF "E $E \n";
 				print WF "A $A \n";
 				print WF "omega $omega \n";
@@ -128,7 +130,7 @@ for($dim = 4; $dim <= 4; $dim += 1)
 				print WF "cd_nppp $cd_nppp \n";
 				close WF;
 
-				$test_file = sprintf('%s/exps_lpn_mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)_A(%0.4f)_U(%0.4f)_seed(%d).txt', $key, $mt, $omega, $phase, $gamma, $J, $E, $A, $U_start, $i);
+				$test_file = sprintf('%s/exps_lpn_t(%d)_mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)_A(%0.4f)_U(%0.4f)_seed(%d).txt', $key, $task, $mt, $omega, $phase, $gamma, $J, $E, $A, $U_start, $i);
 				
 				if ($task == 5)
 				{
