@@ -1,13 +1,13 @@
 clear all;
 
 drt = 1;
-N = 501;
+N = 126;
 E = 0;
 J = -1;
 
 U_begin = 0.005;
 U_shift = 0.005;
-U_num = 150;
+U_num = 40;
 
 g = 0.1;
 A = -3.4;
