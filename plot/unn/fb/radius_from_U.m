@@ -18,17 +18,23 @@ np = 100;
 
 nu_size = 100;
 
+nu_step = pi / nu_size;
+
 phi = [pi / 2];
 phis = phi;
 nus = linspace(0, pi, nu_size)';
 
 data_path = '../../../data/cluster/unn';
 
+pks_lim = 0.0001;
+
 warning('off', 'all');
 
 Us = zeros(U_num, 1);
 
 husimis = zeros(U_num, nu_size);
+
+rads = zeros(U_num, 1);
 
 for U_id = 1 : U_num
     
@@ -62,21 +68,33 @@ for U_id = 1 : U_num
     toc
     
     husimis(U_id, :) = hus;
-
+    
+    [pks, locs] = findpeaks(abs(hus));
+    
+    del_ids = [];
+    for i = 1:size(pks, 1)
+        if pks(i) < pks_lim
+            del_ids = vertcat(del_ids, i);
+        end
+    end
+    pks(del_ids) = [];
+    locs(del_ids) = [];
+    
+    if size(pks, 1) == 1 
+        rads(U_id) = 0;
+    else
+        rads(U_id) = abs(locs(1) - locs(2)) * nu_step;
+    end
+    
 end
 
 fig = figure;
 propertyeditor(fig);
 
-hLine = imagesc(Us, nus, real(husimis'));
+hLine = plot(Us, rads);
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$\theta$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, 'H', 'FontSize', 33);
-set(gca,'YDir','normal');
+ylabel('$R$', 'Interpreter', 'latex');
 hold all;
 
