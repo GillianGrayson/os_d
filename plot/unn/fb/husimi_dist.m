@@ -5,7 +5,7 @@ N = 501;
 E = 0;
 J = -1;
 
-U = 0.1125;
+U = 0.65;
 
 g = 0.1;
 A = -3.4;
@@ -14,8 +14,8 @@ seed = 1;
 
 np = 100;
 
-phi_size = 50;
-nu_size = 50;
+phi_size = 100;
+nu_size = 100;
 
 phis = linspace(0, 2*pi, phi_size)';
 nus = linspace(0, pi, nu_size)';
@@ -55,9 +55,9 @@ propertyeditor(fig);
 
 hLine = imagesc(nus, phis, real(hus'));
 set(gca, 'FontSize', 30);
-xlabel('$\theta$', 'Interpreter', 'latex');
+xlabel('$\vartheta$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$\phi$', 'Interpreter', 'latex');
+ylabel('$\varphi$', 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);
