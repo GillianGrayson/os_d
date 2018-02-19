@@ -1,14 +1,12 @@
 #pragma once
 #include "config.h"
 #include "data.h"
-#include "qj_data.h"
+#include "data_qj.h"
 #include "debugger.h"
 #include "outputter.h"
-#include "initiator.h"
-#include "destructor.h"
-#include "qj_initiator.h"
-#include "qj_destructor.h"
-#include "qj_experiment.h"
+#include "newdel.h"
+#include "newdel_qj.h"
+#include "experiment.h"
 
 class Processor
 {
@@ -20,11 +18,9 @@ private:
 
 	DebugBehavior * db;
 	OuputBehavior * ob;
-	InitBehavior * ib;
-	FreeBehavior * fb;
-	QJInitBehavior * qj_ib;
-	QJFreeBehavior * qj_fb;
-	QJExperimentBehavior * qj_eb;
+	NewDelBehavior * ndb;
+	QJNewDelBehavior * ndb_qj;
+	ExperimentBehavior * eb;
 
 public:
 	Processor(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
@@ -33,15 +29,11 @@ public:
 
 	void set_output_behaviour(OuputBehavior* ob);
 
-	void set_init_behaviour(InitBehavior* ib);
+	void set_init_behaviour(NewDelBehavior* ndb);
 
-	void set_free_behaviour(FreeBehavior* fb);
+	void set_init_behaviour_qj(QJNewDelBehavior* ndb_qj);
 
-	void set_qj_init_behaviour(QJInitBehavior* qj_ib);
-
-	void set_qj_free_behaviour(QJFreeBehavior* fb);
-
-	void set_qj_experiment_behaviour(QJExperimentBehavior* eb);
+	void set_experiment_behaviour(ExperimentBehavior* eb);
 
 	void process();
 };

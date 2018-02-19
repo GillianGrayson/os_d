@@ -1,42 +1,42 @@
 #pragma once
 #include "config.h"
 #include "data.h"
-#include "qj_data.h"
+#include "data_qj.h"
 #include "dump.h"
 
-class QJExperimentBehavior
+class ExperimentBehavior
 {
 public:
 	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
-	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
+	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
 };
 
-class LpnExperimentBehaviour : public QJExperimentBehavior
+class LpnExperimentBehaviour : public ExperimentBehavior
 {
 public:
 	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
-	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
-class StdExperimentBehaviour : public QJExperimentBehavior
+class StdExperimentBehaviour : public ExperimentBehavior
 {
 public:
 	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
-	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
-class CorrDimExperimentBehaviour : public QJExperimentBehavior
+class CorrDimExperimentBehaviour : public ExperimentBehavior
 {
 public:
 	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
-	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
-class SigmaExperimentBehaviour : public QJExperimentBehavior
+class SigmaExperimentBehaviour : public ExperimentBehavior
 {
 public:
 	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
-	virtual void obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
 };
 
 void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);

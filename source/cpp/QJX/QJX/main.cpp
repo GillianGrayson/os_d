@@ -13,18 +13,15 @@ int main()
 
 	DebugBehavior * db;
 	OuputBehavior * ob;
-	InitBehavior * ib;
-	FreeBehavior * fb;
-	QJInitBehavior * qj_ib;
-	QJFreeBehavior * qj_fb;
-	QJExperimentBehavior * qj_eb;
+	NewDelBehavior * ndb;
+	QJNewDelBehavior * ndb_qj;
+	ExperimentBehavior * eb;
 
 	if (rp->sys_id == DIMER_SYS_ID)
 	{
 		db = new DimerDebugBehaviour();
 		ob = new DimerIOuputBehavior();
-		ib = new DimerInitBehaviour();
-		fb = new DimerFreeBehaviour();
+		ndb = new DimerNewDelBehaviour();
 	}
 	else
 	{
@@ -35,27 +32,23 @@ int main()
 
 	if (rp->task_id == LPN_TASK_ID)
 	{
-		qj_ib = new LpnInitBehaviour();
-		qj_fb = new LpnFreeBehaviour();
-		qj_eb = new LpnExperimentBehaviour();
+		ndb_qj = new LpnNewDelBehaviour();
+		eb = new LpnExperimentBehaviour();
 	}
 	else if (rp->task_id == STD_TASK_ID)
 	{
-		qj_ib = new StdInitBehaviour();
-		qj_fb = new StdFreeBehaviour();
-		qj_eb = new StdExperimentBehaviour();
+		ndb_qj = new StdNewDelBehaviour();
+		eb = new StdExperimentBehaviour();
 	}
 	else if (rp->task_id == CD_TASK_ID)
 	{
-		qj_ib = new CorrDimInitBehaviour();
-		qj_fb = new CorrDimFreeBehaviour();
-		qj_eb = new CorrDimExperimentBehaviour();
+		ndb_qj = new CorrDimNewDelBehaviour();
+		eb = new CorrDimExperimentBehaviour();
 	}
 	else if (rp->task_id == SIGMA_TASK_ID)
 	{
-		qj_ib = new SigmaInitBehaviour();
-		qj_fb = new SigmaFreeBehaviour();
-		qj_eb = new SigmaExperimentBehaviour();
+		ndb_qj = new SigmaNewDelBehaviour();
+		eb = new SigmaExperimentBehaviour();
 	}
 	else
 	{
@@ -68,23 +61,19 @@ int main()
 
 	p->set_debug_behaviour(db);
 	p->set_output_behaviour(ob);
-	p->set_init_behaviour(ib);
-	p->set_free_behaviour(fb);
+	p->set_init_behaviour(ndb);
 
-	p->set_qj_init_behaviour(qj_ib);
-	p->set_qj_free_behaviour(qj_fb);
-	p->set_qj_experiment_behaviour(qj_eb);
+	p->set_init_behaviour_qj(ndb_qj);
+	p->set_experiment_behaviour(eb);
 
 	p->process();
 
 	delete db;
 	delete ob;
-	delete ib;
-	delete fb;
+	delete ndb;
 
-	delete qj_ib;
-	delete qj_fb;
-	delete qj_eb;
+	delete ndb_qj;
+	delete eb;
 
 	delete rp;
 	delete cp;

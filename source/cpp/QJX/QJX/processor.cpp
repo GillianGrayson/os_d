@@ -18,49 +18,39 @@ void Processor::set_output_behaviour(OuputBehavior* ob)
 	this->ob = ob;
 }
 
-void Processor::set_init_behaviour(InitBehavior* ib)
+void Processor::set_init_behaviour(NewDelBehavior* ndb)
 {
-	this->ib = ib;
+	this->ndb = ndb;
 }
 
-void Processor::set_free_behaviour(FreeBehavior* fb)
+void Processor::set_init_behaviour_qj(QJNewDelBehavior* ndb_qj)
 {
-	this->fb = fb;
+	this->ndb_qj = ndb_qj;
 }
 
-void Processor::set_qj_init_behaviour(QJInitBehavior* qj_ib)
+void Processor::set_experiment_behaviour(ExperimentBehavior* eb)
 {
-	this->qj_ib = qj_ib;
-}
-
-void Processor::set_qj_free_behaviour(QJFreeBehavior* qj_fb)
-{
-	this->qj_fb = qj_fb;
-}
-
-void Processor::set_qj_experiment_behaviour(QJExperimentBehavior* qj_eb)
-{
-	this->qj_eb = qj_eb;
+	this->eb = eb;
 }
 
 void Processor::process()
 {
-	ib->init_sizes(rp, cp, md);
-	ib->init_hamiltonians(rp, cp, md);
-	ib->init_dissipators(rp, cp, md);
-	ib->init_hamiltonians_qj(rp, cp, md);
+	ndb->init_sizes(rp, cp, md);
+	ndb->init_hamiltonians(rp, cp, md);
+	ndb->init_dissipators(rp, cp, md);
+	ndb->init_hamiltonians_qj(rp, cp, md);
 
 	ob->suffix_param(cp, 4);
 	db->save(rp, cp, md);
 
-	qj_ib->init_data(rp, cp, md, qjd);
+	ndb_qj->init_data(rp, cp, md, qjd);
 
-	qj_eb->trans_process(rp, cp, md, qjd);
-	qj_eb->obs_process(rp, cp, md, qjd);
+	eb->trans_process(rp, cp, md, qjd);
+	eb->obser_process(rp, cp, md, qjd);
 
-	qj_fb->free_data(rp, cp, md, qjd);
+	ndb_qj->free_data(rp, cp, md, qjd);
 
-	fb->free_hamiltonians(rp, cp, md);
-	fb->free_dissipators(rp, cp, md);
-	fb->free_hamiltonians_qj(rp, cp, md);
+	ndb->free_hamiltonians(rp, cp, md);
+	ndb->free_dissipators(rp, cp, md);
+	ndb->free_hamiltonians_qj(rp, cp, md);
 }

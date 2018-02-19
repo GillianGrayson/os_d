@@ -2,7 +2,7 @@ clear all;
 
 ss = 0;
 qj_mns = 1000000;
-N = 200;
+N = 100;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
@@ -16,7 +16,7 @@ prm_J = 1.0;
 start_type = 0;
 start_state = 0;
 
-cd_dump_deep = 1;
+cd_dump_deep = 0;
 cd_num_sub_steps = 128;
 
 size_sys = N + 1;

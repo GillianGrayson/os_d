@@ -1,4 +1,4 @@
-#include "qj_experiment.h"
+#include "experiment.h"
 
 void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
@@ -43,117 +43,7 @@ void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Main
 	}
 }
 
-void StdExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
-{
-	int num_trajectories = cp->qj_num_trajectories;
-
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
-
-#pragma omp parallel for
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		int thread_id = omp_get_thread_num();
-		trans_process_single_std(rp, cp, md, qjd, tr_id, thread_id);
-	}
-
-#pragma omp parallel for
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		resresh_times(rp, cp, md, qjd, tr_id);
-
-		calc_chars_start_std(rp, cp, md, qjd, tr_id);
-
-		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
-
-		if (is_evo_dump_sep == 1)
-		{
-			dump_adr_single(rp, cp, md, qjd, tr_id, false);
-		}
-	}
-
-	if (is_evo_dump_avg == 1)
-	{
-		dump_adr_avg(rp, cp, md, qjd, false);
-	}
-}
-
-void CorrDimExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
-{
-	int num_trajectories = cp->qj_num_trajectories;
-
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
-
-#pragma omp parallel for
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		int thread_id = omp_get_thread_num();
-		trans_process_single_cd(rp, cp, md, qjd, tr_id, thread_id);
-	}
-
-#pragma omp parallel for
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		resresh_times(rp, cp, md, qjd, tr_id);
-
-		calc_chars_start_std(rp, cp, md, qjd, tr_id);
-
-		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
-
-		if (is_evo_dump_sep == 1)
-		{
-			dump_adr_single(rp, cp, md, qjd, tr_id, false);
-		}
-	}
-
-	if (is_evo_dump_avg == 1)
-	{
-		dump_adr_avg(rp, cp, md, qjd, false);
-	}
-}
-
-void SigmaExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
-{
-	int num_trajectories = cp->qj_num_trajectories;
-
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
-
-#pragma omp parallel for
-	for (int tr_id = 0; tr_id < 1; tr_id++)
-	{
-		int thread_id = omp_get_thread_num();
-		trans_process_single_cd(rp, cp, md, qjd, tr_id, thread_id);
-	}
-
-#pragma omp parallel for
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		if (tr_id > 0)
-		{
-			copy_trajectory_data(rp, cp, md, qjd, tr_id);
-		}
-
-		resresh_times(rp, cp, md, qjd, tr_id);
-
-		calc_chars_start_std(rp, cp, md, qjd, tr_id);
-
-		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
-
-		if (is_evo_dump_sep == 1)
-		{
-			dump_adr_single(rp, cp, md, qjd, tr_id, false);
-		}
-	}
-
-	if (is_evo_dump_avg == 1)
-	{
-		dump_adr_avg(rp, cp, md, qjd, false);
-	}
-}
-
-void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void LpnExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -236,7 +126,42 @@ void LpnExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 
 }
 
-void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void StdExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single_std(rp, cp, md, qjd, tr_id, thread_id);
+	}
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		resresh_times(rp, cp, md, qjd, tr_id);
+
+		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+
+		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+
+		if (is_evo_dump_sep == 1)
+		{
+			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+		}
+	}
+
+	if (is_evo_dump_avg == 1)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
+void StdExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -254,7 +179,7 @@ void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 		{
 			cout << "dump_id: " << dump_id << endl;
 		}
-		
+
 		begin_period_id = dump_periods[dump_id - 1];
 		end_period_id = dump_periods[dump_id];
 
@@ -264,7 +189,7 @@ void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				one_period(rp, cp, md, qjd, tr_id, thread_id);			
+				one_period(rp, cp, md, qjd, tr_id, thread_id);
 			}
 		}
 
@@ -300,7 +225,42 @@ void StdExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainDa
 	}
 }
 
-void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void CorrDimExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single_cd(rp, cp, md, qjd, tr_id, thread_id);
+	}
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		resresh_times(rp, cp, md, qjd, tr_id);
+
+		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+
+		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+
+		if (is_evo_dump_sep == 1)
+		{
+			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+		}
+	}
+
+	if (is_evo_dump_avg == 1)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
+void CorrDimExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
@@ -388,7 +348,47 @@ void CorrDimExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, Ma
 	}
 }
 
-void SigmaExperimentBehaviour::obs_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void SigmaExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+{
+	int num_trajectories = cp->qj_num_trajectories;
+
+	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < 1; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single_cd(rp, cp, md, qjd, tr_id, thread_id);
+	}
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		if (tr_id > 0)
+		{
+			copy_trajectory_data(rp, cp, md, qjd, tr_id);
+		}
+
+		resresh_times(rp, cp, md, qjd, tr_id);
+
+		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+
+		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+
+		if (is_evo_dump_sep == 1)
+		{
+			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+		}
+	}
+
+	if (is_evo_dump_avg == 1)
+	{
+		dump_adr_avg(rp, cp, md, qjd, false);
+	}
+}
+
+void SigmaExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
