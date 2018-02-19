@@ -23,6 +23,9 @@
 #define CD_TASK_ID 2 
 #define SIGMA_TASK_ID 3
 
+#define QJ_PROP_TYPE 0
+#define RK4_PROP_TYPE 1
+
 #define PI 3.1415926535897932384626433832795
 #define EPS 1.0e-14
 
