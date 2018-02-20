@@ -3,54 +3,54 @@
 
 void LpnNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
-	init_splits(rp, cp, md, qjd);
-	init_streams(rp, cp, md, qjd);
-	leap_frog_single_stream(rp, cp, md, qjd, 0);
-	init_streams_var(rp, cp, md, qjd);
-	init_basic_data(rp, cp, md, qjd);
-	init_dump_periods(rp, cp, md, qjd);
-	init_obs_std(rp, cp, md, qjd);
-	init_obs_lpn(rp, cp, md, qjd);
+	init_splits(ad);
+	init_streams(ad);
+	leap_frog_single_stream(ad, 0);
+	init_streams_var(ad);
+	init_basic_data(ad);
+	init_dump_periods(ad);
+	init_obs_std(ad);
+	init_obs_lpn(ad);
 
-	init_start_state(rp, cp, md, qjd, 0);
+	init_start_state(ad, 0);
 }
 
 void LpnNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
-	free_splits(rp, cp, md, qjd);
-	free_streams(rp, cp, md, qjd);
-	free_streams_var(rp, cp, md, qjd);
-	free_basic_data(rp, cp, md, qjd);
-	free_dump_priods(rp, cp, md, qjd);
-	free_obs_std(rp, cp, md, qjd);
-	free_obs_lpn(rp, cp, md, qjd);
+	free_splits(ad);
+	free_streams(ad);
+	free_streams_var(ad);
+	free_basic_data(ad);
+	free_dump_priods(ad);
+	free_obs_std(ad);
+	free_obs_lpn(ad);
 }
 
 void StdNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
-	init_splits(rp, cp, md, qjd);
-	init_streams(rp, cp, md, qjd);
-	copy_streams(rp, cp, md, qjd);
-	leap_frog_all_streams(rp, cp, md, qjd);
-	init_basic_data(rp, cp, md, qjd);
-	init_dump_periods(rp, cp, md, qjd);
-	init_obs_std(rp, cp, md, qjd);
+	init_splits(ad);
+	init_streams(ad);
+	copy_streams(ad);
+	leap_frog_all_streams(ad);
+	init_basic_data(ad);
+	init_dump_periods(ad);
+	init_obs_std(ad);
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		init_start_state(rp, cp, md, qjd, tr_id);
+		init_start_state(ad, tr_id);
 	}
 }
 
 void StdNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
-	free_splits(rp, cp, md, qjd);
-	free_streams(rp, cp, md, qjd);
-	free_basic_data(rp, cp, md, qjd);
-	free_dump_priods(rp, cp, md, qjd);
-	free_obs_std(rp, cp, md, qjd);
+	free_splits(ad);
+	free_streams(ad);
+	free_basic_data(ad);
+	free_dump_priods(ad);
+	free_obs_std(ad);
 }
 
 void CorrDimNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
@@ -59,38 +59,38 @@ void CorrDimNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
-	init_splits_cd(rp, cp, md, qjd);
-	init_streams(rp, cp, md, qjd);
-	copy_streams(rp, cp, md, qjd);
-	leap_frog_all_streams(rp, cp, md, qjd);
-	init_basic_data(rp, cp, md, qjd);
+	init_splits_cd(ad);
+	init_streams(ad);
+	copy_streams(ad);
+	leap_frog_all_streams(ad);
+	init_basic_data(ad);
 	
 	if(cd_dump_deep == 1)
 	{
-		init_dump_periods_cd_deep(rp, cp, md, qjd);
+		init_dump_periods_cd_deep(ad);
 	}
 	else
 	{
-		init_dump_periods(rp, cp, md, qjd);
+		init_dump_periods(ad);
 	}
 	
-	init_obs_std(rp, cp, md, qjd);
-	init_obs_cd(rp, cp, md, qjd);
+	init_obs_std(ad);
+	init_obs_cd(ad);
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		init_start_state(rp, cp, md, qjd, tr_id);
+		init_start_state(ad, tr_id);
 	}
 }
 
 void CorrDimNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
-	free_splits_deep(rp, cp, md, qjd);
-	free_streams(rp, cp, md, qjd);
-	free_basic_data(rp, cp, md, qjd);
-	free_dump_priods(rp, cp, md, qjd);
-	free_obs_std(rp, cp, md, qjd);
-	free_obs_cd(rp, cp, md, qjd);
+	free_splits_deep(ad);
+	free_streams(ad);
+	free_basic_data(ad);
+	free_dump_priods(ad);
+	free_obs_std(ad);
+	free_obs_cd(ad);
 }
 
 void SigmaNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
@@ -99,35 +99,35 @@ void SigmaNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData *
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
-	init_splits_cd(rp, cp, md, qjd);
+	init_splits_cd(ad);
 
-	init_streams(rp, cp, md, qjd);
-	copy_streams(rp, cp, md, qjd);
-	leap_frog_all_streams(rp, cp, md, qjd);
+	init_streams(ad);
+	copy_streams(ad);
+	leap_frog_all_streams(ad);
 
-	init_basic_data(rp, cp, md, qjd);
+	init_basic_data(ad);
 
 	if (cd_dump_deep == 1)
 	{
-		init_dump_periods_cd_deep(rp, cp, md, qjd);
+		init_dump_periods_cd_deep(ad);
 	}
 	else
 	{
-		init_dump_periods(rp, cp, md, qjd);
+		init_dump_periods(ad);
 	}
 
-	init_obs_std(rp, cp, md, qjd);
+	init_obs_std(ad);
 
-	init_start_state(rp, cp, md, qjd, 0);
+	init_start_state(ad, 0);
 }
 
 void SigmaNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
 {
-	free_splits_deep(rp, cp, md, qjd);
-	free_streams(rp, cp, md, qjd);
-	free_basic_data(rp, cp, md, qjd);
-	free_dump_priods(rp, cp, md, qjd);
-	free_obs_std(rp, cp, md, qjd);
+	free_splits_deep(ad);
+	free_streams(ad);
+	free_basic_data(ad);
+	free_dump_priods(ad);
+	free_obs_std(ad);
 }
 
 void init_splits_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)

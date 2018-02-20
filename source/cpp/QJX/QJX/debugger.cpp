@@ -1,7 +1,12 @@
 #include "debugger.h"
 
-void DimerDebugBehaviour::save(RunParam * rp, ConfigParam * cp, MainData * md) const
+void DimerDebugBehaviour::save(AllData * ad) const
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	if (rp->is_debug)
 	{
 		string hamiltonian_fn = rp->path + "hamiltonian" + cp->fn_suffix;

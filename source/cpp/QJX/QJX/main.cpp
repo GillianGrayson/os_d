@@ -9,6 +9,8 @@ int main()
 	MainData * md = new MainData();
 	QJData * qjd = new QJData();
 
+	AllData * ad = new AllData();
+
 	init_params(rp, cp, "config.txt", "params.txt");
 
 	DebugBehavior * db;
@@ -16,6 +18,7 @@ int main()
 	NewDelBehavior * ndb;
 	QJNewDelBehavior * ndb_qj;
 	ExperimentBehavior * eb;
+	PropagateBehavior * pb;
 
 	if (rp->sys_id == DIMER_SYS_ID)
 	{
@@ -56,6 +59,23 @@ int main()
 		msg << "Error: Wrong task_id: " << rp->task_id << endl;
 		Error(msg.str());
 	}
+
+	if (rp->prop_id == QJ_PROP_TYPE)
+	{
+		pb = new QJPropagateBehavior();
+	}
+	else
+	{
+		stringstream msg;
+		msg << "Error: Wrong prop_id: " << rp->prop_id << endl;
+		Error(msg.str());
+	}
+
+	ad->rp = rp;
+	ad->cp = cp;
+	ad->md = md;
+	ad->qjd = qjd;
+	ad->pb = pb;
 
 	Processor * p = new Processor(rp, cp, md, qjd);
 

@@ -36,6 +36,10 @@ void set_param(RunParam * rp, ConfigParam * cp, string str, string val)
 	{
 		rp->task_id = atoi(val.c_str());
 	}
+	if (str.compare("prop_id") == 0)
+	{
+		rp->prop_id = atoi(val.c_str());
+	}
 
 
 	if (str.compare("is_debug") == 0)
@@ -142,6 +146,7 @@ void output_params(RunParam * rp, ConfigParam * cp)
 
 	cout << "sys_id = " << rp->sys_id << endl;
 	cout << "task_id = " << rp->task_id << endl;
+	cout << "prop_id = " << rp->prop_id << endl;
 
 	cout << "is_debug = " << rp->is_debug << endl;
 	cout << "is_pp = " << rp->is_pp << endl;

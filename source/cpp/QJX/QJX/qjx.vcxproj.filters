@@ -21,7 +21,22 @@
     <ClInclude Include="data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="data_qj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="debugger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="experiment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="newdel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="newdel_qj.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="outputter.h">
@@ -39,21 +54,6 @@
     <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dump.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="newdel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="data_qj.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="newdel_qj.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="experiment.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.cpp">
@@ -62,19 +62,10 @@
     <ClCompile Include="debugger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="outputter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="split_proc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dump.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="processor.cpp">
+    <ClCompile Include="experiment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
@@ -86,7 +77,16 @@
     <ClCompile Include="newdel_qj.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="experiment.cpp">
+    <ClCompile Include="outputter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="processor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="split_proc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,11 +1,8 @@
 #include "processor.h"
 
-Processor::Processor(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+Processor::Processor(AllData * ad)
 {
-	this->rp = rp;
-	this->cp = cp;
-	this->md = md;
-	this->qjd = qjd;
+	this->ad = ad;
 }
 
 void Processor::set_debug_behaviour(DebugBehavior* db)

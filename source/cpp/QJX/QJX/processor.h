@@ -11,10 +11,7 @@
 class Processor
 {
 private:
-	RunParam * rp;
-	ConfigParam * cp;
-	MainData * md;
-	QJData * qjd;
+	AllData * ad;
 
 	DebugBehavior * db;
 	OuputBehavior * ob;
@@ -23,7 +20,7 @@ private:
 	ExperimentBehavior * eb;
 
 public:
-	Processor(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd);
+	Processor(AllData * ad);
 
 	void set_debug_behaviour(DebugBehavior* db);
 

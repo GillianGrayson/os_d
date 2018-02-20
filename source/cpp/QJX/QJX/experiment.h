@@ -1,42 +1,41 @@
 #pragma once
 #include "config.h"
 #include "data.h"
-#include "data_qj.h"
 #include "dump.h"
 
 class ExperimentBehavior
 {
 public:
-	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
-	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const = 0;
+	virtual void trans_process(AllData * ad) const = 0;
+	virtual void obser_process(AllData * ad) const = 0;
 };
 
 class LpnExperimentBehaviour : public ExperimentBehavior
 {
 public:
-	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
-	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void trans_process(AllData * ad) const;
+	virtual void obser_process(AllData * ad) const;
 };
 
 class StdExperimentBehaviour : public ExperimentBehavior
 {
 public:
-	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
-	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void trans_process(AllData * ad) const;
+	virtual void obser_process(AllData * ad) const;
 };
 
 class CorrDimExperimentBehaviour : public ExperimentBehavior
 {
 public:
-	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
-	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void trans_process(AllData * ad) const;
+	virtual void obser_process(AllData * ad) const;
 };
 
 class SigmaExperimentBehaviour : public ExperimentBehavior
 {
 public:
-	virtual void trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
-	virtual void obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const;
+	virtual void trans_process(AllData * ad) const;
+	virtual void obser_process(AllData * ad) const;
 };
 
 void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);
@@ -54,14 +53,6 @@ void recovery(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Spli
 void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Split * head, int tr_id, Split * branch);
 
 void one_sub_period_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int part_id, int thread_id);
-
-void one_period_cd_tp(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
-
-void one_period_sigma_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id);
-
-void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id);
-
-void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
 
 double get_norm_cd(double * vec, int size);
 

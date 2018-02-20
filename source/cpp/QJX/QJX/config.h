@@ -35,6 +35,7 @@ struct RunParam
 {
 	int		sys_id;				// System id
 	int		task_id;			// Task id
+	int		prop_id;			// Propagator id
 
 	int		is_debug;			// Dump debug info?
 	int		is_pp;				// Print progress?
@@ -47,6 +48,7 @@ struct RunParam
 	RunParam(
 		int _sys_id = 0,
 		int	_task_id = 0,
+		int _prop_id = 0,
 
 		int _is_debug = 0,
 		int _is_pp = 0,
@@ -59,6 +61,7 @@ struct RunParam
 	{
 		sys_id = _sys_id;
 		task_id = _task_id;
+		prop_id = _prop_id;
 
 		is_debug = _is_debug;
 		is_pp = _is_pp;

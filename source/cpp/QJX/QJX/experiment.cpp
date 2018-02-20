@@ -1,7 +1,9 @@
 #include "experiment.h"
 
-void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void LpnExperimentBehaviour::trans_process(AllData * ad) const
 {
+	ConfigParam * cp = ad->cp;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
@@ -11,7 +13,7 @@ void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Main
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_std(rp, cp, md, qjd, tr_id, thread_id);
+		trans_process_single_std(ad, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -19,32 +21,37 @@ void LpnExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Main
 	{
 		if (tr_id > 0)
 		{
-			copy_trajectory_lpn(rp, cp, md, qjd, tr_id);
-			var_trajectory_lpn(rp, cp, md, qjd, tr_id);
+			copy_trajectory_lpn(ad, tr_id);
+			var_trajectory_lpn(ad, tr_id);
 		}
 
-		resresh_times(rp, cp, md, qjd, tr_id);
+		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(rp, cp, md, qjd, tr_id);
-		calc_chars_start_lpn(rp, cp, md, qjd, tr_id);
+		calc_chars_start_std(ad, tr_id);
+		calc_chars_start_lpn(ad, tr_id);
 
-		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
-		evo_chars_lpn(rp, cp, md, qjd, tr_id, 0);
+		evo_chars_std(ad, tr_id, 0);
+		evo_chars_lpn(ad, tr_id, 0);
 
 		if (is_evo_dump_sep == 1)
 		{
-			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+			dump_adr_single(ad, tr_id, false);
 		}
 	}
 
 	if (is_evo_dump_avg == 1)
 	{
-		dump_adr_avg(rp, cp, md, qjd, false);
+		dump_adr_avg(ad, false);
 	}
 }
 
-void LpnExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
-{
+void LpnExperimentBehaviour::obser_process(AllData * ad) const
+{	
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+	PropagateBehavior * pb = ad->pb;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int num_dumps_total = qjd->num_dumps_total;
@@ -71,13 +78,13 @@ void LpnExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, Main
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				one_period(rp, cp, md, qjd, tr_id, thread_id);
-				calc_chars_std(rp, cp, md, qjd, tr_id);
+				pb->one_period(ad, tr_id, thread_id);
+				calc_chars_std(ad, tr_id);
 
-				qjd->energy[tr_id] = get_energy(rp, cp, md, qjd, tr_id);
+				qjd->energy[tr_id] = get_energy(ad, tr_id);
 			}
 
-			calc_chars_lpn(rp, cp, md, qjd, 0);
+			calc_chars_lpn(ad, 0);
 
 			qjd->period_id = (period_id + 1);
 
@@ -86,7 +93,7 @@ void LpnExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, Main
 			{
 				if (tr_id > 0)
 				{
-					lambda_lpn(rp, cp, md, qjd, tr_id);
+					lambda_lpn(ad, tr_id);
 				}
 			}
 		}
@@ -94,40 +101,42 @@ void LpnExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, Main
 #pragma omp parallel for
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
-			evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
-			evo_chars_lpn(rp, cp, md, qjd, tr_id, dump_id);
+			evo_chars_std(ad, tr_id, dump_id);
+			evo_chars_lpn(ad, tr_id, dump_id);
 
 			if (is_evo_dump_sep == 1)
 			{
-				dump_adr_single(rp, cp, md, qjd, tr_id, true);
+				dump_adr_single(ad, tr_id, true);
 			}
 		}
 
 		if (is_evo_dump_avg == 1)
 		{
-			dump_adr_avg(rp, cp, md, qjd, true);
+			dump_adr_avg(ad, true);
 		}
 	}
 
 
-	dump_std(rp, cp, md, qjd);
-	dump_lpn(rp, cp, md, qjd);
+	dump_std(ad);
+	dump_lpn(ad);
 
 	if (is_evo_dump_sep == 1)
 	{
-		dump_evo_std(rp, cp, md, qjd);
-		dump_evo_lpn(rp, cp, md, qjd);
+		dump_evo_std(ad);
+		dump_evo_lpn(ad);
 	}
 
 	if (is_evo_dump_avg == 0)
 	{
-		dump_adr_avg(rp, cp, md, qjd, true);
+		dump_adr_avg(ad, true);
 	}
 
 }
 
-void StdExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void StdExperimentBehaviour::trans_process(AllData * ad) const
 {
+	ConfigParam * cp = ad->cp;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
@@ -137,32 +146,37 @@ void StdExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Main
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_std(rp, cp, md, qjd, tr_id, thread_id);
+		trans_process_single_std(ad, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		resresh_times(rp, cp, md, qjd, tr_id);
+		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+		calc_chars_start_std(ad, tr_id);
 
-		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+		evo_chars_std(ad, tr_id, 0);
 
 		if (is_evo_dump_sep == 1)
 		{
-			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+			dump_adr_single(ad, tr_id, false);
 		}
 	}
 
 	if (is_evo_dump_avg == 1)
 	{
-		dump_adr_avg(rp, cp, md, qjd, false);
+		dump_adr_avg(ad, false);
 	}
 }
 
-void StdExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void StdExperimentBehaviour::obser_process(AllData * ad) const
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+	PropagateBehavior * pb = ad->pb;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int num_dumps_total = qjd->num_dumps_total;
@@ -189,44 +203,46 @@ void StdExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, Main
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				one_period(rp, cp, md, qjd, tr_id, thread_id);
+				pb->one_period(ad, tr_id, thread_id);
 			}
 		}
 
 #pragma omp parallel for
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
-			calc_chars_std(rp, cp, md, qjd, tr_id);
+			calc_chars_std(ad, tr_id);
 
-			evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+			evo_chars_std(ad, tr_id, dump_id);
 
 			if (is_evo_dump_sep == 1)
 			{
-				dump_adr_single(rp, cp, md, qjd, tr_id, true);
+				dump_adr_single(ad, tr_id, true);
 			}
 		}
 
 		if (is_evo_dump_avg == 1)
 		{
-			dump_adr_avg(rp, cp, md, qjd, true);
+			dump_adr_avg(ad, true);
 		}
 	}
 
-	dump_std(rp, cp, md, qjd);
+	dump_std(ad);
 
 	if (is_evo_dump_sep == 1)
 	{
-		dump_evo_std(rp, cp, md, qjd);
+		dump_evo_std(ad);
 	}
 
 	if (is_evo_dump_avg == 0)
 	{
-		dump_adr_avg(rp, cp, md, qjd, false);
+		dump_adr_avg(ad, false);
 	}
 }
 
-void CorrDimExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void CorrDimExperimentBehaviour::trans_process(AllData * ad) const
 {
+	ConfigParam * cp = ad->cp;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
@@ -236,32 +252,37 @@ void CorrDimExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_cd(rp, cp, md, qjd, tr_id, thread_id);
+		trans_process_single_cd(ad, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		resresh_times(rp, cp, md, qjd, tr_id);
+		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+		calc_chars_start_std(ad, tr_id);
 
-		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+		evo_chars_std(ad, tr_id, 0);
 
 		if (is_evo_dump_sep == 1)
 		{
-			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+			dump_adr_single(ad, tr_id, false);
 		}
 	}
 
 	if (is_evo_dump_avg == 1)
 	{
-		dump_adr_avg(rp, cp, md, qjd, false);
+		dump_adr_avg(ad, false);
 	}
 }
 
-void CorrDimExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void CorrDimExperimentBehaviour::obser_process(AllData * ad) const
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+	PropagateBehavior * pb = ad->pb;
+
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
 	int num_trajectories = cp->qj_num_trajectories;
@@ -303,7 +324,7 @@ void CorrDimExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, 
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				one_period_cd_obs(rp, cp, md, qjd, tr_id, thread_id, period_id);
+				pb->one_period_cd_obs(ad, tr_id, thread_id, period_id);
 			}
 		}
 
@@ -312,44 +333,46 @@ void CorrDimExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, 
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+				evo_chars_std(ad, tr_id, dump_id);
 
 				if (is_evo_dump_sep == 1)
 				{
-					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+					dump_adr_single(ad, tr_id, true);
 				}
 			}
 		}
 
 		if (is_evo_dump_avg == 1)
 		{
-			dump_adr_avg(rp, cp, md, qjd, true);
+			dump_adr_avg(ad, true);
 		}
 	}
 
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		calc_ci(rp, cp, md, qjd, tr_id);
+		calc_ci(ad, tr_id);
 	}
 
-	dump_std(rp, cp, md, qjd);
+	dump_std(ad);
 
-	dump_cd(rp, cp, md, qjd);
+	dump_cd(ad);
 
 	if (is_evo_dump_sep == 1)
 	{
-		dump_evo_std(rp, cp, md, qjd);
+		dump_evo_std(ad);
 	}
 
 	if (is_evo_dump_avg == 0)
 	{
-		dump_adr_avg(rp, cp, md, qjd, false);
+		dump_adr_avg(ad, false);
 	}
 }
 
-void SigmaExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void SigmaExperimentBehaviour::trans_process(AllData * ad) const
 {
+	ConfigParam * cp = ad->cp;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
@@ -359,7 +382,7 @@ void SigmaExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Ma
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_cd(rp, cp, md, qjd, tr_id, thread_id);
+		trans_process_single_cd(ad, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -367,29 +390,34 @@ void SigmaExperimentBehaviour::trans_process(RunParam * rp, ConfigParam * cp, Ma
 	{
 		if (tr_id > 0)
 		{
-			copy_trajectory_data(rp, cp, md, qjd, tr_id);
+			copy_trajectory_data(ad, tr_id);
 		}
 
-		resresh_times(rp, cp, md, qjd, tr_id);
+		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(rp, cp, md, qjd, tr_id);
+		calc_chars_start_std(ad, tr_id);
 
-		evo_chars_std(rp, cp, md, qjd, tr_id, 0);
+		evo_chars_std(ad, tr_id, 0);
 
 		if (is_evo_dump_sep == 1)
 		{
-			dump_adr_single(rp, cp, md, qjd, tr_id, false);
+			dump_adr_single(ad, tr_id, false);
 		}
 	}
 
 	if (is_evo_dump_avg == 1)
 	{
-		dump_adr_avg(rp, cp, md, qjd, false);
+		dump_adr_avg(ad, false);
 	}
 }
 
-void SigmaExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void SigmaExperimentBehaviour::obser_process(AllData * ad) const
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+	PropagateBehavior * pb = ad->pb;
+
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
 	int num_trajectories = cp->qj_num_trajectories;
@@ -431,7 +459,7 @@ void SigmaExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, Ma
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				one_period_sigma_obs(rp, cp, md, qjd, tr_id, thread_id, period_id);
+				pb->one_period_sigma_obs(ad, tr_id, thread_id, period_id);
 			}
 		}
 
@@ -440,31 +468,31 @@ void SigmaExperimentBehaviour::obser_process(RunParam * rp, ConfigParam * cp, Ma
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+				evo_chars_std(ad, tr_id, dump_id);
 
 				if (is_evo_dump_sep == 1)
 				{
-					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+					dump_adr_single(ad, tr_id, true);
 				}
 			}
 		}
 
 		if (is_evo_dump_avg == 1)
 		{
-			dump_adr_avg(rp, cp, md, qjd, true);
+			dump_adr_avg(ad, true);
 		}
 	}
 
-	dump_std(rp, cp, md, qjd);
+	dump_std(ad);
 
 	if (is_evo_dump_sep == 1)
 	{
-		dump_evo_std(rp, cp, md, qjd);
+		dump_evo_std(ad);
 	}
 
 	if (is_evo_dump_avg == 0)
 	{
-		dump_adr_avg(rp, cp, md, qjd, false);
+		dump_adr_avg(ad, false);
 	}
 }
 
@@ -523,8 +551,11 @@ double norm_square(MKL_Complex16 * phi, int sys_size)
 	return norm;
 }
 
-void recovery(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Split * head, int tr_id)
+void recovery(AllData * ad, Split * head, int tr_id)
 {
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
 	MKL_Complex16 ONE = { 1.0, 0.0 };
 
@@ -624,8 +655,14 @@ void recovery(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Spli
 	delete(gnorms);
 }
 
-void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Split * head, int tr_id, Split * branch)
+void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+	PropagateBehavior * pb = ad->pb;
+
 	int sys_size = md->sys_size;
 
 	VSLStreamStatePtr * stream = &(qjd->streams[tr_id]);
@@ -643,7 +680,7 @@ void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 			prop_step(phi, branch->matrix, phi_aux, branch->N);
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
-				recovery(rp, cp, md, qjd, head, tr_id);
+				recovery(ad, head, tr_id);
 				vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
 				while (*eta == 0.0)
 				{
@@ -664,7 +701,7 @@ void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 			prop_step(phi, branch->matrix, phi_aux, branch->N);
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
-				one_period_branch(rp, cp, md, qjd, head, tr_id, branch->next);
+				one_period_branch(ad, head, tr_id, branch->next);
 				qjd->times_all[tr_id] -= branch->dt;
 			}
 			else
@@ -679,7 +716,7 @@ void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 	branch->counter = 0;
 }
 
-void one_sub_period_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int part_id, int thread_id)
+void one_sub_period_cd(AllData * ad, int tr_id, int part_id, int thread_id)
 {
 	int num_threads = rp->num_threads;
 
@@ -689,126 +726,7 @@ void one_sub_period_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 
 	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
 	{
-		one_period_branch(rp, cp, md, qjd, head, tr_id, &(head->next)[b_id]);
-	}
-}
-
-void one_period_cd_tp(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id)
-{
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps = int(cp->params.find("cd_num_sub_steps")->second);
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps; sub_step_id++)
-		{
-			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
-		}
-	}
-}
-
-void one_period_sigma_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id)
-{
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
-
-	int dump_point_id = 0;
-	int curr_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-
-			dump_point_id++;
-
-			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
-			calc_chars_std(rp, cp, md, qjd, tr_id);
-
-			if (cd_dump_deep == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
-
-				if (is_evo_dump_sep == 1)
-				{
-					dump_adr_single(rp, cp, md, qjd, tr_id, true);
-				}
-			}
-		}
-	}
-}
-
-void one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id)
-{
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
-
-	int dump_point_id = 0;
-	int curr_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-
-			dump_point_id++;
-
-			for (int cd_st_id = 0; cd_st_id < qjd->cd_dim; cd_st_id++)
-			{
-				curr_point_id = global_point_id - cd_st_id;
-
-				if (curr_point_id >= 0 && curr_point_id < qjd->cd_num_points)
-				{
-					qjd->cd_rec_data[tr_id][curr_point_id][cd_st_id] = qjd->mean[tr_id];
-				}
-			}
-
-			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
-			calc_chars_std(rp, cp, md, qjd, tr_id);
-
-			if (cd_dump_deep == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
-
-				if (is_evo_dump_sep == 1)
-				{
-					dump_adr_single(rp, cp, md, qjd, tr_id, true);
-				}
-			}
-		}
-	}
-}
-
-void one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id)
-{
-	int sys_size = md->sys_size;
-	Split * head = &(md->splits)[thread_id];
-
-	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
-	{
-		one_period_branch(rp, cp, md, qjd, head, tr_id, &(head->next)[b_id]);
+		one_period_branch(ad, head, tr_id, &(head->next)[b_id]);
 	}
 }
 
@@ -851,7 +769,7 @@ double get_m2(double * adr, int sys_size, double mean)
 	return m2;
 }
 
-double get_energy(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+double get_energy(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 
@@ -895,7 +813,7 @@ double get_energy(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, 
 	return energy;
 }
 
-void calc_chars_start_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void calc_chars_start_std(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
@@ -918,7 +836,7 @@ void calc_chars_start_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData
 	qjd->m2[tr_id]				= m2;
 }
 
-void calc_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void calc_chars_std(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
@@ -940,7 +858,7 @@ void calc_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 	qjd->m2[tr_id] = m2;
 }
 
-void evo_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int dump_id)
+void evo_chars_std(AllData * ad, int tr_id, int dump_id)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
@@ -952,7 +870,7 @@ void evo_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd,
 	qjd->m2_evo[index] = qjd->m2[tr_id];
 }
 
-void calc_chars_start_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void calc_chars_start_lpn(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 
@@ -968,7 +886,7 @@ void calc_chars_start_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData
 		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
 	}
 
-	double energy = get_energy(rp, cp, md, qjd, tr_id);
+	double energy = get_energy(ad, tr_id);
 	double lambda = 0.0;
 	double lambda_now = 0.0;
 	double mean_lpn = qjd->mean[tr_id];
@@ -996,7 +914,7 @@ void calc_chars_start_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData
 	qjd->delta_s[tr_id] = delta_s;
 }
 
-void calc_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void calc_chars_lpn(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 
@@ -1013,13 +931,13 @@ void calc_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 	}
 
 	double mean_lpn = get_mean_simple(adr, sys_size);
-	double energy_lpn = get_energy(rp, cp, md, qjd, tr_id);
+	double energy_lpn = get_energy(ad, tr_id);
 
 	qjd->mean_lpn[tr_id] = mean_lpn;
 	qjd->energy_lpn[tr_id] = energy_lpn;
 }
 
-void calc_ci(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void calc_ci(AllData * ad, int tr_id)
 {
 	double eps = double(cp->params.find("cd_eps")->second);
 
@@ -1056,7 +974,7 @@ void calc_ci(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int t
 	delete curr_diff;
 }
 
-void evo_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int dump_id)
+void evo_chars_lpn(AllData * ad, int tr_id, int dump_id)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
@@ -1069,12 +987,12 @@ void evo_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd,
 	qjd->energy_lpn_evo[index] = qjd->energy_lpn[tr_id];
 }
 
-void resresh_times(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void resresh_times(AllData * ad, int tr_id)
 {
 		qjd->times_all[tr_id] = 0.0;
 }
 
-void copy_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void copy_trajectory_lpn(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 
@@ -1094,7 +1012,7 @@ void copy_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData 
 	}
 }
 
-void copy_trajectory_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void copy_trajectory_data(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 
@@ -1112,7 +1030,7 @@ void copy_trajectory_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData
 	}
 }
 
-void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void var_trajectory_lpn(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 
@@ -1163,7 +1081,7 @@ void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData *
 	}
 }
 
-void lambda_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void lambda_lpn(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 
@@ -1189,9 +1107,9 @@ void lambda_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, in
 	{
 		qjd->lambda[tr_id] += log(delta_f / qjd->delta_s[tr_id] + 1.0e-16);
 
-		var_trajectory_lpn(rp, cp, md, qjd, tr_id);
+		var_trajectory_lpn(ad, tr_id);
 
-		calc_chars_lpn(rp, cp, md, qjd, tr_id);
+		calc_chars_lpn(ad, tr_id);
 
 		qjd->delta_s[tr_id] = fabs(qjd->mean_lpn[tr_id] - qjd->mean_lpn[0]) / double(sys_size);
 
@@ -1199,12 +1117,12 @@ void lambda_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, in
 	}
 	else
 	{
-		calc_chars_lpn(rp, cp, md, qjd, tr_id);
+		calc_chars_lpn(ad, tr_id);
 		qjd->lambda_now[tr_id] = (qjd->lambda[tr_id] + log(delta_f / qjd->delta_s[tr_id] + 1.0e-16)) / (double(qjd->period_id) * md->T);
 	}
 }
 
-void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id)
+void trans_process_single_std(AllData * ad, int tr_id, int thread_id)
 {
 	int sys_size = md->sys_size;
 	int num_tp_periods = cp->qj_num_tp_periods;
@@ -1220,11 +1138,11 @@ void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJ
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
-		one_period(rp, cp, md, qjd, tr_id, thread_id);
+		one_period(ad, tr_id, thread_id);
 	}
 }
 
-void trans_process_single_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id)
+void trans_process_single_cd(AllData * ad, int tr_id, int thread_id)
 {
 	int sys_size = md->sys_size;
 	int num_tp_periods = cp->qj_num_tp_periods;
@@ -1240,6 +1158,6 @@ void trans_process_single_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJD
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
-		one_period_cd_tp(rp, cp, md, qjd, tr_id, thread_id);
+		one_period_cd_tp(ad, tr_id, thread_id);
 	}
 }

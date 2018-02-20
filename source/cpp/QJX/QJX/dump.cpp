@@ -1,7 +1,12 @@
 #include "dump.h"
 
-void dump_adr_single(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, bool append)
+void dump_adr_single(AllData * ad, int tr_id, bool append)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_adr_dump_sep = int(cp->params.find("is_adr_dump_sep")->second);
 
@@ -18,8 +23,13 @@ void dump_adr_single(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 	}
 }
 
-void dump_adr_avg(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, bool append)
+void dump_adr_avg(AllData * ad, bool append)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int is_adr_dump_avg = int(cp->params.find("is_adr_dump_avg")->second);
 
 	if (is_adr_dump_avg == 1)
@@ -50,8 +60,13 @@ void dump_adr_avg(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, 
 	}
 }
 
-void update_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int dump_id)
+void update_evo_std(AllData * ad, int dump_id)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
 
@@ -63,8 +78,13 @@ void update_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 	}
 }
 
-void update_evo_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int dump_id)
+void update_evo_lpn(AllData * ad, int dump_id)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
 
@@ -77,8 +97,13 @@ void update_evo_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 	}
 }
 
-void dump_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void dump_std(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
 
 	if (is_obs_dump == 1)
@@ -106,8 +131,13 @@ void dump_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	}
 }
 
-void dump_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void dump_lpn(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
@@ -136,8 +166,13 @@ void dump_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	}
 }
 
-void dump_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void dump_cd(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	double * ci = qjd->cd_i;
@@ -148,8 +183,13 @@ void dump_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	save_double_data(fn, ci, num_trajectories, 16, false);
 }
 
-void dump_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void dump_evo_std(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
 
@@ -180,8 +220,13 @@ void dump_evo_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	}
 }
 
-void dump_evo_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void dump_evo_lpn(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
 
