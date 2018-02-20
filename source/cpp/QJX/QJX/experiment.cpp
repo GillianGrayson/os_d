@@ -657,11 +657,8 @@ void recovery(AllData * ad, Split * head, int tr_id)
 
 void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 {
-	RunParam * rp = ad->rp;
-	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 	QJData * qjd = ad->qjd;
-	PropagateBehavior * pb = ad->pb;
 
 	int sys_size = md->sys_size;
 
@@ -718,6 +715,9 @@ void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 
 void one_sub_period_cd(AllData * ad, int tr_id, int part_id, int thread_id)
 {
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
 	int num_threads = rp->num_threads;
 
 	int split_id = num_threads * part_id + thread_id;
@@ -771,6 +771,10 @@ double get_m2(double * adr, int sys_size, double mean)
 
 double get_energy(AllData * ad, int tr_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 
 	double prm_E = double(cp->params.find("prm_E")->second);
@@ -815,6 +819,9 @@ double get_energy(AllData * ad, int tr_id)
 
 void calc_chars_start_std(AllData * ad, int tr_id)
 {
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
 	double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
@@ -838,6 +845,9 @@ void calc_chars_start_std(AllData * ad, int tr_id)
 
 void calc_chars_std(AllData * ad, int tr_id)
 {
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
 	double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
@@ -860,6 +870,9 @@ void calc_chars_std(AllData * ad, int tr_id)
 
 void evo_chars_std(AllData * ad, int tr_id, int dump_id)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
 
@@ -872,6 +885,10 @@ void evo_chars_std(AllData * ad, int tr_id, int dump_id)
 
 void calc_chars_start_lpn(AllData * ad, int tr_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 
 	int type_lpn = double(cp->params.find("type_lpn")->second);
@@ -916,6 +933,10 @@ void calc_chars_start_lpn(AllData * ad, int tr_id)
 
 void calc_chars_lpn(AllData * ad, int tr_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 
 	int type_lpn = double(cp->params.find("type_lpn")->second);
@@ -939,6 +960,10 @@ void calc_chars_lpn(AllData * ad, int tr_id)
 
 void calc_ci(AllData * ad, int tr_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	double eps = double(cp->params.find("cd_eps")->second);
 
 	double * curr_diff = new double[qjd->cd_dim];
@@ -966,7 +991,6 @@ void calc_ci(AllData * ad, int tr_id)
 		}
 	}
 
-
 	integral /= (double(qjd->cd_num_points) * double(qjd->cd_num_points - 1));
 
 	qjd->cd_i[tr_id] = integral;
@@ -976,6 +1000,9 @@ void calc_ci(AllData * ad, int tr_id)
 
 void evo_chars_lpn(AllData * ad, int tr_id, int dump_id)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
 
@@ -989,11 +1016,16 @@ void evo_chars_lpn(AllData * ad, int tr_id, int dump_id)
 
 void resresh_times(AllData * ad, int tr_id)
 {
-		qjd->times_all[tr_id] = 0.0;
+	QJData * qjd = ad->qjd;
+
+	qjd->times_all[tr_id] = 0.0;
 }
 
 void copy_trajectory_lpn(AllData * ad, int tr_id)
 {
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 
 	VSLStreamStatePtr * streams = qjd->streams;
@@ -1014,6 +1046,9 @@ void copy_trajectory_lpn(AllData * ad, int tr_id)
 
 void copy_trajectory_data(AllData * ad, int tr_id)
 {
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 
 	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
@@ -1032,6 +1067,10 @@ void copy_trajectory_data(AllData * ad, int tr_id)
 
 void var_trajectory_lpn(AllData * ad, int tr_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 
 	double eps_lpn = double(cp->params.find("eps_lpn")->second);
@@ -1083,6 +1122,10 @@ void var_trajectory_lpn(AllData * ad, int tr_id)
 
 void lambda_lpn(AllData * ad, int tr_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 
 	int type_lpn = double(cp->params.find("type_lpn")->second);
@@ -1124,6 +1167,11 @@ void lambda_lpn(AllData * ad, int tr_id)
 
 void trans_process_single_std(AllData * ad, int tr_id, int thread_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+	PropagateBehavior * pb = ad->pb;
+
 	int sys_size = md->sys_size;
 	int num_tp_periods = cp->qj_num_tp_periods;
 
@@ -1138,12 +1186,17 @@ void trans_process_single_std(AllData * ad, int tr_id, int thread_id)
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
-		one_period(ad, tr_id, thread_id);
+		pb->one_period(ad, tr_id, thread_id);
 	}
 }
 
 void trans_process_single_cd(AllData * ad, int tr_id, int thread_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+	PropagateBehavior * pb = ad->pb;
+
 	int sys_size = md->sys_size;
 	int num_tp_periods = cp->qj_num_tp_periods;
 
@@ -1158,6 +1211,6 @@ void trans_process_single_cd(AllData * ad, int tr_id, int thread_id)
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
-		one_period_cd_tp(ad, tr_id, thread_id);
+		pb->one_period_cd_tp(ad, tr_id, thread_id);
 	}
 }

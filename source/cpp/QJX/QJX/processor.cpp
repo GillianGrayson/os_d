@@ -32,13 +32,13 @@ void Processor::set_experiment_behaviour(ExperimentBehavior* eb)
 
 void Processor::process()
 {
-	ndb->init_sizes(rp, cp, md);
-	ndb->init_hamiltonians(rp, cp, md);
-	ndb->init_dissipators(rp, cp, md);
-	ndb->init_hamiltonians_qj(rp, cp, md);
+	ndb->init_sizes(ad);
+	ndb->init_hamiltonians(ad);
+	ndb->init_dissipators(ad);
+	ndb->init_hamiltonians_qj(ad);
 
-	ob->suffix_param(cp, 4);
-	db->save(rp, cp, md);
+	ob->suffix_param(ad->cp, 4);
+	db->save(ad);
 
 	ndb_qj->init_data(ad);
 
@@ -47,7 +47,7 @@ void Processor::process()
 
 	ndb_qj->free_data(ad);
 
-	ndb->free_hamiltonians(rp, cp, md);
-	ndb->free_dissipators(rp, cp, md);
-	ndb->free_hamiltonians_qj(rp, cp, md);
+	ndb->free_hamiltonians(ad);
+	ndb->free_dissipators(ad);
+	ndb->free_hamiltonians_qj(ad);
 }

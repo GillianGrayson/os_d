@@ -42,6 +42,9 @@
     <ClInclude Include="processor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="propagator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="split.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -49,9 +52,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="propagator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,13 +83,13 @@
     <ClCompile Include="processor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="propagator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="split_proc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="propagator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

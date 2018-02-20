@@ -1,7 +1,6 @@
 #pragma once
 #include "config.h"
 #include "data.h"
-#include "data_qj.h"
 #include "debugger.h"
 #include "outputter.h"
 #include "newdel.h"

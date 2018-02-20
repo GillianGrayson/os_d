@@ -28,6 +28,8 @@ void LpnNewDelBehaviour::free_data(AllData * ad) const
 
 void StdNewDelBehaviour::init_data(AllData * ad) const
 {
+	ConfigParam * cp = ad->cp;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	init_splits(ad);
@@ -55,6 +57,8 @@ void StdNewDelBehaviour::free_data(AllData * ad) const
 
 void CorrDimNewDelBehaviour::init_data(AllData * ad) const
 {
+	ConfigParam * cp = ad->cp;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
@@ -95,6 +99,8 @@ void CorrDimNewDelBehaviour::free_data(AllData * ad) const
 
 void SigmaNewDelBehaviour::init_data(AllData * ad) const
 {
+	ConfigParam * cp = ad->cp;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
@@ -132,12 +138,15 @@ void SigmaNewDelBehaviour::free_data(AllData * ad) const
 
 void init_splits_cd(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
 	int num_branches = md->num_ham_qj;
 	int num_threads = rp->num_threads;
 	
 	int num_total = num_threads * num_branches;
 
-	md->structure = init_split_structure_cd(rp, cp, md);
+	md->structure = init_split_structure_cd(ad);
 	md->splits = new Split[num_total];
 
 	for (int b_id = 0; b_id < num_branches; b_id++)
@@ -152,9 +161,13 @@ void init_splits_cd(AllData * ad)
 
 void init_splits(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
 	int num_threads = rp->num_threads;
 
-	md->structure = init_split_structure(rp, cp, md);
+	md->structure = init_split_structure(ad);
 	md->splits = new Split[num_threads];
 	for (int th_id = 0; th_id < num_threads; th_id++)
 	{
@@ -166,6 +179,9 @@ void init_splits(AllData * ad)
 
 void init_streams(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
@@ -176,6 +192,9 @@ void init_streams(AllData * ad)
 
 void leap_frog_single_stream(AllData * ad, int tr_id)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
 	vslLeapfrogStream((qjd->streams)[tr_id], seed + tr_id, mns);
@@ -183,6 +202,9 @@ void leap_frog_single_stream(AllData * ad, int tr_id)
 
 void leap_frog_all_streams(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	int seed = cp->qj_seed;
@@ -196,6 +218,9 @@ void leap_frog_all_streams(AllData * ad)
 
 void copy_streams(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
@@ -208,6 +233,9 @@ void copy_streams(AllData * ad)
 
 void init_streams_var(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	qjd->streams_var = new VSLStreamStatePtr[num_trajectories];
@@ -224,6 +252,10 @@ void init_streams_var(AllData * ad)
 
 void init_basic_data(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 	int num_trajectories = cp->qj_num_trajectories;
 	
@@ -254,6 +286,10 @@ void init_basic_data(AllData * ad)
 
 void init_dump_periods_cd_deep(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	qjd->period_id = 0;
 
 	qjd->dump_type = int(cp->params.find("dump_type")->second);
@@ -282,6 +318,9 @@ void init_dump_periods_cd_deep(AllData * ad)
 
 void init_dump_periods(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	qjd->period_id = 0;
 
 	qjd->dump_type = int(cp->params.find("dump_type")->second);
@@ -330,6 +369,9 @@ void init_dump_periods(AllData * ad)
 
 void init_obs_std(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
 
@@ -362,6 +404,10 @@ void init_obs_std(AllData * ad)
 
 void init_obs_lpn(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
@@ -415,6 +461,10 @@ void init_obs_lpn(AllData * ad)
 
 void init_obs_cd(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
 	int cd_dim = int(cp->params.find("cd_dim")->second);
@@ -448,6 +498,10 @@ void init_obs_cd(AllData * ad)
 
 void init_start_state(AllData * ad, int tr_id)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int sys_size = md->sys_size;
 	int start_type = int(cp->params.find("start_type")->second);
 	int start_state = int(cp->params.find("start_state")->second);
@@ -469,6 +523,9 @@ void init_start_state(AllData * ad, int tr_id)
 
 void free_splits_deep(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
 	int num_branches = md->num_ham_qj;
 	int num_threads = rp->num_threads;
 
@@ -487,6 +544,9 @@ void free_splits_deep(AllData * ad)
 
 void free_splits(AllData * ad)
 {
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
 	int num_threads = rp->num_threads;
 
 	for (int i = 0; i < num_threads; i++)
@@ -500,18 +560,24 @@ void free_splits(AllData * ad)
 
 void free_streams(AllData * ad)
 {
+	QJData * qjd = ad->qjd;
+
 	VSLStreamStatePtr * streams = qjd->streams;
 	delete[] streams;
 }
 
 void free_streams_var(AllData * ad)
 {
+	QJData * qjd = ad->qjd;
+
 	VSLStreamStatePtr * streams_var = qjd->streams_var;
 	delete[] streams_var;
 }
 
 void free_basic_data(AllData * ad)
 {
+	QJData * qjd = ad->qjd;
+
 	delete[] qjd->phi_all;
 	delete[] qjd->phi_all_aux;
 	delete[] qjd->abs_diag_rho_all;
@@ -521,11 +587,15 @@ void free_basic_data(AllData * ad)
 
 void free_dump_priods(AllData * ad)
 {
+	QJData * qjd = ad->qjd;
+
 	delete[] qjd->dump_periods;
 }
 
 void free_obs_std(AllData * ad)
 {
+	QJData * qjd = ad->qjd;
+
 	delete[] qjd->mean_start;
 
 	delete[] qjd->mean;
@@ -539,6 +609,8 @@ void free_obs_std(AllData * ad)
 
 void free_obs_lpn(AllData * ad)
 {
+	QJData * qjd = ad->qjd;
+
 	delete[] qjd->delta_s;
 
 	delete[] qjd->energy;
@@ -555,6 +627,9 @@ void free_obs_lpn(AllData * ad)
 
 void free_obs_cd(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	QJData * qjd = ad->qjd;
+
 	int num_trajectories = cp->qj_num_trajectories;
 
 	delete[] qjd->cd_i;

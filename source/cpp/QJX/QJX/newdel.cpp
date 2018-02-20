@@ -5,7 +5,6 @@ void DimerNewDelBehaviour::init_sizes(AllData * ad) const
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp; 
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
 
 	int num_threads = rp->num_threads;
 	omp_set_num_threads(num_threads);
@@ -21,10 +20,8 @@ void DimerNewDelBehaviour::init_sizes(AllData * ad) const
 
 void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 {
-	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
 
 	int N = int(cp->params.find("N")->second);
 	int sys_size = md->sys_size;
@@ -68,10 +65,8 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
 {
-	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
 
 	int N = int(cp->params.find("N")->second);
 	int sys_size = md->sys_size;
@@ -116,10 +111,8 @@ void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
 
 void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 {
-	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
 
 	double prm_E = double(cp->params.find("prm_E")->second);
 	double drv_ampl = double(cp->params.find("drv_ampl")->second);
@@ -208,10 +201,7 @@ void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 
 void DimerNewDelBehaviour::free_hamiltonians(AllData * ad) const
 {
-	RunParam * rp = ad->rp;
-	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
 
 	delete[] md->hamiltonian;
 	delete[] md->hamiltonian_drv;
@@ -219,10 +209,7 @@ void DimerNewDelBehaviour::free_hamiltonians(AllData * ad) const
 
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
 {
-	RunParam * rp = ad->rp;
-	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
 
 	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
 	{
@@ -233,10 +220,7 @@ void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
 
 void DimerNewDelBehaviour::free_hamiltonians_qj(AllData * ad) const
 {
-	RunParam * rp = ad->rp;
-	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
 
 	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
 	{

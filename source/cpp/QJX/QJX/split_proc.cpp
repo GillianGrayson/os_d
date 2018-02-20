@@ -1,7 +1,10 @@
 #include "split_proc.h"
 
-Split * init_split_structure_cd(RunParam * rp, ConfigParam * cp, MainData * md)
+Split * init_split_structure_cd(AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
 	int cd_num_sub_steps = int(cp->params.find("cd_num_sub_steps")->second);
 
 	double T = 0.5 * md->T / double(cd_num_sub_steps);
@@ -23,7 +26,7 @@ Split * init_split_structure_cd(RunParam * rp, ConfigParam * cp, MainData * md)
 		for (unsigned int i = 0; i < 2; i++)
 		{
 			(branch->next)[i].prev = branch;
-			init_split_branches(&((branch->next)[i]), br_id, rp, cp, md);
+			init_split_branches(&((branch->next)[i]), br_id, ad);
 		}
 
 		branch->steps = md->num_diss;
@@ -52,8 +55,10 @@ Split * init_split_structure_cd(RunParam * rp, ConfigParam * cp, MainData * md)
 	return head;
 }
 
-Split * init_split_structure(RunParam * rp, ConfigParam * cp, MainData * md)
+Split * init_split_structure(AllData * ad)
 {
+	MainData * md = ad->md;
+
 	Split * head = new Split[1];
 
 	double T = md->T;
@@ -70,7 +75,7 @@ Split * init_split_structure(RunParam * rp, ConfigParam * cp, MainData * md)
 	for (unsigned int i = 0; i < num_branches; i++)
 	{
 		(head->next)[i].prev = head;
-		init_split_branches(&((head->next)[i]), i, rp, cp, md);
+		init_split_branches(&((head->next)[i]), i, ad);
 	}
 
 	head->steps = md->num_diss;
@@ -98,8 +103,11 @@ Split * init_split_structure(RunParam * rp, ConfigParam * cp, MainData * md)
 	return head;
 }
 
-void init_split_branches(Split * branch, int branch_id, RunParam * rp, ConfigParam * cp, MainData * md)
+void init_split_branches(Split * branch, int branch_id, AllData * ad)
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
 	Split * node = branch;
 
 	int deep = cp->qj_deep;

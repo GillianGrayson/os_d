@@ -2,6 +2,8 @@
 
 void QJPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id) const
 {
+	MainData * md = ad->md;
+
 	int sys_size = md->sys_size;
 	Split * head = &(md->splits)[thread_id];
 
@@ -13,6 +15,9 @@ void QJPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id) con
 
 void QJPropagateBehavior::one_period_cd_tp(AllData * ad, int tr_id, int thread_id) const
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps = int(cp->params.find("cd_num_sub_steps")->second);
 
@@ -27,6 +32,10 @@ void QJPropagateBehavior::one_period_cd_tp(AllData * ad, int tr_id, int thread_i
 
 void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_id, int period_id) const
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	QJData * qjd = ad->qjd;
+
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 
@@ -80,6 +89,9 @@ void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 
 void QJPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thread_id, int period_id) const
 {
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 
@@ -119,7 +131,3 @@ void QJPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 	}
 }
 
-Propagator::Propagator(PropagateBehavior * pb)
-{
-	this->pb = pb;
-}
