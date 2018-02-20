@@ -1,17 +1,17 @@
 #include "propagator.h"
 
-void QJPropagateBehavior::one_period(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id) const
+void QJPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id) const
 {
 	int sys_size = md->sys_size;
 	Split * head = &(md->splits)[thread_id];
 
 	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
 	{
-		one_period_branch(rp, cp, md, qjd, head, tr_id, &(head->next)[b_id]);
+		one_period_branch(ad, head, tr_id, &(head->next)[b_id]);
 	}
 }
 
-void QJPropagateBehavior::one_period_cd_tp(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id) const
+void QJPropagateBehavior::one_period_cd_tp(AllData * ad, int tr_id, int thread_id) const
 {
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps = int(cp->params.find("cd_num_sub_steps")->second);
@@ -20,12 +20,12 @@ void QJPropagateBehavior::one_period_cd_tp(RunParam * rp, ConfigParam * cp, Main
 	{
 		for (int sub_step_id = 0; sub_step_id < num_sub_steps; sub_step_id++)
 		{
-			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
+			one_sub_period_cd(ad, tr_id, part_id, thread_id);
 		}
 	}
 }
 
-void QJPropagateBehavior::one_period_cd_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id) const
+void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_id, int period_id) const
 {
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
@@ -60,25 +60,25 @@ void QJPropagateBehavior::one_period_cd_obs(RunParam * rp, ConfigParam * cp, Mai
 				}
 			}
 
-			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
-			calc_chars_std(rp, cp, md, qjd, tr_id);
+			one_sub_period_cd(ad, tr_id, part_id, thread_id);
+			calc_chars_std(ad, tr_id);
 
 			if (cd_dump_deep == 1)
 			{
 				int dump_id = global_point_id + 1;
 
-				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+				evo_chars_std(ad, tr_id, dump_id);
 
 				if (is_evo_dump_sep == 1)
 				{
-					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+					dump_adr_single(ad, tr_id, true);
 				}
 			}
 		}
 	}
 }
 
-void QJPropagateBehavior::one_period_sigma_obs(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id, int period_id) const
+void QJPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thread_id, int period_id) const
 {
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
@@ -101,18 +101,18 @@ void QJPropagateBehavior::one_period_sigma_obs(RunParam * rp, ConfigParam * cp, 
 
 			dump_point_id++;
 
-			one_sub_period_cd(rp, cp, md, qjd, tr_id, part_id, thread_id);
-			calc_chars_std(rp, cp, md, qjd, tr_id);
+			one_sub_period_cd(ad, tr_id, part_id, thread_id);
+			calc_chars_std(ad, tr_id);
 
 			if (cd_dump_deep == 1)
 			{
 				int dump_id = global_point_id + 1;
 
-				evo_chars_std(rp, cp, md, qjd, tr_id, dump_id);
+				evo_chars_std(ad, tr_id, dump_id);
 
 				if (is_evo_dump_sep == 1)
 				{
-					dump_adr_single(rp, cp, md, qjd, tr_id, true);
+					dump_adr_single(ad, tr_id, true);
 				}
 			}
 		}

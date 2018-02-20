@@ -48,11 +48,11 @@ int is_norm_crossed(MKL_Complex16 * phi, double * eta, int sys_size);
 
 double norm_square(MKL_Complex16 * phi, int sys_size);
 
-void recovery(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Split * head, int tr_id);
+void recovery(AllData * ad, Split * head, int tr_id);
 
-void one_period_branch(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, Split * head, int tr_id, Split * branch);
+void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch);
 
-void one_sub_period_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int part_id, int thread_id);
+void one_sub_period_cd(AllData * ad, int tr_id, int part_id, int thread_id);
 
 double get_norm_cd(double * vec, int size);
 
@@ -62,32 +62,32 @@ double get_dispersion_simple(double mean_curr, double mean_start);
 
 double get_m2(double * adr, int sys_size, double mean);
 
-double get_energy(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+double get_energy(AllData * ad, int tr_id);
 
-void calc_chars_start_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void calc_chars_start_std(AllData * ad, int tr_id);
 
-void calc_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void calc_chars_std(AllData * ad, int tr_id);
 
-void evo_chars_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int dump_id);
+void evo_chars_std(AllData * ad, int tr_id, int dump_id);
 
-void calc_chars_start_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void calc_chars_start_lpn(AllData * ad, int tr_id);
 
-void calc_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void calc_chars_lpn(AllData * ad, int tr_id);
 
-void calc_ci(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void calc_ci(AllData * ad, int tr_id);
 
-void evo_chars_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int dump_id);
+void evo_chars_lpn(AllData * ad, int tr_id, int dump_id);
 
-void resresh_times(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void resresh_times(AllData * ad, int tr_id);
 
-void copy_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void copy_trajectory_lpn(AllData * ad, int tr_id);
 
-void copy_trajectory_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void copy_trajectory_data(AllData * ad, int tr_id);
 
-void var_trajectory_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void var_trajectory_lpn(AllData * ad, int tr_id);
 
-void lambda_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id);
+void lambda_lpn(AllData * ad, int tr_id);
 
-void trans_process_single_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
+void trans_process_single_std(AllData * ad, int tr_id, int thread_id);
 
-void trans_process_single_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id, int thread_id);
+void trans_process_single_cd(AllData * ad, int tr_id, int thread_id);

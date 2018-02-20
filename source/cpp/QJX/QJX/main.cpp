@@ -77,7 +77,7 @@ int main()
 	ad->qjd = qjd;
 	ad->pb = pb;
 
-	Processor * p = new Processor(rp, cp, md, qjd);
+	Processor * p = new Processor(ad);
 
 	p->set_debug_behaviour(db);
 	p->set_output_behaviour(ob);

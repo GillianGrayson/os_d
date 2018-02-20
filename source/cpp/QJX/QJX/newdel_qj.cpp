@@ -1,7 +1,7 @@
 #include "newdel_qj.h"
 #include "split_proc.h"
 
-void LpnNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void LpnNewDelBehaviour::init_data(AllData * ad) const
 {
 	init_splits(ad);
 	init_streams(ad);
@@ -15,7 +15,7 @@ void LpnNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * m
 	init_start_state(ad, 0);
 }
 
-void LpnNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void LpnNewDelBehaviour::free_data(AllData * ad) const
 {
 	free_splits(ad);
 	free_streams(ad);
@@ -26,7 +26,7 @@ void LpnNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * m
 	free_obs_lpn(ad);
 }
 
-void StdNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void StdNewDelBehaviour::init_data(AllData * ad) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -44,7 +44,7 @@ void StdNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * m
 	}
 }
 
-void StdNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void StdNewDelBehaviour::free_data(AllData * ad) const
 {
 	free_splits(ad);
 	free_streams(ad);
@@ -53,7 +53,7 @@ void StdNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * m
 	free_obs_std(ad);
 }
 
-void CorrDimNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void CorrDimNewDelBehaviour::init_data(AllData * ad) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -83,7 +83,7 @@ void CorrDimNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData
 	}
 }
 
-void CorrDimNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void CorrDimNewDelBehaviour::free_data(AllData * ad) const
 {
 	free_splits_deep(ad);
 	free_streams(ad);
@@ -93,7 +93,7 @@ void CorrDimNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData
 	free_obs_cd(ad);
 }
 
-void SigmaNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void SigmaNewDelBehaviour::init_data(AllData * ad) const
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -121,7 +121,7 @@ void SigmaNewDelBehaviour::init_data(RunParam * rp, ConfigParam * cp, MainData *
 	init_start_state(ad, 0);
 }
 
-void SigmaNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd) const
+void SigmaNewDelBehaviour::free_data(AllData * ad) const
 {
 	free_splits_deep(ad);
 	free_streams(ad);
@@ -130,7 +130,7 @@ void SigmaNewDelBehaviour::free_data(RunParam * rp, ConfigParam * cp, MainData *
 	free_obs_std(ad);
 }
 
-void init_splits_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_splits_cd(AllData * ad)
 {
 	int num_branches = md->num_ham_qj;
 	int num_threads = rp->num_threads;
@@ -150,7 +150,7 @@ void init_splits_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd
 	}
 }
 
-void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_splits(AllData * ad)
 {
 	int num_threads = rp->num_threads;
 
@@ -164,7 +164,7 @@ void init_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	cout << "Split initialization complete" << endl;
 }
 
-void init_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_streams(AllData * ad)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 	int seed = cp->qj_seed;
@@ -174,14 +174,14 @@ void init_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	vslNewStream(&(qjd->streams)[0], VSL_BRNG_MCG59, 777);
 }
 
-void leap_frog_single_stream(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void leap_frog_single_stream(AllData * ad, int tr_id)
 {
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
 	vslLeapfrogStream((qjd->streams)[tr_id], seed + tr_id, mns);
 }
 
-void leap_frog_all_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void leap_frog_all_streams(AllData * ad)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -194,7 +194,7 @@ void leap_frog_all_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJDat
 	}
 }
 
-void copy_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void copy_streams(AllData * ad)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 	int seed = cp->qj_seed;
@@ -206,7 +206,7 @@ void copy_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	}
 }
 
-void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_streams_var(AllData * ad)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -222,7 +222,7 @@ void init_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 	}
 }
 
-void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_basic_data(AllData * ad)
 {
 	int sys_size = md->sys_size;
 	int num_trajectories = cp->qj_num_trajectories;
@@ -252,7 +252,7 @@ void init_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 	}
 }
 
-void init_dump_periods_cd_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_dump_periods_cd_deep(AllData * ad)
 {
 	qjd->period_id = 0;
 
@@ -280,7 +280,7 @@ void init_dump_periods_cd_deep(RunParam * rp, ConfigParam * cp, MainData * md, Q
 	}
 }
 
-void init_dump_periods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_dump_periods(AllData * ad)
 {
 	qjd->period_id = 0;
 
@@ -328,7 +328,7 @@ void init_dump_periods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * 
 	}
 }
 
-void init_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_obs_std(AllData * ad)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_dumps_total = qjd->num_dumps_total;
@@ -360,7 +360,7 @@ void init_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	}
 }
 
-void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_obs_lpn(AllData * ad)
 {
 	int sys_size = md->sys_size;
 	int num_trajectories = cp->qj_num_trajectories;
@@ -413,7 +413,7 @@ void init_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	}
 }
 
-void init_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void init_obs_cd(AllData * ad)
 {
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
@@ -446,7 +446,7 @@ void init_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	}
 }
 
-void init_start_state(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd, int tr_id)
+void init_start_state(AllData * ad, int tr_id)
 {
 	int sys_size = md->sys_size;
 	int start_type = int(cp->params.find("start_type")->second);
@@ -467,7 +467,7 @@ void init_start_state(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 	}
 }
 
-void free_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_splits_deep(AllData * ad)
 {
 	int num_branches = md->num_ham_qj;
 	int num_threads = rp->num_threads;
@@ -485,7 +485,7 @@ void free_splits_deep(RunParam * rp, ConfigParam * cp, MainData * md, QJData * q
 	delete_split_struct(md->structure);
 }
 
-void free_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_splits(AllData * ad)
 {
 	int num_threads = rp->num_threads;
 
@@ -498,19 +498,19 @@ void free_splits(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	delete_split_struct(md->structure);
 }
 
-void free_streams(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_streams(AllData * ad)
 {
 	VSLStreamStatePtr * streams = qjd->streams;
 	delete[] streams;
 }
 
-void free_streams_var(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_streams_var(AllData * ad)
 {
 	VSLStreamStatePtr * streams_var = qjd->streams_var;
 	delete[] streams_var;
 }
 
-void free_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_basic_data(AllData * ad)
 {
 	delete[] qjd->phi_all;
 	delete[] qjd->phi_all_aux;
@@ -519,12 +519,12 @@ void free_basic_data(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qj
 	delete[] qjd->etas_all;
 }
 
-void free_dump_priods(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_dump_priods(AllData * ad)
 {
 	delete[] qjd->dump_periods;
 }
 
-void free_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_obs_std(AllData * ad)
 {
 	delete[] qjd->mean_start;
 
@@ -537,7 +537,7 @@ void free_obs_std(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	delete[] qjd->m2_evo;
 }
 
-void free_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_obs_lpn(AllData * ad)
 {
 	delete[] qjd->delta_s;
 
@@ -553,7 +553,7 @@ void free_obs_lpn(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
 	delete[] qjd->energy_lpn_evo;
 }
 
-void free_obs_cd(RunParam * rp, ConfigParam * cp, MainData * md, QJData * qjd)
+void free_obs_cd(AllData * ad)
 {
 	int num_trajectories = cp->qj_num_trajectories;
 

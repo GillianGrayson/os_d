@@ -40,12 +40,12 @@ void Processor::process()
 	ob->suffix_param(cp, 4);
 	db->save(rp, cp, md);
 
-	ndb_qj->init_data(rp, cp, md, qjd);
+	ndb_qj->init_data(ad);
 
-	eb->trans_process(rp, cp, md, qjd);
-	eb->obser_process(rp, cp, md, qjd);
+	eb->trans_process(ad);
+	eb->obser_process(ad);
 
-	ndb_qj->free_data(rp, cp, md, qjd);
+	ndb_qj->free_data(ad);
 
 	ndb->free_hamiltonians(rp, cp, md);
 	ndb->free_dissipators(rp, cp, md);
