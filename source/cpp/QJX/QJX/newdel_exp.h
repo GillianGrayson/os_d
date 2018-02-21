@@ -2,35 +2,35 @@
 #include "config.h"
 #include "data.h"
 
-class QJNewDelBehavior
+class ExpNewDelBehavior
 {
 public:
 	virtual void init_data(AllData * ad) const = 0;
 	virtual void free_data(AllData * ad) const = 0;
 };
 
-class LpnNewDelBehaviour : public QJNewDelBehavior
+class LpnNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
 	virtual void init_data(AllData * ad) const;
 	virtual void free_data(AllData * ad) const;
 };
 
-class StdNewDelBehaviour : public QJNewDelBehavior
+class StdNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
 	virtual void init_data(AllData * ad) const;
 	virtual void free_data(AllData * ad) const;
 };
 
-class CorrDimNewDelBehaviour : public QJNewDelBehavior
+class CorrDimNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
 	virtual void init_data(AllData * ad) const;
 	virtual void free_data(AllData * ad) const;
 };
 
-class SigmaNewDelBehaviour : public QJNewDelBehavior
+class SigmaNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
 	virtual void init_data(AllData * ad) const;

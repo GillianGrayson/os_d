@@ -7,7 +7,7 @@ int main()
 	RunParam * rp = new RunParam();
 	ConfigParam * cp = new ConfigParam();
 	MainData * md = new MainData();
-	QJData * qjd = new QJData();
+	ExpData * ed = new ExpData();
 
 	AllData * ad = new AllData();
 
@@ -16,7 +16,7 @@ int main()
 	DebugBehavior * db;
 	OuputBehavior * ob;
 	NewDelBehavior * ndb;
-	QJNewDelBehavior * ndb_qj;
+	ExpNewDelBehavior * ndb_qj;
 	ExperimentBehavior * eb;
 	PropagateBehavior * pb;
 
@@ -74,8 +74,7 @@ int main()
 	ad->rp = rp;
 	ad->cp = cp;
 	ad->md = md;
-	ad->qjd = qjd;
-	ad->pb = pb;
+	ad->ed = ed;
 
 	Processor * p = new Processor(ad);
 
@@ -85,6 +84,7 @@ int main()
 
 	p->set_init_behaviour_qj(ndb_qj);
 	p->set_experiment_behaviour(eb);
+	p->set_propagate_behaviour(pb);
 
 	p->process();
 
@@ -98,7 +98,7 @@ int main()
 	delete rp;
 	delete cp;
 	delete md;
-	delete qjd;
+	delete ed;
 
 	double time = omp_get_wtime() - start_time;
 	cout << "Elapsed time: " << time << endl;

@@ -4,8 +4,9 @@
 #include "debugger.h"
 #include "outputter.h"
 #include "newdel.h"
-#include "newdel_qj.h"
+#include "newdel_exp.h"
 #include "experiment.h"
+#include "propagator.h"
 
 class Processor
 {
@@ -15,8 +16,9 @@ private:
 	DebugBehavior * db;
 	OuputBehavior * ob;
 	NewDelBehavior * ndb;
-	QJNewDelBehavior * ndb_qj;
+	ExpNewDelBehavior * ndb_qj;
 	ExperimentBehavior * eb;
+	PropagateBehavior * pb;
 
 public:
 	Processor(AllData * ad);
@@ -27,9 +29,11 @@ public:
 
 	void set_init_behaviour(NewDelBehavior* ndb);
 
-	void set_init_behaviour_qj(QJNewDelBehavior* ndb_qj);
+	void set_init_behaviour_qj(ExpNewDelBehavior* ndb_qj);
 
 	void set_experiment_behaviour(ExperimentBehavior* eb);
+
+	void set_propagate_behaviour(PropagateBehavior * pb);
 
 	void process();
 };

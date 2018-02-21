@@ -20,7 +20,7 @@ void Processor::set_init_behaviour(NewDelBehavior* ndb)
 	this->ndb = ndb;
 }
 
-void Processor::set_init_behaviour_qj(QJNewDelBehavior* ndb_qj)
+void Processor::set_init_behaviour_qj(ExpNewDelBehavior* ndb_qj)
 {
 	this->ndb_qj = ndb_qj;
 }
@@ -28,6 +28,11 @@ void Processor::set_init_behaviour_qj(QJNewDelBehavior* ndb_qj)
 void Processor::set_experiment_behaviour(ExperimentBehavior* eb)
 {
 	this->eb = eb;
+}
+
+void Processor::set_propagate_behaviour(PropagateBehavior* pb)
+{
+	this->pb = pb;
 }
 
 void Processor::process()
@@ -42,8 +47,8 @@ void Processor::process()
 
 	ndb_qj->init_data(ad);
 
-	eb->trans_process(ad);
-	eb->obser_process(ad);
+	eb->trans_process(ad, pb);
+	eb->obser_process(ad, pb);
 
 	ndb_qj->free_data(ad);
 

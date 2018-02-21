@@ -1,4 +1,5 @@
 #include "propagator.h"
+#include "experiment.h"
 
 void QJPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id) const
 {
@@ -34,7 +35,7 @@ void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
@@ -59,13 +60,13 @@ void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 
 			dump_point_id++;
 
-			for (int cd_st_id = 0; cd_st_id < qjd->cd_dim; cd_st_id++)
+			for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
 			{
 				curr_point_id = global_point_id - cd_st_id;
 
-				if (curr_point_id >= 0 && curr_point_id < qjd->cd_num_points)
+				if (curr_point_id >= 0 && curr_point_id < ed->cd_num_points)
 				{
-					qjd->cd_rec_data[tr_id][curr_point_id][cd_st_id] = qjd->mean[tr_id];
+					ed->cd_rec_data[tr_id][curr_point_id][cd_st_id] = ed->mean[tr_id];
 				}
 			}
 

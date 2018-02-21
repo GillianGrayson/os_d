@@ -1,6 +1,6 @@
 #include "experiment.h"
 
-void LpnExperimentBehaviour::trans_process(AllData * ad) const
+void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -13,7 +13,7 @@ void LpnExperimentBehaviour::trans_process(AllData * ad) const
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_std(ad, tr_id, thread_id);
+		trans_process_single_std(ad, pb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -45,17 +45,16 @@ void LpnExperimentBehaviour::trans_process(AllData * ad) const
 	}
 }
 
-void LpnExperimentBehaviour::obser_process(AllData * ad) const
+void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
 {	
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
-	PropagateBehavior * pb = ad->pb;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 
-	int num_dumps_total = qjd->num_dumps_total;
-	int * dump_periods = qjd->dump_periods;
+	int num_dumps_total = ed->num_dumps_total;
+	int * dump_periods = ed->dump_periods;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
@@ -81,12 +80,12 @@ void LpnExperimentBehaviour::obser_process(AllData * ad) const
 				pb->one_period(ad, tr_id, thread_id);
 				calc_chars_std(ad, tr_id);
 
-				qjd->energy[tr_id] = get_energy(ad, tr_id);
+				ed->energy[tr_id] = get_energy(ad, tr_id);
 			}
 
 			calc_chars_lpn(ad, 0);
 
-			qjd->period_id = (period_id + 1);
+			ed->period_id = (period_id + 1);
 
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -133,7 +132,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad) const
 
 }
 
-void StdExperimentBehaviour::trans_process(AllData * ad) const
+void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -146,7 +145,7 @@ void StdExperimentBehaviour::trans_process(AllData * ad) const
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_std(ad, tr_id, thread_id);
+		trans_process_single_std(ad, pb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -170,17 +169,16 @@ void StdExperimentBehaviour::trans_process(AllData * ad) const
 	}
 }
 
-void StdExperimentBehaviour::obser_process(AllData * ad) const
+void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
-	PropagateBehavior * pb = ad->pb;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 
-	int num_dumps_total = qjd->num_dumps_total;
-	int * dump_periods = qjd->dump_periods;
+	int num_dumps_total = ed->num_dumps_total;
+	int * dump_periods = ed->dump_periods;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
@@ -239,7 +237,7 @@ void StdExperimentBehaviour::obser_process(AllData * ad) const
 	}
 }
 
-void CorrDimExperimentBehaviour::trans_process(AllData * ad) const
+void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -252,7 +250,7 @@ void CorrDimExperimentBehaviour::trans_process(AllData * ad) const
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_cd(ad, tr_id, thread_id);
+		trans_process_single_cd(ad, pb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -276,24 +274,23 @@ void CorrDimExperimentBehaviour::trans_process(AllData * ad) const
 	}
 }
 
-void CorrDimExperimentBehaviour::obser_process(AllData * ad) const
+void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
-	PropagateBehavior * pb = ad->pb;
+	ExpData * ed = ad->ed;
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
 	int num_trajectories = cp->qj_num_trajectories;
 
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 	if (cd_dump_deep == 1)
 	{
 		num_dumps_total = cp->qj_num_obs_periods + 1;
 	}
 
-	int * dump_periods = qjd->dump_periods;
+	int * dump_periods = ed->dump_periods;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
@@ -369,7 +366,7 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad) const
 	}
 }
 
-void SigmaExperimentBehaviour::trans_process(AllData * ad) const
+void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -382,7 +379,7 @@ void SigmaExperimentBehaviour::trans_process(AllData * ad) const
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_cd(ad, tr_id, thread_id);
+		trans_process_single_cd(ad, pb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -411,24 +408,23 @@ void SigmaExperimentBehaviour::trans_process(AllData * ad) const
 	}
 }
 
-void SigmaExperimentBehaviour::obser_process(AllData * ad) const
+void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
-	PropagateBehavior * pb = ad->pb;
+	ExpData * ed = ad->ed;
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
 	int num_trajectories = cp->qj_num_trajectories;
 
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 	if (cd_dump_deep == 1)
 	{
 		num_dumps_total = cp->qj_num_obs_periods + 1;
 	}
 
-	int * dump_periods = qjd->dump_periods;
+	int * dump_periods = ed->dump_periods;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
@@ -554,15 +550,15 @@ double norm_square(MKL_Complex16 * phi, int sys_size)
 void recovery(AllData * ad, Split * head, int tr_id)
 {
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
 	MKL_Complex16 ONE = { 1.0, 0.0 };
 
 	int sys_size = md->sys_size;
-	VSLStreamStatePtr * stream = &(qjd->streams[tr_id]);
-	MKL_Complex16 * phi = &(qjd->phi_all_aux[tr_id * sys_size]);
-	double * eta = &(qjd->etas_all[tr_id]);
+	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
+	MKL_Complex16 * phi = &(ed->phi_all_aux[tr_id * sys_size]);
+	double * eta = &(ed->etas_all[tr_id]);
 	double * g = head->g;
 	MKL_Complex16 * A = head->matrix;
 	int k = head->steps;
@@ -658,14 +654,14 @@ void recovery(AllData * ad, Split * head, int tr_id)
 void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 {
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 
-	VSLStreamStatePtr * stream = &(qjd->streams[tr_id]);
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	MKL_Complex16 * phi_aux = &(qjd->phi_all_aux[tr_id * sys_size]);
-	double * eta = &(qjd->etas_all[tr_id]);
+	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi_aux = &(ed->phi_all_aux[tr_id * sys_size]);
+	double * eta = &(ed->etas_all[tr_id]);
 	double * g = head->g;
 	MKL_Complex16 * A = head->matrix;
 	int k = head->steps;
@@ -688,7 +684,7 @@ void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 			memcpy(phi, phi_aux, sizeof(MKL_Complex16) * branch->N);
 			branch->counter++;
 
-			qjd->times_all[tr_id] += branch->dt;
+			ed->times_all[tr_id] += branch->dt;
 		}
 	}
 	else
@@ -699,14 +695,14 @@ void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
 				one_period_branch(ad, head, tr_id, branch->next);
-				qjd->times_all[tr_id] -= branch->dt;
+				ed->times_all[tr_id] -= branch->dt;
 			}
 			else
 			{
 				memcpy(phi, phi_aux, sizeof(MKL_Complex16) * branch->N);
 			}
 			branch->counter++;
-			qjd->times_all[tr_id] += branch->dt;
+			ed->times_all[tr_id] += branch->dt;
 		}
 	}
 
@@ -773,13 +769,13 @@ double get_energy(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 
 	double prm_E = double(cp->params.find("prm_E")->second);
 
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * hamiltonian = md->hamiltonian;
 	double * hamiltonian_drv = md->hamiltonian_drv;
 
@@ -820,11 +816,11 @@ double get_energy(AllData * ad, int tr_id)
 void calc_chars_start_std(AllData * ad, int tr_id)
 {
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
 	double norm_2 = norm_square(phi, sys_size);
 
@@ -837,20 +833,20 @@ void calc_chars_start_std(AllData * ad, int tr_id)
 	double dispersion = get_dispersion_simple(mean, mean);
 	double m2 = get_m2(adr, sys_size, mean);
 
-	qjd->mean_start[tr_id]		= mean;
-	qjd->mean[tr_id]			= mean;
-	qjd->dispersion[tr_id]		= dispersion;
-	qjd->m2[tr_id]				= m2;
+	ed->mean_start[tr_id]		= mean;
+	ed->mean[tr_id]			= mean;
+	ed->dispersion[tr_id]		= dispersion;
+	ed->m2[tr_id]				= m2;
 }
 
 void calc_chars_std(AllData * ad, int tr_id)
 {
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
 	double norm_2 = norm_square(phi, sys_size);
 
@@ -860,41 +856,41 @@ void calc_chars_std(AllData * ad, int tr_id)
 	}
 
 	double mean = get_mean_simple(adr, sys_size);
-	double dispersion = get_dispersion_simple(mean, qjd->mean_start[tr_id]);
+	double dispersion = get_dispersion_simple(mean, ed->mean_start[tr_id]);
 	double m2 = get_m2(adr, sys_size, mean);
 
-	qjd->mean[tr_id] = mean;
-	qjd->dispersion[tr_id] = dispersion;
-	qjd->m2[tr_id] = m2;
+	ed->mean[tr_id] = mean;
+	ed->dispersion[tr_id] = dispersion;
+	ed->m2[tr_id] = m2;
 }
 
 void evo_chars_std(AllData * ad, int tr_id, int dump_id)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 
 	int index = tr_id * num_dumps_total + dump_id;
 
-	qjd->mean_evo[index] = qjd->mean[tr_id];
-	qjd->dispersion_evo[index] = qjd->dispersion[tr_id];
-	qjd->m2_evo[index] = qjd->m2[tr_id];
+	ed->mean_evo[index] = ed->mean[tr_id];
+	ed->dispersion_evo[index] = ed->dispersion[tr_id];
+	ed->m2_evo[index] = ed->m2[tr_id];
 }
 
 void calc_chars_start_lpn(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 
 	int type_lpn = double(cp->params.find("type_lpn")->second);
 
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
 	double norm_2 = norm_square(phi, sys_size);
 
@@ -906,43 +902,43 @@ void calc_chars_start_lpn(AllData * ad, int tr_id)
 	double energy = get_energy(ad, tr_id);
 	double lambda = 0.0;
 	double lambda_now = 0.0;
-	double mean_lpn = qjd->mean[tr_id];
+	double mean_lpn = ed->mean[tr_id];
 	double energy_lpn = energy;
 
 	double delta_s = 0.0;
 	if (type_lpn == 0)
 	{
-		delta_s = fabs(qjd->mean[tr_id] - qjd->mean[0]) / double(sys_size);
+		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
 	else if (type_lpn == 0)
 	{
-		delta_s = fabs(qjd->energy[tr_id] - qjd->energy[0]) / qjd->max_energy;
+		delta_s = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
 	}
 	else 
 	{
-		delta_s = fabs(qjd->mean[tr_id] - qjd->mean[0]) / double(sys_size);
+		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
 
-	qjd->energy[tr_id] = energy;
-	qjd->lambda[tr_id] = lambda;
-	qjd->lambda_now[tr_id] = lambda_now;
-	qjd->mean_lpn[tr_id] = mean_lpn;
-	qjd->energy_lpn[tr_id] = energy_lpn;
-	qjd->delta_s[tr_id] = delta_s;
+	ed->energy[tr_id] = energy;
+	ed->lambda[tr_id] = lambda;
+	ed->lambda_now[tr_id] = lambda_now;
+	ed->mean_lpn[tr_id] = mean_lpn;
+	ed->energy_lpn[tr_id] = energy_lpn;
+	ed->delta_s[tr_id] = delta_s;
 }
 
 void calc_chars_lpn(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 
 	int type_lpn = double(cp->params.find("type_lpn")->second);
 
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
 	double norm_2 = norm_square(phi, sys_size);
 
@@ -954,34 +950,34 @@ void calc_chars_lpn(AllData * ad, int tr_id)
 	double mean_lpn = get_mean_simple(adr, sys_size);
 	double energy_lpn = get_energy(ad, tr_id);
 
-	qjd->mean_lpn[tr_id] = mean_lpn;
-	qjd->energy_lpn[tr_id] = energy_lpn;
+	ed->mean_lpn[tr_id] = mean_lpn;
+	ed->energy_lpn[tr_id] = energy_lpn;
 }
 
 void calc_ci(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	double eps = double(cp->params.find("cd_eps")->second);
 
-	double * curr_diff = new double[qjd->cd_dim];
+	double * curr_diff = new double[ed->cd_dim];
 	double curr_norm = 0.0;
 	double integral = 0.0;
 
-	for (int cd_p_id_1 = 0; cd_p_id_1 < qjd->cd_num_points; cd_p_id_1++)
+	for (int cd_p_id_1 = 0; cd_p_id_1 < ed->cd_num_points; cd_p_id_1++)
 	{
-		for (int cd_p_id_2 = 0; cd_p_id_2 < qjd->cd_num_points; cd_p_id_2++)
+		for (int cd_p_id_2 = 0; cd_p_id_2 < ed->cd_num_points; cd_p_id_2++)
 		{
 			if (cd_p_id_1 != cd_p_id_2)
 			{
-				for (int cd_st_id = 0; cd_st_id < qjd->cd_dim; cd_st_id++)
+				for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
 				{
-					curr_diff[cd_st_id] = qjd->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - qjd->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
+					curr_diff[cd_st_id] = ed->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - ed->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
 				}
 
-				curr_norm = get_norm_cd(curr_diff, qjd->cd_dim) / double(md->sys_size);
+				curr_norm = get_norm_cd(curr_diff, ed->cd_dim) / double(md->sys_size);
 
 				if (curr_norm < eps)
 				{
@@ -991,9 +987,9 @@ void calc_ci(AllData * ad, int tr_id)
 		}
 	}
 
-	integral /= (double(qjd->cd_num_points) * double(qjd->cd_num_points - 1));
+	integral /= (double(ed->cd_num_points) * double(ed->cd_num_points - 1));
 
-	qjd->cd_i[tr_id] = integral;
+	ed->cd_i[tr_id] = integral;
 
 	delete curr_diff;
 }
@@ -1001,37 +997,37 @@ void calc_ci(AllData * ad, int tr_id)
 void evo_chars_lpn(AllData * ad, int tr_id, int dump_id)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 
 	int index = tr_id * num_dumps_total + dump_id;
 
-	qjd->energy_evo[index] = qjd->energy[tr_id];
-	qjd->lambda_evo[index] = qjd->lambda_now[tr_id];
-	qjd->mean_lpn_evo[index] = qjd->mean_lpn[tr_id];
-	qjd->energy_lpn_evo[index] = qjd->energy_lpn[tr_id];
+	ed->energy_evo[index] = ed->energy[tr_id];
+	ed->lambda_evo[index] = ed->lambda_now[tr_id];
+	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
+	ed->energy_lpn_evo[index] = ed->energy_lpn[tr_id];
 }
 
 void resresh_times(AllData * ad, int tr_id)
 {
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	qjd->times_all[tr_id] = 0.0;
+	ed->times_all[tr_id] = 0.0;
 }
 
 void copy_trajectory_lpn(AllData * ad, int tr_id)
 {
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 
-	VSLStreamStatePtr * streams = qjd->streams;
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	MKL_Complex16 * phi_original = &(qjd->phi_all[0]);
-	double * etas = qjd->etas_all;
+	VSLStreamStatePtr * streams = ed->streams;
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+	double * etas = ed->etas_all;
 
 	vslCopyStream(&streams[tr_id], streams[0]);
 
@@ -1047,14 +1043,14 @@ void copy_trajectory_lpn(AllData * ad, int tr_id)
 void copy_trajectory_data(AllData * ad, int tr_id)
 {
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	MKL_Complex16 * phi_original = &(qjd->phi_all[0]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
 
-	double * etas = qjd->etas_all;
+	double * etas = ed->etas_all;
 
 	etas[tr_id] = etas[0];
 
@@ -1069,15 +1065,15 @@ void var_trajectory_lpn(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 
 	double eps_lpn = double(cp->params.find("eps_lpn")->second);
 
-	VSLStreamStatePtr * streams_var = qjd->streams_var;
-	MKL_Complex16 * phi_original = &(qjd->phi_all[0]);
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+	VSLStreamStatePtr * streams_var = ed->streams_var;
+	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 
 	MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
 
@@ -1124,7 +1120,7 @@ void lambda_lpn(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 
@@ -1135,53 +1131,52 @@ void lambda_lpn(AllData * ad, int tr_id)
 	double delta_f = 0.0;
 	if (type_lpn == 0)
 	{
-		delta_f = fabs(qjd->mean[tr_id] - qjd->mean[0]) / double(sys_size);
+		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
 	else if (type_lpn == 0)
 	{
-		delta_f = fabs(qjd->energy[tr_id] - qjd->energy[0]) / qjd->max_energy;
+		delta_f = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
 	}
 	else
 	{
-		delta_f = fabs(qjd->mean[tr_id] - qjd->mean[0]) / double(sys_size);
+		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
 
 	if ((delta_f > delta_up_lpn) || (delta_f < delta_down_lpn))
 	{
-		qjd->lambda[tr_id] += log(delta_f / qjd->delta_s[tr_id] + 1.0e-16);
+		ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
 
 		var_trajectory_lpn(ad, tr_id);
 
 		calc_chars_lpn(ad, tr_id);
 
-		qjd->delta_s[tr_id] = fabs(qjd->mean_lpn[tr_id] - qjd->mean_lpn[0]) / double(sys_size);
+		ed->delta_s[tr_id] = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[0]) / double(sys_size);
 
-		qjd->lambda_now[tr_id] = qjd->lambda[tr_id] / (double(qjd->period_id) * md->T);
+		ed->lambda_now[tr_id] = ed->lambda[tr_id] / (double(ed->period_id) * md->T);
 	}
 	else
 	{
 		calc_chars_lpn(ad, tr_id);
-		qjd->lambda_now[tr_id] = (qjd->lambda[tr_id] + log(delta_f / qjd->delta_s[tr_id] + 1.0e-16)) / (double(qjd->period_id) * md->T);
+		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / (double(ed->period_id) * md->T);
 	}
 }
 
-void trans_process_single_std(AllData * ad, int tr_id, int thread_id)
+void trans_process_single_std(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
-	PropagateBehavior * pb = ad->pb;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 	int num_tp_periods = cp->qj_num_tp_periods;
 
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	double * eta = &(qjd->etas_all[tr_id]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * eta = &(ed->etas_all[tr_id]);
 
 	*eta = 0.0;
 	while (*eta == 0.0)
 	{
-		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, qjd->streams[tr_id], 1, eta, 0.0, 1.0);
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, ed->streams[tr_id], 1, eta, 0.0, 1.0);
 	}
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
@@ -1190,23 +1185,22 @@ void trans_process_single_std(AllData * ad, int tr_id, int thread_id)
 	}
 }
 
-void trans_process_single_cd(AllData * ad, int tr_id, int thread_id)
+void trans_process_single_cd(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
-	PropagateBehavior * pb = ad->pb;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 	int num_tp_periods = cp->qj_num_tp_periods;
 
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
-	double * eta = &(qjd->etas_all[tr_id]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * eta = &(ed->etas_all[tr_id]);
 
 	*eta = 0.0;
 	while (*eta == 0.0)
 	{
-		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, qjd->streams[tr_id], 1, eta, 0.0, 1.0);
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, ed->streams[tr_id], 1, eta, 0.0, 1.0);
 	}
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)

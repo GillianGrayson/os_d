@@ -1,4 +1,4 @@
-#include "newdel_qj.h"
+#include "newdel_exp.h"
 #include "split_proc.h"
 
 void LpnNewDelBehaviour::init_data(AllData * ad) const
@@ -180,30 +180,30 @@ void init_splits(AllData * ad)
 void init_streams(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
 
-	qjd->streams = new VSLStreamStatePtr[num_trajectories];
-	vslNewStream(&(qjd->streams)[0], VSL_BRNG_MCG59, 777);
+	ed->streams = new VSLStreamStatePtr[num_trajectories];
+	vslNewStream(&(ed->streams)[0], VSL_BRNG_MCG59, 777);
 }
 
 void leap_frog_single_stream(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int seed = cp->qj_seed;
 	int mns = cp->qj_mns;
-	vslLeapfrogStream((qjd->streams)[tr_id], seed + tr_id, mns);
+	vslLeapfrogStream((ed->streams)[tr_id], seed + tr_id, mns);
 }
 
 void leap_frog_all_streams(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -212,14 +212,14 @@ void leap_frog_all_streams(AllData * ad)
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		vslLeapfrogStream((qjd->streams)[tr_id], seed + tr_id, mns);
+		vslLeapfrogStream((ed->streams)[tr_id], seed + tr_id, mns);
 	}
 }
 
 void copy_streams(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 	int seed = cp->qj_seed;
@@ -227,26 +227,26 @@ void copy_streams(AllData * ad)
 
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{
-		vslCopyStream(&(qjd->streams)[tr_id], (qjd->streams)[0]);
+		vslCopyStream(&(ed->streams)[tr_id], (ed->streams)[0]);
 	}
 }
 
 void init_streams_var(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 
-	qjd->streams_var = new VSLStreamStatePtr[num_trajectories];
-	vslNewStream(&(qjd->streams_var)[0], VSL_BRNG_MCG31, 777);
+	ed->streams_var = new VSLStreamStatePtr[num_trajectories];
+	vslNewStream(&(ed->streams_var)[0], VSL_BRNG_MCG31, 777);
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{
-		vslCopyStream(&(qjd->streams_var)[tr_id], (qjd->streams_var)[0]);
+		vslCopyStream(&(ed->streams_var)[tr_id], (ed->streams_var)[0]);
 	}
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		vslLeapfrogStream((qjd->streams_var)[tr_id], tr_id, num_trajectories);
+		vslLeapfrogStream((ed->streams_var)[tr_id], tr_id, num_trajectories);
 	}
 }
 
@@ -254,33 +254,33 @@ void init_basic_data(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 	int num_trajectories = cp->qj_num_trajectories;
 	
-	qjd->phi_all = new MKL_Complex16[num_trajectories * sys_size];
-	qjd->phi_all_aux = new MKL_Complex16[num_trajectories * sys_size];
-	qjd->abs_diag_rho_all = new double[num_trajectories * sys_size];
-	qjd->times_all = new double[num_trajectories];
-	qjd->etas_all = new double[num_trajectories];
+	ed->phi_all = new MKL_Complex16[num_trajectories * sys_size];
+	ed->phi_all_aux = new MKL_Complex16[num_trajectories * sys_size];
+	ed->abs_diag_rho_all = new double[num_trajectories * sys_size];
+	ed->times_all = new double[num_trajectories];
+	ed->etas_all = new double[num_trajectories];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
-			qjd->phi_all[tr_id * sys_size + st_id].real = 0.0;
-			qjd->phi_all[tr_id * sys_size + st_id].imag = 0.0;
+			ed->phi_all[tr_id * sys_size + st_id].real = 0.0;
+			ed->phi_all[tr_id * sys_size + st_id].imag = 0.0;
 
-			qjd->phi_all_aux[tr_id * sys_size + st_id].real = 0.0;
-			qjd->phi_all_aux[tr_id * sys_size + st_id].imag = 0.0;
+			ed->phi_all_aux[tr_id * sys_size + st_id].real = 0.0;
+			ed->phi_all_aux[tr_id * sys_size + st_id].imag = 0.0;
 
-			qjd->abs_diag_rho_all[tr_id * sys_size + st_id] = 0.0;
-			qjd->abs_diag_rho_all[tr_id * sys_size + st_id] = 0.0;
+			ed->abs_diag_rho_all[tr_id * sys_size + st_id] = 0.0;
+			ed->abs_diag_rho_all[tr_id * sys_size + st_id] = 0.0;
 		}
 
-		qjd->times_all[tr_id] = 0.0;
-		qjd->etas_all[tr_id] = 0.0;
+		ed->times_all[tr_id] = 0.0;
+		ed->etas_all[tr_id] = 0.0;
 	}
 }
 
@@ -288,11 +288,11 @@ void init_dump_periods_cd_deep(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	qjd->period_id = 0;
+	ed->period_id = 0;
 
-	qjd->dump_type = int(cp->params.find("dump_type")->second);
+	ed->dump_type = int(cp->params.find("dump_type")->second);
 	int num_dumps = int(cp->params.find("num_dumps")->second);
 	int num_obs_periods = cp->qj_num_obs_periods;
 
@@ -300,10 +300,10 @@ void init_dump_periods_cd_deep(AllData * ad)
 	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
 	int num_dumps_total = num_sub_steps * cp->qj_num_obs_periods + 1;
 
-	qjd->num_dumps_total = num_dumps_total;
-	qjd->dump_periods = new int[qjd->num_dumps_total];
+	ed->num_dumps_total = num_dumps_total;
+	ed->dump_periods = new int[ed->num_dumps_total];
 
-	qjd->dump_periods[0] = 0;
+	ed->dump_periods[0] = 0;
 
 	int dump_shift = md->T / double(num_sub_steps);
 	for (int period_id = 0; period_id < num_obs_periods; period_id++)
@@ -311,7 +311,7 @@ void init_dump_periods_cd_deep(AllData * ad)
 		for (int step_id = 0; step_id < num_sub_steps; step_id++)
 		{
 			int index = period_id * num_sub_steps + step_id + 1;
-			qjd->dump_periods[index] = period_id;
+			ed->dump_periods[index] = period_id;
 		}
 	}
 }
@@ -319,33 +319,33 @@ void init_dump_periods_cd_deep(AllData * ad)
 void init_dump_periods(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	qjd->period_id = 0;
+	ed->period_id = 0;
 
-	qjd->dump_type = int(cp->params.find("dump_type")->second);
+	ed->dump_type = int(cp->params.find("dump_type")->second);
 	int num_dumps = int(cp->params.find("num_dumps")->second);
 	int num_obs_periods = cp->qj_num_obs_periods;
 
-	if (qjd->dump_type == 0)
+	if (ed->dump_type == 0)
 	{
-		qjd->num_dumps_total = num_dumps + 1;
-		qjd->dump_periods = new int[qjd->num_dumps_total];
+		ed->num_dumps_total = num_dumps + 1;
+		ed->dump_periods = new int[ed->num_dumps_total];
 
-		qjd->dump_periods[0] = 0;
+		ed->dump_periods[0] = 0;
 
 		int dump_shift = num_obs_periods / num_dumps;
 		for (int dump_id = 0; dump_id < num_dumps; dump_id++)
 		{
-			qjd->dump_periods[dump_id + 1] = (dump_id + 1) * dump_shift;
+			ed->dump_periods[dump_id + 1] = (dump_id + 1) * dump_shift;
 		}
 	}
-	else if (qjd->dump_type == 1)
+	else if (ed->dump_type == 1)
 	{
-		qjd->num_dumps_total = num_dumps + 2;
-		qjd->dump_periods = new int[qjd->num_dumps_total];
+		ed->num_dumps_total = num_dumps + 2;
+		ed->dump_periods = new int[ed->num_dumps_total];
 
-		qjd->dump_periods = 0;
+		ed->dump_periods = 0;
 
 		double begin_decade = log10(1.0);
 		double end_decade = log10(double(num_obs_periods));
@@ -355,13 +355,13 @@ void init_dump_periods(AllData * ad)
 		{
 			int curr_val = int(pow(10.0, begin_decade) * pow(10.0, (1.0 / num_decades_dump) * double(dump_id)));
 
-			if (curr_val > qjd->dump_periods[dump_id])
+			if (curr_val > ed->dump_periods[dump_id])
 			{
-				qjd->dump_periods[dump_id + 1] = curr_val;
+				ed->dump_periods[dump_id + 1] = curr_val;
 			}
 			else
 			{
-				qjd->dump_periods[dump_id + 1] = qjd->dump_periods[dump_id] + 1;
+				ed->dump_periods[dump_id + 1] = ed->dump_periods[dump_id] + 1;
 			}
 		}
 	}
@@ -370,34 +370,34 @@ void init_dump_periods(AllData * ad)
 void init_obs_std(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 
-	qjd->mean_start		= new double[num_trajectories];
+	ed->mean_start		= new double[num_trajectories];
 
-	qjd->mean			= new double[num_trajectories];
-	qjd->dispersion		= new double[num_trajectories];
-	qjd->m2				= new double[num_trajectories];
+	ed->mean			= new double[num_trajectories];
+	ed->dispersion		= new double[num_trajectories];
+	ed->m2				= new double[num_trajectories];
 
-	qjd->mean_evo		= new double[num_trajectories * num_dumps_total];
-	qjd->dispersion_evo = new double[num_trajectories * num_dumps_total];
-	qjd->m2_evo			= new double[num_trajectories * num_dumps_total];
+	ed->mean_evo		= new double[num_trajectories * num_dumps_total];
+	ed->dispersion_evo = new double[num_trajectories * num_dumps_total];
+	ed->m2_evo			= new double[num_trajectories * num_dumps_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		qjd->mean_start[tr_id]	= 0.0;
+		ed->mean_start[tr_id]	= 0.0;
 
-		qjd->mean[tr_id]		= 0.0;
-		qjd->dispersion[tr_id]	= 0.0;
-		qjd->m2[tr_id]			= 0.0;
+		ed->mean[tr_id]		= 0.0;
+		ed->dispersion[tr_id]	= 0.0;
+		ed->m2[tr_id]			= 0.0;
 
 		for (int dump_id = 0; dump_id < num_dumps_total; dump_id++)
 		{
-			qjd->mean_evo[tr_id * num_dumps_total + dump_id]		= 0.0;
-			qjd->dispersion_evo[tr_id * num_dumps_total + dump_id]	= 0.0;
-			qjd->m2_evo[tr_id * num_dumps_total + dump_id]			= 0.0;
+			ed->mean_evo[tr_id * num_dumps_total + dump_id]		= 0.0;
+			ed->dispersion_evo[tr_id * num_dumps_total + dump_id]	= 0.0;
+			ed->m2_evo[tr_id * num_dumps_total + dump_id]			= 0.0;
 		}
 	}
 }
@@ -406,55 +406,55 @@ void init_obs_lpn(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 	int num_trajectories = cp->qj_num_trajectories;
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 
 	double prm_E = double(cp->params.find("prm_E")->second);
 	double * hamiltonian = md->hamiltonian;
 	double * hamiltonian_drv = md->hamiltonian_drv;
-	qjd->max_energy = 0.0;
+	ed->max_energy = 0.0;
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
 		int index = st_id * sys_size + st_id;
 		double ham_val = (hamiltonian[index] + prm_E * hamiltonian_drv[index]);
-		if (abs(ham_val) > qjd->max_energy)
+		if (abs(ham_val) > ed->max_energy)
 		{
-			qjd->max_energy = abs(ham_val);
+			ed->max_energy = abs(ham_val);
 		}
 	}
 
-	qjd->delta_s = new double[num_trajectories];
+	ed->delta_s = new double[num_trajectories];
 
-	qjd->energy = new double[num_trajectories];
-	qjd->lambda = new double[num_trajectories];
-	qjd->lambda_now = new double[num_trajectories];
-	qjd->mean_lpn = new double[num_trajectories];
-	qjd->energy_lpn = new double[num_trajectories];
+	ed->energy = new double[num_trajectories];
+	ed->lambda = new double[num_trajectories];
+	ed->lambda_now = new double[num_trajectories];
+	ed->mean_lpn = new double[num_trajectories];
+	ed->energy_lpn = new double[num_trajectories];
 
-	qjd->energy_evo = new double[num_trajectories * num_dumps_total];
-	qjd->lambda_evo = new double[num_trajectories * num_dumps_total];
-	qjd->mean_lpn_evo = new double[num_trajectories * num_dumps_total];
-	qjd->energy_lpn_evo = new double[num_trajectories * num_dumps_total];
+	ed->energy_evo = new double[num_trajectories * num_dumps_total];
+	ed->lambda_evo = new double[num_trajectories * num_dumps_total];
+	ed->mean_lpn_evo = new double[num_trajectories * num_dumps_total];
+	ed->energy_lpn_evo = new double[num_trajectories * num_dumps_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		qjd->delta_s[tr_id] = 0.0;
+		ed->delta_s[tr_id] = 0.0;
 
-		qjd->energy[tr_id] = 0.0;
-		qjd->lambda[tr_id] = 0.0;
-		qjd->lambda_now[tr_id] = 0.0;
-		qjd->mean_lpn[tr_id] = 0.0;
-		qjd->energy_lpn[tr_id] = 0.0;
+		ed->energy[tr_id] = 0.0;
+		ed->lambda[tr_id] = 0.0;
+		ed->lambda_now[tr_id] = 0.0;
+		ed->mean_lpn[tr_id] = 0.0;
+		ed->energy_lpn[tr_id] = 0.0;
 
 		for (int dump_id = 0; dump_id < num_dumps_total; dump_id++)
 		{
-			qjd->energy_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			qjd->lambda_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			qjd->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			qjd->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
+			ed->energy_evo[tr_id * num_dumps_total + dump_id] = 0.0;
+			ed->lambda_evo[tr_id * num_dumps_total + dump_id] = 0.0;
+			ed->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
+			ed->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
 		}	
 	}
 }
@@ -463,7 +463,7 @@ void init_obs_cd(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
@@ -473,24 +473,24 @@ void init_obs_cd(AllData * ad)
 	int num_trajectories = cp->qj_num_trajectories;
 	int num_periods = cp->qj_num_obs_periods;
 
-	qjd->cd_shift_size = 1;
-	qjd->cd_dim = cd_dim;
-	qjd->cd_num_points = num_periods * num_sub_steps - cd_dim + 1;
+	ed->cd_shift_size = 1;
+	ed->cd_dim = cd_dim;
+	ed->cd_num_points = num_periods * num_sub_steps - cd_dim + 1;
 
-	qjd->cd_i = new double[num_trajectories];
-	qjd->cd_rec_data = new double**[num_trajectories];
+	ed->cd_i = new double[num_trajectories];
+	ed->cd_rec_data = new double**[num_trajectories];
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		qjd->cd_i[tr_id] = 0.0;
-		qjd->cd_rec_data[tr_id] = new double*[qjd->cd_num_points];
+		ed->cd_i[tr_id] = 0.0;
+		ed->cd_rec_data[tr_id] = new double*[ed->cd_num_points];
 
-		for (int p_id = 0; p_id < qjd->cd_num_points; p_id++)
+		for (int p_id = 0; p_id < ed->cd_num_points; p_id++)
 		{
-			qjd->cd_rec_data[tr_id][p_id] = new double[qjd->cd_dim];
+			ed->cd_rec_data[tr_id][p_id] = new double[ed->cd_dim];
 
-			for (int st_id = 0; st_id < qjd->cd_dim; st_id++)
+			for (int st_id = 0; st_id < ed->cd_dim; st_id++)
 			{
-				qjd->cd_rec_data[tr_id][p_id][st_id] = 0.0;
+				ed->cd_rec_data[tr_id][p_id][st_id] = 0.0;
 			}
 		}
 	}
@@ -500,13 +500,13 @@ void init_start_state(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
 	int start_type = int(cp->params.find("start_type")->second);
 	int start_state = int(cp->params.find("start_state")->second);
 
-	MKL_Complex16 * phi = &(qjd->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 
 	if (start_type == 0)
 	{
@@ -560,88 +560,88 @@ void free_splits(AllData * ad)
 
 void free_streams(AllData * ad)
 {
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	VSLStreamStatePtr * streams = qjd->streams;
+	VSLStreamStatePtr * streams = ed->streams;
 	delete[] streams;
 }
 
 void free_streams_var(AllData * ad)
 {
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	VSLStreamStatePtr * streams_var = qjd->streams_var;
+	VSLStreamStatePtr * streams_var = ed->streams_var;
 	delete[] streams_var;
 }
 
 void free_basic_data(AllData * ad)
 {
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	delete[] qjd->phi_all;
-	delete[] qjd->phi_all_aux;
-	delete[] qjd->abs_diag_rho_all;
-	delete[] qjd->times_all;
-	delete[] qjd->etas_all;
+	delete[] ed->phi_all;
+	delete[] ed->phi_all_aux;
+	delete[] ed->abs_diag_rho_all;
+	delete[] ed->times_all;
+	delete[] ed->etas_all;
 }
 
 void free_dump_priods(AllData * ad)
 {
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	delete[] qjd->dump_periods;
+	delete[] ed->dump_periods;
 }
 
 void free_obs_std(AllData * ad)
 {
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	delete[] qjd->mean_start;
+	delete[] ed->mean_start;
 
-	delete[] qjd->mean;
-	delete[] qjd->dispersion;
-	delete[] qjd->m2;
+	delete[] ed->mean;
+	delete[] ed->dispersion;
+	delete[] ed->m2;
 
-	delete[] qjd->mean_evo;
-	delete[] qjd->dispersion_evo;
-	delete[] qjd->m2_evo;
+	delete[] ed->mean_evo;
+	delete[] ed->dispersion_evo;
+	delete[] ed->m2_evo;
 }
 
 void free_obs_lpn(AllData * ad)
 {
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
-	delete[] qjd->delta_s;
+	delete[] ed->delta_s;
 
-	delete[] qjd->energy;
-	delete[] qjd->lambda;
-	delete[] qjd->lambda_now;
-	delete[] qjd->mean_lpn;
-	delete[] qjd->energy_lpn;
+	delete[] ed->energy;
+	delete[] ed->lambda;
+	delete[] ed->lambda_now;
+	delete[] ed->mean_lpn;
+	delete[] ed->energy_lpn;
 
-	delete[] qjd->energy_evo;
-	delete[] qjd->lambda_evo;
-	delete[] qjd->mean_lpn_evo;
-	delete[] qjd->energy_lpn_evo;
+	delete[] ed->energy_evo;
+	delete[] ed->lambda_evo;
+	delete[] ed->mean_lpn_evo;
+	delete[] ed->energy_lpn_evo;
 }
 
 void free_obs_cd(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 
-	delete[] qjd->cd_i;
+	delete[] ed->cd_i;
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		for (int p_id = 0; p_id < qjd->cd_num_points; p_id++)
+		for (int p_id = 0; p_id < ed->cd_num_points; p_id++)
 		{
-			delete[] qjd->cd_rec_data[tr_id][p_id];
+			delete[] ed->cd_rec_data[tr_id][p_id];
 		}
-		delete[] qjd->cd_rec_data[tr_id];
+		delete[] ed->cd_rec_data[tr_id];
 	}
-	delete[] qjd->cd_rec_data;
+	delete[] ed->cd_rec_data;
 }
 

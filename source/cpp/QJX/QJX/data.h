@@ -2,7 +2,6 @@
 #include "config.h"
 #include "split.h"
 #include "utils.h"
-#include "propagator.h"
 
 struct MainData
 {
@@ -23,7 +22,7 @@ struct MainData
 	Split * splits;						// Splits
 };
 
-struct QJData
+struct ExpData
 {
 	VSLStreamStatePtr * streams;				// Random streams
 	VSLStreamStatePtr * streams_var;			// Random streams for var trajectories
@@ -83,8 +82,6 @@ struct AllData
 	RunParam * rp;
 	ConfigParam * cp;
 	MainData * md;
-	QJData * qjd;
-
-	PropagateBehavior * pb;
+	ExpData * ed;
 };
 

@@ -2,40 +2,41 @@
 #include "config.h"
 #include "data.h"
 #include "dump.h"
+#include "propagator.h"
 
 class ExperimentBehavior
 {
 public:
-	virtual void trans_process(AllData * ad) const = 0;
-	virtual void obser_process(AllData * ad) const = 0;
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb) const = 0;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb) const = 0;
 };
 
 class LpnExperimentBehaviour : public ExperimentBehavior
 {
 public:
-	virtual void trans_process(AllData * ad) const;
-	virtual void obser_process(AllData * ad) const;
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb) const;
 };
 
 class StdExperimentBehaviour : public ExperimentBehavior
 {
 public:
-	virtual void trans_process(AllData * ad) const;
-	virtual void obser_process(AllData * ad) const;
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb) const;
 };
 
 class CorrDimExperimentBehaviour : public ExperimentBehavior
 {
 public:
-	virtual void trans_process(AllData * ad) const;
-	virtual void obser_process(AllData * ad) const;
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb) const;
 };
 
 class SigmaExperimentBehaviour : public ExperimentBehavior
 {
 public:
-	virtual void trans_process(AllData * ad) const;
-	virtual void obser_process(AllData * ad) const;
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb) const;
 };
 
 void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);
@@ -88,6 +89,6 @@ void var_trajectory_lpn(AllData * ad, int tr_id);
 
 void lambda_lpn(AllData * ad, int tr_id);
 
-void trans_process_single_std(AllData * ad, int tr_id, int thread_id);
+void trans_process_single_std(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id);
 
-void trans_process_single_cd(AllData * ad, int tr_id, int thread_id);
+void trans_process_single_cd(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id);

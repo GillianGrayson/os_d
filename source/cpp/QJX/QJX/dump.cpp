@@ -5,7 +5,7 @@ void dump_adr_single(AllData * ad, int tr_id, bool append)
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_adr_dump_sep = int(cp->params.find("is_adr_dump_sep")->second);
@@ -15,7 +15,7 @@ void dump_adr_single(AllData * ad, int tr_id, bool append)
 		if (is_adr_dump_sep == 1)
 		{
 			int sys_size = md->sys_size;
-			double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
+			double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
 			string fn = rp->path + "adr_" + to_string(tr_id) + cp->fn_suffix;
 			save_double_data(fn, adr, sys_size, 16, append);
@@ -28,7 +28,7 @@ void dump_adr_avg(AllData * ad, bool append)
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int is_adr_dump_avg = int(cp->params.find("is_adr_dump_avg")->second);
 
@@ -46,7 +46,7 @@ void dump_adr_avg(AllData * ad, bool append)
 
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
-			double * adr = &(qjd->abs_diag_rho_all[tr_id * sys_size]);
+			double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 			for (int st_id = 0; st_id < sys_size; st_id++)
 			{
 				adr_avg[st_id] += adr[st_id] / double(num_trajectories);
@@ -63,33 +63,33 @@ void dump_adr_avg(AllData * ad, bool append)
 void update_evo_std(AllData * ad, int dump_id)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		qjd->mean_evo[tr_id * num_dumps_total + dump_id] = qjd->mean[tr_id];
-		qjd->dispersion_evo[tr_id * num_dumps_total + dump_id] = qjd->dispersion[tr_id];
-		qjd->m2_evo[tr_id * num_dumps_total + dump_id] = qjd->m2[tr_id];
+		ed->mean_evo[tr_id * num_dumps_total + dump_id] = ed->mean[tr_id];
+		ed->dispersion_evo[tr_id * num_dumps_total + dump_id] = ed->dispersion[tr_id];
+		ed->m2_evo[tr_id * num_dumps_total + dump_id] = ed->m2[tr_id];
 	}
 }
 
 void update_evo_lpn(AllData * ad, int dump_id)
 {
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		qjd->energy_evo[tr_id * num_dumps_total + dump_id] = qjd->energy[tr_id];
-		qjd->lambda_evo[tr_id * num_dumps_total + dump_id] = qjd->lambda_now[tr_id];
-		qjd->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = qjd->mean_lpn[tr_id];
-		qjd->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = qjd->energy_lpn[tr_id];
+		ed->energy_evo[tr_id * num_dumps_total + dump_id] = ed->energy[tr_id];
+		ed->lambda_evo[tr_id * num_dumps_total + dump_id] = ed->lambda_now[tr_id];
+		ed->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = ed->mean_lpn[tr_id];
+		ed->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = ed->energy_lpn[tr_id];
 	}
 }
 
@@ -97,7 +97,7 @@ void dump_std(AllData * ad)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
 
@@ -105,10 +105,10 @@ void dump_std(AllData * ad)
 	{
 		int num_trajectories = cp->qj_num_trajectories;
 
-		double * mean_start = qjd->mean_start;
-		double * mean = qjd->mean;
-		double * dispersion = qjd->dispersion;
-		double * m2 = qjd->m2;
+		double * mean_start = ed->mean_start;
+		double * mean = ed->mean;
+		double * dispersion = ed->dispersion;
+		double * m2 = ed->m2;
 
 		string fn;
 
@@ -130,7 +130,7 @@ void dump_lpn(AllData * ad)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 
@@ -139,10 +139,10 @@ void dump_lpn(AllData * ad)
 	if (is_obs_dump == 1)
 	{
 
-		double * energy = qjd->energy;
-		double * lambda = qjd->lambda_now;
-		double * mean_lpn = qjd->mean_lpn;
-		double * energy_lpn = qjd->energy_lpn;
+		double * energy = ed->energy;
+		double * lambda = ed->lambda_now;
+		double * mean_lpn = ed->mean_lpn;
+		double * energy_lpn = ed->energy_lpn;
 
 		string fn;
 
@@ -164,11 +164,11 @@ void dump_cd(AllData * ad)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
 
-	double * ci = qjd->cd_i;
+	double * ci = ed->cd_i;
 
 	string fn;
 
@@ -180,21 +180,21 @@ void dump_evo_std(AllData * ad)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 
 	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
 
 	if (is_obs_dump == 1)
 	{
 
-		int * dump_periods = qjd->dump_periods;
+		int * dump_periods = ed->dump_periods;
 
-		double * mean_evo = qjd->mean_evo;
-		double * dispersion_evo = qjd->dispersion_evo;
-		double * m2_evo = qjd->m2_evo;
+		double * mean_evo = ed->mean_evo;
+		double * dispersion_evo = ed->dispersion_evo;
+		double * m2_evo = ed->m2_evo;
 
 		string fn;
 
@@ -216,20 +216,20 @@ void dump_evo_lpn(AllData * ad)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
-	QJData * qjd = ad->qjd;
+	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->qj_num_trajectories;
-	int num_dumps_total = qjd->num_dumps_total;
+	int num_dumps_total = ed->num_dumps_total;
 
 	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
 
 	if (is_obs_dump == 1)
 	{
 
-		double * energy_evo = qjd->energy_evo;
-		double * lambda_evo = qjd->lambda_evo;
-		double * mean_lpn_evo = qjd->mean_lpn_evo;
-		double * energy_lpn_evo = qjd->energy_lpn_evo;
+		double * energy_evo = ed->energy_evo;
+		double * lambda_evo = ed->lambda_evo;
+		double * mean_lpn_evo = ed->mean_lpn_evo;
+		double * energy_lpn_evo = ed->energy_lpn_evo;
 
 		string fn;
 
