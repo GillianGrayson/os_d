@@ -15,14 +15,14 @@ void Processor::set_output_behaviour(OuputBehavior* ob)
 	this->ob = ob;
 }
 
-void Processor::set_init_behaviour(NewDelBehavior* ndb)
+void Processor::set_newdel_behaviour(NewDelBehavior* ndb)
 {
 	this->ndb = ndb;
 }
 
-void Processor::set_init_behaviour_qj(ExpNewDelBehavior* ndb_qj)
+void Processor::set_newdel_exp_behaviour(ExpNewDelBehavior* ndb_exp)
 {
-	this->ndb_qj = ndb_qj;
+	this->ndb_exp = ndb_exp;
 }
 
 void Processor::set_experiment_behaviour(ExperimentBehavior* eb)
@@ -45,12 +45,12 @@ void Processor::process()
 	ob->suffix_param(ad->cp, 4);
 	db->save(ad);
 
-	ndb_qj->init_data(ad);
+	ndb_exp->init_data(ad);
 
 	eb->trans_process(ad, pb);
 	eb->obser_process(ad, pb);
 
-	ndb_qj->free_data(ad);
+	ndb_exp->free_data(ad);
 
 	ndb->free_hamiltonians(ad);
 	ndb->free_dissipators(ad);

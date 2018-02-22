@@ -16,7 +16,7 @@ int main()
 	DebugBehavior * db;
 	OuputBehavior * ob;
 	NewDelBehavior * ndb;
-	ExpNewDelBehavior * ndb_qj;
+	ExpNewDelBehavior * ndb_exp;
 	ExperimentBehavior * eb;
 	PropagateBehavior * pb;
 
@@ -35,22 +35,22 @@ int main()
 
 	if (rp->task_id == LPN_TASK_ID)
 	{
-		ndb_qj = new LpnNewDelBehaviour();
+		ndb_exp = new LpnNewDelBehaviour();
 		eb = new LpnExperimentBehaviour();
 	}
 	else if (rp->task_id == STD_TASK_ID)
 	{
-		ndb_qj = new StdNewDelBehaviour();
+		ndb_exp = new StdNewDelBehaviour();
 		eb = new StdExperimentBehaviour();
 	}
 	else if (rp->task_id == CD_TASK_ID)
 	{
-		ndb_qj = new CorrDimNewDelBehaviour();
+		ndb_exp = new CorrDimNewDelBehaviour();
 		eb = new CorrDimExperimentBehaviour();
 	}
 	else if (rp->task_id == SIGMA_TASK_ID)
 	{
-		ndb_qj = new SigmaNewDelBehaviour();
+		ndb_exp = new SigmaNewDelBehaviour();
 		eb = new SigmaExperimentBehaviour();
 	}
 	else
@@ -80,9 +80,9 @@ int main()
 
 	p->set_debug_behaviour(db);
 	p->set_output_behaviour(ob);
-	p->set_init_behaviour(ndb);
+	p->set_newdel_behaviour(ndb);
 
-	p->set_init_behaviour_qj(ndb_qj);
+	p->set_newdel_exp_behaviour(ndb_exp);
 	p->set_experiment_behaviour(eb);
 	p->set_propagate_behaviour(pb);
 
@@ -92,7 +92,7 @@ int main()
 	delete ob;
 	delete ndb;
 
-	delete ndb_qj;
+	delete ndb_exp;
 	delete eb;
 
 	delete rp;

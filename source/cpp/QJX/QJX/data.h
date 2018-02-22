@@ -39,7 +39,7 @@ struct ExpData
 	int num_dumps_total;						// Total number of dumps
 	int * dump_periods;							// Dump periods
 
-												// ======== Standart observables ========
+	// ======== Standart observables ========
 	double * mean_start;
 
 	double * mean;

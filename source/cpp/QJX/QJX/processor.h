@@ -16,7 +16,7 @@ private:
 	DebugBehavior * db;
 	OuputBehavior * ob;
 	NewDelBehavior * ndb;
-	ExpNewDelBehavior * ndb_qj;
+	ExpNewDelBehavior * ndb_exp;
 	ExperimentBehavior * eb;
 	PropagateBehavior * pb;
 
@@ -27,9 +27,9 @@ public:
 
 	void set_output_behaviour(OuputBehavior* ob);
 
-	void set_init_behaviour(NewDelBehavior* ndb);
+	void set_newdel_behaviour(NewDelBehavior* ndb);
 
-	void set_init_behaviour_qj(ExpNewDelBehavior* ndb_qj);
+	void set_newdel_exp_behaviour(ExpNewDelBehavior* ndb_exp);
 
 	void set_experiment_behaviour(ExperimentBehavior* eb);
 

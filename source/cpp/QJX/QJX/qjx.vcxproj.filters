@@ -33,6 +33,9 @@
     <ClInclude Include="newdel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="newdel_exp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="outputter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -49,9 +52,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="newdel_exp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
