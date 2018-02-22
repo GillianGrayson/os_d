@@ -1,5 +1,26 @@
 #include "propagator.h"
 #include "experiment.h"
+#include "qj_proc.h"
+
+void QJPropagateBehavior::init_prop_data(AllData * ad) const
+{
+	init_splits(ad);
+}
+
+void QJPropagateBehavior::free_prop_data(AllData * ad) const
+{
+	free_splits(ad);
+}
+
+void QJPropagateBehavior::init_prop_data_cd(AllData * ad) const
+{
+	init_splits_deep(ad);
+}
+
+void QJPropagateBehavior::free_prop_data_cd(AllData * ad) const
+{
+	free_splits_deep(ad);
+}
 
 void QJPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id) const
 {

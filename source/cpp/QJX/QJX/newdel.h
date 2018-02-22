@@ -1,6 +1,7 @@
 #pragma once
 #include "config.h"
 #include "data.h"
+#include "propagator.h"
 
 class NewDelBehavior
 {

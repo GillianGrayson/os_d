@@ -45,12 +45,12 @@ void Processor::process()
 	ob->suffix_param(ad->cp, 4);
 	db->save(ad);
 
-	ndb_exp->init_data(ad);
+	ndb_exp->init_data(ad, pb);
 
 	eb->trans_process(ad, pb);
 	eb->obser_process(ad, pb);
 
-	ndb_exp->free_data(ad);
+	ndb_exp->free_data(ad, pb);
 
 	ndb->free_hamiltonians(ad);
 	ndb->free_dissipators(ad);

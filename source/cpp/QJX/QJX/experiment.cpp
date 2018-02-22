@@ -4,7 +4,7 @@ void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 {
 	ConfigParam * cp = ad->cp;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
@@ -51,7 +51,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int num_dumps_total = ed->num_dumps_total;
 	int * dump_periods = ed->dump_periods;
@@ -136,7 +136,7 @@ void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 {
 	ConfigParam * cp = ad->cp;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
@@ -175,7 +175,7 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int num_dumps_total = ed->num_dumps_total;
 	int * dump_periods = ed->dump_periods;
@@ -241,7 +241,7 @@ void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 {
 	ConfigParam * cp = ad->cp;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
@@ -282,12 +282,12 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int num_dumps_total = ed->num_dumps_total;
 	if (cd_dump_deep == 1)
 	{
-		num_dumps_total = cp->qj_num_obs_periods + 1;
+		num_dumps_total = cp->num_obs_periods + 1;
 	}
 
 	int * dump_periods = ed->dump_periods;
@@ -370,7 +370,7 @@ void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * p
 {
 	ConfigParam * cp = ad->cp;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
@@ -416,12 +416,12 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 
 	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int num_dumps_total = ed->num_dumps_total;
 	if (cd_dump_deep == 1)
 	{
-		num_dumps_total = cp->qj_num_obs_periods + 1;
+		num_dumps_total = cp->num_obs_periods + 1;
 	}
 
 	int * dump_periods = ed->dump_periods;
@@ -869,7 +869,7 @@ void evo_chars_std(AllData * ad, int tr_id, int dump_id)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 	int num_dumps_total = ed->num_dumps_total;
 
 	int index = tr_id * num_dumps_total + dump_id;
@@ -999,7 +999,7 @@ void evo_chars_lpn(AllData * ad, int tr_id, int dump_id)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 	int num_dumps_total = ed->num_dumps_total;
 
 	int index = tr_id * num_dumps_total + dump_id;
@@ -1168,7 +1168,7 @@ void trans_process_single_std(AllData * ad, PropagateBehavior * pb, int tr_id, i
 	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
-	int num_tp_periods = cp->qj_num_tp_periods;
+	int num_tp_periods = cp->num_tp_periods;
 
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * eta = &(ed->etas_all[tr_id]);
@@ -1192,7 +1192,7 @@ void trans_process_single_cd(AllData * ad, PropagateBehavior * pb, int tr_id, in
 	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
-	int num_tp_periods = cp->qj_num_tp_periods;
+	int num_tp_periods = cp->num_tp_periods;
 
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * eta = &(ed->etas_all[tr_id]);

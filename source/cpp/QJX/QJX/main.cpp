@@ -81,7 +81,6 @@ int main()
 	p->set_debug_behaviour(db);
 	p->set_output_behaviour(ob);
 	p->set_newdel_behaviour(ndb);
-
 	p->set_newdel_exp_behaviour(ndb_exp);
 	p->set_experiment_behaviour(eb);
 	p->set_propagate_behaviour(pb);
@@ -91,9 +90,9 @@ int main()
 	delete db;
 	delete ob;
 	delete ndb;
-
 	delete ndb_exp;
 	delete eb;
+	delete pb;
 
 	delete rp;
 	delete cp;

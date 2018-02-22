@@ -68,30 +68,35 @@ void set_param(RunParam * rp, ConfigParam * cp, string str, string val)
 	}
 
 
-	if (str.compare("qj_num_tp_periods") == 0)
+	if (str.compare("num_tp_periods") == 0)
 	{
-		cp->qj_num_tp_periods = atoi(val.c_str());
+		cp->num_tp_periods = atoi(val.c_str());
 	}
-	if (str.compare("qj_num_obs_periods") == 0)
+	if (str.compare("num_obs_periods") == 0)
 	{
-		cp->qj_num_obs_periods = atoi(val.c_str());
+		cp->num_obs_periods = atoi(val.c_str());
+	}
+	if (str.compare("num_trajectories") == 0)
+	{
+		cp->num_trajectories = atoi(val.c_str());
+	}
+	if (str.compare("seed") == 0)
+	{
+		cp->seed = atoi(val.c_str());
+	}
+	if (str.compare("mns") == 0)
+	{
+		cp->mns = atoi(val.c_str());
 	}
 	if (str.compare("qj_deep") == 0)
 	{
 		cp->qj_deep = atoi(val.c_str());
 	}
-	if (str.compare("qj_num_trajectories") == 0)
+	if (str.compare("rk_ns") == 0)
 	{
-		cp->qj_num_trajectories = atoi(val.c_str());
+		cp->rk_ns = atoi(val.c_str());
 	}
-	if (str.compare("qj_seed") == 0)
-	{
-		cp->qj_seed = atoi(val.c_str());
-	}
-	if (str.compare("qj_mns") == 0)
-	{
-		cp->qj_mns = atoi(val.c_str());
-	}
+
 }
 
 void init_params(RunParam *rp, ConfigParam *cp, char * fn_config, char * fn_param)
@@ -156,12 +161,12 @@ void output_params(RunParam * rp, ConfigParam * cp)
 
 	cout << "num_threads = " << rp->num_threads << endl;
 
-	cout << "qj_num_tp_periods = " << cp->qj_num_tp_periods << endl;
-	cout << "qj_num_obs_periods = " << cp->qj_num_obs_periods << endl;
+	cout << "num_tp_periods = " << cp->num_tp_periods << endl;
+	cout << "num_obs_periods = " << cp->num_obs_periods << endl;
 	cout << "qj_deep = " << cp->qj_deep << endl;
-	cout << "qj_num_trajectories = " << cp->qj_num_trajectories << endl;
-	cout << "qj_seed = " << cp->qj_seed << endl;
-	cout << "qj_mns = " << cp->qj_mns << endl;
+	cout << "num_trajectories = " << cp->num_trajectories << endl;
+	cout << "seed = " << cp->seed << endl;
+	cout << "mns = " << cp->mns << endl;
 
 	cout << endl;
 

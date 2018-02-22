@@ -1,4 +1,82 @@
-#include "split_proc.h"
+#include "qj_proc.h"
+
+void init_splits(AllData * ad)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	int num_threads = rp->num_threads;
+
+	md->structure = init_split_structure(ad);
+	md->splits = new Split[num_threads];
+	for (int th_id = 0; th_id < num_threads; th_id++)
+	{
+		copy_struct_not_member(md->structure, &(md->splits)[th_id]);
+	}
+
+	cout << "Split initialization complete" << endl;
+}
+
+void init_splits_deep(AllData * ad)
+{
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+	int num_threads = rp->num_threads;
+
+	int num_total = num_threads * num_branches;
+
+	md->structure = init_split_structure_cd(ad);
+	md->splits = new Split[num_total];
+
+	for (int b_id = 0; b_id < num_branches; b_id++)
+	{
+		for (int th_id = 0; th_id < num_threads; th_id++)
+		{
+			int index = b_id * num_threads + th_id;
+			copy_struct_not_member(&(md->structure)[b_id], &(md->splits)[index]);
+		}
+	}
+}
+
+void free_splits(AllData * ad)
+{
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
+	int num_threads = rp->num_threads;
+
+	for (int i = 0; i < num_threads; i++)
+	{
+		delete_split_struct_not_member(&(md->splits[i]));
+	}
+
+	delete(md->splits);
+	delete_split_struct(md->structure);
+}
+
+void free_splits_deep(AllData * ad)
+{
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+	int num_threads = rp->num_threads;
+
+	for (int b_id = 0; b_id < num_branches; b_id++)
+	{
+		for (int th_id = 0; th_id < num_threads; th_id++)
+		{
+			int index = b_id * num_threads + th_id;
+			delete_split_struct_not_member(&(md->splits[index]));
+		}
+	}
+
+	delete(md->splits);
+	delete_split_struct(md->structure);
+}
 
 Split * init_split_structure_cd(AllData * ad)
 {

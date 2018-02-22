@@ -35,7 +35,7 @@ void dump_adr_avg(AllData * ad, bool append)
 	if (is_adr_dump_avg == 1)
 	{
 		int sys_size = md->sys_size;
-		int num_trajectories = cp->qj_num_trajectories;
+		int num_trajectories = cp->num_trajectories;
 
 		double * adr_avg = new double[sys_size];
 
@@ -65,7 +65,7 @@ void update_evo_std(AllData * ad, int dump_id)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 	int num_dumps_total = ed->num_dumps_total;
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -81,7 +81,7 @@ void update_evo_lpn(AllData * ad, int dump_id)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 	int num_dumps_total = ed->num_dumps_total;
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -103,7 +103,7 @@ void dump_std(AllData * ad)
 
 	if (is_obs_dump == 1)
 	{
-		int num_trajectories = cp->qj_num_trajectories;
+		int num_trajectories = cp->num_trajectories;
 
 		double * mean_start = ed->mean_start;
 		double * mean = ed->mean;
@@ -132,7 +132,7 @@ void dump_lpn(AllData * ad)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
 
@@ -166,7 +166,7 @@ void dump_cd(AllData * ad)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 
 	double * ci = ed->cd_i;
 
@@ -182,7 +182,7 @@ void dump_evo_std(AllData * ad)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 	int num_dumps_total = ed->num_dumps_total;
 
 	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
@@ -218,7 +218,7 @@ void dump_evo_lpn(AllData * ad)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int num_trajectories = cp->qj_num_trajectories;
+	int num_trajectories = cp->num_trajectories;
 	int num_dumps_total = ed->num_dumps_total;
 
 	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);

@@ -1,44 +1,43 @@
 #pragma once
 #include "config.h"
 #include "data.h"
+#include "propagator.h"
 
 class ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad) const = 0;
-	virtual void free_data(AllData * ad) const = 0;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb) const = 0;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb) const = 0;
 };
 
 class LpnNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad) const;
-	virtual void free_data(AllData * ad) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
 };
 
 class StdNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad) const;
-	virtual void free_data(AllData * ad) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
 };
 
 class CorrDimNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad) const;
-	virtual void free_data(AllData * ad) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
 };
 
 class SigmaNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad) const;
-	virtual void free_data(AllData * ad) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
 };
 
-void init_splits_cd(AllData * ad);
-void init_splits(AllData * ad);
 void init_streams(AllData * ad);
 void leap_frog_single_stream(AllData * ad, int tr_id);
 void leap_frog_all_streams(AllData * ad);
@@ -52,8 +51,6 @@ void init_obs_lpn(AllData * ad);
 void init_obs_cd(AllData * ad);
 void init_start_state(AllData * ad, int tr_id);
 
-void free_splits_deep(AllData * ad);
-void free_splits(AllData * ad);
 void free_streams(AllData * ad);
 void free_streams_var(AllData * ad);
 void free_basic_data(AllData * ad);

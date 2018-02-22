@@ -39,6 +39,17 @@ struct ExpData
 	int num_dumps_total;						// Total number of dumps
 	int * dump_periods;							// Dump periods
 
+	// ======== RK Data ========
+	MKL_Complex16 * k1_all;
+	MKL_Complex16 * k2_all;
+	MKL_Complex16 * k3_all;
+	MKL_Complex16 * k4_all;
+
+	MKL_Complex16 * phi_all_prev;
+	MKL_Complex16 * args_all;
+	// =========================
+
+
 	// ======== Standart observables ========
 	double * mean_start;
 

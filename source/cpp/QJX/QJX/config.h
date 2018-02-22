@@ -79,31 +79,36 @@ struct ConfigParam
 
 	string fn_suffix;							// File name suffixes
 
-	int	qj_num_tp_periods;						// Number of periods in trans process
-	int	qj_num_obs_periods;						// Number of observable propagation periods
-	int	qj_deep;								// Deep
-	int qj_num_trajectories;					// Number of trajectories
-	int qj_seed;								// Seed 
-	int qj_mns;									// Max number of seeds
+	int	num_tp_periods;							// Number of periods in trans process
+	int	num_obs_periods;						// Number of observable propagation periods
+	int num_trajectories;						// Number of trajectories
+	int seed;									// Seed 
+	int mns;									// Max number of seeds
+
+	int	qj_deep;								// Deep for quantum jumps
+
+	int rk_ns;									// Num steps per (sub-)period for RK
 
 	int	dump_type;								// Dump type
 	int	dump_num;								// Number of dumps
 	
 	ConfigParam(
-		int _qj_num_tp_periods = 0,
-		int _qj_num_obs_periods = 10,
+		int _num_tp_periods = 0,
+		int _num_obs_periods = 10,
+		int _num_trajectories = 1,
+		int _seed = 0,
+		int _mns = 1000000,
 		int _qj_deep = 16,
-		int _qj_num_trajectories = 1,
-		int _qj_seed = 0,
-		int _qj_mns = 1000000
+		int _rk_ns = 1000
 	)
 	{
-		qj_num_tp_periods = _qj_num_tp_periods;
-		qj_num_obs_periods = _qj_num_obs_periods;
+		num_tp_periods = _num_tp_periods;
+		num_obs_periods = _num_obs_periods;
+		num_trajectories = _num_trajectories;
+		seed = _seed;
+		mns = _mns;
 		qj_deep = _qj_deep;
-		qj_num_trajectories = _qj_num_trajectories;
-		qj_seed = _qj_seed;
-		qj_mns = _qj_mns;
+		rk_ns = _rk_ns;
 	}
 };
 

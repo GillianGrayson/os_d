@@ -2,6 +2,12 @@
 #include "config.h"
 #include "data.h"
 
+void init_splits_deep(AllData * ad);
+void init_splits(AllData * ad);
+
+void free_splits_deep(AllData * ad);
+void free_splits(AllData * ad);
+
 Split * init_split_structure_cd(AllData * ad);
 
 Split * init_split_structure(AllData * ad);
