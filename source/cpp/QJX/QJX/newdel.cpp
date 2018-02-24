@@ -178,6 +178,21 @@ void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 		}
 	}
 
+	md->non_drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->non_drv_part[index].real = hamitlonian_part[index].real;
+			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
+
+			md->non_drv_part[index].real = md->hamiltonian_drv[index];
+			md->non_drv_part[index].imag = 0.0;
+		}
+	}
+
 	double E_0 = prm_E + drv_ampl;
 	double E_1 = prm_E - drv_ampl;
 
@@ -221,6 +236,9 @@ void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
 void DimerNewDelBehaviour::free_hamiltonians_qj(AllData * ad) const
 {
 	MainData * md = ad->md;
+
+	delete[] md->non_drv_part;
+	delete[] md->drv_part;
 
 	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
 	{

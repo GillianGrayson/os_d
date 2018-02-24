@@ -77,7 +77,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				pb->one_period(ad, tr_id, thread_id);
+				pb->one_period(ad, tr_id, thread_id, period_id);
 				calc_chars_std(ad, tr_id);
 
 				ed->energy[tr_id] = get_energy(ad, tr_id);
@@ -201,7 +201,7 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				pb->one_period(ad, tr_id, thread_id);
+				pb->one_period(ad, tr_id, thread_id, period_id);
 			}
 		}
 
@@ -1181,7 +1181,7 @@ void trans_process_single_std(AllData * ad, PropagateBehavior * pb, int tr_id, i
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
-		pb->one_period(ad, tr_id, thread_id);
+		pb->one_period(ad, tr_id, thread_id, period_id);
 	}
 }
 
@@ -1205,6 +1205,6 @@ void trans_process_single_cd(AllData * ad, PropagateBehavior * pb, int tr_id, in
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
-		pb->one_period_cd_tp(ad, tr_id, thread_id);
+		pb->one_period_cd_tp(ad, tr_id, thread_id, period_id);
 	}
 }

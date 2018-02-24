@@ -14,6 +14,9 @@ struct MainData
 	double * hamiltonian;				// Hamiltonian
 	double * hamiltonian_drv;			// Hamiltonian driving
 
+	MKL_Complex16 * non_drv_part;		// Non-drv part for rk
+	MKL_Complex16 * drv_part;		// Non-drv part for rk
+
 	MKL_Complex16 ** dissipators;		// Dissipators
 
 	MKL_Complex16 ** hamiltonians_qj;	// Non-Hermitian Hamiltonians for qj
@@ -40,13 +43,17 @@ struct ExpData
 	int * dump_periods;							// Dump periods
 
 	// ======== RK Data ========
-	MKL_Complex16 * k1_all;
-	MKL_Complex16 * k2_all;
-	MKL_Complex16 * k3_all;
-	MKL_Complex16 * k4_all;
+	double rk_step;
 
-	MKL_Complex16 * phi_all_prev;
-	MKL_Complex16 * args_all;
+	MKL_Complex16 ** k1;
+	MKL_Complex16 ** k2;
+	MKL_Complex16 ** k3;
+	MKL_Complex16 ** k4;
+
+	MKL_Complex16 ** args;
+
+	MKL_Complex16 ** non_drv_tmp;
+	MKL_Complex16 ** drv_tmp;
 	// =========================
 
 
