@@ -188,8 +188,8 @@ void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			md->non_drv_part[index].real = hamitlonian_part[index].real;
 			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
 
-			md->non_drv_part[index].real = md->hamiltonian_drv[index];
-			md->non_drv_part[index].imag = 0.0;
+			md->drv_part[index].real = md->hamiltonian_drv[index];
+			md->drv_part[index].imag = 0.0;
 		}
 	}
 

@@ -8,7 +8,7 @@ is_adr_dump_avg 1
 is_evo_dump_sep 1
 is_evo_dump_avg 1
 dump_type 0
-num_dumps 1000
+num_dumps 100
 N 100
 diss_type 1
 diss_gamma 0.1

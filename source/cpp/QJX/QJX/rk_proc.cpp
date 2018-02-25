@@ -174,6 +174,8 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 	double step = ed->rk_step;
 
 	double prm_E = double(cp->params.find("prm_E")->second);
+
+	int drv_type = double(cp->params.find("drv_type")->second);
 	double drv_ampl = double(cp->params.find("drv_ampl")->second);
 	double drv_freq = double(cp->params.find("drv_freq")->second);
 	double drv_phase = double(cp->params.find("drv_phase")->second);
@@ -181,6 +183,8 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 	double time = ed->times_all[tr_id];
 
 	MKL_Complex16 * arg = ed->args[th_id];
+	MKL_Complex16 * non_drv_tmp = ed->non_drv_tmp[th_id];
+	MKL_Complex16 * drv_tmp = ed->drv_tmp[th_id];
 
 	MKL_Complex16 * k = ed->k1[th_id];
 	if (sub_step == 1)
@@ -201,7 +205,7 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 	}
 
 	double E = 0.0;
-	if (cp->dump_type == 0)
+	if (drv_type == 0)
 	{
 		double mod_time = fmod(time, md->T);
 		double half_T = md->T * 0.5;
@@ -214,7 +218,7 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 			E = prm_E - drv_ampl;
 		}
 	}
-	else if (cp->dump_type == 1)
+	else if (drv_type == 1)
 	{
 		E = prm_E + drv_ampl * sin(drv_freq * time + drv_phase);
 	}
@@ -234,13 +238,13 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
 	MKL_Complex16 ONE = { 1.0, 0.0 };
-	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->non_drv_part, sys_size, arg, sys_size, &ZERO, ed->non_drv_tmp[th_id], sys_size);
-	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->drv_part, sys_size, arg, sys_size, &ZERO, ed->drv_tmp[th_id], sys_size);
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->non_drv_part, sys_size, arg, 1, &ZERO, non_drv_tmp, 1);
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->drv_part, sys_size, arg, 1, &ZERO, drv_tmp, 1);
 
 	for (int st_id = 0; st_id < md->sys_size; st_id++)
 	{
-		k[st_id].real = (ed->non_drv_tmp[th_id][st_id].real + E * ed->drv_tmp[th_id][st_id].real) * step;
-		k[st_id].imag = (ed->non_drv_tmp[th_id][st_id].imag + E * ed->drv_tmp[th_id][st_id].imag) * step;
+		k[st_id].real = +(ed->non_drv_tmp[th_id][st_id].imag + E * ed->drv_tmp[th_id][st_id].imag);
+		k[st_id].imag = -(ed->non_drv_tmp[th_id][st_id].real + E * ed->drv_tmp[th_id][st_id].real);
 	}
 }
 

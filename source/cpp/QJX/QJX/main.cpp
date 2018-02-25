@@ -64,6 +64,10 @@ int main()
 	{
 		pb = new QJPropagateBehavior();
 	}
+	else if (rp->prop_id == RK_PROP_TYPE)
+	{
+		pb = new RKPropagateBehavior();
+	}
 	else
 	{
 		stringstream msg;
