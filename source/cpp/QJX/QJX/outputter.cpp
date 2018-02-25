@@ -39,8 +39,7 @@ string suffix_qj(ConfigParam * cp, int precision)
 {
 	stringstream suffix;
 
-	suffix << "_qjrnd(" << cp->seed << "_"
-		<< cp->mns << ")";
+	suffix << "_rnd(" << cp->seed << "_" << cp->mns << ")";
 
 	return suffix.str();
 }
