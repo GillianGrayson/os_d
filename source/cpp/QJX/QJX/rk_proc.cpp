@@ -373,6 +373,40 @@ void rk_recovery(AllData * ad, int tr_id, int th_id)
 	delete(gnorms);
 }
 
+void save_phi_prev(AllData * ad, int tr_id, int th_id)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	double step = ed->rk_step;
+
+	for (int st_id = 0; st_id < md->sys_size; st_id++)
+	{
+		ed->phi_all_aux[tr_id * sys_size + st_id].real = ed->phi_all[tr_id * sys_size + st_id].real;
+		ed->phi_all_aux[tr_id * sys_size + st_id].imag = ed->phi_all[tr_id * sys_size + st_id].imag;
+	}
+}
+
+void restore(AllData * ad, int tr_id, int th_id)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	double step = ed->rk_step;
+
+	for (int st_id = 0; st_id < md->sys_size; st_id++)
+	{
+		ed->phi_all_aux[tr_id * sys_size + st_id].real = ed->phi_all[tr_id * sys_size + st_id].real;
+		ed->phi_all_aux[tr_id * sys_size + st_id].imag = ed->phi_all[tr_id * sys_size + st_id].imag;
+	}
+}
+
 void rk_step(AllData * ad, int tr_id, int th_id)
 {
 	RunParam * rp = ad->rp;
