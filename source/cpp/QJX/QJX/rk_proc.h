@@ -17,11 +17,17 @@ void arg_upd(AllData * ad, int sub_step, int tr_id, int th_id);
 
 void right_part(AllData * ad, int sub_step, int tr_id, int th_id);
 
-void rk_final(AllData * ad, int tr_id, int th_id);
+void rk_final(AllData * ad, int tr_id, int th_id, double step);
 
 void rk_recovery(AllData * ad, int tr_id, int th_id);
 
-void rk_step(AllData * ad, int tr_id, int th_id);
+void save_phi_prev(AllData * ad, int tr_id, int th_id);
+
+void restore_from_prev(AllData * ad, int tr_id, int th_id, double step);
+
+void rk_int(AllData * ad, int tr_id, int th_id, double step);
+
+void rk_step(AllData * ad, int tr_id, int th_id, double step);
 
 void rk_period(AllData * ad, int tr_id, int th_id, int period_id);
 

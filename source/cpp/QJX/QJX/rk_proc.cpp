@@ -171,7 +171,6 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
-	double step = ed->rk_step;
 
 	double prm_E = double(cp->params.find("prm_E")->second);
 
@@ -248,7 +247,7 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 	}
 }
 
-void rk_final(AllData * ad, int tr_id, int th_id)
+void rk_final(AllData * ad, int tr_id, int th_id, double step)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -256,7 +255,6 @@ void rk_final(AllData * ad, int tr_id, int th_id)
 	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
-	double step = ed->rk_step;
 
 	MKL_Complex16 * k1 = ed->k1[th_id];
 	MKL_Complex16 * k2 = ed->k2[th_id];
@@ -390,7 +388,7 @@ void save_phi_prev(AllData * ad, int tr_id, int th_id)
 	}
 }
 
-void restore(AllData * ad, int tr_id, int th_id)
+void restore_from_prev(AllData * ad, int tr_id, int th_id, double step)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -398,16 +396,17 @@ void restore(AllData * ad, int tr_id, int th_id)
 	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
-	double step = ed->rk_step;
 
 	for (int st_id = 0; st_id < md->sys_size; st_id++)
 	{
-		ed->phi_all_aux[tr_id * sys_size + st_id].real = ed->phi_all[tr_id * sys_size + st_id].real;
-		ed->phi_all_aux[tr_id * sys_size + st_id].imag = ed->phi_all[tr_id * sys_size + st_id].imag;
+		ed->phi_all[tr_id * sys_size + st_id].real = ed->phi_all_aux[tr_id * sys_size + st_id].real;
+		ed->phi_all[tr_id * sys_size + st_id].imag = ed->phi_all_aux[tr_id * sys_size + st_id].imag;
 	}
-}
 
-void rk_step(AllData * ad, int tr_id, int th_id)
+	ed->times_all[tr_id] -= step;
+} 
+
+void rk_int(AllData * ad, int tr_id, int th_id, double step)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -421,7 +420,7 @@ void rk_step(AllData * ad, int tr_id, int th_id)
 	right_part(ad, 1, tr_id, th_id);
 	arg_upd(ad, 1, tr_id, th_id);
 
-	ed->times_all[tr_id] += ed->rk_step * 0.5;
+	ed->times_all[tr_id] += step * 0.5;
 
 	right_part(ad, 2, tr_id, th_id);
 	arg_upd(ad, 2, tr_id, th_id);
@@ -429,24 +428,59 @@ void rk_step(AllData * ad, int tr_id, int th_id)
 	right_part(ad, 3, tr_id, th_id);
 	arg_upd(ad, 3, tr_id, th_id);
 
-	ed->times_all[tr_id] += ed->rk_step * 0.5;
+	ed->times_all[tr_id] += step * 0.5;
 
 	right_part(ad, 4, tr_id, th_id);
 
-	rk_final(ad, tr_id, th_id);
+	rk_final(ad, tr_id, th_id, step);
+}
+
+void rk_step(AllData * ad, int tr_id, int th_id, double step)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
 
 	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * eta = &(ed->etas_all[tr_id]);
 
+	double prev_norm = 0.0;
+	double curr_norm = 0.0;
+	double norm_diff = 0.0;
+	double begin_part = 0.0;
+	double end_part = 0.0;
+	double begin_step = 0.0;
+	double end_step = 0.0;
+
+	save_phi_prev(ad, tr_id, th_id);
+	prev_norm = norm_square(phi, sys_size);
+	rk_int(ad, tr_id, th_id, step);
+
 	if (is_norm_crossed(phi, eta, sys_size))
 	{
+		curr_norm = norm_square(phi, sys_size);
+		norm_diff = prev_norm - curr_norm;
+		begin_part = (prev_norm - *(eta)) / norm_diff;
+		end_part = 1.0 - begin_part;
+		begin_step = step * begin_part;
+		end_step = step * end_part;
+
+		restore_from_prev(ad, tr_id, th_id, step);
+
+		rk_int(ad, tr_id, th_id, begin_step);
+
 		rk_recovery(ad, tr_id, th_id);
 		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
 		while (*eta == 0.0)
 		{
 			vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
 		}
+
+		rk_step(ad, tr_id, th_id, end_step);
 	}
 }
 
@@ -461,7 +495,7 @@ void rk_period(AllData * ad, int tr_id, int th_id, int period_id)
 
 	for (int step_id = 0; step_id < cp->rk_ns; step_id++)
 	{
-		rk_step(ad, tr_id, th_id);
+		rk_step(ad, tr_id, th_id, ed->rk_step);
 	}
 }
 
@@ -476,6 +510,6 @@ void rk_period_cd(AllData * ad, int tr_id, int th_id, double start_time)
 
 	for (int step_id = 0; step_id < cp->rk_ns; step_id++)
 	{
-		rk_step(ad, tr_id, th_id);
+		rk_step(ad, tr_id, th_id, ed->rk_step);
 	}
 }

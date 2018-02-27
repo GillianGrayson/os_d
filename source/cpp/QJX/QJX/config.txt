@@ -1,6 +1,6 @@
 sys_id 0
 task_id 1
-prop_id 0
+prop_id 1
 is_debug 0
 is_pp 1
 init_fn
@@ -9,7 +9,7 @@ num_threads 1
 num_tp_periods 100
 num_obs_periods 100
 num_trajectories 1
-seed 10
+seed 0
 mns 1000000
 qj_deep 16
 rk_ns 10000
