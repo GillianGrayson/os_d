@@ -22,7 +22,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 	for ($curr_cd_dim = 1; $curr_cd_dim <= 1; $curr_cd_dim += 1)
 	{
-		for($curr_U = 0.01; $curr_U <= 0.7500001; $curr_U += 0.01)
+		for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
 		{
 			print "curr_U = $curr_U\n";
 			print "curr_cd_eps = $curr_cd_eps\n";
@@ -39,7 +39,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$qj_deep = 16;
 			$num_tp_periods = 100;
 			$num_obs_periods = 1;
-			$num_trajectories = 1000;
+			$num_trajectories = 100;
 			$seed = 0;
 			$mns = 1000000;
 			$rk_ns = 10000;
