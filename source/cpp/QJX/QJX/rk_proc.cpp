@@ -491,10 +491,9 @@ void rk_period(AllData * ad, int tr_id, int th_id, int period_id)
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	ed->times_all[tr_id] = double(period_id) * md->T;
-
 	for (int step_id = 0; step_id < cp->rk_ns; step_id++)
 	{
+		ed->times_all[tr_id] = double(period_id) * md->T + double(step_id) * ed->rk_step;
 		rk_step(ad, tr_id, th_id, ed->rk_step);
 	}
 }
@@ -506,10 +505,9 @@ void rk_period_cd(AllData * ad, int tr_id, int th_id, double start_time)
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	ed->times_all[tr_id] = start_time;
-
 	for (int step_id = 0; step_id < cp->rk_ns; step_id++)
 	{
+		ed->times_all[tr_id] = start_time + double(step_id) * ed->rk_step;
 		rk_step(ad, tr_id, th_id, ed->rk_step);
 	}
 }
