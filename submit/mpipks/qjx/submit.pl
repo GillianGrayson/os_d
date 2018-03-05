@@ -29,7 +29,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			print "curr_cd_dim = $curr_cd_dim\n";
 			
 			$sys_id = 0;
-			$task_id = 1;
+			$task_id = 0;
 			$prop_id = 1;
 			$is_debug = 0;
 			$is_pp = 1;
@@ -37,9 +37,9 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$path = "";
 			$num_threads = 1;
 			$qj_deep = 16;
-			$num_tp_periods = 100;
-			$num_obs_periods = 1;
-			$num_trajectories = 100;
+			$num_tp_periods = 1000;
+			$num_obs_periods = 1000;
+			$num_trajectories = 2;
 			$seed = 0;
 			$mns = 1000000;
 			$rk_ns = 10000;
@@ -48,13 +48,13 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$eps_lpn = 1.0e-3;
 			$delta_up_lpn = 1.0e-2;
 			$delta_down_lpn = 1.0e-13;
-			$is_obs_dump = 0;
+			$is_obs_dump = 1;
 			$is_adr_dump_sep = 0;
-			$is_adr_dump_avg = 1;
-			$is_evo_dump_sep = 0;
+			$is_adr_dump_avg = 0;
+			$is_evo_dump_sep = 1;
 			$is_evo_dump_avg = 0;
 			$dump_type = 0;
-			$num_dumps = 1;
+			$num_dumps = 1000;
 			$N = 100;
 			$diss_type = 1;
 			$diss_gamma = 0.1;
