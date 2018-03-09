@@ -22,7 +22,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 	for ($curr_cd_dim = 1; $curr_cd_dim <= 1; $curr_cd_dim += 1)
 	{
-		for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
+		for($curr_U = 0.01; $curr_U <= 0.010001; $curr_U += 0.01)
 		{
 			print "curr_U = $curr_U\n";
 			print "curr_cd_eps = $curr_cd_eps\n";
@@ -42,7 +42,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$num_trajectories = 2;
 			$seed = 0;
 			$mns = 1000000;
-			$rk_ns = 10000;
+			$rk_ns = 100000;
 			
 			$type_lpn = 0;
 			$eps_lpn = 1.0e-3;
@@ -83,6 +83,9 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 			$prm_E_str = sprintf("%.4f", $prm_E);
 			$prm_U_str = sprintf("%.4f", $prm_U);
 			$prm_J_str = sprintf("%.4f", $prm_J);
+			
+			$eps_lpn_str = sprintf("%.4f", $eps_lpn);
+			$delta_up_lpn_str = sprintf("%.4f", $delta_up_lpn);
 
 			$cd_eps_str = sprintf("%.10f", $cd_eps);
 			
@@ -93,47 +96,68 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 				$step = $num_trajectories;
 				%exp = ();
 				$i = $start;
+				
+				sub ForderName_task_0{
+					$key_str = $_[0];
+				
+					return  "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/lpn_${eps_lpn_str}_${delta_up_lpn_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}/ss_${key_str}";
+				}
 			
 				sub ForderName_task_2{
 					$key_str = $_[0];
 				
-					return  "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}/ss_${key_str}";
+					return  "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}/ss_${key_str}";
 				}
 				
 				sub ForderName{
 					$key_str = $_[0];
 					
-					return  "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}/ss_${key_str}";
+					return  "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}/ss_${key_str}";
 				}
 				
-				
-				if ($task_id == 2)
+				if ($task_id == 0)
 				{
 					mkdir "$data_path";
 					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/lpn_${eps_lpn_str}_${delta_up_lpn_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/lpn_${eps_lpn_str}_${delta_up_lpn_str}/N_${N}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/lpn_${eps_lpn_str}_${delta_up_lpn_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/lpn_${eps_lpn_str}_${delta_up_lpn_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/lpn_${eps_lpn_str}_${delta_up_lpn_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/lpn_${eps_lpn_str}_${delta_up_lpn_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}";
+				}
+				elsif ($task_id == 2)
+				{
+					mkdir "$data_path";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/ci_${cd_num_sub_steps}_${cd_dim}_${cd_eps_str}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}";
 				}
 				else
 				{
 					mkdir "$data_path";
 					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/N_${N}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}";
-					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/N_${N}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}";
+					mkdir "$data_path/main_${sys_id}_${prop_id}_${task_id}/qj_${qj_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${drv_type}_${drv_ampl_str}_${drv_freq_str}_${drv_phase_str}/prm_${prm_E_str}_${prm_U_str}_${prm_J_str}/start_${start_type}_${start_state}";
 				}
 				
 				for($val = $start; $val < $finish; $val += $step)
 				{
-					if ($task_id == 2)
+					if ($task_id == 0)
+					{
+						$exp{ForderName_task_0($i)} = $val;
+					}
+					elsif ($task_id == 2)
 					{
 						$exp{ForderName_task_2($i)} = $val;
 					}
@@ -146,7 +170,11 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 				for($i = $start; $i < $finish; $i += $step)
 				{
-					if ($task_id == 2)
+					if ($task_id == 0)
+					{
+						$key = ForderName_task_0($i);
+					}
+					elsif ($task_id == 2)
 					{
 						$key = ForderName_task_2($i); 
 					}

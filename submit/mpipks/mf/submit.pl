@@ -11,7 +11,7 @@ $PI = 3.1415926535897932384626433832795;
 
 for($dim = 4; $dim <= 4; $dim += 1)
 {
-	for($curr_U = 0.005; $curr_U <= 0.75000001; $curr_U += 0.005)
+	for($curr_U = 0.47; $curr_U <= 0.47000001; $curr_U += 0.005)
 	{
 		print "curr_U = $curr_U\n";
 		
@@ -38,13 +38,13 @@ for($dim = 4; $dim <= 4; $dim += 1)
 			$seed_start = 0;
 			$seed_num = 1;
 			$max_num_seeds = 1000000;
-			$mt = 0;
-			$num_steps = 10000;
+			$mt = 1;
+			$num_steps = 200000;
 			$npt = 2000;
 			$np = 2000;
 			$ndpp = 1;
-			$E = 1.0;
-			$A = 1.5; 
+			$E = 0.0;
+			$A = 3.4; 
 			$omega = 1.0;
 			$phase = 0.0;
 			$gamma = 0.1;
@@ -63,7 +63,7 @@ for($dim = 4; $dim <= 4; $dim += 1)
 			$eps_str = sprintf("%.10f", $cd_eps);
 			
 			$start = 1;
-			$finish = 11;
+			$finish = 101;
 			%exp = ();
 			$i = 0;
 			$i = $start;
