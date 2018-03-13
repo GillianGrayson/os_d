@@ -42,7 +42,7 @@ void QJPropagateBehavior::one_period_cd_tp(AllData * ad, int tr_id, int thread_i
 	MainData * md = ad->md;
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps = int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps = int(cp->params.find("deep_num_steps")->second);
 
 	for (int part_id = 0; part_id < num_branches; part_id++)
 	{
@@ -59,12 +59,12 @@ void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int deep_dump = int(cp->params.find("deep_dump")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
 	int dump_point_id = 0;
 	int curr_point_id = 0;
@@ -95,7 +95,7 @@ void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 			one_sub_period_cd(ad, tr_id, part_id, thread_id);
 			calc_chars_std(ad, tr_id);
 
-			if (cd_dump_deep == 1)
+			if (deep_dump == 1)
 			{
 				int dump_id = global_point_id + 1;
 
@@ -115,12 +115,12 @@ void QJPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int deep_dump = int(cp->params.find("deep_dump")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
 	int dump_point_id = 0;
 	int curr_point_id = 0;
@@ -139,7 +139,7 @@ void QJPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 			one_sub_period_cd(ad, tr_id, part_id, thread_id);
 			calc_chars_std(ad, tr_id);
 
-			if (cd_dump_deep == 1)
+			if (deep_dump == 1)
 			{
 				int dump_id = global_point_id + 1;
 
@@ -186,8 +186,8 @@ void RKPropagateBehavior::one_period_cd_tp(AllData * ad, int tr_id, int thread_i
 	ExpData * ed = ad->ed;
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
 	int step_id = 0;
 
@@ -209,12 +209,12 @@ void RKPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int deep_dump = int(cp->params.find("deep_dump")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
 	int dump_point_id = 0;
 	int curr_point_id = 0;
@@ -247,7 +247,7 @@ void RKPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 
 			calc_chars_std(ad, tr_id);
 
-			if (cd_dump_deep == 1)
+			if (deep_dump == 1)
 			{
 				int dump_id = global_point_id + 1;
 
@@ -267,12 +267,12 @@ void RKPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int deep_dump = int(cp->params.find("deep_dump")->second);
 	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
 	int dump_point_id = 0;
 	int curr_point_id = 0;
@@ -294,7 +294,7 @@ void RKPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 
 			calc_chars_std(ad, tr_id);
 
-			if (cd_dump_deep == 1)
+			if (deep_dump == 1)
 			{
 				int dump_id = global_point_id + 1;
 

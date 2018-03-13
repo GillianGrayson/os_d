@@ -1,7 +1,7 @@
-type_lpn 0
-eps_lpn 1.0e-3
-delta_up_lpn 1.0e-2
-delta_down_lpn 1.0e-13
+lpn_type 0
+lpn_eps 1.0e-3
+lpn_delta_up 1.0e-2
+lpn_delta_down 1.0e-13
 is_obs_dump 1
 is_adr_dump_sep 1
 is_adr_dump_avg 1
@@ -22,7 +22,8 @@ prm_U 0.01
 prm_J 1.0
 start_type 0
 start_state 0
-cd_num_sub_steps 128
 cd_dim 2
 cd_eps 1.0e-4
-cd_dump_deep 1
+deep_num_steps 128
+deep_dump 1
+jumps 0

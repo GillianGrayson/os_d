@@ -61,7 +61,7 @@ void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 
 	int num_trajectories = cp->num_trajectories;
 
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int deep_dump = int(cp->params.find("deep_dump")->second);
 
 	pb->init_prop_data_cd(ad);
 	init_streams(ad);
@@ -69,7 +69,7 @@ void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 	leap_frog_all_streams(ad);
 	init_basic_data(ad);
 	
-	if(cd_dump_deep == 1)
+	if(deep_dump == 1)
 	{
 		init_dump_periods_cd_deep(ad);
 	}
@@ -103,7 +103,7 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 
 	int num_trajectories = cp->num_trajectories;
 
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int deep_dump = int(cp->params.find("deep_dump")->second);
 
 	pb->init_prop_data_cd(ad);
 	init_streams(ad);
@@ -112,7 +112,7 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 
 	init_basic_data(ad);
 
-	if (cd_dump_deep == 1)
+	if (deep_dump == 1)
 	{
 		init_dump_periods_cd_deep(ad);
 	}
@@ -240,6 +240,13 @@ void init_basic_data(AllData * ad)
 		ed->times_all[tr_id] = 0.0;
 		ed->etas_all[tr_id] = 0.0;
 	}
+
+	int jump = int(cp->params.find("jump")->second);
+	if (jump == 1)
+	{
+		ed->jump_times = new vector<double>[num_trajectories];
+		ed->jump_norms = new vector<pair<double, double>>[num_trajectories];
+	}
 }
 
 void init_dump_periods_cd_deep(AllData * ad)
@@ -255,7 +262,7 @@ void init_dump_periods_cd_deep(AllData * ad)
 	int num_obs_periods = cp->num_obs_periods;
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 	int num_dumps_total = num_sub_steps * cp->num_obs_periods + 1;
 
 	ed->num_dumps_total = num_dumps_total;
@@ -424,7 +431,7 @@ void init_obs_cd(AllData * ad)
 	ExpData * ed = ad->ed;
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 	int cd_dim = int(cp->params.find("cd_dim")->second);
 
 	int sys_size = md->sys_size;
@@ -498,12 +505,20 @@ void free_streams_var(AllData * ad)
 void free_basic_data(AllData * ad)
 {
 	ExpData * ed = ad->ed;
+	ConfigParam * cp = ad->cp;
 
 	delete[] ed->phi_all;
 	delete[] ed->phi_all_aux;
 	delete[] ed->abs_diag_rho_all;
 	delete[] ed->times_all;
 	delete[] ed->etas_all;
+
+	int jump = int(cp->params.find("jump")->second);
+	if (jump == 1)
+	{
+		delete[] ed->jump_times;
+		delete[] ed->jump_norms;
+	}
 }
 
 void free_dump_priods(AllData * ad)

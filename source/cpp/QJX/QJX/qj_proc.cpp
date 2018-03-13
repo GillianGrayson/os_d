@@ -83,9 +83,9 @@ Split * init_split_structure_cd(AllData * ad)
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
-	int cd_num_sub_steps = int(cp->params.find("cd_num_sub_steps")->second);
+	int deep_num_steps = int(cp->params.find("deep_num_steps")->second);
 
-	double T = 0.5 * md->T / double(cd_num_sub_steps);
+	double T = 0.5 * md->T / double(deep_num_steps);
 	int N = md->sys_size;
 	int num_branches = md->num_ham_qj;
 

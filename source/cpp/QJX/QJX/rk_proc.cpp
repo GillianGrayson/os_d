@@ -68,7 +68,7 @@ void init_rk_cd(AllData * ad)
 	ExpData * ed = ad->ed;
 
 	int num_branches = md->num_ham_qj;
-	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
 	ed->rk_step = md->T / (double(cp->rk_ns * num_sub_steps));
 

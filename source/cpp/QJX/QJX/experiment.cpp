@@ -280,12 +280,12 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int deep_dump = int(cp->params.find("deep_dump")->second);
 
 	int num_trajectories = cp->num_trajectories;
 
 	int num_dumps_total = ed->num_dumps_total;
-	if (cd_dump_deep == 1)
+	if (deep_dump == 1)
 	{
 		num_dumps_total = cp->num_obs_periods + 1;
 	}
@@ -304,7 +304,7 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			cout << "dump_id: " << dump_id << endl;
 		}
 
-		if (cd_dump_deep == 1)
+		if (deep_dump == 1)
 		{
 			begin_period_id = dump_id - 1;
 			end_period_id = dump_id;
@@ -325,7 +325,7 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			}
 		}
 
-		if (cd_dump_deep == 0)
+		if (deep_dump == 0)
 		{
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -414,12 +414,12 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int cd_dump_deep = int(cp->params.find("cd_dump_deep")->second);
+	int deep_dump = int(cp->params.find("deep_dump")->second);
 
 	int num_trajectories = cp->num_trajectories;
 
 	int num_dumps_total = ed->num_dumps_total;
-	if (cd_dump_deep == 1)
+	if (deep_dump == 1)
 	{
 		num_dumps_total = cp->num_obs_periods + 1;
 	}
@@ -438,7 +438,7 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 			cout << "dump_id: " << dump_id << endl;
 		}
 
-		if (cd_dump_deep == 1)
+		if (deep_dump == 1)
 		{
 			begin_period_id = dump_id - 1;
 			end_period_id = dump_id;
@@ -459,7 +459,7 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 			}
 		}
 
-		if (cd_dump_deep == 0)
+		if (deep_dump == 0)
 		{
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -887,7 +887,7 @@ void calc_chars_start_lpn(AllData * ad, int tr_id)
 
 	int sys_size = md->sys_size;
 
-	int type_lpn = double(cp->params.find("type_lpn")->second);
+	int lpn_type = double(cp->params.find("lpn_type")->second);
 
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
@@ -906,11 +906,11 @@ void calc_chars_start_lpn(AllData * ad, int tr_id)
 	double energy_lpn = energy;
 
 	double delta_s = 0.0;
-	if (type_lpn == 0)
+	if (lpn_type == 0)
 	{
 		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
-	else if (type_lpn == 0)
+	else if (lpn_type == 0)
 	{
 		delta_s = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
 	}
@@ -935,7 +935,7 @@ void calc_chars_lpn(AllData * ad, int tr_id)
 
 	int sys_size = md->sys_size;
 
-	int type_lpn = double(cp->params.find("type_lpn")->second);
+	int lpn_type = double(cp->params.find("lpn_type")->second);
 
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
@@ -1069,7 +1069,7 @@ void var_trajectory_lpn(AllData * ad, int tr_id)
 
 	int sys_size = md->sys_size;
 
-	double eps_lpn = double(cp->params.find("eps_lpn")->second);
+	double lpn_eps = double(cp->params.find("lpn_eps")->second);
 
 	VSLStreamStatePtr * streams_var = ed->streams_var;
 	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
@@ -1096,8 +1096,8 @@ void var_trajectory_lpn(AllData * ad, int tr_id)
 	double norm_2 = norm_square(phi_original, sys_size);
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
-		phi[st_id].real = phi_original[st_id].real + eps_lpn * phi_var[st_id].real;
-		phi[st_id].imag = phi_original[st_id].imag + eps_lpn * phi_var[st_id].imag;
+		phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
+		phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
 	}
 
 	delete[] phi_var;
@@ -1124,16 +1124,16 @@ void lambda_lpn(AllData * ad, int tr_id)
 
 	int sys_size = md->sys_size;
 
-	int type_lpn = double(cp->params.find("type_lpn")->second);
-	double delta_up_lpn = double(cp->params.find("delta_up_lpn")->second);
-	double delta_down_lpn = double(cp->params.find("delta_down_lpn")->second);
+	int lpn_type = double(cp->params.find("lpn_type")->second);
+	double lpn_delta_up = double(cp->params.find("lpn_delta_up")->second);
+	double lpn_delta_down = double(cp->params.find("lpn_delta_down")->second);
 
 	double delta_f = 0.0;
-	if (type_lpn == 0)
+	if (lpn_type == 0)
 	{
 		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
-	else if (type_lpn == 0)
+	else if (lpn_type == 0)
 	{
 		delta_f = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
 	}
@@ -1142,7 +1142,7 @@ void lambda_lpn(AllData * ad, int tr_id)
 		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
 
-	if ((delta_f > delta_up_lpn) || (delta_f < delta_down_lpn))
+	if ((delta_f > lpn_delta_up) || (delta_f < lpn_delta_down))
 	{
 		ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
 

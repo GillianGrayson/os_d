@@ -37,6 +37,9 @@ struct ExpData
 	double * times_all;							// Curr times for each trajectory
 	double * etas_all;							// Etas
 
+	vector<double> * jump_times;				// Times of jumps
+	vector<pair<double, double>> * jump_norms;	// Norms before and after during jumps
+
 	int period_id;								// Curr period_id
 	int dump_type;								// Type of dumping
 	int num_dumps_total;						// Total number of dumps
@@ -60,10 +63,12 @@ struct ExpData
 	// ======== Standart observables ========
 	double * mean_start;
 
+	double * norm;
 	double * mean;
 	double * dispersion;
 	double * m2;
 
+	double * norm_evo;
 	double * mean_evo;
 	double * dispersion_evo;
 	double * m2_evo;
