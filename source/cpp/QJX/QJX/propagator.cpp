@@ -181,7 +181,26 @@ void RKPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id, int
 
 void RKPropagateBehavior::one_period_cd_tp(AllData * ad, int tr_id, int thread_id, int period_id) const
 {
-	rk_period(ad, tr_id, thread_id, period_id);
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("cd_num_sub_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("cd_num_sub_steps")->second);
+
+	int step_id = 0;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			step_id = part_id * num_sub_steps_per_part + sub_step_id;
+
+			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
+			rk_period_cd(ad, tr_id, thread_id, time);
+		}
+	}
 }
 
 void RKPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_id, int period_id) const

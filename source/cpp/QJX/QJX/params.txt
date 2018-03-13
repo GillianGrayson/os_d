@@ -18,7 +18,7 @@ drv_ampl 1.5
 drv_freq 1.0
 drv_phase 0.0
 prm_E 1.0
-prm_U 0.1
+prm_U 0.01
 prm_J 1.0
 start_type 0
 start_state 0
