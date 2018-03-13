@@ -6,8 +6,8 @@ void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 
 	int num_trajectories = cp->num_trajectories;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < 1; tr_id++)
@@ -33,13 +33,13 @@ void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 		evo_chars_std(ad, tr_id, 0);
 		evo_chars_lpn(ad, tr_id, 0);
 
-		if (is_evo_dump_sep == 1)
+		if (dump_evo_sep == 1)
 		{
 			dump_adr_single(ad, tr_id, false);
 		}
 	}
 
-	if (is_evo_dump_avg == 1)
+	if (dump_evo_avg == 1)
 	{
 		dump_adr_avg(ad, false);
 	}
@@ -51,17 +51,19 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
+	ed->is_obs = 1;
+
 	int num_trajectories = cp->num_trajectories;
 
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 	int * dump_periods = ed->dump_periods;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
 	int begin_period_id = 0;
 	int end_period_id = 0;
-	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
+	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
 	{
 		if (rp->is_pp == 1)
 		{
@@ -103,13 +105,13 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 			evo_chars_std(ad, tr_id, dump_id);
 			evo_chars_lpn(ad, tr_id, dump_id);
 
-			if (is_evo_dump_sep == 1)
+			if (dump_evo_sep == 1)
 			{
 				dump_adr_single(ad, tr_id, true);
 			}
 		}
 
-		if (is_evo_dump_avg == 1)
+		if (dump_evo_avg == 1)
 		{
 			dump_adr_avg(ad, true);
 		}
@@ -119,13 +121,13 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 	dump_std(ad);
 	dump_lpn(ad);
 
-	if (is_evo_dump_sep == 1)
+	if (dump_evo_sep == 1)
 	{
 		dump_evo_std(ad);
 		dump_evo_lpn(ad);
 	}
 
-	if (is_evo_dump_avg == 0)
+	if (dump_evo_avg == 0)
 	{
 		dump_adr_avg(ad, true);
 	}
@@ -138,8 +140,8 @@ void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 
 	int num_trajectories = cp->num_trajectories;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -157,13 +159,13 @@ void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 
 		evo_chars_std(ad, tr_id, 0);
 
-		if (is_evo_dump_sep == 1)
+		if (dump_evo_sep == 1)
 		{
 			dump_adr_single(ad, tr_id, false);
 		}
 	}
 
-	if (is_evo_dump_avg == 1)
+	if (dump_evo_avg == 1)
 	{
 		dump_adr_avg(ad, false);
 	}
@@ -175,17 +177,19 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
+	ed->is_obs = 1;
+
 	int num_trajectories = cp->num_trajectories;
 
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 	int * dump_periods = ed->dump_periods;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
 	int begin_period_id = 0;
 	int end_period_id = 0;
-	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
+	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
 	{
 		if (rp->is_pp == 1)
 		{
@@ -212,13 +216,13 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 
 			evo_chars_std(ad, tr_id, dump_id);
 
-			if (is_evo_dump_sep == 1)
+			if (dump_evo_sep == 1)
 			{
 				dump_adr_single(ad, tr_id, true);
 			}
 		}
 
-		if (is_evo_dump_avg == 1)
+		if (dump_evo_avg == 1)
 		{
 			dump_adr_avg(ad, true);
 		}
@@ -226,12 +230,12 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 
 	dump_std(ad);
 
-	if (is_evo_dump_sep == 1)
+	if (dump_evo_sep == 1)
 	{
 		dump_evo_std(ad);
 	}
 
-	if (is_evo_dump_avg == 0)
+	if (dump_evo_avg == 0)
 	{
 		dump_adr_avg(ad, false);
 	}
@@ -243,8 +247,8 @@ void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 
 	int num_trajectories = cp->num_trajectories;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -262,13 +266,13 @@ void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 
 		evo_chars_std(ad, tr_id, 0);
 
-		if (is_evo_dump_sep == 1)
+		if (dump_evo_sep == 1)
 		{
 			dump_adr_single(ad, tr_id, false);
 		}
 	}
 
-	if (is_evo_dump_avg == 1)
+	if (dump_evo_avg == 1)
 	{
 		dump_adr_avg(ad, false);
 	}
@@ -280,24 +284,26 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
+	ed->is_obs = 1;
+
 	int deep_dump = int(cp->params.find("deep_dump")->second);
 
 	int num_trajectories = cp->num_trajectories;
 
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 	if (deep_dump == 1)
 	{
-		num_dumps_total = cp->num_obs_periods + 1;
+		dump_num_total = cp->num_obs_periods + 1;
 	}
 
 	int * dump_periods = ed->dump_periods;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
 	int begin_period_id = 0;
 	int end_period_id = 0;
-	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
+	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
 	{
 		if (rp->is_pp == 1)
 		{
@@ -332,14 +338,14 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			{
 				evo_chars_std(ad, tr_id, dump_id);
 
-				if (is_evo_dump_sep == 1)
+				if (dump_evo_sep == 1)
 				{
 					dump_adr_single(ad, tr_id, true);
 				}
 			}
 		}
 
-		if (is_evo_dump_avg == 1)
+		if (dump_evo_avg == 1)
 		{
 			dump_adr_avg(ad, true);
 		}
@@ -355,12 +361,12 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 
 	dump_cd(ad);
 
-	if (is_evo_dump_sep == 1)
+	if (dump_evo_sep == 1)
 	{
 		dump_evo_std(ad);
 	}
 
-	if (is_evo_dump_avg == 0)
+	if (dump_evo_avg == 0)
 	{
 		dump_adr_avg(ad, false);
 	}
@@ -372,8 +378,8 @@ void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * p
 
 	int num_trajectories = cp->num_trajectories;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < 1; tr_id++)
@@ -396,13 +402,13 @@ void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * p
 
 		evo_chars_std(ad, tr_id, 0);
 
-		if (is_evo_dump_sep == 1)
+		if (dump_evo_sep == 1)
 		{
 			dump_adr_single(ad, tr_id, false);
 		}
 	}
 
-	if (is_evo_dump_avg == 1)
+	if (dump_evo_avg == 1)
 	{
 		dump_adr_avg(ad, false);
 	}
@@ -414,24 +420,26 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
+	ed->is_obs = 1;
+
 	int deep_dump = int(cp->params.find("deep_dump")->second);
 
 	int num_trajectories = cp->num_trajectories;
 
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 	if (deep_dump == 1)
 	{
-		num_dumps_total = cp->num_obs_periods + 1;
+		dump_num_total = cp->num_obs_periods + 1;
 	}
 
 	int * dump_periods = ed->dump_periods;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_evo_dump_avg = int(cp->params.find("is_evo_dump_avg")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
 	int begin_period_id = 0;
 	int end_period_id = 0;
-	for (int dump_id = 1; dump_id < num_dumps_total; dump_id++)
+	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
 	{
 		if (rp->is_pp == 1)
 		{
@@ -466,14 +474,14 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 			{
 				evo_chars_std(ad, tr_id, dump_id);
 
-				if (is_evo_dump_sep == 1)
+				if (dump_evo_sep == 1)
 				{
 					dump_adr_single(ad, tr_id, true);
 				}
 			}
 		}
 
-		if (is_evo_dump_avg == 1)
+		if (dump_evo_avg == 1)
 		{
 			dump_adr_avg(ad, true);
 		}
@@ -481,12 +489,12 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 
 	dump_std(ad);
 
-	if (is_evo_dump_sep == 1)
+	if (dump_evo_sep == 1)
 	{
 		dump_evo_std(ad);
 	}
 
-	if (is_evo_dump_avg == 0)
+	if (dump_evo_avg == 0)
 	{
 		dump_adr_avg(ad, false);
 	}
@@ -655,8 +663,11 @@ void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 {
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
+	ConfigParam * cp = ad->cp;
 
 	int sys_size = md->sys_size;
+
+	int jump = int(cp->params.find("jump")->second);
 
 	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
@@ -673,6 +684,18 @@ void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 			prop_step(phi, branch->matrix, phi_aux, branch->N);
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
+				
+				if (jump == 1 && ed->is_obs == 1)
+				{
+					double jump_time = ed->times_all[tr_id] + branch->dt;
+					double jump_norm = norm_square(phi_aux, branch->N);
+					double jump_eta = *eta;
+
+					ed->jump_times[tr_id].push_back(jump_time);
+					ed->jump_norms[tr_id].push_back(jump_norm);
+					ed->jump_etas[tr_id].push_back(jump_eta);
+				}
+
 				recovery(ad, head, tr_id);
 				vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
 				while (*eta == 0.0)
@@ -822,19 +845,20 @@ void calc_chars_start_std(AllData * ad, int tr_id)
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
-	double norm_2 = norm_square(phi, sys_size);
+	double norm = norm_square(phi, sys_size);
 
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
-		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
 	}
 
 	double mean = get_mean_simple(adr, sys_size);
 	double dispersion = get_dispersion_simple(mean, mean);
 	double m2 = get_m2(adr, sys_size, mean);
 
+	ed->norm[tr_id]				= norm;
 	ed->mean_start[tr_id]		= mean;
-	ed->mean[tr_id]			= mean;
+	ed->mean[tr_id]				= mean;
 	ed->dispersion[tr_id]		= dispersion;
 	ed->m2[tr_id]				= m2;
 }
@@ -848,17 +872,18 @@ void calc_chars_std(AllData * ad, int tr_id)
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
-	double norm_2 = norm_square(phi, sys_size);
+	double norm = norm_square(phi, sys_size);
 
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
-		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
 	}
 
 	double mean = get_mean_simple(adr, sys_size);
 	double dispersion = get_dispersion_simple(mean, ed->mean_start[tr_id]);
 	double m2 = get_m2(adr, sys_size, mean);
 
+	ed->norm[tr_id] = norm;
 	ed->mean[tr_id] = mean;
 	ed->dispersion[tr_id] = dispersion;
 	ed->m2[tr_id] = m2;
@@ -870,10 +895,11 @@ void evo_chars_std(AllData * ad, int tr_id, int dump_id)
 	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->num_trajectories;
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 
-	int index = tr_id * num_dumps_total + dump_id;
+	int index = tr_id * dump_num_total + dump_id;
 
+	ed->norm_evo[index] = ed->norm[tr_id];
 	ed->mean_evo[index] = ed->mean[tr_id];
 	ed->dispersion_evo[index] = ed->dispersion[tr_id];
 	ed->m2_evo[index] = ed->m2[tr_id];
@@ -1000,9 +1026,9 @@ void evo_chars_lpn(AllData * ad, int tr_id, int dump_id)
 	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->num_trajectories;
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 
-	int index = tr_id * num_dumps_total + dump_id;
+	int index = tr_id * dump_num_total + dump_id;
 
 	ed->energy_evo[index] = ed->energy[tr_id];
 	ed->lambda_evo[index] = ed->lambda_now[tr_id];

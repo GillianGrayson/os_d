@@ -45,16 +45,16 @@
     <ClInclude Include="propagator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="split.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="qj_proc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rk_proc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="split.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -77,6 +77,9 @@
     <ClCompile Include="newdel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="newdel_exp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="outputter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -86,16 +89,13 @@
     <ClCompile Include="propagator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="newdel_exp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="qj_proc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rk_proc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

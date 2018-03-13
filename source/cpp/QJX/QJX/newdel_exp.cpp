@@ -245,7 +245,8 @@ void init_basic_data(AllData * ad)
 	if (jump == 1)
 	{
 		ed->jump_times = new vector<double>[num_trajectories];
-		ed->jump_norms = new vector<pair<double, double>>[num_trajectories];
+		ed->jump_norms = new vector<double>[num_trajectories];
+		ed->jump_etas = new vector<double>[num_trajectories];
 	}
 }
 
@@ -258,15 +259,15 @@ void init_dump_periods_cd_deep(AllData * ad)
 	ed->period_id = 0;
 
 	ed->dump_type = int(cp->params.find("dump_type")->second);
-	int num_dumps = int(cp->params.find("num_dumps")->second);
+	int dump_num = int(cp->params.find("dump_num")->second);
 	int num_obs_periods = cp->num_obs_periods;
 
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-	int num_dumps_total = num_sub_steps * cp->num_obs_periods + 1;
+	int dump_num_total = num_sub_steps * cp->num_obs_periods + 1;
 
-	ed->num_dumps_total = num_dumps_total;
-	ed->dump_periods = new int[ed->num_dumps_total];
+	ed->dump_num_total = dump_num_total;
+	ed->dump_periods = new int[ed->dump_num_total];
 
 	ed->dump_periods[0] = 0;
 
@@ -289,34 +290,34 @@ void init_dump_periods(AllData * ad)
 	ed->period_id = 0;
 
 	ed->dump_type = int(cp->params.find("dump_type")->second);
-	int num_dumps = int(cp->params.find("num_dumps")->second);
+	int dump_num = int(cp->params.find("dump_num")->second);
 	int num_obs_periods = cp->num_obs_periods;
 
 	if (ed->dump_type == 0)
 	{
-		ed->num_dumps_total = num_dumps + 1;
-		ed->dump_periods = new int[ed->num_dumps_total];
+		ed->dump_num_total = dump_num + 1;
+		ed->dump_periods = new int[ed->dump_num_total];
 
 		ed->dump_periods[0] = 0;
 
-		int dump_shift = num_obs_periods / num_dumps;
-		for (int dump_id = 0; dump_id < num_dumps; dump_id++)
+		int dump_shift = num_obs_periods / dump_num;
+		for (int dump_id = 0; dump_id < dump_num; dump_id++)
 		{
 			ed->dump_periods[dump_id + 1] = (dump_id + 1) * dump_shift;
 		}
 	}
 	else if (ed->dump_type == 1)
 	{
-		ed->num_dumps_total = num_dumps + 2;
-		ed->dump_periods = new int[ed->num_dumps_total];
+		ed->dump_num_total = dump_num + 2;
+		ed->dump_periods = new int[ed->dump_num_total];
 
 		ed->dump_periods = 0;
 
 		double begin_decade = log10(1.0);
 		double end_decade = log10(double(num_obs_periods));
 		double num_decades = end_decade - begin_decade;
-		double num_decades_dump = double(num_dumps) / num_decades;
-		for (int dump_id = 0; dump_id < num_dumps + 1; dump_id++)
+		double num_decades_dump = double(dump_num) / num_decades;
+		for (int dump_id = 0; dump_id < dump_num + 1; dump_id++)
 		{
 			int curr_val = int(pow(10.0, begin_decade) * pow(10.0, (1.0 / num_decades_dump) * double(dump_id)));
 
@@ -338,33 +339,37 @@ void init_obs_std(AllData * ad)
 	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->num_trajectories;
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 
+	ed->norm			= new double[num_trajectories];
 	ed->mean_start		= new double[num_trajectories];
-
 	ed->mean			= new double[num_trajectories];
 	ed->dispersion		= new double[num_trajectories];
 	ed->m2				= new double[num_trajectories];
 
-	ed->mean_evo		= new double[num_trajectories * num_dumps_total];
-	ed->dispersion_evo = new double[num_trajectories * num_dumps_total];
-	ed->m2_evo			= new double[num_trajectories * num_dumps_total];
+	ed->norm_evo		= new double[num_trajectories * dump_num_total];
+	ed->mean_evo		= new double[num_trajectories * dump_num_total];
+	ed->dispersion_evo	= new double[num_trajectories * dump_num_total];
+	ed->m2_evo			= new double[num_trajectories * dump_num_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
+		ed->norm[tr_id] = 0.0;
 		ed->mean_start[tr_id]	= 0.0;
-
-		ed->mean[tr_id]		= 0.0;
+		ed->mean[tr_id]			= 0.0;
 		ed->dispersion[tr_id]	= 0.0;
 		ed->m2[tr_id]			= 0.0;
 
-		for (int dump_id = 0; dump_id < num_dumps_total; dump_id++)
+		for (int dump_id = 0; dump_id < dump_num_total; dump_id++)
 		{
-			ed->mean_evo[tr_id * num_dumps_total + dump_id]		= 0.0;
-			ed->dispersion_evo[tr_id * num_dumps_total + dump_id]	= 0.0;
-			ed->m2_evo[tr_id * num_dumps_total + dump_id]			= 0.0;
+			ed->norm_evo[tr_id * dump_num_total + dump_id]			= 0.0;
+			ed->mean_evo[tr_id * dump_num_total + dump_id]			= 0.0;
+			ed->dispersion_evo[tr_id * dump_num_total + dump_id]	= 0.0;
+			ed->m2_evo[tr_id * dump_num_total + dump_id]			= 0.0;
 		}
 	}
+
+	ed->is_obs = 0;
 }
 
 void init_obs_lpn(AllData * ad)
@@ -375,7 +380,7 @@ void init_obs_lpn(AllData * ad)
 
 	int sys_size = md->sys_size;
 	int num_trajectories = cp->num_trajectories;
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 
 	double prm_E = double(cp->params.find("prm_E")->second);
 	double * hamiltonian = md->hamiltonian;
@@ -399,10 +404,10 @@ void init_obs_lpn(AllData * ad)
 	ed->mean_lpn = new double[num_trajectories];
 	ed->energy_lpn = new double[num_trajectories];
 
-	ed->energy_evo = new double[num_trajectories * num_dumps_total];
-	ed->lambda_evo = new double[num_trajectories * num_dumps_total];
-	ed->mean_lpn_evo = new double[num_trajectories * num_dumps_total];
-	ed->energy_lpn_evo = new double[num_trajectories * num_dumps_total];
+	ed->energy_evo = new double[num_trajectories * dump_num_total];
+	ed->lambda_evo = new double[num_trajectories * dump_num_total];
+	ed->mean_lpn_evo = new double[num_trajectories * dump_num_total];
+	ed->energy_lpn_evo = new double[num_trajectories * dump_num_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
@@ -414,12 +419,12 @@ void init_obs_lpn(AllData * ad)
 		ed->mean_lpn[tr_id] = 0.0;
 		ed->energy_lpn[tr_id] = 0.0;
 
-		for (int dump_id = 0; dump_id < num_dumps_total; dump_id++)
+		for (int dump_id = 0; dump_id < dump_num_total; dump_id++)
 		{
-			ed->energy_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			ed->lambda_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			ed->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
-			ed->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = 0.0;
+			ed->energy_evo[tr_id * dump_num_total + dump_id] = 0.0;
+			ed->lambda_evo[tr_id * dump_num_total + dump_id] = 0.0;
+			ed->mean_lpn_evo[tr_id * dump_num_total + dump_id] = 0.0;
+			ed->energy_lpn_evo[tr_id * dump_num_total + dump_id] = 0.0;
 		}	
 	}
 }
@@ -507,6 +512,8 @@ void free_basic_data(AllData * ad)
 	ExpData * ed = ad->ed;
 	ConfigParam * cp = ad->cp;
 
+	int num_trajectories = cp->num_trajectories;
+
 	delete[] ed->phi_all;
 	delete[] ed->phi_all_aux;
 	delete[] ed->abs_diag_rho_all;
@@ -516,8 +523,15 @@ void free_basic_data(AllData * ad)
 	int jump = int(cp->params.find("jump")->second);
 	if (jump == 1)
 	{
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			ed->jump_times[tr_id].clear();
+			ed->jump_norms[tr_id].clear();
+			ed->jump_etas[tr_id].clear();
+		}
 		delete[] ed->jump_times;
 		delete[] ed->jump_norms;
+		delete[] ed->jump_etas;
 	}
 }
 
@@ -532,12 +546,13 @@ void free_obs_std(AllData * ad)
 {
 	ExpData * ed = ad->ed;
 
+	delete[] ed->norm;
 	delete[] ed->mean_start;
-
 	delete[] ed->mean;
 	delete[] ed->dispersion;
 	delete[] ed->m2;
 
+	delete[] ed->norm_evo;
 	delete[] ed->mean_evo;
 	delete[] ed->dispersion_evo;
 	delete[] ed->m2_evo;

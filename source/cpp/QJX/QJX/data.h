@@ -37,12 +37,15 @@ struct ExpData
 	double * times_all;							// Curr times for each trajectory
 	double * etas_all;							// Etas
 
+	int is_obs;
+
 	vector<double> * jump_times;				// Times of jumps
-	vector<pair<double, double>> * jump_norms;	// Norms before and after during jumps
+	vector<double> * jump_norms;				// Norms before jumps
+	vector<double> * jump_etas;					// Etas
 
 	int period_id;								// Curr period_id
 	int dump_type;								// Type of dumping
-	int num_dumps_total;						// Total number of dumps
+	int dump_num_total;						// Total number of dumps
 	int * dump_periods;							// Dump periods
 
 	// ======== RK Data ========

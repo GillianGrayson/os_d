@@ -60,7 +60,7 @@ void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 	ExpData * ed = ad->ed;
 
 	int deep_dump = int(cp->params.find("deep_dump")->second);
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
@@ -101,7 +101,7 @@ void QJPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 
 				evo_chars_std(ad, tr_id, dump_id);
 
-				if (is_evo_dump_sep == 1)
+				if (dump_evo_sep == 1)
 				{
 					dump_adr_single(ad, tr_id, true);
 				}
@@ -116,7 +116,7 @@ void QJPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 	MainData * md = ad->md;
 
 	int deep_dump = int(cp->params.find("deep_dump")->second);
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
@@ -145,7 +145,7 @@ void QJPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 
 				evo_chars_std(ad, tr_id, dump_id);
 
-				if (is_evo_dump_sep == 1)
+				if (dump_evo_sep == 1)
 				{
 					dump_adr_single(ad, tr_id, true);
 				}
@@ -210,7 +210,7 @@ void RKPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 	ExpData * ed = ad->ed;
 
 	int deep_dump = int(cp->params.find("deep_dump")->second);
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
@@ -253,7 +253,7 @@ void RKPropagateBehavior::one_period_cd_obs(AllData * ad, int tr_id, int thread_
 
 				evo_chars_std(ad, tr_id, dump_id);
 
-				if (is_evo_dump_sep == 1)
+				if (dump_evo_sep == 1)
 				{
 					dump_adr_single(ad, tr_id, true);
 				}
@@ -268,7 +268,7 @@ void RKPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 	MainData * md = ad->md;
 
 	int deep_dump = int(cp->params.find("deep_dump")->second);
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
@@ -300,7 +300,7 @@ void RKPropagateBehavior::one_period_sigma_obs(AllData * ad, int tr_id, int thre
 
 				evo_chars_std(ad, tr_id, dump_id);
 
-				if (is_evo_dump_sep == 1)
+				if (dump_evo_sep == 1)
 				{
 					dump_adr_single(ad, tr_id, true);
 				}

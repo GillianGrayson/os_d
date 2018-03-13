@@ -225,6 +225,54 @@ void save_2d_inv_double_data(string file_name, double * data, int num_rows, int 
 	}
 }
 
+void save_double_vector(string file_name, vector<double> vec, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int st_id = 0; st_id < vec.size(); st_id++)
+			{
+				ofs << vec[st_id] << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int st_id = 0; st_id < vec.size(); st_id++)
+			{
+				ofs << vec[st_id] << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+}
+
 void save_int_data(string file_name, int * data, int size, bool append)
 {
 	if (append)

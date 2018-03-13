@@ -444,6 +444,8 @@ void rk_step(AllData * ad, int tr_id, int th_id, double step)
 
 	int sys_size = md->sys_size;
 
+	int jump = int(cp->params.find("jump")->second);
+
 	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * eta = &(ed->etas_all[tr_id]);
@@ -472,6 +474,17 @@ void rk_step(AllData * ad, int tr_id, int th_id, double step)
 		restore_from_prev(ad, tr_id, th_id, step);
 
 		rk_int(ad, tr_id, th_id, begin_step);
+
+		if (jump == 1 && ed->is_obs == 1)
+		{
+			double jump_time = ed->times_all[tr_id];
+			double jump_norm = norm_square(phi, sys_size);
+			double jump_eta = *eta;
+
+			ed->jump_times[tr_id].push_back(jump_time);
+			ed->jump_norms[tr_id].push_back(jump_norm);
+			ed->jump_etas[tr_id].push_back(jump_eta);
+		}
 
 		rk_recovery(ad, tr_id, th_id);
 		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);

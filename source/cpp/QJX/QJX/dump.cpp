@@ -7,12 +7,12 @@ void dump_adr_single(AllData * ad, int tr_id, bool append)
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	int is_evo_dump_sep = int(cp->params.find("is_evo_dump_sep")->second);
-	int is_adr_dump_sep = int(cp->params.find("is_adr_dump_sep")->second);
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_adr_sep = int(cp->params.find("dump_adr_sep")->second);
 
-	if(is_evo_dump_sep == 1)
+	if(dump_evo_sep == 1)
 	{
-		if (is_adr_dump_sep == 1)
+		if (dump_adr_sep == 1)
 		{
 			int sys_size = md->sys_size;
 			double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
@@ -30,9 +30,9 @@ void dump_adr_avg(AllData * ad, bool append)
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	int is_adr_dump_avg = int(cp->params.find("is_adr_dump_avg")->second);
+	int dump_adr_avg = int(cp->params.find("dump_adr_avg")->second);
 
-	if (is_adr_dump_avg == 1)
+	if (dump_adr_avg == 1)
 	{
 		int sys_size = md->sys_size;
 		int num_trajectories = cp->num_trajectories;
@@ -60,57 +60,28 @@ void dump_adr_avg(AllData * ad, bool append)
 	}
 }
 
-void update_evo_std(AllData * ad, int dump_id)
-{
-	ConfigParam * cp = ad->cp;
-	ExpData * ed = ad->ed;
-
-	int num_trajectories = cp->num_trajectories;
-	int num_dumps_total = ed->num_dumps_total;
-
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		ed->mean_evo[tr_id * num_dumps_total + dump_id] = ed->mean[tr_id];
-		ed->dispersion_evo[tr_id * num_dumps_total + dump_id] = ed->dispersion[tr_id];
-		ed->m2_evo[tr_id * num_dumps_total + dump_id] = ed->m2[tr_id];
-	}
-}
-
-void update_evo_lpn(AllData * ad, int dump_id)
-{
-	ConfigParam * cp = ad->cp;
-	ExpData * ed = ad->ed;
-
-	int num_trajectories = cp->num_trajectories;
-	int num_dumps_total = ed->num_dumps_total;
-
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		ed->energy_evo[tr_id * num_dumps_total + dump_id] = ed->energy[tr_id];
-		ed->lambda_evo[tr_id * num_dumps_total + dump_id] = ed->lambda_now[tr_id];
-		ed->mean_lpn_evo[tr_id * num_dumps_total + dump_id] = ed->mean_lpn[tr_id];
-		ed->energy_lpn_evo[tr_id * num_dumps_total + dump_id] = ed->energy_lpn[tr_id];
-	}
-}
-
 void dump_std(AllData * ad)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
+	int dump_obs = int(cp->params.find("dump_obs")->second);
 
-	if (is_obs_dump == 1)
+	if (dump_obs == 1)
 	{
 		int num_trajectories = cp->num_trajectories;
 
+		double * norm = ed->norm;
 		double * mean_start = ed->mean_start;
 		double * mean = ed->mean;
 		double * dispersion = ed->dispersion;
 		double * m2 = ed->m2;
 
 		string fn;
+
+		fn = rp->path + "norm" + cp->fn_suffix;
+		save_double_data(fn, norm, num_trajectories, 16, false);
 
 		fn = rp->path + "mean_start" + cp->fn_suffix;
 		save_double_data(fn, mean_start, num_trajectories, 16, false);
@@ -134,9 +105,9 @@ void dump_lpn(AllData * ad)
 
 	int num_trajectories = cp->num_trajectories;
 
-	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
+	int dump_obs = int(cp->params.find("dump_obs")->second);
 
-	if (is_obs_dump == 1)
+	if (dump_obs == 1)
 	{
 
 		double * energy = ed->energy;
@@ -183,15 +154,16 @@ void dump_evo_std(AllData * ad)
 	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->num_trajectories;
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 
-	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+	int jump = int(cp->params.find("jump")->second);
 
-	if (is_obs_dump == 1)
+	if (dump_obs == 1)
 	{
-
 		int * dump_periods = ed->dump_periods;
 
+		double * norm_evo = ed->norm_evo;
 		double * mean_evo = ed->mean_evo;
 		double * dispersion_evo = ed->dispersion_evo;
 		double * m2_evo = ed->m2_evo;
@@ -199,16 +171,34 @@ void dump_evo_std(AllData * ad)
 		string fn;
 
 		fn = rp->path + "periods" + cp->fn_suffix;
-		save_int_data(fn, dump_periods, num_dumps_total, false);
+		save_int_data(fn, dump_periods, dump_num_total, false);
+
+		fn = rp->path + "norm_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, norm_evo, dump_num_total, num_trajectories, 16, false);
 
 		fn = rp->path + "mean_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, mean_evo, num_dumps_total, num_trajectories, 16, false);
+		save_2d_inv_double_data(fn, mean_evo, dump_num_total, num_trajectories, 16, false);
 
 		fn = rp->path + "dispersion_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, dispersion_evo, num_dumps_total, num_trajectories, 16, false);
+		save_2d_inv_double_data(fn, dispersion_evo, dump_num_total, num_trajectories, 16, false);
 
 		fn = rp->path + "m2_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, m2_evo, num_dumps_total, num_trajectories, 16, false);
+		save_2d_inv_double_data(fn, m2_evo, dump_num_total, num_trajectories, 16, false);
+
+		if (jump == 1)
+		{
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
+
+				fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_norms[tr_id], 16, false);
+
+				fn = rp->path + "jump_etas_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_etas[tr_id], 16, false);
+			}
+		}
 	}
 }
 
@@ -219,11 +209,11 @@ void dump_evo_lpn(AllData * ad)
 	ExpData * ed = ad->ed;
 
 	int num_trajectories = cp->num_trajectories;
-	int num_dumps_total = ed->num_dumps_total;
+	int dump_num_total = ed->dump_num_total;
 
-	int is_obs_dump = int(cp->params.find("is_obs_dump")->second);
+	int dump_obs = int(cp->params.find("dump_obs")->second);
 
-	if (is_obs_dump == 1)
+	if (dump_obs == 1)
 	{
 
 		double * energy_evo = ed->energy_evo;
@@ -234,15 +224,15 @@ void dump_evo_lpn(AllData * ad)
 		string fn;
 
 		fn = rp->path + "energy_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, energy_evo, num_dumps_total, num_trajectories, 16, false);
+		save_2d_inv_double_data(fn, energy_evo, dump_num_total, num_trajectories, 16, false);
 
 		fn = rp->path + "lambda_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, lambda_evo, num_dumps_total, num_trajectories, 16, false);
+		save_2d_inv_double_data(fn, lambda_evo, dump_num_total, num_trajectories, 16, false);
 
 		fn = rp->path + "mean_lpn_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, mean_lpn_evo, num_dumps_total, num_trajectories, 16, false);
+		save_2d_inv_double_data(fn, mean_lpn_evo, dump_num_total, num_trajectories, 16, false);
 
 		fn = rp->path + "energy_lpn_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, energy_lpn_evo, num_dumps_total, num_trajectories, 16, false);
+		save_2d_inv_double_data(fn, energy_lpn_evo, dump_num_total, num_trajectories, 16, false);
 	}
 }
