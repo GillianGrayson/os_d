@@ -38,13 +38,20 @@ public:
 	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
 };
 
+class StdDeepNewDelBehaviour : public ExpNewDelBehavior
+{
+public:
+	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
+};
+
 void init_streams(AllData * ad);
 void leap_frog_single_stream(AllData * ad, int tr_id);
 void leap_frog_all_streams(AllData * ad);
 void copy_streams(AllData * ad);
 void init_streams_var(AllData * ad);
 void init_basic_data(AllData * ad);
-void init_dump_periods_cd_deep(AllData * ad);
+void init_dump_periods_deep(AllData * ad);
 void init_dump_periods(AllData * ad);
 void init_obs_std(AllData * ad);
 void init_obs_lpn(AllData * ad);

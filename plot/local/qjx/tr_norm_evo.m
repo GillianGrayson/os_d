@@ -29,7 +29,7 @@ size_sys = N + 1;
 
 tr_id = 0;
 
-is_mean = 1;
+is_mean = 0;
 
 data_path = '../../../source/cpp/QJX/QJX';
 
@@ -66,21 +66,34 @@ if(cd_dump_deep == 1)
     end
 end
 
-adr = zeros(size_sys, num_dumps);
+fn = sprintf('%s/norm_evo_%s.txt', data_path, suffix);
+norm_evo_data = importdata(fn);
+norm_evo = norm_evo_data(:, tr_id + 1);
 
-fn = sprintf('%s/adr_%d_%s.txt', data_path, tr_id, suffix);
-adr_data = importdata(fn);
+fn = sprintf('%s/jump_times_%d_%s.txt', data_path, tr_id, suffix);
+jump_times = importdata(fn);
+jump_times = jump_times / T;
+jump_times_after = jump_times + 10e-10;
 
-for dump_id = 1:num_dumps
-    for i = 1:size_sys
-        adr(i, dump_id) = adr_data((dump_id-1)*size_sys + i);
-    end
+fn = sprintf('%s/jump_norms_%d_%s.txt', data_path, tr_id, suffix);
+jump_norms = importdata(fn);
+jump_norms_after = ones(size(jump_norms, 1), 1);
+
+fn = sprintf('%s/jump_etas_%d_%s.txt', data_path, tr_id, suffix);
+jump_etas = importdata(fn);
+
+all_times = vertcat(dump_periods, jump_times, jump_times_after);
+all_norms = vertcat(norm_evo, jump_norms, jump_norms_after);
+
+[all_times_sorted, order] = sort(all_times);
+all_norms_sorted = zeros(size(all_times_sorted, 1), 1);
+
+for t_id = 1:size(all_times_sorted, 1)
+    all_norms_sorted(t_id) = all_norms(order(t_id));
 end
 
-states = linspace(1, size_sys, size_sys) / size_sys;
-
 fig = figure;
-hLine = imagesc(dump_periods, states, adr);
+hLine = plot(all_times_sorted, all_norms_sorted);
 title_str = sprintf('config(%d %d %d) tr(%d) N(%d) drv(%d %0.2f) prm(%0.2f %0.2f %0.2f)', ...
     sys_id, ...
     task_id, ...
@@ -97,23 +110,9 @@ set(gca, 'FontSize', 30);
 xlabel('$t/T$', 'Interpreter', 'latex');
 xlim([dump_periods(1) dump_periods(end)])
 set(gca, 'FontSize', 30);
-ylabel('$n$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, '$\rho_{n,n}$', 'FontSize', 33, 'interpreter','latex');
-set(gca,'YDir','normal');
-% set(gca, 'XAxisLocation', 'top');
-% set(gca,'xticklabel',[]);
-% set(gca, 'Position', [0.15 0.50 0.70 0.40])
+ylabel('$||\psi||^2$', 'Interpreter', 'latex');
 hold all;
-
-if(is_mean == 1)
-    fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
-    mean_evo_data = importdata(fn);
-    mean_evo = mean_evo_data(:, tr_id + 1);
-    hLine = plot(dump_periods, mean_evo / size_sys);
-end
+hLine = scatter(jump_times, jump_norms);
 
 propertyeditor(fig)
 

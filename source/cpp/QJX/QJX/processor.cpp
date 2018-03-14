@@ -42,7 +42,7 @@ void Processor::process()
 	ndb->init_dissipators(ad);
 	ndb->init_hamiltonians_qj(ad);
 
-	ob->suffix_param(ad->cp, 4);
+	ob->suffix_param(ad->rp, ad->cp, 4);
 	db->save(ad);
 
 	ndb_exp->init_data(ad, pb);

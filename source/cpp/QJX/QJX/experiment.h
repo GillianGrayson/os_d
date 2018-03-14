@@ -39,7 +39,7 @@ public:
 	virtual void obser_process(AllData * ad, PropagateBehavior * pb) const;
 };
 
-class DeepStdExperimentBehaviour : public ExperimentBehavior
+class StdDeepExperimentBehaviour : public ExperimentBehavior
 {
 public:
 	virtual void trans_process(AllData * ad, PropagateBehavior * pb) const;
@@ -61,7 +61,7 @@ void recovery(AllData * ad, Split * head, int tr_id);
 
 void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch);
 
-void one_sub_period_cd(AllData * ad, int tr_id, int part_id, int thread_id);
+void one_sub_period_deep(AllData * ad, int tr_id, int part_id, int thread_id);
 
 double get_norm_cd(double * vec, int size);
 
@@ -97,6 +97,6 @@ void var_trajectory_lpn(AllData * ad, int tr_id);
 
 void lambda_lpn(AllData * ad, int tr_id);
 
-void trans_process_single_std(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id);
+void trans_process_single(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id);
 
-void trans_process_single_cd(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id);
+void trans_process_single_deep(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id);

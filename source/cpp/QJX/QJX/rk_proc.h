@@ -31,4 +31,4 @@ void rk_step(AllData * ad, int tr_id, int th_id, double step);
 
 void rk_period(AllData * ad, int tr_id, int th_id, int period_id);
 
-void rk_period_cd(AllData * ad, int tr_id, int th_id, double start_time);
+void rk_period_deep(AllData * ad, int tr_id, int th_id, double start_time);

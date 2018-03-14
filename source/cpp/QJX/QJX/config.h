@@ -23,6 +23,7 @@
 #define STD_TASK_ID 1 
 #define CD_TASK_ID 2 
 #define SIGMA_TASK_ID 3
+#define STD_DEEP_TASK_ID 4 
 
 #define QJ_PROP_TYPE 0
 #define RK_PROP_TYPE 1

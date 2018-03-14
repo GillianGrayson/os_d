@@ -63,7 +63,7 @@ void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 
 	int deep_dump = int(cp->params.find("deep_dump")->second);
 
-	pb->init_prop_data_cd(ad);
+	pb->init_prop_data_deep(ad);
 	init_streams(ad);
 	copy_streams(ad);
 	leap_frog_all_streams(ad);
@@ -71,7 +71,7 @@ void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 	
 	if(deep_dump == 1)
 	{
-		init_dump_periods_cd_deep(ad);
+		init_dump_periods_deep(ad);
 	}
 	else
 	{
@@ -89,7 +89,7 @@ void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 
 void CorrDimNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
 {
-	pb->free_prop_data_cd(ad);
+	pb->free_prop_data_deep(ad);
 	free_streams(ad);
 	free_basic_data(ad);
 	free_dump_priods(ad);
@@ -105,7 +105,7 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 
 	int deep_dump = int(cp->params.find("deep_dump")->second);
 
-	pb->init_prop_data_cd(ad);
+	pb->init_prop_data_deep(ad);
 	init_streams(ad);
 	copy_streams(ad);
 	leap_frog_all_streams(ad);
@@ -114,7 +114,7 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 
 	if (deep_dump == 1)
 	{
-		init_dump_periods_cd_deep(ad);
+		init_dump_periods_deep(ad);
 	}
 	else
 	{
@@ -128,7 +128,36 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 
 void SigmaNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
 {
-	pb->free_prop_data_cd(ad);
+	pb->free_prop_data_deep(ad);
+	free_streams(ad);
+	free_basic_data(ad);
+	free_dump_priods(ad);
+	free_obs_std(ad);
+}
+
+void StdDeepNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+{
+	ConfigParam * cp = ad->cp;
+
+	int num_trajectories = cp->num_trajectories;
+
+	pb->init_prop_data_deep(ad);
+	init_streams(ad);
+	copy_streams(ad);
+	leap_frog_all_streams(ad);
+	init_basic_data(ad);
+	init_dump_periods_deep(ad);
+	init_obs_std(ad);
+
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		init_start_state(ad, tr_id);
+	}
+}
+
+void StdDeepNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+{
+	pb->free_prop_data_deep(ad);
 	free_streams(ad);
 	free_basic_data(ad);
 	free_dump_priods(ad);
@@ -250,7 +279,7 @@ void init_basic_data(AllData * ad)
 	}
 }
 
-void init_dump_periods_cd_deep(AllData * ad)
+void init_dump_periods_deep(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;

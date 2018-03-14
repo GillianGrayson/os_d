@@ -53,6 +53,11 @@ int main()
 		ndb_exp = new SigmaNewDelBehaviour();
 		eb = new SigmaExperimentBehaviour();
 	}
+	else if (rp->task_id == STD_DEEP_TASK_ID)
+	{
+		ndb_exp = new StdDeepNewDelBehaviour();
+		eb = new StdDeepExperimentBehaviour();
+	}
 	else
 	{
 		stringstream msg;

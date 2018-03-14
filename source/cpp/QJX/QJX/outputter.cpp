@@ -1,8 +1,8 @@
 #include "outputter.h"
 
-void DimerIOuputBehavior::suffix_param(ConfigParam * cp, int precision) const
+void DimerIOuputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
 {
-	string qj = suffix_qj(cp, precision);
+	string qj = suffix_qj(rp, cp, precision);
 
 	stringstream params;
 
@@ -35,10 +35,11 @@ void DimerIOuputBehavior::suffix_param(ConfigParam * cp, int precision) const
 	cp->fn_suffix = suffix;
 }
 
-string suffix_qj(ConfigParam * cp, int precision)
+string suffix_qj(RunParam * rp, ConfigParam * cp, int precision)
 {
 	stringstream suffix;
 
+	suffix << "_config(" << rp->sys_id << "_" << rp->task_id << "_" << rp->prop_id << ")";
 	suffix << "_rnd(" << cp->seed << "_" << cp->mns << ")";
 
 	return suffix.str();
