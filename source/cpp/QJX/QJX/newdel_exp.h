@@ -45,6 +45,13 @@ public:
 	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
 };
 
+class LpnDeepNewDelBehaviour : public ExpNewDelBehavior
+{
+public:
+	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
+};
+
 void init_streams(AllData * ad);
 void leap_frog_single_stream(AllData * ad, int tr_id);
 void leap_frog_all_streams(AllData * ad);

@@ -2,7 +2,7 @@ clear all;
 
 sys_id = 0;
 task_id = 4;
-prop_id = 0;
+prop_id = 1;
 
 seed = 1;
 mns = 1000000;

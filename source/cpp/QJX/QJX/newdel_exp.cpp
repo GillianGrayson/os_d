@@ -164,6 +164,31 @@ void StdDeepNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) con
 	free_obs_std(ad);
 }
 
+void LpnDeepNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+{
+	pb->init_prop_data_deep(ad);
+	init_streams(ad);
+	leap_frog_single_stream(ad, 0);
+	init_streams_var(ad);
+	init_basic_data(ad);
+	init_dump_periods_deep(ad);
+	init_obs_std(ad);
+	init_obs_lpn(ad);
+
+	init_start_state(ad, 0);
+}
+
+void LpnDeepNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+{
+	pb->free_prop_data_deep(ad);
+	free_streams(ad);
+	free_streams_var(ad);
+	free_basic_data(ad);
+	free_dump_priods(ad);
+	free_obs_std(ad);
+	free_obs_lpn(ad);
+}
+
 void init_streams(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;

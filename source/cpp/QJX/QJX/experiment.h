@@ -46,6 +46,12 @@ public:
 	virtual void obser_process(AllData * ad, PropagateBehavior * pb) const;
 };
 
+class LpnDeepExperimentBehaviour : public ExperimentBehavior
+{
+public:
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb) const;
+};
 
 void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size);
 

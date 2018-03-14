@@ -131,7 +131,6 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 	{
 		dump_adr_avg(ad, true);
 	}
-
 }
 
 void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
@@ -595,6 +594,121 @@ void StdDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 	}
 }
 
+void LpnDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
+{
+	ConfigParam * cp = ad->cp;
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < 1; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single_deep(ad, pb, tr_id, thread_id);
+	}
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		if (tr_id > 0)
+		{
+			copy_trajectory_lpn(ad, tr_id);
+			var_trajectory_lpn(ad, tr_id);
+		}
+
+		resresh_times(ad, tr_id);
+
+		calc_chars_start_std(ad, tr_id);
+		calc_chars_start_lpn(ad, tr_id);
+
+		evo_chars_std(ad, tr_id, 0);
+		evo_chars_lpn(ad, tr_id, 0);
+
+		if (dump_evo_sep == 1)
+		{
+			dump_adr_single(ad, tr_id, false);
+		}
+	}
+
+	if (dump_evo_avg == 1)
+	{
+		dump_adr_avg(ad, false);
+	}
+}
+
+void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	ed->is_obs = 1;
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_num_total = cp->num_obs_periods + 1;
+
+	int * dump_periods = ed->dump_periods;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
+
+	int begin_period_id = 0;
+	int end_period_id = 0;
+	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
+	{
+		if (rp->is_pp == 1)
+		{
+			cout << "dump_id: " << dump_id << endl;
+		}
+
+		begin_period_id = dump_id - 1;
+		end_period_id = dump_id;
+
+		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
+		{
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				int thread_id = omp_get_thread_num();
+				pb->one_period_obs_deep_lpn(ad, tr_id, thread_id, period_id);
+			}
+
+			ed->period_id = (period_id + 1);
+
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				if (tr_id > 0)
+				{
+					lambda_lpn(ad, tr_id);
+				}
+			}
+		}
+
+		if (dump_evo_avg == 1)
+		{
+			dump_adr_avg(ad, true);
+		}
+	}
+
+	dump_std(ad);
+	dump_lpn(ad);
+
+	if (dump_evo_sep == 1)
+	{
+		dump_evo_std(ad);
+		dump_evo_lpn(ad);
+	}
+
+	if (dump_evo_avg == 0)
+	{
+		dump_adr_avg(ad, true);
+	}
+}
 
 void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
 {
