@@ -5,7 +5,7 @@ N = 501;
 E = 0;
 J = -1;
 
-U = 0.65;
+U = 0.5;
 
 g = 0.1;
 A = -3.4;
@@ -17,8 +17,14 @@ np = 100;
 phi_size = 100;
 nu_size = 100;
 
-phis = linspace(0, 2*pi, phi_size)';
-nus = linspace(0, pi, nu_size)';
+phi_begin = 5;
+phi_end = 2*pi;
+
+nu_begin = 1.25;
+nu_end = 2;
+
+phis = linspace(phi_begin, phi_end, phi_size)';
+nus = linspace(nu_begin, nu_end, nu_size)';
 
 data_path = '../../../data/cluster/unn';
 
