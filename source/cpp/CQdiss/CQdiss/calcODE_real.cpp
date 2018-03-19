@@ -3,6 +3,49 @@
 #include <math.h>
 #include <stdlib.h>
 #include <mkl.h>
+#include "calcRho.h"
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+void save_double_data(string file_name, double * data, int size, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i] << endl;
+			}
+
+			ofs.close();
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i] << endl;
+			}
+
+			ofs.close();
+		}
+	}
+}
 
 void complex_to_real(dcomplex *mat, int N)
 {
@@ -156,6 +199,41 @@ void calcODE_real(Model *m, double h, int cntItr, double t)
 		for (i = 0; i < N_mat; i++)
 		{
 			RhoF[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) / 6.0;
+		}
+
+
+		if (m->conf.deep_dump == 2)
+		{
+			if (itr % 100 == 0)
+			{
+				real_to_complex(m->RhoF, m->N_mat);
+
+				calcRho_fill(m);
+
+				string fn = "diag_rho_deep_evo.txt";
+				ofstream ofs = ofstream(fn, ios::app);
+
+				if (ofs.is_open())
+				{
+					ofs << setprecision(16) << scientific;
+
+					for (int i = 0; i < m->Rho->N; i++)
+					{
+						for (int k = m->Rho->RowIndex[i]; k < m->Rho->RowIndex[i + 1]; k++)
+						{
+							int j = m->Rho->Col[k];
+							if (i == j)
+							{
+								ofs << m->Rho->Value[k].re << endl;
+							}
+						}
+					}
+
+					ofs.close();
+				}
+
+				complex_to_real(m->RhoF, m->N_mat);
+			}
 		}
 	}
 

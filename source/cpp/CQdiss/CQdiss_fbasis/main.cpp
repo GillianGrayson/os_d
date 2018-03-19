@@ -26,6 +26,12 @@
 
 #include "testODE.h"
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+
+using namespace std;
 
 double number_of_allocs = 0.0;
 
@@ -366,7 +372,18 @@ int main(int argc, char ** argv)
 
 		dcomplex diff_it;
 
-		
+		if (model->conf.deep_dump == 2)
+		{
+			string fn = "diag_rho_deep_evo.txt";
+			ofstream ofs = ofstream(fn);
+
+			if (ofs.is_open())
+			{
+				ofs.close();
+			}
+
+			model->conf.deep_dump = 20;
+		}
 
 		for (int itr = 0; itr < model->conf.N_T; itr++)
 		{
@@ -385,6 +402,17 @@ int main(int argc, char ** argv)
 				saveMatrix(file_name, model->Rho);
 
 				complex_to_real(model->RhoF, model->N_mat);
+			}
+		}
+
+		if (model->conf.deep_dump == 20)
+		{
+			model->conf.deep_dump = 2;
+
+			for (int itr = model->conf.N_T; itr < model->conf.N_T + 10; itr++)
+			{
+				calcODE_real(model, model->conf.h,
+					model->conf.NSTEP, itr * model->conf.T);
 			}
 		}
 

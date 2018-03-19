@@ -1,5 +1,5 @@
 sys_id 0
-task_id 5
+task_id 4
 prop_id 1
 is_debug 0
 is_pp 1
@@ -7,7 +7,7 @@ init_fn
 path
 num_threads 1
 num_tp_periods 100
-num_obs_periods 100
+num_obs_periods 10
 num_trajectories 2
 seed 1
 mns 1000000

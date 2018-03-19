@@ -1,8 +1,8 @@
 clear all;
 
 sys_id = 0;
-task_id = 5;
-prop_id = 0;
+task_id = 4;
+prop_id = 1;
 
 seed = 1;
 mns = 1000000;
@@ -10,11 +10,11 @@ N = 100;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
-drv_type = 0;
-drv_ampl = 1.5;
+drv_type = 1;
+drv_ampl = 3.4;
 drv_freq = 1.0;
 drv_phase = 0.0;
-prm_E = 1.0;
+prm_E = 0.0;
 prm_U = 0.01;
 prm_J = 1.0;
 start_type = 0;
