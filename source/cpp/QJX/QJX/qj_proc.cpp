@@ -28,7 +28,7 @@ void init_splits_deep(AllData * ad)
 
 	int num_total = num_threads * num_branches;
 
-	md->structure = init_split_structure_cd(ad);
+	md->structure = init_split_structure_deep(ad);
 	md->splits = new Split[num_total];
 
 	for (int b_id = 0; b_id < num_branches; b_id++)
@@ -78,7 +78,7 @@ void free_splits_deep(AllData * ad)
 	delete_split_struct(md->structure);
 }
 
-Split * init_split_structure_cd(AllData * ad)
+Split * init_split_structure_deep(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -188,7 +188,7 @@ void init_split_branches(Split * branch, int branch_id, AllData * ad)
 
 	Split * node = branch;
 
-	int deep = cp->qj_deep;
+	int deep = cp->ex_deep;
 	int	sys_size = (node->prev)->N;
 
 	double T = (node->prev)->dt;

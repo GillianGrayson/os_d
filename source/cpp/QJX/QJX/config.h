@@ -88,7 +88,7 @@ struct ConfigParam
 	int seed;									// Seed 
 	int mns;									// Max number of seeds
 
-	int	qj_deep;								// Deep for quantum jumps
+	int	ex_deep;								// Deep for quantum jumps
 
 	int rk_ns;									// Num steps per (sub-)period for RK
 
@@ -101,7 +101,7 @@ struct ConfigParam
 		int _num_trajectories = 1,
 		int _seed = 0,
 		int _mns = 1000000,
-		int _qj_deep = 16,
+		int _ex_deep = 16,
 		int _rk_ns = 1000
 	)
 	{
@@ -110,7 +110,7 @@ struct ConfigParam
 		num_trajectories = _num_trajectories;
 		seed = _seed;
 		mns = _mns;
-		qj_deep = _qj_deep;
+		ex_deep = _ex_deep;
 		rk_ns = _rk_ns;
 	}
 };

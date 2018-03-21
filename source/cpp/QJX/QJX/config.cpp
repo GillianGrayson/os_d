@@ -61,12 +61,23 @@ void set_param(RunParam * rp, ConfigParam * cp, string str, string val)
 		rp->path = val;
 	}
 
-
 	if (str.compare("num_threads") == 0)
 	{
 		rp->num_threads = atoi(val.c_str());
 	}
+	if (str.compare("num_trajectories") == 0)
+	{
+		cp->num_trajectories = atoi(val.c_str());
+	}
 
+	if (str.compare("seed") == 0)
+	{
+		cp->seed = atoi(val.c_str());
+	}
+	if (str.compare("mns") == 0)
+	{
+		cp->mns = atoi(val.c_str());
+	}
 
 	if (str.compare("num_tp_periods") == 0)
 	{
@@ -76,27 +87,15 @@ void set_param(RunParam * rp, ConfigParam * cp, string str, string val)
 	{
 		cp->num_obs_periods = atoi(val.c_str());
 	}
-	if (str.compare("num_trajectories") == 0)
+
+	if (str.compare("ex_deep") == 0)
 	{
-		cp->num_trajectories = atoi(val.c_str());
-	}
-	if (str.compare("seed") == 0)
-	{
-		cp->seed = atoi(val.c_str());
-	}
-	if (str.compare("mns") == 0)
-	{
-		cp->mns = atoi(val.c_str());
-	}
-	if (str.compare("qj_deep") == 0)
-	{
-		cp->qj_deep = atoi(val.c_str());
+		cp->ex_deep = atoi(val.c_str());
 	}
 	if (str.compare("rk_ns") == 0)
 	{
 		cp->rk_ns = atoi(val.c_str());
 	}
-
 }
 
 void init_params(RunParam *rp, ConfigParam *cp, char * fn_config, char * fn_param)
@@ -160,13 +159,16 @@ void output_params(RunParam * rp, ConfigParam * cp)
 	cout << "path = " << rp->path << endl;
 
 	cout << "num_threads = " << rp->num_threads << endl;
+	cout << "num_trajectories = " << cp->num_trajectories << endl;
+
+	cout << "seed = " << cp->seed << endl;
+	cout << "mns = " << cp->mns << endl;
 
 	cout << "num_tp_periods = " << cp->num_tp_periods << endl;
 	cout << "num_obs_periods = " << cp->num_obs_periods << endl;
-	cout << "qj_deep = " << cp->qj_deep << endl;
-	cout << "num_trajectories = " << cp->num_trajectories << endl;
-	cout << "seed = " << cp->seed << endl;
-	cout << "mns = " << cp->mns << endl;
+
+	cout << "ex_deep = " << cp->ex_deep << endl;
+	cout << "rk_ns = " << cp->rk_ns << endl;
 
 	cout << endl;
 
