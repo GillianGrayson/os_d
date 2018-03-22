@@ -325,7 +325,6 @@ void init_dump_periods_deep(AllData * ad)
 
 	ed->dump_periods[0] = 0;
 
-	int dump_shift = md->T / double(num_sub_steps);
 	for (int period_id = 0; period_id < num_obs_periods; period_id++)
 	{
 		for (int step_id = 0; step_id < num_sub_steps; step_id++)
@@ -395,24 +394,30 @@ void init_obs_std(AllData * ad)
 	int num_trajectories = cp->num_trajectories;
 	int dump_num_total = ed->dump_num_total;
 
+	ed->mean_start = new double[num_trajectories];
+
 	ed->norm			= new double[num_trajectories];
-	ed->mean_start		= new double[num_trajectories];
 	ed->mean			= new double[num_trajectories];
 	ed->dispersion		= new double[num_trajectories];
 	ed->m2				= new double[num_trajectories];
+	ed->energy			= new double[num_trajectories];
 
 	ed->norm_evo		= new double[num_trajectories * dump_num_total];
 	ed->mean_evo		= new double[num_trajectories * dump_num_total];
 	ed->dispersion_evo	= new double[num_trajectories * dump_num_total];
 	ed->m2_evo			= new double[num_trajectories * dump_num_total];
+	ed->energy_evo		= new double[num_trajectories * dump_num_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		ed->norm[tr_id] = 0.0;
-		ed->mean_start[tr_id]	= 0.0;
+		ed->mean_start[tr_id] = 0.0;
+
+		ed->norm[tr_id]			= 0.0;
 		ed->mean[tr_id]			= 0.0;
 		ed->dispersion[tr_id]	= 0.0;
 		ed->m2[tr_id]			= 0.0;
+		ed->energy[tr_id]		= 0.0;
+
 
 		for (int dump_id = 0; dump_id < dump_num_total; dump_id++)
 		{
@@ -420,6 +425,7 @@ void init_obs_std(AllData * ad)
 			ed->mean_evo[tr_id * dump_num_total + dump_id]			= 0.0;
 			ed->dispersion_evo[tr_id * dump_num_total + dump_id]	= 0.0;
 			ed->m2_evo[tr_id * dump_num_total + dump_id]			= 0.0;
+			ed->energy_evo[tr_id * dump_num_total + dump_id]		= 0.0;
 		}
 	}
 
@@ -436,14 +442,14 @@ void init_obs_lpn(AllData * ad)
 	int num_trajectories = cp->num_trajectories;
 	int dump_num_total = ed->dump_num_total;
 
-	double prm_E = double(cp->params.find("prm_E")->second);
+	double prm_dimer_E = double(cp->params.find("prm_dimer_E")->second);
 	double * hamiltonian = md->hamiltonian;
 	double * hamiltonian_drv = md->hamiltonian_drv;
 	ed->max_energy = 0.0;
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
 		int index = st_id * sys_size + st_id;
-		double ham_val = (hamiltonian[index] + prm_E * hamiltonian_drv[index]);
+		double ham_val = (hamiltonian[index] + prm_dimer_E * hamiltonian_drv[index]);
 		if (abs(ham_val) > ed->max_energy)
 		{
 			ed->max_energy = abs(ham_val);
@@ -452,13 +458,12 @@ void init_obs_lpn(AllData * ad)
 
 	ed->delta_s = new double[num_trajectories];
 
-	ed->energy = new double[num_trajectories];
-	ed->lambda = new double[num_trajectories];
 	ed->lambda_now = new double[num_trajectories];
+
+	ed->lambda = new double[num_trajectories];
 	ed->mean_lpn = new double[num_trajectories];
 	ed->energy_lpn = new double[num_trajectories];
 
-	ed->energy_evo = new double[num_trajectories * dump_num_total];
 	ed->lambda_evo = new double[num_trajectories * dump_num_total];
 	ed->mean_lpn_evo = new double[num_trajectories * dump_num_total];
 	ed->energy_lpn_evo = new double[num_trajectories * dump_num_total];
@@ -467,15 +472,14 @@ void init_obs_lpn(AllData * ad)
 	{
 		ed->delta_s[tr_id] = 0.0;
 
-		ed->energy[tr_id] = 0.0;
-		ed->lambda[tr_id] = 0.0;
 		ed->lambda_now[tr_id] = 0.0;
+
+		ed->lambda[tr_id] = 0.0;
 		ed->mean_lpn[tr_id] = 0.0;
 		ed->energy_lpn[tr_id] = 0.0;
 
 		for (int dump_id = 0; dump_id < dump_num_total; dump_id++)
 		{
-			ed->energy_evo[tr_id * dump_num_total + dump_id] = 0.0;
 			ed->lambda_evo[tr_id * dump_num_total + dump_id] = 0.0;
 			ed->mean_lpn_evo[tr_id * dump_num_total + dump_id] = 0.0;
 			ed->energy_lpn_evo[tr_id * dump_num_total + dump_id] = 0.0;
@@ -605,11 +609,13 @@ void free_obs_std(AllData * ad)
 	delete[] ed->mean;
 	delete[] ed->dispersion;
 	delete[] ed->m2;
+	delete[] ed->energy;
 
 	delete[] ed->norm_evo;
 	delete[] ed->mean_evo;
 	delete[] ed->dispersion_evo;
 	delete[] ed->m2_evo;
+	delete[] ed->energy_evo;
 }
 
 void free_obs_lpn(AllData * ad)
@@ -618,13 +624,11 @@ void free_obs_lpn(AllData * ad)
 
 	delete[] ed->delta_s;
 
-	delete[] ed->energy;
 	delete[] ed->lambda;
 	delete[] ed->lambda_now;
 	delete[] ed->mean_lpn;
 	delete[] ed->energy_lpn;
 
-	delete[] ed->energy_evo;
 	delete[] ed->lambda_evo;
 	delete[] ed->mean_lpn_evo;
 	delete[] ed->energy_lpn_evo;

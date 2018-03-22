@@ -81,8 +81,6 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 				int thread_id = omp_get_thread_num();
 				pb->one_period(ad, tr_id, thread_id, period_id);
 				calc_chars_std(ad, tr_id);
-
-				ed->energy[tr_id] = get_energy(ad, tr_id);
 			}
 
 			calc_chars_lpn(ad, 0);
@@ -1005,7 +1003,7 @@ double get_energy(AllData * ad, int tr_id)
 
 	int sys_size = md->sys_size;
 
-	double prm_E = double(cp->params.find("prm_E")->second);
+	double prm_dimer_E = double(cp->params.find("prm_dimer_E")->second);
 
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * hamiltonian = md->hamiltonian;
@@ -1024,7 +1022,7 @@ double get_energy(AllData * ad, int tr_id)
 		{
 			int index = st_id_1 * sys_size + st_id_2;
 
-			double ham_val = (hamiltonian[index] + prm_E * hamiltonian_drv[index]);
+			double ham_val = (hamiltonian[index] + prm_dimer_E * hamiltonian_drv[index]);
 
 			tmp.real += (ham_val * phi[st_id_2].real / sqrt(norm_2) - (0.0) * phi[st_id_2].imag / sqrt(norm_2));
 			tmp.imag += (ham_val * phi[st_id_2].imag / sqrt(norm_2) + (0.0) * phi[st_id_2].real / sqrt(norm_2));
@@ -1064,12 +1062,15 @@ void calc_chars_start_std(AllData * ad, int tr_id)
 	double mean = get_mean_simple(adr, sys_size);
 	double dispersion = get_dispersion_simple(mean, mean);
 	double m2 = get_m2(adr, sys_size, mean);
+	double energy = get_energy(ad, tr_id);
+
+	ed->mean_start[tr_id] = mean;
 
 	ed->norm[tr_id]				= norm;
-	ed->mean_start[tr_id]		= mean;
 	ed->mean[tr_id]				= mean;
 	ed->dispersion[tr_id]		= dispersion;
 	ed->m2[tr_id]				= m2;
+	ed->energy[tr_id]			= energy;
 }
 
 void calc_chars_std(AllData * ad, int tr_id)
@@ -1091,11 +1092,13 @@ void calc_chars_std(AllData * ad, int tr_id)
 	double mean = get_mean_simple(adr, sys_size);
 	double dispersion = get_dispersion_simple(mean, ed->mean_start[tr_id]);
 	double m2 = get_m2(adr, sys_size, mean);
+	double energy = get_energy(ad, tr_id);
 
 	ed->norm[tr_id] = norm;
 	ed->mean[tr_id] = mean;
 	ed->dispersion[tr_id] = dispersion;
 	ed->m2[tr_id] = m2;
+	ed->energy[tr_id] = energy;
 }
 
 void evo_chars_std(AllData * ad, int tr_id, int dump_id)
@@ -1112,6 +1115,7 @@ void evo_chars_std(AllData * ad, int tr_id, int dump_id)
 	ed->mean_evo[index] = ed->mean[tr_id];
 	ed->dispersion_evo[index] = ed->dispersion[tr_id];
 	ed->m2_evo[index] = ed->m2[tr_id];
+	ed->energy_evo[index] = ed->energy[tr_id];
 }
 
 void calc_chars_start_lpn(AllData * ad, int tr_id)
@@ -1134,11 +1138,10 @@ void calc_chars_start_lpn(AllData * ad, int tr_id)
 		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
 	}
 
-	double energy = get_energy(ad, tr_id);
 	double lambda = 0.0;
 	double lambda_now = 0.0;
 	double mean_lpn = ed->mean[tr_id];
-	double energy_lpn = energy;
+	double energy_lpn = ed->energy[tr_id];
 
 	double delta_s = 0.0;
 	if (lpn_type == 0)
@@ -1154,7 +1157,6 @@ void calc_chars_start_lpn(AllData * ad, int tr_id)
 		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
 
-	ed->energy[tr_id] = energy;
 	ed->lambda[tr_id] = lambda;
 	ed->lambda_now[tr_id] = lambda_now;
 	ed->mean_lpn[tr_id] = mean_lpn;
@@ -1239,7 +1241,6 @@ void evo_chars_lpn(AllData * ad, int tr_id, int dump_id)
 
 	int index = tr_id * dump_num_total + dump_id;
 
-	ed->energy_evo[index] = ed->energy[tr_id];
 	ed->lambda_evo[index] = ed->lambda_now[tr_id];
 	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
 	ed->energy_lpn_evo[index] = ed->energy_lpn[tr_id];

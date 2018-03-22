@@ -77,6 +77,7 @@ void dump_std(AllData * ad)
 		double * mean = ed->mean;
 		double * dispersion = ed->dispersion;
 		double * m2 = ed->m2;
+		double * energy = ed->energy;
 
 		string fn;
 
@@ -94,6 +95,9 @@ void dump_std(AllData * ad)
 
 		fn = rp->path + "m2" + cp->fn_suffix;
 		save_double_data(fn, m2, num_trajectories, 16, false);
+
+		fn = rp->path + "energy" + cp->fn_suffix;
+		save_double_data(fn, energy, num_trajectories, 16, false);
 	}
 }
 
@@ -109,16 +113,11 @@ void dump_lpn(AllData * ad)
 
 	if (dump_obs == 1)
 	{
-
-		double * energy = ed->energy;
 		double * lambda = ed->lambda_now;
 		double * mean_lpn = ed->mean_lpn;
 		double * energy_lpn = ed->energy_lpn;
 
 		string fn;
-
-		fn = rp->path + "energy" + cp->fn_suffix;
-		save_double_data(fn, energy, num_trajectories, 16, false);
 
 		fn = rp->path + "lambda" + cp->fn_suffix;
 		save_double_data(fn, lambda, num_trajectories, 16, false);
@@ -167,6 +166,7 @@ void dump_evo_std(AllData * ad)
 		double * mean_evo = ed->mean_evo;
 		double * dispersion_evo = ed->dispersion_evo;
 		double * m2_evo = ed->m2_evo;
+		double * energy_evo = ed->energy_evo;
 
 		string fn;
 
@@ -184,6 +184,9 @@ void dump_evo_std(AllData * ad)
 
 		fn = rp->path + "m2_evo" + cp->fn_suffix;
 		save_2d_inv_double_data(fn, m2_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "energy_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, energy_evo, dump_num_total, num_trajectories, 16, false);
 
 		if (jump == 1)
 		{
@@ -215,16 +218,11 @@ void dump_evo_lpn(AllData * ad)
 
 	if (dump_obs == 1)
 	{
-
-		double * energy_evo = ed->energy_evo;
 		double * lambda_evo = ed->lambda_evo;
 		double * mean_lpn_evo = ed->mean_lpn_evo;
 		double * energy_lpn_evo = ed->energy_lpn_evo;
 
 		string fn;
-
-		fn = rp->path + "energy_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, energy_evo, dump_num_total, num_trajectories, 16, false);
 
 		fn = rp->path + "lambda_evo" + cp->fn_suffix;
 		save_2d_inv_double_data(fn, lambda_evo, dump_num_total, num_trajectories, 16, false);

@@ -14,15 +14,15 @@ void DimerIOuputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int prec
 		<< setprecision(precision) << fixed << double(cp->params.find("diss_phase")->second) << ")";
 
 	params << "_drv("
-		<< int(cp->params.find("drv_type")->second) << "_"
-		<< setprecision(precision) << fixed << double(cp->params.find("drv_ampl")->second) << "_"
-		<< setprecision(precision) << fixed << double(cp->params.find("drv_freq")->second) << "_"
-		<< setprecision(precision) << fixed << double(cp->params.find("drv_phase")->second) << ")";
+		<< int(cp->params.find("drv_dimer_type")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("drv_dimer_ampl")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("drv_dimer_freq")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("drv_dimer_phase")->second) << ")";
 
 	params << "_prm("
-		<< setprecision(precision) << fixed << double(cp->params.find("prm_E")->second) << "_"
-		<< setprecision(precision) << fixed << double(cp->params.find("prm_U")->second) << "_"
-		<< setprecision(precision) << fixed << double(cp->params.find("prm_J")->second) << ")";
+		<< setprecision(precision) << fixed << double(cp->params.find("prm_dimer_E")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("prm_dimer_U")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("prm_dimer_J")->second) << ")";
 
 	params << "_start("
 		<< int(cp->params.find("start_type")->second) << "_"

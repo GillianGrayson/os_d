@@ -1,5 +1,5 @@
 sys_id 0
-task_id 4
+task_id 1
 prop_id 0
 is_debug 0
 is_pp 1
@@ -10,6 +10,6 @@ seed 1
 mns 1000000
 num_trajectories 2
 num_tp_periods 100
-num_obs_periods 10
-ex_deep 8
-rk_ns 100
+num_obs_periods 100
+ex_deep 16
+rk_ns 10000

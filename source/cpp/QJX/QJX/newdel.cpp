@@ -10,7 +10,7 @@ void DimerNewDelBehaviour::init_sizes(AllData * ad) const
 	omp_set_num_threads(num_threads);
 
 	int N = int(cp->params.find("N")->second);
-	double T = 2.0 * PI / double(cp->params.find("drv_freq")->second);
+	double T = 2.0 * PI / double(cp->params.find("drv_dimer_freq")->second);
 	
 	md->sys_size = N + 1;
 	md->num_diss = 1;
@@ -26,10 +26,10 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	int N = int(cp->params.find("N")->second);
 	int sys_size = md->sys_size;
 
-	double prm_E = double(cp->params.find("prm_E")->second);
-	double prm_U = double(cp->params.find("prm_U")->second);
-	prm_U = prm_U / double(md->sys_size - 1);
-	double prm_J = double(cp->params.find("prm_J")->second);
+	double prm_dimer_E = double(cp->params.find("prm_dimer_E")->second);
+	double prm_dimer_U = double(cp->params.find("prm_dimer_U")->second);
+	prm_dimer_U = prm_dimer_U / double(md->sys_size - 1);
+	double prm_dimer_J = double(cp->params.find("prm_dimer_J")->second);
 
 	md->hamiltonian = new double[md->sys_size * md->sys_size];
 	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
@@ -49,7 +49,7 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	{
 		int index = st_id * md->sys_size + st_id;
 
-		md->hamiltonian[index] = 2.0 * prm_U * double(st_id * (st_id - 1) + (sys_size - (st_id + 1)) * (sys_size - (st_id + 1) - 1));
+		md->hamiltonian[index] = 2.0 * prm_dimer_U * double(st_id * (st_id - 1) + (sys_size - (st_id + 1)) * (sys_size - (st_id + 1) - 1));
 		md->hamiltonian_drv[index] = double((sys_size - (st_id + 1)) - st_id);
 	}
 
@@ -58,8 +58,8 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		int down_left = (st_id + 1) * md->sys_size + st_id;
 		int up_right = st_id * md->sys_size + (st_id + 1);
 
-		md->hamiltonian[down_left] -= prm_J * sqrt(double((md->sys_size - (st_id + 1)) * (st_id + 1)));
-		md->hamiltonian[up_right] -= prm_J * sqrt(double((st_id + 1) * (md->sys_size - (st_id + 1))));
+		md->hamiltonian[down_left] -= prm_dimer_J * sqrt(double((md->sys_size - (st_id + 1)) * (st_id + 1)));
+		md->hamiltonian[up_right] -= prm_dimer_J * sqrt(double((st_id + 1) * (md->sys_size - (st_id + 1))));
 	}
 }
 
@@ -114,8 +114,8 @@ void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
-	double prm_E = double(cp->params.find("prm_E")->second);
-	double drv_ampl = double(cp->params.find("drv_ampl")->second);
+	double prm_dimer_E = double(cp->params.find("prm_dimer_E")->second);
+	double drv_dimer_ampl = double(cp->params.find("drv_dimer_ampl")->second);
 
 	double diss_gamma = double(cp->params.find("diss_gamma")->second);
 	diss_gamma = diss_gamma / double(md->sys_size - 1);
@@ -193,8 +193,8 @@ void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 		}
 	}
 
-	double E_0 = prm_E + drv_ampl;
-	double E_1 = prm_E - drv_ampl;
+	double E_0 = prm_dimer_E + drv_dimer_ampl;
+	double E_1 = prm_dimer_E - drv_dimer_ampl;
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{

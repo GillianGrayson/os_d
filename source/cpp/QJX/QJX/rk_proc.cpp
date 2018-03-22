@@ -172,12 +172,12 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 
 	int sys_size = md->sys_size;
 
-	double prm_E = double(cp->params.find("prm_E")->second);
+	double prm_dimer_E = double(cp->params.find("prm_dimer_E")->second);
 
-	int drv_type = double(cp->params.find("drv_type")->second);
-	double drv_ampl = double(cp->params.find("drv_ampl")->second);
-	double drv_freq = double(cp->params.find("drv_freq")->second);
-	double drv_phase = double(cp->params.find("drv_phase")->second);
+	int drv_dimer_type = double(cp->params.find("drv_dimer_type")->second);
+	double drv_dimer_ampl = double(cp->params.find("drv_dimer_ampl")->second);
+	double drv_dimer_freq = double(cp->params.find("drv_dimer_freq")->second);
+	double drv_dimer_phase = double(cp->params.find("drv_dimer_phase")->second);
 
 	double time = ed->times_all[tr_id];
 
@@ -204,22 +204,22 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 	}
 
 	double E = 0.0;
-	if (drv_type == 0)
+	if (drv_dimer_type == 0)
 	{
 		double mod_time = fmod(time, md->T);
 		double half_T = md->T * 0.5;
 		if (mod_time < half_T)
 		{
-			E = prm_E + drv_ampl;
+			E = prm_dimer_E + drv_dimer_ampl;
 		}
 		else 
 		{
-			E = prm_E - drv_ampl;
+			E = prm_dimer_E - drv_dimer_ampl;
 		}
 	}
-	else if (drv_type == 1)
+	else if (drv_dimer_type == 1)
 	{
-		E = prm_E + drv_ampl * sin(drv_freq * time + drv_phase);
+		E = prm_dimer_E + drv_dimer_ampl * sin(drv_dimer_freq * time + drv_dimer_phase);
 	}
 	else
 	{
@@ -227,11 +227,11 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 		double half_T = md->T * 0.5;
 		if (mod_time < half_T)
 		{
-			E = prm_E + drv_ampl;
+			E = prm_dimer_E + drv_dimer_ampl;
 		}
 		else
 		{
-			E = prm_E - drv_ampl;
+			E = prm_dimer_E - drv_dimer_ampl;
 		}
 	}
 
