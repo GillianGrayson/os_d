@@ -10,6 +10,20 @@ public:
 
 	virtual void init_splits_deep(AllData * ad) const = 0;
 	virtual void free_splits_deep(AllData * ad) const = 0;
+
+	virtual void ex_period(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void ex_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void ex_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void ex_period_obs_deep_lpn(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+
+	virtual void rk_period(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void rk_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void rk_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void rk_period_obs_deep_lpn(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void rk_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
+	virtual void rk_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
 };
 
 class DimerCoreBehaviour : public CoreBehavior
@@ -20,6 +34,20 @@ public:
 
 	virtual void init_splits_deep(AllData * ad) const;
 	virtual void free_splits_deep(AllData * ad) const;
+
+	virtual void ex_period(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_obs_deep_lpn(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const;
+
+	virtual void rk_period(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_obs_deep_lpn(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const;
 };
 
 class JCSCoreBehaviour : public CoreBehavior
@@ -30,9 +58,30 @@ public:
 
 	virtual void init_splits_deep(AllData * ad) const;
 	virtual void free_splits_deep(AllData * ad) const;
+
+	virtual void ex_period(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_obs_deep_lpn(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const;
+
+	virtual void rk_period(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_obs_deep_lpn(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const;
+	virtual void rk_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const;
 };
 
 Split * init_split_structure_dimer(AllData * ad);
 Split * init_split_structure_dimer_deep(AllData * ad);
 Split * init_split_structure_jcs(AllData * ad);
 Split * init_split_structure_jcs_deep(AllData * ad);
+
+void rk_right_part_dimer(AllData * ad, int sub_step, int tr_id, int th_id);
+void rk_right_part_jcs(AllData * ad, int sub_step, int tr_id, int th_id);
+void rk_int_dimer(AllData * ad, int tr_id, int th_id, double step);
+void rk_int_jcs(AllData * ad, int tr_id, int th_id, double step);
+void rk_step_dimer(AllData * ad, int tr_id, int th_id, double step);
+void rk_step_jcs(AllData * ad, int tr_id, int th_id, double step);

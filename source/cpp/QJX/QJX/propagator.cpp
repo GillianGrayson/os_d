@@ -2,559 +2,104 @@
 #include "experiment.h"
 #include "qj_proc.h"
 #include "rk_proc.h"
+#include "core.h"
 
-void QJPropagateBehavior::init_prop_data(AllData * ad) const
+void QJPropagateBehavior::init_prop_data(AllData * ad, CoreBehavior * cb) const
 {
-	init_splits(ad);
+	cb->init_splits(ad);
 }
 
-void QJPropagateBehavior::free_prop_data(AllData * ad) const
+void QJPropagateBehavior::free_prop_data(AllData * ad, CoreBehavior * cb) const
 {
-	free_splits(ad);
+	cb->free_splits(ad);
 }
 
-void QJPropagateBehavior::init_prop_data_deep(AllData * ad) const
+void QJPropagateBehavior::init_prop_data_deep(AllData * ad, CoreBehavior * cb) const
 {
-	init_splits_deep(ad);
+	cb->init_splits_deep(ad);
 }
 
-void QJPropagateBehavior::free_prop_data_deep(AllData * ad) const
+void QJPropagateBehavior::free_prop_data_deep(AllData * ad, CoreBehavior * cb) const
 {
-	free_splits_deep(ad);
+	cb->free_splits_deep(ad);
 }
 
-void QJPropagateBehavior::init_prop_data_unb(AllData * ad) const
+void QJPropagateBehavior::one_period(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	init_splits_unb(ad);
+	cb->ex_period(ad, tr_id, th_id, period_id);
 }
 
-void QJPropagateBehavior::free_prop_data_unb(AllData * ad) const
+void QJPropagateBehavior::one_period_trp_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	free_splits_unb(ad);
+	cb->ex_period_trp_deep(ad, tr_id, th_id, period_id);
 }
 
-void QJPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id, int period_id) const
+void QJPropagateBehavior::one_period_obs_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	MainData * md = ad->md;
-
-	int sys_size = md->sys_size;
-	Split * head = &(md->splits)[thread_id];
-
-	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
-	{
-		one_period_branch(ad, head, tr_id, &(head->next)[b_id]);
-	}
+	cb->ex_period_trp_deep(ad, tr_id, th_id, period_id);
 }
 
-void QJPropagateBehavior::one_period_tp_deep(AllData * ad, int tr_id, int thread_id, int period_id) const
+void QJPropagateBehavior::one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps = int(cp->params.find("deep_num_steps")->second);
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps; sub_step_id++)
-		{
-			one_sub_period_deep(ad, tr_id, part_id, thread_id);
-		}
-	}
+	cb->ex_period_obs_deep_lpn(ad, tr_id, th_id, period_id);
 }
 
-void QJPropagateBehavior::one_period_obs_deep(AllData * ad, int tr_id, int thread_id, int period_id) const
+void QJPropagateBehavior::one_period_obs_deep_cd(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int dump_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-			dump_point_id++;
-
-			one_sub_period_deep(ad, tr_id, part_id, thread_id);
-			calc_chars_std(ad, tr_id);
-
-			int dump_id = global_point_id + 1;
-
-			evo_chars_std(ad, tr_id, dump_id);
-
-			if (dump_evo_sep == 1)
-			{
-				dump_adr_single(ad, tr_id, true);
-			}
-		}
-	}
+	cb->ex_period_obs_deep_cd(ad, tr_id, th_id, period_id);
 }
 
-void QJPropagateBehavior::one_period_unb(AllData * ad, int tr_id, int thread_id, int period_id) const
+void QJPropagateBehavior::one_period_obs_deep_sigma(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps = int(cp->params.find("deep_num_steps")->second);
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		one_sub_period_deep(ad, tr_id, part_id, thread_id);
-	}
+	cb->ex_period_obs_deep_sigma(ad, tr_id, th_id, period_id);
 }
 
-void QJPropagateBehavior::one_period_obs_deep_lpn(AllData * ad, int tr_id, int thread_id, int period_id) const
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int dump_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-			dump_point_id++;
-
-			one_sub_period_deep(ad, tr_id, part_id, thread_id);
-			calc_chars_std(ad, tr_id);
-			calc_chars_lpn(ad, tr_id);
-			ed->energy[tr_id] = get_energy(ad, tr_id);
-
-			int dump_id = global_point_id + 1;
-
-			evo_chars_std(ad, tr_id, dump_id);
-			evo_chars_lpn(ad, tr_id, dump_id);
-
-			if (dump_evo_sep == 1)
-			{
-				dump_adr_single(ad, tr_id, true);
-			}
-		}
-	}
-}
-
-void QJPropagateBehavior::one_period_obs_cd(AllData * ad, int tr_id, int thread_id, int period_id) const
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int deep_dump = int(cp->params.find("deep_dump")->second);
-	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int dump_point_id = 0;
-	int curr_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-
-			dump_point_id++;
-
-			for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
-			{
-				curr_point_id = global_point_id - cd_st_id;
-
-				if (curr_point_id >= 0 && curr_point_id < ed->cd_num_points)
-				{
-					ed->cd_rec_data[tr_id][curr_point_id][cd_st_id] = ed->mean[tr_id];
-				}
-			}
-
-			one_sub_period_deep(ad, tr_id, part_id, thread_id);
-			calc_chars_std(ad, tr_id);
-
-			if (deep_dump == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(ad, tr_id, dump_id);
-
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
-			}
-		}
-	}
-}
-
-void QJPropagateBehavior::one_period_obs_sigma(AllData * ad, int tr_id, int thread_id, int period_id) const
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-
-	int deep_dump = int(cp->params.find("deep_dump")->second);
-	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int dump_point_id = 0;
-	int curr_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-
-			dump_point_id++;
-
-			one_sub_period_deep(ad, tr_id, part_id, thread_id);
-			calc_chars_std(ad, tr_id);
-
-			if (deep_dump == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(ad, tr_id, dump_id);
-
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
-			}
-		}
-	}
-}
-
-void RKPropagateBehavior::init_prop_data(AllData * ad) const
+void RKPropagateBehavior::init_prop_data(AllData * ad, CoreBehavior * cb) const
 {
 	init_rk(ad);
 }
 
-void RKPropagateBehavior::free_prop_data(AllData * ad) const
+void RKPropagateBehavior::free_prop_data(AllData * ad, CoreBehavior * cb) const
 {
 	free_rk(ad);
 }
 
-void RKPropagateBehavior::init_prop_data_deep(AllData * ad) const
+void RKPropagateBehavior::init_prop_data_deep(AllData * ad, CoreBehavior * cb) const
 {
-	init_rk_cd(ad);
+	init_rk_deep(ad);
 }
 
-void RKPropagateBehavior::free_prop_data_deep(AllData * ad) const
+void RKPropagateBehavior::free_prop_data_deep(AllData * ad, CoreBehavior * cb) const
 {
-	free_rk_cd(ad);
+	free_rk_deep(ad);
 }
 
-void RKPropagateBehavior::init_prop_data_unb(AllData * ad) const
+void RKPropagateBehavior::one_period(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	init_rk(ad);
+	cb->rk_period(ad, tr_id, th_id, period_id);
 }
 
-void RKPropagateBehavior::free_prop_data_unb(AllData * ad) const
+void RKPropagateBehavior::one_period_trp_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	free_rk(ad);
+	cb->rk_period_trp_deep(ad, tr_id, th_id, period_id);
 }
 
-void RKPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id, int period_id) const
+void RKPropagateBehavior::one_period_obs_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	rk_period(ad, tr_id, thread_id, period_id);
+	cb->rk_period_obs_deep(ad, tr_id, th_id, period_id);
 }
 
-void RKPropagateBehavior::one_period_unb(AllData * ad, int tr_id, int thread_id, int period_id) const
+void RKPropagateBehavior::one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int num_branches = md->num_ham_qj;
-
-	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
-	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);
-
-	double T_1 = jcs_drv_part_1 * md->T;
-	double T_2 = jcs_drv_part_2 * md->T;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		double time = 0.0;
-		double step = 0.0;
-		if (part_id == 0)
-		{
-			time = double(period_id) * (T_1 + T_2);
-			step = T_1 / double(cp->rk_ns);
-		}
-		else if (part_id == 1)
-		{
-			time = double(period_id) * (T_1 + T_2) + T_1;
-			step = T_2 / double(cp->rk_ns);
-		}
-		else
-		{
-			stringstream msg;
-			msg << "Error: Wrong part_id" << endl;
-			Error(msg.str());
-		}
-
-		rk_period_unb(ad, tr_id, thread_id, time, step);
-	}
+	cb->rk_period_obs_deep_lpn(ad, tr_id, th_id, period_id);
 }
 
-void RKPropagateBehavior::one_period_tp_deep(AllData * ad, int tr_id, int thread_id, int period_id) const
+void RKPropagateBehavior::one_period_obs_deep_cd(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
-			rk_period_deep(ad, tr_id, thread_id, time);
-		}
-	}
+	cb->rk_period_obs_deep_cd(ad, tr_id, th_id, period_id);
 }
 
-void RKPropagateBehavior::one_period_obs_deep(AllData * ad, int tr_id, int thread_id, int period_id) const
+void RKPropagateBehavior::one_period_obs_deep_sigma(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int dump_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-
-			dump_point_id++;
-
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
-			rk_period_deep(ad, tr_id, thread_id, time);
-
-			calc_chars_std(ad, tr_id);
-
-			int dump_id = global_point_id + 1;
-
-			evo_chars_std(ad, tr_id, dump_id);
-
-			if (dump_evo_sep == 1)
-			{
-				dump_adr_single(ad, tr_id, true);
-			}
-		}
-	}
-}
-
-void RKPropagateBehavior::one_period_obs_deep_lpn(AllData * ad, int tr_id, int thread_id, int period_id) const
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int dump_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-			dump_point_id++;
-
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
-			rk_period_deep(ad, tr_id, thread_id, time);
-
-			calc_chars_std(ad, tr_id);
-			calc_chars_lpn(ad, tr_id);
-			ed->energy[tr_id] = get_energy(ad, tr_id);
-
-			int dump_id = global_point_id + 1;
-
-			evo_chars_std(ad, tr_id, dump_id);
-			evo_chars_lpn(ad, tr_id, dump_id);
-
-			if (dump_evo_sep == 1)
-			{
-				dump_adr_single(ad, tr_id, true);
-			}
-		}
-	}
-}
-
-void RKPropagateBehavior::one_period_obs_cd(AllData * ad, int tr_id, int thread_id, int period_id) const
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int deep_dump = int(cp->params.find("deep_dump")->second);
-	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int dump_point_id = 0;
-	int curr_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-
-			dump_point_id++;
-
-			for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
-			{
-				curr_point_id = global_point_id - cd_st_id;
-
-				if (curr_point_id >= 0 && curr_point_id < ed->cd_num_points)
-				{
-					ed->cd_rec_data[tr_id][curr_point_id][cd_st_id] = ed->mean[tr_id];
-				}
-			}
-
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
-			rk_period_deep(ad, tr_id, thread_id, time);
-
-			calc_chars_std(ad, tr_id);
-
-			if (deep_dump == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(ad, tr_id, dump_id);
-
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
-			}
-		}
-	}
-}
-
-void RKPropagateBehavior::one_period_obs_sigma(AllData * ad, int tr_id, int thread_id, int period_id) const
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-
-	int deep_dump = int(cp->params.find("deep_dump")->second);
-	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
-
-	int num_branches = md->num_ham_qj;
-	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	int dump_point_id = 0;
-	int curr_point_id = 0;
-	int global_point_id = 0;
-
-	int step_id = 0;
-
-	for (int part_id = 0; part_id < num_branches; part_id++)
-	{
-		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
-		{
-			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-			global_point_id = period_id * num_sub_steps + dump_point_id;
-
-			dump_point_id++;
-
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
-			rk_period_deep(ad, tr_id, thread_id, time);
-
-			calc_chars_std(ad, tr_id);
-
-			if (deep_dump == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(ad, tr_id, dump_id);
-
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
-			}
-		}
-	}
+	cb->rk_period_obs_deep_sigma(ad, tr_id, th_id, period_id);
 }

@@ -1,304 +1,5 @@
 #include "qj_proc.h"
-
-void init_splits(AllData * ad)
-{
-	RunParam * rp = ad->rp;
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-
-	int num_threads = rp->num_threads;
-
-	md->structure = init_split_structure(ad);
-	md->splits = new Split[num_threads];
-	for (int th_id = 0; th_id < num_threads; th_id++)
-	{
-		copy_struct_not_member(md->structure, &(md->splits)[th_id]);
-	}
-
-	cout << "Split initialization complete" << endl;
-}
-
-void init_splits_deep(AllData * ad)
-{
-	RunParam * rp = ad->rp;
-	MainData * md = ad->md;
-
-	int num_branches = md->num_ham_qj;
-	int num_threads = rp->num_threads;
-
-	int num_total = num_threads * num_branches;
-
-	md->structure = init_split_structure_deep(ad);
-	md->splits = new Split[num_total];
-
-	for (int b_id = 0; b_id < num_branches; b_id++)
-	{
-		for (int th_id = 0; th_id < num_threads; th_id++)
-		{
-			int index = b_id * num_threads + th_id;
-			copy_struct_not_member(&(md->structure)[b_id], &(md->splits)[index]);
-		}
-	}
-}
-
-void init_splits_unb(AllData * ad)
-{
-	RunParam * rp = ad->rp;
-	MainData * md = ad->md;
-
-	int num_branches = md->num_ham_qj;
-	int num_threads = rp->num_threads;
-
-	int num_total = num_threads * num_branches;
-
-	md->structure = init_split_structure_unb(ad);
-	md->splits = new Split[num_total];
-
-	for (int b_id = 0; b_id < num_branches; b_id++)
-	{
-		for (int th_id = 0; th_id < num_threads; th_id++)
-		{
-			int index = b_id * num_threads + th_id;
-			copy_struct_not_member(&(md->structure)[b_id], &(md->splits)[index]);
-		}
-	}
-}
-
-void free_splits(AllData * ad)
-{
-	RunParam * rp = ad->rp;
-	MainData * md = ad->md;
-
-	int num_threads = rp->num_threads;
-
-	for (int i = 0; i < num_threads; i++)
-	{
-		delete_split_struct_not_member(&(md->splits[i]));
-	}
-
-	delete(md->splits);
-	delete_split_struct(md->structure);
-}
-
-void free_splits_deep(AllData * ad)
-{
-	RunParam * rp = ad->rp;
-	MainData * md = ad->md;
-
-	int num_branches = md->num_ham_qj;
-	int num_threads = rp->num_threads;
-
-	for (int b_id = 0; b_id < num_branches; b_id++)
-	{
-		for (int th_id = 0; th_id < num_threads; th_id++)
-		{
-			int index = b_id * num_threads + th_id;
-			delete_split_struct_not_member(&(md->splits[index]));
-		}
-	}
-
-	delete(md->splits);
-	delete_split_struct(md->structure);
-}
-
-void free_splits_unb(AllData * ad)
-{
-	RunParam * rp = ad->rp;
-	MainData * md = ad->md;
-
-	int num_branches = md->num_ham_qj;
-	int num_threads = rp->num_threads;
-
-	for (int b_id = 0; b_id < num_branches; b_id++)
-	{
-		for (int th_id = 0; th_id < num_threads; th_id++)
-		{
-			int index = b_id * num_threads + th_id;
-			delete_split_struct_not_member(&(md->splits[index]));
-		}
-	}
-
-	delete(md->splits);
-	delete_split_struct(md->structure);
-}
-
-Split * init_split_structure(AllData * ad)
-{
-	MainData * md = ad->md;
-
-	Split * head = new Split[1];
-
-	double T = md->T;
-	int N = md->sys_size;
-	int num_branches = md->num_ham_qj;
-
-	head->prev = 0;
-	head->type = false;
-	head->dt = T;
-	head->counter = num_branches;
-	head->N = N;
-	head->next = new Split[num_branches];
-
-	for (unsigned int i = 0; i < num_branches; i++)
-	{
-		(head->next)[i].prev = head;
-		init_split_branches(&((head->next)[i]), i, ad);
-	}
-
-	head->steps = md->num_diss;
-
-	head->matrix = new MKL_Complex16[head->steps * N * N];
-	head->g = new double[head->steps];
-
-	for (int diss_id = 0; diss_id < head->steps; diss_id++)
-	{
-		head->g[diss_id] = 1.0;
-
-		for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
-		{
-			for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
-			{
-				int index_xtd = diss_id * (md->sys_size * md->sys_size) + st_id_1 * md->sys_size + st_id_2;
-				int index = st_id_1 * md->sys_size + st_id_2;
-
-				head->matrix[index_xtd].real = md->dissipators[diss_id][index].real;
-				head->matrix[index_xtd].imag = md->dissipators[diss_id][index].imag;
-			}
-		}
-	}
-
-	return head;
-}
-
-Split * init_split_structure_deep(AllData * ad)
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-
-	int deep_num_steps = int(cp->params.find("deep_num_steps")->second);
-
-	double T = 0.5 * md->T / double(deep_num_steps);
-	int N = md->sys_size;
-	int num_branches = md->num_ham_qj;
-
-	Split * head = new Split[num_branches];
-
-	for (int br_id = 0; br_id < num_branches; br_id++)
-	{
-		Split * branch = &head[br_id];
-		branch->prev = 0;
-		branch->type = false;
-		branch->dt = T;
-		branch->counter = 2;
-		branch->N = N;
-		branch->next = new Split[2];
-
-		for (unsigned int i = 0; i < 2; i++)
-		{
-			(branch->next)[i].prev = branch;
-			init_split_branches(&((branch->next)[i]), br_id, ad);
-		}
-
-		branch->steps = md->num_diss;
-
-		branch->matrix = new MKL_Complex16[branch->steps * N * N];
-		branch->g = new double[branch->steps];
-
-		for (int diss_id = 0; diss_id < branch->steps; diss_id++)
-		{
-			branch->g[diss_id] = 1.0;
-
-			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
-			{
-				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
-				{
-					int index_xtd = diss_id * (md->sys_size * md->sys_size) + st_id_1 * md->sys_size + st_id_2;
-					int index = st_id_1 * md->sys_size + st_id_2;
-
-					branch->matrix[index_xtd].real = md->dissipators[diss_id][index].real;
-					branch->matrix[index_xtd].imag = md->dissipators[diss_id][index].imag;
-				}
-			}
-		}
-	}
-
-	return head;
-}
-
-Split * init_split_structure_unb(AllData * ad)
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-
-	int deep_num_steps = int(cp->params.find("deep_num_steps")->second);
-
-	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
-	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);
-
-	double T_1 = jcs_drv_part_1 * md->T;
-	double T_2 = jcs_drv_part_2 * md->T;
-
-	int N = md->sys_size;
-	int num_branches = md->num_ham_qj;
-
-	Split * head = new Split[num_branches];
-
-	for (int br_id = 0; br_id < num_branches; br_id++)
-	{
-		Split * branch = &head[br_id];
-		branch->prev = 0;
-		branch->type = false;
-
-		if (br_id == 0)
-		{
-			branch->dt = T_1;
-		}
-		else if (br_id == 1)
-		{
-			branch->dt = T_2;
-		}
-		else
-		{
-			stringstream msg;
-			msg << "Error: Wrong br_id" << endl;
-			Error(msg.str());
-		}
-
-		branch->counter = 2;
-		branch->N = N;
-		branch->next = new Split[2];
-
-		for (unsigned int i = 0; i < 2; i++)
-		{
-			(branch->next)[i].prev = branch;
-			init_split_branches(&((branch->next)[i]), br_id, ad);
-		}
-
-		branch->steps = md->num_diss;
-
-		branch->matrix = new MKL_Complex16[branch->steps * N * N];
-		branch->g = new double[branch->steps];
-
-		for (int diss_id = 0; diss_id < branch->steps; diss_id++)
-		{
-			branch->g[diss_id] = 1.0;
-
-			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
-			{
-				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
-				{
-					int index_xtd = diss_id * (md->sys_size * md->sys_size) + st_id_1 * md->sys_size + st_id_2;
-					int index = st_id_1 * md->sys_size + st_id_2;
-
-					branch->matrix[index_xtd].real = md->dissipators[diss_id][index].real;
-					branch->matrix[index_xtd].imag = md->dissipators[diss_id][index].imag;
-				}
-			}
-		}
-	}
-
-	return head;
-}
+#include "experiment.h"
 
 void init_split_branches(Split * branch, int branch_id, AllData * ad)
 {
@@ -537,4 +238,101 @@ void delete_split_struct_not_member(Split * head)
 	delete (head->next);
 	head->matrix = 0;
 	head->g = 0;
+}
+
+void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
+{
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, matrix, sys_size, phi, 1, &ZERO, res, 1);
+}
+
+void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
+{
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+	ConfigParam * cp = ad->cp;
+
+	int sys_size = md->sys_size;
+
+	int jump = int(cp->params.find("jump")->second);
+
+	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi_aux = &(ed->phi_all_aux[tr_id * sys_size]);
+	double * eta = &(ed->etas_all[tr_id]);
+	double * g = head->g;
+	MKL_Complex16 * A = head->matrix;
+	int k = head->steps;
+
+	if (branch->next == 0)
+	{
+		while (branch->counter != branch->steps)
+		{
+			prop_step(phi, branch->matrix, phi_aux, branch->N);
+			if (is_norm_crossed(phi_aux, eta, branch->N))
+			{
+
+				if (jump == 1 && ed->is_obs == 1)
+				{
+					double jump_time = ed->times_all[tr_id] + branch->dt;
+					double jump_norm = norm_square(phi_aux, branch->N);
+					double jump_eta = *eta;
+
+					ed->jump_times[tr_id].push_back(jump_time);
+					ed->jump_norms[tr_id].push_back(jump_norm);
+					ed->jump_etas[tr_id].push_back(jump_eta);
+				}
+
+				recovery(ad, head, tr_id);
+				vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+				while (*eta == 0.0)
+				{
+					vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+				}
+			}
+
+			memcpy(phi, phi_aux, sizeof(MKL_Complex16) * branch->N);
+			branch->counter++;
+
+			ed->times_all[tr_id] += branch->dt;
+		}
+	}
+	else
+	{
+		while (branch->counter != branch->steps)
+		{
+			prop_step(phi, branch->matrix, phi_aux, branch->N);
+			if (is_norm_crossed(phi_aux, eta, branch->N))
+			{
+				one_period_branch(ad, head, tr_id, branch->next);
+				ed->times_all[tr_id] -= branch->dt;
+			}
+			else
+			{
+				memcpy(phi, phi_aux, sizeof(MKL_Complex16) * branch->N);
+			}
+			branch->counter++;
+			ed->times_all[tr_id] += branch->dt;
+		}
+	}
+
+	branch->counter = 0;
+}
+
+void one_sub_period_deep(AllData * ad, int tr_id, int part_id, int thread_id)
+{
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
+	int num_threads = rp->num_threads;
+
+	int split_id = num_threads * part_id + thread_id;
+
+	Split * head = &(md->splits)[split_id];
+
+	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
+	{
+		one_period_branch(ad, head, tr_id, &(head->next)[b_id]);
+	}
 }

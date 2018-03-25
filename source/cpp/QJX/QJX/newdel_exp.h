@@ -2,61 +2,55 @@
 #include "config.h"
 #include "data.h"
 #include "propagator.h"
+#include "core.h"
 
 class ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad, PropagateBehavior * pb) const = 0;
-	virtual void free_data(AllData * ad, PropagateBehavior * pb) const = 0;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const = 0;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const = 0;
 };
 
 class LpnNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
-	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
 class StdNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
-	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
 class CorrDimNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
-	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
 class SigmaNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
-	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
 class StdDeepNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
-	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
 class LpnDeepNewDelBehaviour : public ExpNewDelBehavior
 {
 public:
-	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
-	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
-};
-
-class StdUNBNewDelBehaviour : public ExpNewDelBehavior
-{
-public:
-	virtual void init_data(AllData * ad, PropagateBehavior * pb) const;
-	virtual void free_data(AllData * ad, PropagateBehavior * pb) const;
+	virtual void init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
 void init_streams(AllData * ad);

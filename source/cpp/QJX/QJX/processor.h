@@ -7,6 +7,7 @@
 #include "newdel_exp.h"
 #include "experiment.h"
 #include "propagator.h"
+#include "core.h"
 
 class Processor
 {
@@ -19,6 +20,7 @@ private:
 	ExpNewDelBehavior * ndb_exp;
 	ExperimentBehavior * eb;
 	PropagateBehavior * pb;
+	CoreBehavior * cb;
 
 public:
 	Processor(AllData * ad);
@@ -34,6 +36,8 @@ public:
 	void set_experiment_behaviour(ExperimentBehavior* eb);
 
 	void set_propagate_behaviour(PropagateBehavior * pb);
+
+	void set_core_behaviour(CoreBehavior * cb);
 
 	void process();
 };

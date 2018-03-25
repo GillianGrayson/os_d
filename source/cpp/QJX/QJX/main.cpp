@@ -19,12 +19,14 @@ int main()
 	ExpNewDelBehavior * ndb_exp;
 	ExperimentBehavior * eb;
 	PropagateBehavior * pb;
+	CoreBehavior * cb;
 
 	if (rp->sys_id == DIMER_SYS_ID)
 	{
 		db = new DimerDebugBehaviour();
 		ob = new DimerIOuputBehavior();
 		ndb = new DimerNewDelBehaviour();
+		cb = new DimerCoreBehaviour();
 	}
 	else
 	{
@@ -98,6 +100,7 @@ int main()
 	p->set_newdel_exp_behaviour(ndb_exp);
 	p->set_experiment_behaviour(eb);
 	p->set_propagate_behaviour(pb);
+	p->set_core_behaviour(cb);
 
 	p->process();
 
@@ -107,6 +110,7 @@ int main()
 	delete ndb_exp;
 	delete eb;
 	delete pb;
+	delete cb;
 
 	delete rp;
 	delete cp;

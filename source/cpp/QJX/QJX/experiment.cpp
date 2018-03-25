@@ -1,6 +1,6 @@
 #include "experiment.h"
 
-void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
+void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -13,7 +13,7 @@ void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single(ad, pb, tr_id, thread_id);
+		trans_process_single(ad, pb, cb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -45,7 +45,7 @@ void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 	}
 }
 
-void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
+void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {	
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -79,7 +79,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				pb->one_period(ad, tr_id, thread_id, period_id);
+				pb->one_period(ad, cb, tr_id, thread_id, period_id);
 				calc_chars_std(ad, tr_id);
 			}
 
@@ -131,7 +131,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 	}
 }
 
-void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
+void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -144,7 +144,7 @@ void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single(ad, pb, tr_id, thread_id);
+		trans_process_single(ad, pb, cb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -168,7 +168,7 @@ void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb)
 	}
 }
 
-void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
+void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -202,7 +202,7 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				pb->one_period(ad, tr_id, thread_id, period_id);
+				pb->one_period(ad, cb, tr_id, thread_id, period_id);
 			}
 		}
 
@@ -238,7 +238,7 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb)
 	}
 }
 
-void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
+void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -251,7 +251,7 @@ void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_deep(ad, pb, tr_id, thread_id);
+		trans_process_single_deep(ad, pb, cb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -275,7 +275,7 @@ void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	}
 }
 
-void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
+void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -324,7 +324,7 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				pb->one_period_obs_cd(ad, tr_id, thread_id, period_id);
+				pb->one_period_obs_deep_cd(ad, cb, tr_id, thread_id, period_id);
 			}
 		}
 
@@ -369,7 +369,7 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 	}
 }
 
-void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
+void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -382,7 +382,7 @@ void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * p
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_deep(ad, pb, tr_id, thread_id);
+		trans_process_single_deep(ad, pb, cb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -411,7 +411,7 @@ void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * p
 	}
 }
 
-void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
+void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -460,7 +460,7 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				pb->one_period_obs_sigma(ad, tr_id, thread_id, period_id);
+				pb->one_period_obs_deep_sigma(ad, cb, tr_id, thread_id, period_id);
 			}
 		}
 
@@ -497,7 +497,7 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 	}
 }
 
-void StdDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
+void StdDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -510,7 +510,7 @@ void StdDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_deep(ad, pb, tr_id, thread_id);
+		trans_process_single_deep(ad, pb, cb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -534,7 +534,7 @@ void StdDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	}
 }
 
-void StdDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
+void StdDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -569,7 +569,7 @@ void StdDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				pb->one_period_obs_deep(ad, tr_id, thread_id, period_id);
+				pb->one_period_obs_deep(ad, cb, tr_id, thread_id, period_id);
 			}
 		}
 
@@ -592,7 +592,7 @@ void StdDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 	}
 }
 
-void LpnDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb) const
+void LpnDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -605,7 +605,7 @@ void LpnDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	for (int tr_id = 0; tr_id < 1; tr_id++)
 	{
 		int thread_id = omp_get_thread_num();
-		trans_process_single_deep(ad, pb, tr_id, thread_id);
+		trans_process_single_deep(ad, pb, cb, tr_id, thread_id);
 	}
 
 #pragma omp parallel for
@@ -637,7 +637,7 @@ void LpnDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	}
 }
 
-void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb) const
+void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -672,7 +672,7 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
-				pb->one_period_obs_deep_lpn(ad, tr_id, thread_id, period_id);
+				pb->one_period_obs_deep_lpn(ad, cb, tr_id, thread_id, period_id);
 			}
 
 			ed->period_id = (period_id + 1);
@@ -706,13 +706,6 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 	{
 		dump_adr_avg(ad, true);
 	}
-}
-
-void prop_step(MKL_Complex16 * phi, MKL_Complex16 * matrix, MKL_Complex16 * res, int sys_size)
-{
-	MKL_Complex16 ZERO = { 0.0, 0.0 };
-	MKL_Complex16 ONE = { 1.0, 0.0 };
-	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, matrix, sys_size, phi, 1, &ZERO, res, 1);
 }
 
 MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b)
@@ -864,96 +857,6 @@ void recovery(AllData * ad, Split * head, int tr_id)
 
 	delete(res);
 	delete(gnorms);
-}
-
-void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
-{
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-	ConfigParam * cp = ad->cp;
-
-	int sys_size = md->sys_size;
-
-	int jump = int(cp->params.find("jump")->second);
-
-	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
-	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
-	MKL_Complex16 * phi_aux = &(ed->phi_all_aux[tr_id * sys_size]);
-	double * eta = &(ed->etas_all[tr_id]);
-	double * g = head->g;
-	MKL_Complex16 * A = head->matrix;
-	int k = head->steps;
-
-	if (branch->next == 0)
-	{
-		while (branch->counter != branch->steps)
-		{
-			prop_step(phi, branch->matrix, phi_aux, branch->N);
-			if (is_norm_crossed(phi_aux, eta, branch->N))
-			{
-				
-				if (jump == 1 && ed->is_obs == 1)
-				{
-					double jump_time = ed->times_all[tr_id] + branch->dt;
-					double jump_norm = norm_square(phi_aux, branch->N);
-					double jump_eta = *eta;
-
-					ed->jump_times[tr_id].push_back(jump_time);
-					ed->jump_norms[tr_id].push_back(jump_norm);
-					ed->jump_etas[tr_id].push_back(jump_eta);
-				}
-
-				recovery(ad, head, tr_id);
-				vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
-				while (*eta == 0.0)
-				{
-					vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
-				}
-			}
-
-			memcpy(phi, phi_aux, sizeof(MKL_Complex16) * branch->N);
-			branch->counter++;
-
-			ed->times_all[tr_id] += branch->dt;
-		}
-	}
-	else
-	{
-		while (branch->counter != branch->steps)
-		{
-			prop_step(phi, branch->matrix, phi_aux, branch->N);
-			if (is_norm_crossed(phi_aux, eta, branch->N))
-			{
-				one_period_branch(ad, head, tr_id, branch->next);
-				ed->times_all[tr_id] -= branch->dt;
-			}
-			else
-			{
-				memcpy(phi, phi_aux, sizeof(MKL_Complex16) * branch->N);
-			}
-			branch->counter++;
-			ed->times_all[tr_id] += branch->dt;
-		}
-	}
-
-	branch->counter = 0;
-}
-
-void one_sub_period_deep(AllData * ad, int tr_id, int part_id, int thread_id)
-{
-	RunParam * rp = ad->rp;
-	MainData * md = ad->md;
-
-	int num_threads = rp->num_threads;
-
-	int split_id = num_threads * part_id + thread_id;
-
-	Split * head = &(md->splits)[split_id];
-
-	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
-	{
-		one_period_branch(ad, head, tr_id, &(head->next)[b_id]);
-	}
 }
 
 double get_norm_cd(double * vec, int size)
@@ -1397,7 +1300,7 @@ void lambda_lpn(AllData * ad, int tr_id)
 	}
 }
 
-void trans_process_single(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id)
+void trans_process_single(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb, int tr_id, int thread_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -1417,11 +1320,11 @@ void trans_process_single(AllData * ad, PropagateBehavior * pb, int tr_id, int t
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
-		pb->one_period(ad, tr_id, thread_id, period_id);
+		pb->one_period(ad, cb, tr_id, thread_id, period_id);
 	}
 }
 
-void trans_process_single_deep(AllData * ad, PropagateBehavior * pb, int tr_id, int thread_id)
+void trans_process_single_deep(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb, int tr_id, int thread_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -1441,6 +1344,6 @@ void trans_process_single_deep(AllData * ad, PropagateBehavior * pb, int tr_id, 
 
 	for (int period_id = 0; period_id < num_tp_periods; period_id++)
 	{
-		pb->one_period_tp_deep(ad, tr_id, thread_id, period_id);
+		pb->one_period_trp_deep(ad, cb, tr_id, thread_id, period_id);
 	}
 }

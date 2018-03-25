@@ -1,9 +1,9 @@
 #include "newdel_exp.h"
 #include "qj_proc.h"
 
-void LpnNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+void LpnNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	pb->init_prop_data(ad);
+	pb->init_prop_data(ad, cb);
 	init_streams(ad);
 	leap_frog_single_stream(ad, 0);
 	init_streams_var(ad);
@@ -15,9 +15,9 @@ void LpnNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 	init_start_state(ad, 0);
 }
 
-void LpnNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+void LpnNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	pb->free_prop_data(ad);
+	pb->free_prop_data(ad, cb);
 	free_streams(ad);
 	free_streams_var(ad);
 	free_basic_data(ad);
@@ -26,13 +26,13 @@ void LpnNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
 	free_obs_lpn(ad);
 }
 
-void StdNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+void StdNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
 	int num_trajectories = cp->num_trajectories;
 
-	pb->init_prop_data(ad);
+	pb->init_prop_data(ad, cb);
 	init_streams(ad);
 	copy_streams(ad);
 	leap_frog_all_streams(ad);
@@ -46,16 +46,16 @@ void StdNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 	}
 }
 
-void StdNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+void StdNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	pb->free_prop_data(ad);
+	pb->free_prop_data(ad, cb);
 	free_streams(ad);
 	free_basic_data(ad);
 	free_dump_priods(ad);
 	free_obs_std(ad);
 }
 
-void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -63,7 +63,7 @@ void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 
 	int deep_dump = int(cp->params.find("deep_dump")->second);
 
-	pb->init_prop_data_deep(ad);
+	pb->init_prop_data_deep(ad, cb);
 	init_streams(ad);
 	copy_streams(ad);
 	leap_frog_all_streams(ad);
@@ -87,9 +87,9 @@ void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 	}
 }
 
-void CorrDimNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+void CorrDimNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	pb->free_prop_data_deep(ad);
+	pb->free_prop_data_deep(ad, cb);
 	free_streams(ad);
 	free_basic_data(ad);
 	free_dump_priods(ad);
@@ -97,7 +97,7 @@ void CorrDimNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) con
 	free_obs_cd(ad);
 }
 
-void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
@@ -105,7 +105,7 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 
 	int deep_dump = int(cp->params.find("deep_dump")->second);
 
-	pb->init_prop_data_deep(ad);
+	pb->init_prop_data_deep(ad, cb);
 	init_streams(ad);
 	copy_streams(ad);
 	leap_frog_all_streams(ad);
@@ -126,22 +126,22 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
 	init_start_state(ad, 0);
 }
 
-void SigmaNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+void SigmaNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	pb->free_prop_data_deep(ad);
+	pb->free_prop_data_deep(ad, cb);
 	free_streams(ad);
 	free_basic_data(ad);
 	free_dump_priods(ad);
 	free_obs_std(ad);
 }
 
-void StdDeepNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+void StdDeepNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
 
 	int num_trajectories = cp->num_trajectories;
 
-	pb->init_prop_data_deep(ad);
+	pb->init_prop_data_deep(ad, cb);
 	init_streams(ad);
 	copy_streams(ad);
 	leap_frog_all_streams(ad);
@@ -155,18 +155,18 @@ void StdDeepNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 	}
 }
 
-void StdDeepNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+void StdDeepNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	pb->free_prop_data_deep(ad);
+	pb->free_prop_data_deep(ad, cb);
 	free_streams(ad);
 	free_basic_data(ad);
 	free_dump_priods(ad);
 	free_obs_std(ad);
 }
 
-void LpnDeepNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+void LpnDeepNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	pb->init_prop_data_deep(ad);
+	pb->init_prop_data_deep(ad, cb);
 	init_streams(ad);
 	leap_frog_single_stream(ad, 0);
 	init_streams_var(ad);
@@ -178,44 +178,15 @@ void LpnDeepNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) con
 	init_start_state(ad, 0);
 }
 
-void LpnDeepNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+void LpnDeepNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	pb->free_prop_data_deep(ad);
+	pb->free_prop_data_deep(ad, cb);
 	free_streams(ad);
 	free_streams_var(ad);
 	free_basic_data(ad);
 	free_dump_priods(ad);
 	free_obs_std(ad);
 	free_obs_lpn(ad);
-}
-
-void StdUNBNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
-{
-	ConfigParam * cp = ad->cp;
-
-	int num_trajectories = cp->num_trajectories;
-
-	pb->init_prop_data_unb(ad);
-	init_streams(ad);
-	copy_streams(ad);
-	leap_frog_all_streams(ad);
-	init_basic_data(ad);
-	init_dump_periods(ad);
-	init_obs_std(ad);
-
-	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-	{
-		init_start_state(ad, tr_id);
-	}
-}
-
-void StdUNBNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
-{
-	pb->free_prop_data_unb(ad);
-	free_streams(ad);
-	free_basic_data(ad);
-	free_dump_priods(ad);
-	free_obs_std(ad);
 }
 
 void init_streams(AllData * ad)

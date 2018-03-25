@@ -35,6 +35,11 @@ void Processor::set_propagate_behaviour(PropagateBehavior* pb)
 	this->pb = pb;
 }
 
+void Processor::set_core_behaviour(CoreBehavior* cb)
+{
+	this->cb = cb;
+}
+
 void Processor::process()
 {
 	ndb->init_sizes(ad);
@@ -45,12 +50,12 @@ void Processor::process()
 	ob->suffix_param(ad->rp, ad->cp, 4);
 	db->save(ad);
 
-	ndb_exp->init_data(ad, pb);
+	ndb_exp->init_data(ad, pb, cb);
 
-	eb->trans_process(ad, pb);
-	eb->obser_process(ad, pb);
+	eb->trans_process(ad, pb, cb);
+	eb->obser_process(ad, pb, cb);
 
-	ndb_exp->free_data(ad, pb);
+	ndb_exp->free_data(ad, pb, cb);
 
 	ndb->free_hamiltonians(ad);
 	ndb->free_dissipators(ad);
