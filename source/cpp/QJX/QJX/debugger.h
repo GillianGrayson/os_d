@@ -13,3 +13,11 @@ class DimerDebugBehaviour : public DebugBehavior
 public:
 	virtual void save(AllData * ad) const;
 };
+
+class JCSBehaviour : public DebugBehavior
+{
+public:
+	virtual void save(AllData * ad) const;
+};
+
+void save_hamiltonian_and_dissipation(AllData * ad);

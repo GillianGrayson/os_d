@@ -189,6 +189,35 @@ void LpnDeepNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) con
 	free_obs_lpn(ad);
 }
 
+void StdUNBNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb) const
+{
+	ConfigParam * cp = ad->cp;
+
+	int num_trajectories = cp->num_trajectories;
+
+	pb->init_prop_data_unb(ad);
+	init_streams(ad);
+	copy_streams(ad);
+	leap_frog_all_streams(ad);
+	init_basic_data(ad);
+	init_dump_periods(ad);
+	init_obs_std(ad);
+
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		init_start_state(ad, tr_id);
+	}
+}
+
+void StdUNBNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb) const
+{
+	pb->free_prop_data_unb(ad);
+	free_streams(ad);
+	free_basic_data(ad);
+	free_dump_priods(ad);
+	free_obs_std(ad);
+}
+
 void init_streams(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
@@ -401,12 +430,14 @@ void init_obs_std(AllData * ad)
 	ed->dispersion		= new double[num_trajectories];
 	ed->m2				= new double[num_trajectories];
 	ed->energy			= new double[num_trajectories];
+	ed->spec			= new MKL_Complex16[num_trajectories];
 
 	ed->norm_evo		= new double[num_trajectories * dump_num_total];
 	ed->mean_evo		= new double[num_trajectories * dump_num_total];
 	ed->dispersion_evo	= new double[num_trajectories * dump_num_total];
 	ed->m2_evo			= new double[num_trajectories * dump_num_total];
 	ed->energy_evo		= new double[num_trajectories * dump_num_total];
+	ed->spec_evo		= new MKL_Complex16[num_trajectories * dump_num_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
@@ -417,7 +448,8 @@ void init_obs_std(AllData * ad)
 		ed->dispersion[tr_id]	= 0.0;
 		ed->m2[tr_id]			= 0.0;
 		ed->energy[tr_id]		= 0.0;
-
+		ed->spec[tr_id].real	= 0.0;
+		ed->spec[tr_id].imag	= 0.0;
 
 		for (int dump_id = 0; dump_id < dump_num_total; dump_id++)
 		{
@@ -426,6 +458,8 @@ void init_obs_std(AllData * ad)
 			ed->dispersion_evo[tr_id * dump_num_total + dump_id]	= 0.0;
 			ed->m2_evo[tr_id * dump_num_total + dump_id]			= 0.0;
 			ed->energy_evo[tr_id * dump_num_total + dump_id]		= 0.0;
+			ed->spec_evo[tr_id * dump_num_total + dump_id].real		= 0.0;
+			ed->spec_evo[tr_id * dump_num_total + dump_id].imag		= 0.0;
 		}
 	}
 
@@ -442,14 +476,14 @@ void init_obs_lpn(AllData * ad)
 	int num_trajectories = cp->num_trajectories;
 	int dump_num_total = ed->dump_num_total;
 
-	double prm_dimer_E = double(cp->params.find("prm_dimer_E")->second);
+	double dimer_prm_E = double(cp->params.find("dimer_prm_E")->second);
 	double * hamiltonian = md->hamiltonian;
 	double * hamiltonian_drv = md->hamiltonian_drv;
 	ed->max_energy = 0.0;
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
 		int index = st_id * sys_size + st_id;
-		double ham_val = (hamiltonian[index] + prm_dimer_E * hamiltonian_drv[index]);
+		double ham_val = (hamiltonian[index] + dimer_prm_E * hamiltonian_drv[index]);
 		if (abs(ham_val) > ed->max_energy)
 		{
 			ed->max_energy = abs(ham_val);
@@ -610,12 +644,14 @@ void free_obs_std(AllData * ad)
 	delete[] ed->dispersion;
 	delete[] ed->m2;
 	delete[] ed->energy;
+	delete[] ed->spec;
 
 	delete[] ed->norm_evo;
 	delete[] ed->mean_evo;
 	delete[] ed->dispersion_evo;
 	delete[] ed->m2_evo;
 	delete[] ed->energy_evo;
+	delete[] ed->spec_evo;
 }
 
 void free_obs_lpn(AllData * ad)
@@ -653,4 +689,3 @@ void free_obs_cd(AllData * ad)
 	}
 	delete[] ed->cd_rec_data;
 }
-

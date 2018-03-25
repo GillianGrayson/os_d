@@ -10,8 +10,11 @@ public:
 	virtual void free_prop_data(AllData * ad) const = 0;
 	virtual void init_prop_data_deep(AllData * ad) const = 0;
 	virtual void free_prop_data_deep(AllData * ad) const = 0;
+	virtual void init_prop_data_unb(AllData * ad) const = 0;
+	virtual void free_prop_data_unb(AllData * ad) const = 0;
 
 	virtual void one_period(AllData * ad, int tr_id, int thread_id, int period_id) const = 0;
+	virtual void one_period_unb(AllData * ad, int tr_id, int thread_id, int period_id) const = 0;
 	virtual void one_period_tp_deep(AllData * ad, int tr_id, int thread_id, int period_id) const = 0;
 	virtual void one_period_obs_deep(AllData * ad, int tr_id, int thread_id, int period_id) const = 0;
 	virtual void one_period_obs_deep_lpn(AllData * ad, int tr_id, int thread_id, int period_id) const = 0;
@@ -27,8 +30,11 @@ public:
 	virtual void free_prop_data(AllData * ad) const;
 	virtual void init_prop_data_deep(AllData * ad) const;
 	virtual void free_prop_data_deep(AllData * ad) const;
+	virtual void init_prop_data_unb(AllData * ad) const;
+	virtual void free_prop_data_unb(AllData * ad) const;
 
 	virtual void one_period(AllData * ad, int tr_id, int thread_id, int period_id) const;
+	virtual void one_period_unb(AllData * ad, int tr_id, int thread_id, int period_id) const;
 	virtual void one_period_tp_deep(AllData * ad, int tr_id, int thread_id, int period_id) const;
 	virtual void one_period_obs_deep(AllData * ad, int tr_id, int thread_id, int period_id) const;
 	virtual void one_period_obs_deep_lpn(AllData * ad, int tr_id, int thread_id, int period_id) const;
@@ -44,8 +50,11 @@ public:
 	virtual void free_prop_data(AllData * ad) const;
 	virtual void init_prop_data_deep(AllData * ad) const;
 	virtual void free_prop_data_deep(AllData * ad) const;
+	virtual void init_prop_data_unb(AllData * ad) const;
+	virtual void free_prop_data_unb(AllData * ad) const;
 
 	virtual void one_period(AllData * ad, int tr_id, int thread_id, int period_id) const;
+	virtual void one_period_unb(AllData * ad, int tr_id, int thread_id, int period_id) const;
 	virtual void one_period_tp_deep(AllData * ad, int tr_id, int thread_id, int period_id) const;
 	virtual void one_period_obs_deep(AllData * ad, int tr_id, int thread_id, int period_id) const;
 	virtual void one_period_obs_deep_lpn(AllData * ad, int tr_id, int thread_id, int period_id) const;

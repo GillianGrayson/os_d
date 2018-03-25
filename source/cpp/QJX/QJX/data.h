@@ -21,6 +21,8 @@ struct MainData
 
 	MKL_Complex16 ** hamiltonians_qj;	// Non-Hermitian Hamiltonians for qj
 
+	MKL_Complex16 * special;			// Matrix for special observable
+
 	Split * structure;					// Split structure
 	Split * splits;						// Splits
 };
@@ -70,11 +72,13 @@ struct ExpData
 	double * mean;
 	double * dispersion;
 	double * m2;
+	MKL_Complex16 * spec;
 
 	double * norm_evo;
 	double * mean_evo;
 	double * dispersion_evo;
 	double * m2_evo;
+	MKL_Complex16 * spec_evo;
 	// ======================================
 
 	// ======== Lyapunov observables ========
@@ -87,11 +91,13 @@ struct ExpData
 	double * lambda_now;
 	double * mean_lpn;
 	double * energy_lpn;
+	MKL_Complex16 * spec_lpn;
 
 	double * energy_evo;
 	double * lambda_evo;
 	double * mean_lpn_evo;
 	double * energy_lpn_evo;
+	MKL_Complex16 * spec_lpn_evo;
 	// ======================================
 
 	// ===== Corr dimension observables =====

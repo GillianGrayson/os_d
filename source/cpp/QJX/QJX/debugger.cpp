@@ -2,6 +2,16 @@
 
 void DimerDebugBehaviour::save(AllData * ad) const
 {
+	save_hamiltonian_and_dissipation(ad);
+}
+
+void JCSBehaviour::save(AllData * ad) const
+{
+	save_hamiltonian_and_dissipation(ad);
+}
+
+void save_hamiltonian_and_dissipation(AllData * ad)
+{
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;

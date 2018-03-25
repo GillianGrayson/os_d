@@ -23,6 +23,16 @@ void QJPropagateBehavior::free_prop_data_deep(AllData * ad) const
 	free_splits_deep(ad);
 }
 
+void QJPropagateBehavior::init_prop_data_unb(AllData * ad) const
+{
+	init_splits_unb(ad);
+}
+
+void QJPropagateBehavior::free_prop_data_unb(AllData * ad) const
+{
+	free_splits_unb(ad);
+}
+
 void QJPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id, int period_id) const
 {
 	MainData * md = ad->md;
@@ -91,6 +101,20 @@ void QJPropagateBehavior::one_period_obs_deep(AllData * ad, int tr_id, int threa
 				dump_adr_single(ad, tr_id, true);
 			}
 		}
+	}
+}
+
+void QJPropagateBehavior::one_period_unb(AllData * ad, int tr_id, int thread_id, int period_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps = int(cp->params.find("deep_num_steps")->second);
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		one_sub_period_deep(ad, tr_id, part_id, thread_id);
 	}
 }
 
@@ -259,9 +283,60 @@ void RKPropagateBehavior::free_prop_data_deep(AllData * ad) const
 	free_rk_cd(ad);
 }
 
+void RKPropagateBehavior::init_prop_data_unb(AllData * ad) const
+{
+	init_rk(ad);
+}
+
+void RKPropagateBehavior::free_prop_data_unb(AllData * ad) const
+{
+	free_rk(ad);
+}
+
 void RKPropagateBehavior::one_period(AllData * ad, int tr_id, int thread_id, int period_id) const
 {
 	rk_period(ad, tr_id, thread_id, period_id);
+}
+
+void RKPropagateBehavior::one_period_unb(AllData * ad, int tr_id, int thread_id, int period_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int num_branches = md->num_ham_qj;
+
+	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
+	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);
+
+	double T_1 = jcs_drv_part_1 * md->T;
+	double T_2 = jcs_drv_part_2 * md->T;
+
+	int step_id = 0;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		double time = 0.0;
+		double step = 0.0;
+		if (part_id == 0)
+		{
+			time = double(period_id) * (T_1 + T_2);
+			step = T_1 / double(cp->rk_ns);
+		}
+		else if (part_id == 1)
+		{
+			time = double(period_id) * (T_1 + T_2) + T_1;
+			step = T_2 / double(cp->rk_ns);
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Error: Wrong part_id" << endl;
+			Error(msg.str());
+		}
+
+		rk_period_unb(ad, tr_id, thread_id, time, step);
+	}
 }
 
 void RKPropagateBehavior::one_period_tp_deep(AllData * ad, int tr_id, int thread_id, int period_id) const

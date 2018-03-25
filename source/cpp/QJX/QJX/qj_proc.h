@@ -2,15 +2,17 @@
 #include "config.h"
 #include "data.h"
 
-void init_splits_deep(AllData * ad);
 void init_splits(AllData * ad);
+void init_splits_deep(AllData * ad);
+void init_splits_unb(AllData * ad);
 
-void free_splits_deep(AllData * ad);
 void free_splits(AllData * ad);
-
-Split * init_split_structure_deep(AllData * ad);
+void free_splits_deep(AllData * ad);
+void free_splits_unb(AllData * ad);
 
 Split * init_split_structure(AllData * ad);
+Split * init_split_structure_deep(AllData * ad);
+Split * init_split_structure_unb(AllData * ad);
 
 void init_split_branches(Split * branch, int branch_id, AllData * ad);
 

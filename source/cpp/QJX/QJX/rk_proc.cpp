@@ -172,12 +172,12 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 
 	int sys_size = md->sys_size;
 
-	double prm_dimer_E = double(cp->params.find("prm_dimer_E")->second);
+	double dimer_prm_E = double(cp->params.find("dimer_prm_E")->second);
 
-	int drv_dimer_type = double(cp->params.find("drv_dimer_type")->second);
-	double drv_dimer_ampl = double(cp->params.find("drv_dimer_ampl")->second);
-	double drv_dimer_freq = double(cp->params.find("drv_dimer_freq")->second);
-	double drv_dimer_phase = double(cp->params.find("drv_dimer_phase")->second);
+	int dimer_drv_type = double(cp->params.find("dimer_drv_type")->second);
+	double dimer_drv_ampl = double(cp->params.find("dimer_drv_ampl")->second);
+	double dimer_drv_freq = double(cp->params.find("dimer_drv_freq")->second);
+	double dimer_drv_phase = double(cp->params.find("dimer_drv_phase")->second);
 
 	double time = ed->times_all[tr_id];
 
@@ -204,22 +204,22 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 	}
 
 	double E = 0.0;
-	if (drv_dimer_type == 0)
+	if (dimer_drv_type == 0)
 	{
 		double mod_time = fmod(time, md->T);
 		double half_T = md->T * 0.5;
 		if (mod_time < half_T)
 		{
-			E = prm_dimer_E + drv_dimer_ampl;
+			E = dimer_prm_E + dimer_drv_ampl;
 		}
 		else 
 		{
-			E = prm_dimer_E - drv_dimer_ampl;
+			E = dimer_prm_E - dimer_drv_ampl;
 		}
 	}
-	else if (drv_dimer_type == 1)
+	else if (dimer_drv_type == 1)
 	{
-		E = prm_dimer_E + drv_dimer_ampl * sin(drv_dimer_freq * time + drv_dimer_phase);
+		E = dimer_prm_E + dimer_drv_ampl * sin(dimer_drv_freq * time + dimer_drv_phase);
 	}
 	else
 	{
@@ -227,12 +227,76 @@ void right_part(AllData * ad, int sub_step, int tr_id, int th_id)
 		double half_T = md->T * 0.5;
 		if (mod_time < half_T)
 		{
-			E = prm_dimer_E + drv_dimer_ampl;
+			E = dimer_prm_E + dimer_drv_ampl;
 		}
 		else
 		{
-			E = prm_dimer_E - drv_dimer_ampl;
+			E = dimer_prm_E - dimer_drv_ampl;
 		}
+	}
+
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->non_drv_part, sys_size, arg, 1, &ZERO, non_drv_tmp, 1);
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->drv_part, sys_size, arg, 1, &ZERO, drv_tmp, 1);
+
+	for (int st_id = 0; st_id < md->sys_size; st_id++)
+	{
+		k[st_id].real = +(ed->non_drv_tmp[th_id][st_id].imag + E * ed->drv_tmp[th_id][st_id].imag);
+		k[st_id].imag = -(ed->non_drv_tmp[th_id][st_id].real + E * ed->drv_tmp[th_id][st_id].real);
+	}
+}
+
+void right_part_unb(AllData * ad, int sub_step, int tr_id, int th_id)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
+	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);
+	double jcs_drv_ampl = double(cp->params.find("jcs_drv_ampl")->second);
+
+	double T_1 = jcs_drv_part_1 * md->T;
+	double T_2 = jcs_drv_part_2 * md->T;
+	double T = T_1 + T_2;
+
+	double time = ed->times_all[tr_id];
+
+	MKL_Complex16 * arg = ed->args[th_id];
+	MKL_Complex16 * non_drv_tmp = ed->non_drv_tmp[th_id];
+	MKL_Complex16 * drv_tmp = ed->drv_tmp[th_id];
+
+	MKL_Complex16 * k = ed->k1[th_id];
+	if (sub_step == 1)
+	{
+		k = ed->k1[th_id];
+	}
+	else if (sub_step == 2)
+	{
+		k = ed->k2[th_id];
+	}
+	else if (sub_step == 3)
+	{
+		k = ed->k3[th_id];
+	}
+	else if (sub_step == 4)
+	{
+		k = ed->k4[th_id];
+	}
+
+	double E = 0.0;
+	double mod_time = fmod(time, T);
+	if (mod_time < T_1)
+	{
+		E = jcs_drv_ampl;
+	}
+	else
+	{
+		E = 0.0;
 	}
 
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
@@ -435,6 +499,35 @@ void rk_int(AllData * ad, int tr_id, int th_id, double step)
 	rk_final(ad, tr_id, th_id, step);
 }
 
+void rk_int_unb(AllData * ad, int tr_id, int th_id, double step)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	set_init_args(ad, tr_id, th_id);
+
+	right_part_unb(ad, 1, tr_id, th_id);
+	arg_upd(ad, 1, tr_id, th_id);
+
+	ed->times_all[tr_id] += step * 0.5;
+
+	right_part_unb(ad, 2, tr_id, th_id);
+	arg_upd(ad, 2, tr_id, th_id);
+
+	right_part_unb(ad, 3, tr_id, th_id);
+	arg_upd(ad, 3, tr_id, th_id);
+
+	ed->times_all[tr_id] += step * 0.5;
+
+	right_part_unb(ad, 4, tr_id, th_id);
+
+	rk_final(ad, tr_id, th_id, step);
+}
+
 void rk_step(AllData * ad, int tr_id, int th_id, double step)
 {
 	RunParam * rp = ad->rp;
@@ -497,6 +590,68 @@ void rk_step(AllData * ad, int tr_id, int th_id, double step)
 	}
 }
 
+void rk_step_unb(AllData * ad, int tr_id, int th_id, double step)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int jump = int(cp->params.find("jump")->second);
+
+	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * eta = &(ed->etas_all[tr_id]);
+
+	double prev_norm = 0.0;
+	double curr_norm = 0.0;
+	double norm_diff = 0.0;
+	double begin_part = 0.0;
+	double end_part = 0.0;
+	double begin_step = 0.0;
+	double end_step = 0.0;
+
+	save_phi_prev(ad, tr_id, th_id);
+	prev_norm = norm_square(phi, sys_size);
+	rk_int_unb(ad, tr_id, th_id, step);
+
+	if (is_norm_crossed(phi, eta, sys_size))
+	{
+		curr_norm = norm_square(phi, sys_size);
+		norm_diff = prev_norm - curr_norm;
+		begin_part = (prev_norm - *(eta)) / norm_diff;
+		end_part = 1.0 - begin_part;
+		begin_step = step * begin_part;
+		end_step = step * end_part;
+
+		restore_from_prev(ad, tr_id, th_id, step);
+
+		rk_int_unb(ad, tr_id, th_id, begin_step);
+
+		if (jump == 1 && ed->is_obs == 1)
+		{
+			double jump_time = ed->times_all[tr_id];
+			double jump_norm = norm_square(phi, sys_size);
+			double jump_eta = *eta;
+
+			ed->jump_times[tr_id].push_back(jump_time);
+			ed->jump_norms[tr_id].push_back(jump_norm);
+			ed->jump_etas[tr_id].push_back(jump_eta);
+		}
+
+		rk_recovery(ad, tr_id, th_id);
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+		while (*eta == 0.0)
+		{
+			vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+		}
+
+		rk_step_unb(ad, tr_id, th_id, end_step);
+	}
+}
+
 void rk_period(AllData * ad, int tr_id, int th_id, int period_id)
 {
 	RunParam * rp = ad->rp;
@@ -522,5 +677,19 @@ void rk_period_deep(AllData * ad, int tr_id, int th_id, double start_time)
 	{
 		ed->times_all[tr_id] = start_time + double(step_id) * ed->rk_step;
 		rk_step(ad, tr_id, th_id, ed->rk_step);
+	}
+}
+
+void rk_period_unb(AllData * ad, int tr_id, int th_id, double start_time, double step)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	for (int step_id = 0; step_id < cp->rk_ns; step_id++)
+	{
+		ed->times_all[tr_id] = start_time + double(step_id) * step;
+		rk_step_unb(ad, tr_id, th_id, step);
 	}
 }
