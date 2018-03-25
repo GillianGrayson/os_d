@@ -64,7 +64,6 @@ struct ExpData
 	MKL_Complex16 ** drv_tmp;
 	// =========================
 
-
 	// ======== Standart observables ========
 	double * mean_start;
 

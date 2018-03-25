@@ -10,7 +10,7 @@ void Processor::set_debug_behaviour(DebugBehavior* db)
 	this->db = db;
 }
 
-void Processor::set_output_behaviour(OuputBehavior* ob)
+void Processor::set_output_behaviour(OutputBehavior* ob)
 {
 	this->ob = ob;
 }

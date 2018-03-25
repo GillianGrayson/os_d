@@ -15,7 +15,7 @@ private:
 	AllData * ad;
 
 	DebugBehavior * db;
-	OuputBehavior * ob;
+	OutputBehavior * ob;
 	NewDelBehavior * ndb;
 	ExpNewDelBehavior * ndb_exp;
 	ExperimentBehavior * eb;
@@ -27,7 +27,7 @@ public:
 
 	void set_debug_behaviour(DebugBehavior* db);
 
-	void set_output_behaviour(OuputBehavior* ob);
+	void set_output_behaviour(OutputBehavior* ob);
 
 	void set_newdel_behaviour(NewDelBehavior* ndb);
 

@@ -74,19 +74,7 @@ double get_m2(double * adr, int sys_size, double mean);
 
 double get_energy(AllData * ad, int tr_id);
 
-void calc_chars_start_std(AllData * ad, int tr_id);
-
-void calc_chars_std(AllData * ad, int tr_id);
-
-void evo_chars_std(AllData * ad, int tr_id, int dump_id);
-
-void calc_chars_start_lpn(AllData * ad, int tr_id);
-
-void calc_chars_lpn(AllData * ad, int tr_id);
-
-void calc_ci(AllData * ad, int tr_id);
-
-void evo_chars_lpn(AllData * ad, int tr_id, int dump_id);
+MKL_Complex16 get_spec(AllData * ad, int tr_id);
 
 void resresh_times(AllData * ad, int tr_id);
 
@@ -96,7 +84,7 @@ void copy_trajectory_data(AllData * ad, int tr_id);
 
 void var_trajectory_lpn(AllData * ad, int tr_id);
 
-void lambda_lpn(AllData * ad, int tr_id);
+void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id);
 
 void trans_process_single(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb, int tr_id, int thread_id);
 

@@ -551,6 +551,397 @@ void DimerCoreBehaviour::rk_period_obs_deep_sigma(AllData * ad, int tr_id, int t
 	}
 }
 
+void DimerCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
+{
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
+	}
+
+	double mean = get_mean_simple(adr, sys_size);
+	double dispersion = get_dispersion_simple(mean, mean);
+	double m2 = get_m2(adr, sys_size, mean);
+	double energy = get_energy(ad, tr_id);
+
+	ed->mean_start[tr_id] = mean;
+
+	ed->norm[tr_id] = norm;
+	ed->mean[tr_id] = mean;
+	ed->dispersion[tr_id] = dispersion;
+	ed->m2[tr_id] = m2;
+	ed->energy[tr_id] = energy;
+}
+
+void DimerCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
+{
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
+	}
+
+	double mean = get_mean_simple(adr, sys_size);
+	double dispersion = get_dispersion_simple(mean, ed->mean_start[tr_id]);
+	double m2 = get_m2(adr, sys_size, mean);
+	double energy = get_energy(ad, tr_id);
+
+	ed->norm[tr_id] = norm;
+	ed->mean[tr_id] = mean;
+	ed->dispersion[tr_id] = dispersion;
+	ed->m2[tr_id] = m2;
+	ed->energy[tr_id] = energy;
+}
+
+void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int lpn_type = double(cp->params.find("lpn_type")->second);
+
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm_2 = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
+	}
+
+	double lambda = 0.0;
+	double lambda_now = 0.0;
+	double mean_lpn = ed->mean[tr_id];
+	double energy_lpn = ed->energy[tr_id];
+
+	double delta_s = 0.0;
+	if (lpn_type == 0)
+	{
+		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
+	}
+	else if (lpn_type == 0)
+	{
+		delta_s = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
+	}
+	else
+	{
+		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
+	}
+
+	ed->lambda[tr_id] = lambda;
+	ed->lambda_now[tr_id] = lambda_now;
+	ed->mean_lpn[tr_id] = mean_lpn;
+	ed->energy_lpn[tr_id] = energy_lpn;
+	ed->delta_s[tr_id] = delta_s;
+}
+
+void DimerCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int lpn_type = double(cp->params.find("lpn_type")->second);
+
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm_2 = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
+	}
+
+	double mean_lpn = get_mean_simple(adr, sys_size);
+	double energy_lpn = get_energy(ad, tr_id);
+
+	ed->mean_lpn[tr_id] = mean_lpn;
+	ed->energy_lpn[tr_id] = energy_lpn;
+}
+
+void DimerCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
+{
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int dump_num_total = ed->dump_num_total;
+
+	int index = tr_id * dump_num_total + dump_id;
+
+	ed->norm_evo[index] = ed->norm[tr_id];
+	ed->mean_evo[index] = ed->mean[tr_id];
+	ed->dispersion_evo[index] = ed->dispersion[tr_id];
+	ed->m2_evo[index] = ed->m2[tr_id];
+	ed->energy_evo[index] = ed->energy[tr_id];
+}
+
+void DimerCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
+{
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int dump_num_total = ed->dump_num_total;
+
+	int index = tr_id * dump_num_total + dump_id;
+
+	ed->lambda_evo[index] = ed->lambda_now[tr_id];
+	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
+	ed->energy_lpn_evo[index] = ed->energy_lpn[tr_id];
+}
+
+double DimerCoreBehaviour::calc_delta(AllData * ad, int tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int lpn_type = double(cp->params.find("lpn_type")->second);
+	double lpn_delta_up = double(cp->params.find("lpn_delta_up")->second);
+	double lpn_delta_down = double(cp->params.find("lpn_delta_down")->second);
+
+	double delta_f = 0.0;
+	if (lpn_type == 0)
+	{
+		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
+	}
+	else if (lpn_type == 0)
+	{
+		delta_f = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
+	}
+	else
+	{
+		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
+	}
+
+	return delta_f;
+}
+
+void DimerCoreBehaviour::calc_ci(AllData * ad, int tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	double eps = double(cp->params.find("cd_eps")->second);
+
+	double * curr_diff = new double[ed->cd_dim];
+	double curr_norm = 0.0;
+	double integral = 0.0;
+
+	for (int cd_p_id_1 = 0; cd_p_id_1 < ed->cd_num_points; cd_p_id_1++)
+	{
+		for (int cd_p_id_2 = 0; cd_p_id_2 < ed->cd_num_points; cd_p_id_2++)
+		{
+			if (cd_p_id_1 != cd_p_id_2)
+			{
+				for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
+				{
+					curr_diff[cd_st_id] = ed->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - ed->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
+				}
+
+				curr_norm = get_norm_cd(curr_diff, ed->cd_dim) / double(md->sys_size);
+
+				if (curr_norm < eps)
+				{
+					integral += 1.0;
+				}
+			}
+		}
+	}
+
+	integral /= (double(ed->cd_num_points) * double(ed->cd_num_points - 1));
+
+	ed->cd_i[tr_id] = integral;
+
+	delete curr_diff;
+}
+
+void DimerCoreBehaviour::dump_std(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		int num_trajectories = cp->num_trajectories;
+
+		double * norm = ed->norm;
+		double * mean_start = ed->mean_start;
+		double * mean = ed->mean;
+		double * dispersion = ed->dispersion;
+		double * m2 = ed->m2;
+		double * energy = ed->energy;
+
+		string fn;
+
+		fn = rp->path + "norm" + cp->fn_suffix;
+		save_double_data(fn, norm, num_trajectories, 16, false);
+
+		fn = rp->path + "mean_start" + cp->fn_suffix;
+		save_double_data(fn, mean_start, num_trajectories, 16, false);
+
+		fn = rp->path + "mean" + cp->fn_suffix;
+		save_double_data(fn, mean, num_trajectories, 16, false);
+
+		fn = rp->path + "dispersion" + cp->fn_suffix;
+		save_double_data(fn, dispersion, num_trajectories, 16, false);
+
+		fn = rp->path + "m2" + cp->fn_suffix;
+		save_double_data(fn, m2, num_trajectories, 16, false);
+
+		fn = rp->path + "energy" + cp->fn_suffix;
+		save_double_data(fn, energy, num_trajectories, 16, false);
+	}
+}
+
+void DimerCoreBehaviour::dump_lpn(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		double * lambda = ed->lambda_now;
+		double * mean_lpn = ed->mean_lpn;
+		double * energy_lpn = ed->energy_lpn;
+
+		string fn;
+
+		fn = rp->path + "lambda" + cp->fn_suffix;
+		save_double_data(fn, lambda, num_trajectories, 16, false);
+
+		fn = rp->path + "mean_lpn" + cp->fn_suffix;
+		save_double_data(fn, mean_lpn, num_trajectories, 16, false);
+
+		fn = rp->path + "energy_lpn" + cp->fn_suffix;
+		save_double_data(fn, energy_lpn, num_trajectories, 16, false);
+	}
+}
+
+void DimerCoreBehaviour::dump_std_evo(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int dump_num_total = ed->dump_num_total;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+	int jump = int(cp->params.find("jump")->second);
+
+	if (dump_obs == 1)
+	{
+		int * dump_periods = ed->dump_periods;
+
+		double * norm_evo = ed->norm_evo;
+		double * mean_evo = ed->mean_evo;
+		double * dispersion_evo = ed->dispersion_evo;
+		double * m2_evo = ed->m2_evo;
+		double * energy_evo = ed->energy_evo;
+
+		string fn;
+
+		fn = rp->path + "periods" + cp->fn_suffix;
+		save_int_data(fn, dump_periods, dump_num_total, false);
+
+		fn = rp->path + "norm_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, norm_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "mean_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, mean_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "dispersion_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, dispersion_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "m2_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, m2_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "energy_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, energy_evo, dump_num_total, num_trajectories, 16, false);
+
+		if (jump == 1)
+		{
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
+
+				fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_norms[tr_id], 16, false);
+
+				fn = rp->path + "jump_etas_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_etas[tr_id], 16, false);
+			}
+		}
+	}
+}
+
+void DimerCoreBehaviour::dump_lpn_evo(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int dump_num_total = ed->dump_num_total;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		double * lambda_evo = ed->lambda_evo;
+		double * mean_lpn_evo = ed->mean_lpn_evo;
+		double * energy_lpn_evo = ed->energy_lpn_evo;
+
+		string fn;
+
+		fn = rp->path + "lambda_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, lambda_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "mean_lpn_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, mean_lpn_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "energy_lpn_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, energy_lpn_evo, dump_num_total, num_trajectories, 16, false);
+	}
+}
+
 void JCSCoreBehaviour::init_splits(AllData * ad) const
 {
 	RunParam * rp = ad->rp;
@@ -737,6 +1128,152 @@ void JCSCoreBehaviour::rk_period_obs_deep_sigma(AllData * ad, int tr_id, int th_
 	Error(msg.str());
 }
 
+void JCSCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
+{
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	MKL_Complex16 spec = get_spec(ad, tr_id);
+
+	ed->spec[tr_id] = spec;
+}
+
+void JCSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
+{
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	MKL_Complex16 spec = get_spec(ad, tr_id);
+
+	ed->spec[tr_id] = spec;
+}
+
+void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void JCSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void JCSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
+{
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int dump_num_total = ed->dump_num_total;
+
+	int index = tr_id * dump_num_total + dump_id;
+
+	ed->spec_evo[index] = ed->spec[tr_id];
+}
+
+void JCSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+double JCSCoreBehaviour::calc_delta(AllData * ad, int tr_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+	return 0.0;
+}
+
+void JCSCoreBehaviour::calc_ci(AllData * ad, int tr_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void JCSCoreBehaviour::dump_std(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		int num_trajectories = cp->num_trajectories;
+
+		MKL_Complex16 * spec = ed->spec;
+
+		string fn;
+
+		fn = rp->path + "spec" + cp->fn_suffix;
+		save_complex_data(fn, spec, num_trajectories, 16, false);
+	}
+}
+
+void JCSCoreBehaviour::dump_lpn(AllData * ad) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void JCSCoreBehaviour::dump_std_evo(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int dump_num_total = ed->dump_num_total;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+	int jump = int(cp->params.find("jump")->second);
+
+	if (dump_obs == 1)
+	{
+		int * dump_periods = ed->dump_periods;
+
+		MKL_Complex16 * spec_evo = ed->spec_evo;
+
+		string fn;
+
+		fn = rp->path + "periods" + cp->fn_suffix;
+		save_int_data(fn, dump_periods, dump_num_total, false);
+
+		fn = rp->path + "spec_evo" + cp->fn_suffix;
+		save_2d_inv_complex_data(fn, spec_evo, dump_num_total, num_trajectories, 16, false);
+
+		if (jump == 1)
+		{
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
+
+				fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_norms[tr_id], 16, false);
+
+				fn = rp->path + "jump_etas_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_etas[tr_id], 16, false);
+			}
+		}
+	}
+}
+
+void JCSCoreBehaviour::dump_lpn_evo(AllData * ad) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
 Split * init_split_structure_dimer(AllData * ad)
 {
 	MainData * md = ad->md;
@@ -844,8 +1381,6 @@ Split * init_split_structure_jcs(AllData * ad)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-
-	int deep_num_steps = int(cp->params.find("deep_num_steps")->second);
 
 	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
 	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);

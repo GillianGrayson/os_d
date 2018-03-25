@@ -123,8 +123,8 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	{
 		int index_std = st_id * md->sys_size + (st_id + 1);
 		int index_dag = (st_id + 1) * md->sys_size + st_id;
-		a_std[index_std] = double(st_id + 1);
-		a_dag[index_dag] = double(st_id + 1);
+		a_std[index_std] = sqrt(double(st_id + 1));
+		a_dag[index_dag] = sqrt(double(st_id + 1));
 	}
 
 	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, sys_size, sys_size, sys_size, 1.0, a_dag, sys_size, a_dag, sys_size, 0.0, mult_tmp_1, sys_size);
@@ -230,7 +230,7 @@ void JCSNewDelBehaviour::init_dissipators(AllData * ad) const
 	{
 		int index= st_id * md->sys_size + (st_id + 1);
 
-		md->dissipators[0][index].real = double(st_id + 1);
+		md->dissipators[0][index].real = sqrt(double(st_id + 1));
 		md->dissipators[0][index].imag = 0.0;
 	}
 }

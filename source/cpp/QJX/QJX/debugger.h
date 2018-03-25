@@ -14,7 +14,7 @@ public:
 	virtual void save(AllData * ad) const;
 };
 
-class JCSBehaviour : public DebugBehavior
+class JCSDebugBehaviour : public DebugBehavior
 {
 public:
 	virtual void save(AllData * ad) const;

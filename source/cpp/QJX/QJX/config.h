@@ -18,6 +18,7 @@
 #include <unsupported/Eigen/MatrixFunctions>
 
 #define DIMER_SYS_ID 0
+#define JCS_SYS_ID 1
 
 #define LPN_TASK_ID 0 
 #define STD_TASK_ID 1 

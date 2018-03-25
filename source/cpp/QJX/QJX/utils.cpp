@@ -225,6 +225,64 @@ void save_2d_inv_double_data(string file_name, double * data, int num_rows, int 
 	}
 }
 
+void save_2d_inv_complex_data(string file_name, MKL_Complex16 * data, int num_rows, int num_cols, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int row = 0; row < num_rows; row++)
+			{
+				for (int col = 0; col < num_cols; col++)
+				{
+					int index = col * num_cols + row;
+					ofs << data[index].real << " " << data[index].imag << " ";
+				}
+				ofs << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int row = 0; row < num_rows; row++)
+			{
+				for (int col = 0; col < num_cols; col++)
+				{
+					int index = col * num_rows + row;
+					ofs << data[index].real << " " << data[index].imag << " ";
+				}
+				ofs << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+}
+
 void save_double_vector(string file_name, vector<double> vec, int precision, bool append)
 {
 	if (append)

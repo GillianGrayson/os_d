@@ -14,7 +14,7 @@ int main()
 	init_params(rp, cp, "config.txt", "params.txt");
 
 	DebugBehavior * db;
-	OuputBehavior * ob;
+	OutputBehavior * ob;
 	NewDelBehavior * ndb;
 	ExpNewDelBehavior * ndb_exp;
 	ExperimentBehavior * eb;
@@ -24,9 +24,16 @@ int main()
 	if (rp->sys_id == DIMER_SYS_ID)
 	{
 		db = new DimerDebugBehaviour();
-		ob = new DimerIOuputBehavior();
+		ob = new DimerOutputBehavior();
 		ndb = new DimerNewDelBehaviour();
 		cb = new DimerCoreBehaviour();
+	}
+	else if(rp->sys_id == JCS_SYS_ID)
+	{
+		db = new JCSDebugBehaviour();
+		ob = new JCSOutputBehavior();
+		ndb = new JCSNewDelBehaviour();
+		cb = new JCSCoreBehaviour();
 	}
 	else
 	{

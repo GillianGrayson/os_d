@@ -27,11 +27,11 @@ void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb,
 
 		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(ad, tr_id);
-		calc_chars_start_lpn(ad, tr_id);
+		cb->calc_chars_std_start(ad, tr_id);
+		cb->calc_chars_lpn_start(ad, tr_id);
 
-		evo_chars_std(ad, tr_id, 0);
-		evo_chars_lpn(ad, tr_id, 0);
+		cb->evo_chars_std(ad, tr_id, 0);
+		cb->evo_chars_lpn(ad, tr_id, 0);
 
 		if (dump_evo_sep == 1)
 		{
@@ -80,10 +80,10 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 			{
 				int thread_id = omp_get_thread_num();
 				pb->one_period(ad, cb, tr_id, thread_id, period_id);
-				calc_chars_std(ad, tr_id);
+				cb->calc_chars_std(ad, tr_id);
 			}
 
-			calc_chars_lpn(ad, 0);
+			cb->calc_chars_lpn(ad, 0);
 
 			ed->period_id = (period_id + 1);
 
@@ -92,7 +92,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 			{
 				if (tr_id > 0)
 				{
-					lambda_lpn(ad, tr_id);
+					lambda_lpn(ad, cb, tr_id);
 				}
 			}
 		}
@@ -100,8 +100,8 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 #pragma omp parallel for
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
-			evo_chars_std(ad, tr_id, dump_id);
-			evo_chars_lpn(ad, tr_id, dump_id);
+			cb->evo_chars_std(ad, tr_id, dump_id);
+			cb->evo_chars_lpn(ad, tr_id, dump_id);
 
 			if (dump_evo_sep == 1)
 			{
@@ -115,14 +115,13 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 		}
 	}
 
-
-	dump_std(ad);
-	dump_lpn(ad);
+	cb->dump_std(ad);
+	cb->dump_lpn(ad);
 
 	if (dump_evo_sep == 1)
 	{
-		dump_evo_std(ad);
-		dump_evo_lpn(ad);
+		cb->dump_std_evo(ad);
+		cb->dump_lpn_evo(ad);
 	}
 
 	if (dump_evo_avg == 0)
@@ -152,9 +151,9 @@ void StdExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb,
 	{
 		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(ad, tr_id);
+		cb->calc_chars_std_start(ad, tr_id);
 
-		evo_chars_std(ad, tr_id, 0);
+		cb->evo_chars_std(ad, tr_id, 0);
 
 		if (dump_evo_sep == 1)
 		{
@@ -209,9 +208,9 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 #pragma omp parallel for
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
-			calc_chars_std(ad, tr_id);
+			cb->calc_chars_std(ad, tr_id);
 
-			evo_chars_std(ad, tr_id, dump_id);
+			cb->evo_chars_std(ad, tr_id, dump_id);
 
 			if (dump_evo_sep == 1)
 			{
@@ -225,11 +224,11 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 		}
 	}
 
-	dump_std(ad);
+	cb->dump_std(ad);
 
 	if (dump_evo_sep == 1)
 	{
-		dump_evo_std(ad);
+		cb->dump_std_evo(ad);
 	}
 
 	if (dump_evo_avg == 0)
@@ -259,9 +258,9 @@ void CorrDimExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	{
 		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(ad, tr_id);
+		cb->calc_chars_std_start(ad, tr_id);
 
-		evo_chars_std(ad, tr_id, 0);
+		cb->evo_chars_std(ad, tr_id, 0);
 
 		if (dump_evo_sep == 1)
 		{
@@ -333,7 +332,7 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				evo_chars_std(ad, tr_id, dump_id);
+				cb->evo_chars_std(ad, tr_id, dump_id);
 
 				if (dump_evo_sep == 1)
 				{
@@ -351,16 +350,16 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		calc_ci(ad, tr_id);
+		cb->calc_ci(ad, tr_id);
 	}
 
-	dump_std(ad);
+	cb->dump_std(ad);
 
 	dump_cd(ad);
 
 	if (dump_evo_sep == 1)
 	{
-		dump_evo_std(ad);
+		cb->dump_std_evo(ad);
 	}
 
 	if (dump_evo_avg == 0)
@@ -395,9 +394,9 @@ void SigmaExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * p
 
 		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(ad, tr_id);
+		cb->calc_chars_std_start(ad, tr_id);
 
-		evo_chars_std(ad, tr_id, 0);
+		cb->evo_chars_std(ad, tr_id, 0);
 
 		if (dump_evo_sep == 1)
 		{
@@ -469,7 +468,7 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				evo_chars_std(ad, tr_id, dump_id);
+				cb->evo_chars_std(ad, tr_id, dump_id);
 
 				if (dump_evo_sep == 1)
 				{
@@ -484,11 +483,11 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 		}
 	}
 
-	dump_std(ad);
+	cb->dump_std(ad);
 
 	if (dump_evo_sep == 1)
 	{
-		dump_evo_std(ad);
+		cb->dump_std_evo(ad);
 	}
 
 	if (dump_evo_avg == 0)
@@ -518,9 +517,9 @@ void StdDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	{
 		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(ad, tr_id);
+		cb->calc_chars_std_start(ad, tr_id);
 
-		evo_chars_std(ad, tr_id, 0);
+		cb->evo_chars_std(ad, tr_id, 0);
 
 		if (dump_evo_sep == 1)
 		{
@@ -579,11 +578,11 @@ void StdDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 		}
 	}
 
-	dump_std(ad);
+	cb->dump_std(ad);
 
 	if (dump_evo_sep == 1)
 	{
-		dump_evo_std(ad);
+		cb->dump_std_evo(ad);
 	}
 
 	if (dump_evo_avg == 0)
@@ -619,11 +618,11 @@ void LpnDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 
 		resresh_times(ad, tr_id);
 
-		calc_chars_start_std(ad, tr_id);
-		calc_chars_start_lpn(ad, tr_id);
+		cb->calc_chars_std_start(ad, tr_id);
+		cb->calc_chars_lpn_start(ad, tr_id);
 
-		evo_chars_std(ad, tr_id, 0);
-		evo_chars_lpn(ad, tr_id, 0);
+		cb->evo_chars_std(ad, tr_id, 0);
+		cb->evo_chars_lpn(ad, tr_id, 0);
 
 		if (dump_evo_sep == 1)
 		{
@@ -682,7 +681,7 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			{
 				if (tr_id > 0)
 				{
-					lambda_lpn(ad, tr_id);
+					lambda_lpn(ad, cb, tr_id);
 				}
 			}
 		}
@@ -693,13 +692,13 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 		}
 	}
 
-	dump_std(ad);
-	dump_lpn(ad);
+	cb->dump_std(ad);
+	cb->dump_lpn(ad);
 
 	if (dump_evo_sep == 1)
 	{
-		dump_evo_std(ad);
-		dump_evo_lpn(ad);
+		cb->dump_std_evo(ad);
+		cb->dump_lpn_evo(ad);
 	}
 
 	if (dump_evo_avg == 0)
@@ -946,82 +945,7 @@ double get_energy(AllData * ad, int tr_id)
 	return energy;
 }
 
-void calc_chars_start_std(AllData * ad, int tr_id)
-{
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int sys_size = md->sys_size;
-	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
-	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
-
-	double norm = norm_square(phi, sys_size);
-
-	for (int st_id = 0; st_id < sys_size; st_id++)
-	{
-		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
-	}
-
-	double mean = get_mean_simple(adr, sys_size);
-	double dispersion = get_dispersion_simple(mean, mean);
-	double m2 = get_m2(adr, sys_size, mean);
-	double energy = get_energy(ad, tr_id);
-
-	ed->mean_start[tr_id] = mean;
-
-	ed->norm[tr_id]				= norm;
-	ed->mean[tr_id]				= mean;
-	ed->dispersion[tr_id]		= dispersion;
-	ed->m2[tr_id]				= m2;
-	ed->energy[tr_id]			= energy;
-}
-
-void calc_chars_std(AllData * ad, int tr_id)
-{
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int sys_size = md->sys_size;
-	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
-	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
-
-	double norm = norm_square(phi, sys_size);
-
-	for (int st_id = 0; st_id < sys_size; st_id++)
-	{
-		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
-	}
-
-	double mean = get_mean_simple(adr, sys_size);
-	double dispersion = get_dispersion_simple(mean, ed->mean_start[tr_id]);
-	double m2 = get_m2(adr, sys_size, mean);
-	double energy = get_energy(ad, tr_id);
-
-	ed->norm[tr_id] = norm;
-	ed->mean[tr_id] = mean;
-	ed->dispersion[tr_id] = dispersion;
-	ed->m2[tr_id] = m2;
-	ed->energy[tr_id] = energy;
-}
-
-void evo_chars_std(AllData * ad, int tr_id, int dump_id)
-{
-	ConfigParam * cp = ad->cp;
-	ExpData * ed = ad->ed;
-
-	int num_trajectories = cp->num_trajectories;
-	int dump_num_total = ed->dump_num_total;
-
-	int index = tr_id * dump_num_total + dump_id;
-
-	ed->norm_evo[index] = ed->norm[tr_id];
-	ed->mean_evo[index] = ed->mean[tr_id];
-	ed->dispersion_evo[index] = ed->dispersion[tr_id];
-	ed->m2_evo[index] = ed->m2[tr_id];
-	ed->energy_evo[index] = ed->energy[tr_id];
-}
-
-void calc_chars_start_lpn(AllData * ad, int tr_id)
+MKL_Complex16 get_spec(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -1029,124 +953,39 @@ void calc_chars_start_lpn(AllData * ad, int tr_id)
 
 	int sys_size = md->sys_size;
 
-	int lpn_type = double(cp->params.find("lpn_type")->second);
-
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
-	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
-
-	double norm_2 = norm_square(phi, sys_size);
-
+	MKL_Complex16 * phi_normed = new MKL_Complex16[sys_size];
+	MKL_Complex16 * phi_normed_conj = new MKL_Complex16[sys_size];
+	double norm = sqrt(norm_square(phi, sys_size));
+	MKL_Complex16 * mult_tmp = new MKL_Complex16[sys_size];
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
-		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
+		mult_tmp[st_id].real = 0.0;
+		mult_tmp[st_id].imag = 0.0;
+
+		phi_normed[st_id].real = phi[st_id].real / norm;
+		phi_normed[st_id].imag = phi[st_id].imag / norm;
+
+		phi_normed_conj[st_id].real = phi_normed[st_id].real;
+		phi_normed_conj[st_id].imag = -phi_normed[st_id].imag;
 	}
 
-	double lambda = 0.0;
-	double lambda_now = 0.0;
-	double mean_lpn = ed->mean[tr_id];
-	double energy_lpn = ed->energy[tr_id];
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->special, sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
 
-	double delta_s = 0.0;
-	if (lpn_type == 0)
-	{
-		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
-	}
-	else if (lpn_type == 0)
-	{
-		delta_s = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
-	}
-	else 
-	{
-		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
-	}
-
-	ed->lambda[tr_id] = lambda;
-	ed->lambda_now[tr_id] = lambda_now;
-	ed->mean_lpn[tr_id] = mean_lpn;
-	ed->energy_lpn[tr_id] = energy_lpn;
-	ed->delta_s[tr_id] = delta_s;
-}
-
-void calc_chars_lpn(AllData * ad, int tr_id)
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	int sys_size = md->sys_size;
-
-	int lpn_type = double(cp->params.find("lpn_type")->second);
-
-	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
-	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
-
-	double norm_2 = norm_square(phi, sys_size);
-
+	MKL_Complex16 result = { 0.0, 0.0 };
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
-		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm_2).real;
+		result.real += (phi_normed_conj[st_id].real * mult_tmp[st_id].real - phi_normed_conj[st_id].imag * mult_tmp[st_id].imag);
+		result.imag += (phi_normed_conj[st_id].imag * mult_tmp[st_id].real - phi_normed_conj[st_id].real * mult_tmp[st_id].imag);
 	}
 
-	double mean_lpn = get_mean_simple(adr, sys_size);
-	double energy_lpn = get_energy(ad, tr_id);
+	delete[] mult_tmp;
+	delete[] phi_normed;
+	delete[] phi_normed_conj;
 
-	ed->mean_lpn[tr_id] = mean_lpn;
-	ed->energy_lpn[tr_id] = energy_lpn;
-}
-
-void calc_ci(AllData * ad, int tr_id)
-{
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	double eps = double(cp->params.find("cd_eps")->second);
-
-	double * curr_diff = new double[ed->cd_dim];
-	double curr_norm = 0.0;
-	double integral = 0.0;
-
-	for (int cd_p_id_1 = 0; cd_p_id_1 < ed->cd_num_points; cd_p_id_1++)
-	{
-		for (int cd_p_id_2 = 0; cd_p_id_2 < ed->cd_num_points; cd_p_id_2++)
-		{
-			if (cd_p_id_1 != cd_p_id_2)
-			{
-				for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
-				{
-					curr_diff[cd_st_id] = ed->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - ed->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
-				}
-
-				curr_norm = get_norm_cd(curr_diff, ed->cd_dim) / double(md->sys_size);
-
-				if (curr_norm < eps)
-				{
-					integral += 1.0;
-				}
-			}
-		}
-	}
-
-	integral /= (double(ed->cd_num_points) * double(ed->cd_num_points - 1));
-
-	ed->cd_i[tr_id] = integral;
-
-	delete curr_diff;
-}
-
-void evo_chars_lpn(AllData * ad, int tr_id, int dump_id)
-{
-	ConfigParam * cp = ad->cp;
-	ExpData * ed = ad->ed;
-
-	int num_trajectories = cp->num_trajectories;
-	int dump_num_total = ed->dump_num_total;
-
-	int index = tr_id * dump_num_total + dump_id;
-
-	ed->lambda_evo[index] = ed->lambda_now[tr_id];
-	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
-	ed->energy_lpn_evo[index] = ed->energy_lpn[tr_id];
+	return result;
 }
 
 void resresh_times(AllData * ad, int tr_id)
@@ -1255,7 +1094,7 @@ void var_trajectory_lpn(AllData * ad, int tr_id)
 	}
 }
 
-void lambda_lpn(AllData * ad, int tr_id)
+void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -1267,19 +1106,7 @@ void lambda_lpn(AllData * ad, int tr_id)
 	double lpn_delta_up = double(cp->params.find("lpn_delta_up")->second);
 	double lpn_delta_down = double(cp->params.find("lpn_delta_down")->second);
 
-	double delta_f = 0.0;
-	if (lpn_type == 0)
-	{
-		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
-	}
-	else if (lpn_type == 0)
-	{
-		delta_f = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
-	}
-	else
-	{
-		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
-	}
+	double delta_f = cb->calc_delta(ad, tr_id);
 
 	if ((delta_f > lpn_delta_up) || (delta_f < lpn_delta_down))
 	{
@@ -1287,7 +1114,7 @@ void lambda_lpn(AllData * ad, int tr_id)
 
 		var_trajectory_lpn(ad, tr_id);
 
-		calc_chars_lpn(ad, tr_id);
+		cb->calc_chars_lpn(ad, tr_id);
 
 		ed->delta_s[tr_id] = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[0]) / double(sys_size);
 
@@ -1295,7 +1122,7 @@ void lambda_lpn(AllData * ad, int tr_id)
 	}
 	else
 	{
-		calc_chars_lpn(ad, tr_id);
+		cb->calc_chars_lpn(ad, tr_id);
 		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / (double(ed->period_id) * md->T);
 	}
 }
