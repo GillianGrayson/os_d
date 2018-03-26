@@ -978,7 +978,7 @@ MKL_Complex16 get_spec(AllData * ad, int tr_id)
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
 		result.real += (phi_normed_conj[st_id].real * mult_tmp[st_id].real - phi_normed_conj[st_id].imag * mult_tmp[st_id].imag);
-		result.imag += (phi_normed_conj[st_id].imag * mult_tmp[st_id].real - phi_normed_conj[st_id].real * mult_tmp[st_id].imag);
+		result.imag += (phi_normed_conj[st_id].imag * mult_tmp[st_id].real + phi_normed_conj[st_id].real * mult_tmp[st_id].imag);
 	}
 
 	delete[] mult_tmp;

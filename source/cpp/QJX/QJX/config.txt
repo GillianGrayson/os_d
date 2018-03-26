@@ -9,7 +9,7 @@ num_threads 1
 seed 0
 mns 1000000
 num_trajectories 1
-num_tp_periods 100
-num_obs_periods 100
+num_tp_periods 1000
+num_obs_periods 1000
 ex_deep 16
 rk_ns 10000
