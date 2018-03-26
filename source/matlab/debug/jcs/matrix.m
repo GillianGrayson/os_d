@@ -7,7 +7,7 @@ prop_id = 0;
 seed = 0;
 mns = 1000000;
 
-N = 10;
+N = 200;
 
 diss_type = 1;
 diss_gamma = 0.1;
@@ -49,6 +49,16 @@ for st_id_1 = 1:sys_size
     for st_id_2 = 1:sys_size
         index = (st_id_1 - 1) * sys_size + st_id_2;
         dissipator(st_id_1, st_id_2) = data(index, 1) + sqrt(-1) * data(index, 2);
+    end
+end
+
+fn = sprintf('%s/spec_mtx_%s.txt', path, suffix);
+data = importdata(fn);
+spec_mtx = zeros(sys_size);
+for st_id_1 = 1:sys_size
+    for st_id_2 = 1:sys_size
+        index = (st_id_1 - 1) * sys_size + st_id_2;
+        spec_mtx(st_id_1, st_id_2) = data(index, 1) + sqrt(-1) * data(index, 2);
     end
 end
 
@@ -142,7 +152,7 @@ T = 1.98*alfa;
 t1 = tau1/xi;
 t2 = T/xi - t1;
 
-NNNt = 256;
+NNNt = 2^17;
 h1 = t1/NNNt;
 h2 = t2/NNNt;
 
@@ -151,6 +161,9 @@ NNNt2=NNNt;
 
 ham_qj_0 = -i*(H1+F0*H2);
 ham_qj_1 = -i*(H1);
+
+ham_qj_0_diff = max(max(abs(ham_qj_0 - hamiltonians_qj_0)))
+ham_qj_1_diff = max(max(abs(ham_qj_1 - hamiltonians_qj_1)))
 
 G1 = expm(-i*(H1+F0*H2)*h1);
 G2 = expm(-i*(H1)*h2);

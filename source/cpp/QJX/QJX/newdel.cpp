@@ -83,6 +83,7 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 {
+	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
