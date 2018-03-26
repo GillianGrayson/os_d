@@ -9,7 +9,7 @@ mns = 1000000;
 
 N = 200;
 
-diss_type = 1;
+diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0.0;
 
