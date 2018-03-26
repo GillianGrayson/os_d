@@ -91,4 +91,73 @@ for st_id_1 = 1:sys_size
         hamiltonians_qj_1(st_id_1, st_id_2) = data(index, 1) + sqrt(-1) * data(index, 2);
     end
 end
+ 
+fn = sprintf('%s/exp_mtx_0_%s.txt', path, suffix);
+data = importdata(fn);
+exp_mtx_0 = zeros(sys_size);
+for st_id_1 = 1:sys_size
+    for st_id_2 = 1:sys_size
+        index = (st_id_1 - 1) * sys_size + st_id_2;
+        exp_mtx_0(st_id_1, st_id_2) = data(index, 1) + sqrt(-1) * data(index, 2);
+    end
+end
+
+fn = sprintf('%s/exp_mtx_1_%s.txt', path, suffix);
+data = importdata(fn);
+exp_mtx_1 = zeros(sys_size);
+for st_id_1 = 1:sys_size
+    for st_id_2 = 1:sys_size
+        index = (st_id_1 - 1) * sys_size + st_id_2;
+        exp_mtx_1(st_id_1, st_id_2) = data(index, 1) + sqrt(-1) * data(index, 2);
+    end
+end
+
+alfa = 5;
+xi = 1;
+gamma1 = 0.25 / alfa;
+gamma2 = 0.25/alfa;
+n_sr = 0;
+
+a = zeros(N,N);
+for n=1:(N-1)
+    a(n,n+1) = sqrt(n);
+end
+a_ = a';
+
+A1=sqrt(n_sr+1)*a;
+A2=sqrt(n_sr)*a_;
+
+ham = 1/2*(1/(alfa*alfa*alfa))*a_*a_*a*a;
+ham_drv = (a_-a);
+ham_diff = max(max(abs(ham - hamiltonian)))
+ham_drv_diff = max(max(abs(ham_drv - hamiltonian_drv)))
+
+H1=1/2*(1/(alfa*alfa*alfa))*a_*a_*a*a-(i/2)*(gamma1*A1'*A1+gamma2*A2'*A2);
+H2=i*(a_-a);
+
+f0 = 3.2;
+F0 = f0*xi;
+tau1 = 0.98*alfa;
+T = 1.98*alfa;
+t1 = tau1/xi;
+t2 = T/xi - t1;
+
+NNNt = 256;
+h1 = t1/NNNt;
+h2 = t2/NNNt;
+
+NNNt1=NNNt;
+NNNt2=NNNt;
+
+ham_qj_0 = -i*(H1+F0*H2);
+ham_qj_1 = -i*(H1);
+
+G1 = expm(-i*(H1+F0*H2)*h1);
+G2 = expm(-i*(H1)*h2);
+
+G1_diff = max(max(abs(G1 - exp_mtx_0)))
+G2_diff = max(max(abs(G2 - exp_mtx_1)))
+
+
+
     

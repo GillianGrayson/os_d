@@ -3,6 +3,7 @@
 
 void init_split_branches(Split * branch, int branch_id, AllData * ad)
 {
+	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
@@ -96,6 +97,12 @@ void init_split_branches(Split * branch, int branch_id, AllData * ad)
 	}
 
 	node->next = 0;
+
+	if (rp->is_debug)
+	{
+		string fn = rp->path + "exp_mtx_" + to_string(branch_id) + cp->fn_suffix;
+		save_complex_data(fn, node->matrix, md->sys_size * md->sys_size, 16, 0);
+	}
 }
 
 void copy_branch_not_member(Split * src, Split * dst)

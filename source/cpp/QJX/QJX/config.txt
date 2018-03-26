@@ -11,5 +11,5 @@ mns 1000000
 num_trajectories 1
 num_tp_periods 100
 num_obs_periods 10
-ex_deep 16
+ex_deep 7
 rk_ns 10000
