@@ -80,9 +80,11 @@ void resresh_times(AllData * ad, int tr_id);
 
 void copy_trajectory_lpn(AllData * ad, int tr_id);
 
+void copy_stream_lpn(AllData * ad, int tr_id);
+
 void copy_trajectory_data(AllData * ad, int tr_id);
 
-void var_trajectory_lpn(AllData * ad, int tr_id);
+void var_trajectory_lpn(AllData * ad, CoreBehavior * cb, int tr_id);
 
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id);
 

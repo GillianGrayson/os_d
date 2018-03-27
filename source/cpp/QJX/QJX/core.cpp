@@ -617,8 +617,6 @@ void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 
 	int sys_size = md->sys_size;
 
-	int lpn_type = double(cp->params.find("lpn_type")->second);
-
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
@@ -634,19 +632,7 @@ void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 	double mean_lpn = ed->mean[tr_id];
 	double energy_lpn = ed->energy[tr_id];
 
-	double delta_s = 0.0;
-	if (lpn_type == 0)
-	{
-		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
-	}
-	else if (lpn_type == 0)
-	{
-		delta_s = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
-	}
-	else
-	{
-		delta_s = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
-	}
+	double delta_s = this->calc_delta_f(ad, tr_id); // Important! Here we use calc_delta_f not calc_delta_s
 
 	ed->lambda[tr_id] = lambda;
 	ed->lambda_now[tr_id] = lambda_now;
@@ -714,7 +700,7 @@ void DimerCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) con
 	ed->energy_lpn_evo[index] = ed->energy_lpn[tr_id];
 }
 
-double DimerCoreBehaviour::calc_delta(AllData * ad, int tr_id) const
+double DimerCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -723,21 +709,50 @@ double DimerCoreBehaviour::calc_delta(AllData * ad, int tr_id) const
 	int sys_size = md->sys_size;
 
 	int lpn_type = double(cp->params.find("lpn_type")->second);
-	double lpn_delta_up = double(cp->params.find("lpn_delta_up")->second);
-	double lpn_delta_down = double(cp->params.find("lpn_delta_down")->second);
+
+	double delta_s = 0.0;
+	if (lpn_type == 0)
+	{
+		delta_s = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[0]) / double(sys_size);
+	}
+	else if (lpn_type == 1)
+	{
+		delta_s = fabs(ed->energy_lpn[tr_id] - ed->energy_lpn[0]) / ed->max_energy;
+	}
+	else
+	{
+		stringstream msg;
+		msg << "Error: Wrong lpn_type: " << lpn_type << endl;
+		Error(msg.str());
+	}
+
+	return delta_s;
+}
+
+double DimerCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int lpn_type = double(cp->params.find("lpn_type")->second);
 
 	double delta_f = 0.0;
 	if (lpn_type == 0)
 	{
 		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
 	}
-	else if (lpn_type == 0)
+	else if (lpn_type == 1)
 	{
 		delta_f = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
 	}
 	else
 	{
-		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
+		stringstream msg;
+		msg << "Error: Wrong lpn_type: " << lpn_type << endl;
+		Error(msg.str());
 	}
 
 	return delta_f;
@@ -1181,7 +1196,15 @@ void JCSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
 	Error(msg.str());
 }
 
-double JCSCoreBehaviour::calc_delta(AllData * ad, int tr_id) const
+double JCSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+	return 0.0;
+}
+
+double JCSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 {
 	stringstream msg;
 	msg << "Error: need to add functionality" << endl;

@@ -16,13 +16,16 @@ void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb,
 		trans_process_single(ad, pb, cb, tr_id, thread_id);
 	}
 
+	cb->calc_chars_std_start(ad, 0);
+	cb->calc_chars_lpn_start(ad, 0);
+
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		if (tr_id > 0)
 		{
 			copy_trajectory_lpn(ad, tr_id);
-			var_trajectory_lpn(ad, tr_id);
+			var_trajectory_lpn(ad, cb, tr_id);
 		}
 
 		resresh_times(ad, tr_id);
@@ -607,13 +610,16 @@ void LpnDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 		trans_process_single_deep(ad, pb, cb, tr_id, thread_id);
 	}
 
+	cb->calc_chars_std_start(ad, 0);
+	cb->calc_chars_lpn_start(ad, 0);
+
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
 		if (tr_id > 0)
 		{
 			copy_trajectory_lpn(ad, tr_id);
-			var_trajectory_lpn(ad, tr_id);
+			var_trajectory_lpn(ad, cb, tr_id);
 		}
 
 		resresh_times(ad, tr_id);
@@ -673,6 +679,8 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 				int thread_id = omp_get_thread_num();
 				pb->one_period_obs_deep_lpn(ad, cb, tr_id, thread_id, period_id);
 			}
+
+			cb->calc_chars_lpn(ad, 0);
 
 			ed->period_id = (period_id + 1);
 
@@ -953,6 +961,8 @@ MKL_Complex16 get_spec(AllData * ad, int tr_id)
 
 	int sys_size = md->sys_size;
 
+	double alpha = double(cp->params.find("jcs_prm_alpha")->second);
+
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	MKL_Complex16 * phi_normed = new MKL_Complex16[sys_size];
 	MKL_Complex16 * phi_normed_conj = new MKL_Complex16[sys_size];
@@ -980,6 +990,9 @@ MKL_Complex16 get_spec(AllData * ad, int tr_id)
 		result.real += (phi_normed_conj[st_id].real * mult_tmp[st_id].real - phi_normed_conj[st_id].imag * mult_tmp[st_id].imag);
 		result.imag += (phi_normed_conj[st_id].imag * mult_tmp[st_id].real + phi_normed_conj[st_id].real * mult_tmp[st_id].imag);
 	}
+
+	result.real /= alpha;
+	result.imag /= alpha;
 
 	delete[] mult_tmp;
 	delete[] phi_normed;
@@ -1018,6 +1031,19 @@ void copy_trajectory_lpn(AllData * ad, int tr_id)
 	}
 }
 
+void copy_stream_lpn(AllData * ad, int tr_id)
+{
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	VSLStreamStatePtr * streams = ed->streams;
+	double * etas = ed->etas_all;
+
+	vslCopyStream(&streams[tr_id], streams[0]);
+
+	etas[tr_id] = etas[0];
+}
+
 void copy_trajectory_data(AllData * ad, int tr_id)
 {
 	MainData * md = ad->md;
@@ -1039,8 +1065,9 @@ void copy_trajectory_data(AllData * ad, int tr_id)
 	}
 }
 
-void var_trajectory_lpn(AllData * ad, int tr_id)
+void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 {
+	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
@@ -1048,50 +1075,94 @@ void var_trajectory_lpn(AllData * ad, int tr_id)
 	int sys_size = md->sys_size;
 
 	double lpn_eps = double(cp->params.find("lpn_eps")->second);
+	double lpn_eps_change = double(cp->params.find("lpn_eps_change")->second);
+	double lpn_delta_s_high = double(cp->params.find("lpn_delta_s_high")->second);
+	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
 
 	VSLStreamStatePtr * streams_var = ed->streams_var;
 	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 
+	MKL_Complex16 * phi_copy = new MKL_Complex16[sys_size];
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_copy[st_id].real = phi[st_id].real;
+		phi_copy[st_id].imag = phi[st_id].imag;
+	}
+
 	MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
-
 	double * phi_var_double = new double[2 * sys_size];
-	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[tr_id], 2 * sys_size, phi_var_double, -1.0, 1.0);
-	for (int st_id = 0; st_id < sys_size; st_id++)
+
+	double delta_s = lpn_delta_s_high + 1.0;
+
+	while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
 	{
-		phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
-		phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real = phi_copy[st_id].real;
+			phi[st_id].imag = phi_copy[st_id].imag;
+		}
+
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[tr_id], 2 * sys_size, phi_var_double, -1.0, 1.0);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
+			phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
+		}
+
+		double norm_var_2 = norm_square(phi_var, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
+			phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
+		}
+
+		double norm_2 = norm_square(phi_original, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
+			phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+		}
+
+		double norm_mod_2 = norm_square(phi, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real /= sqrt(norm_mod_2);
+			phi[st_id].imag /= sqrt(norm_mod_2);
+		}
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real *= sqrt(norm_2);
+			phi[st_id].imag *= sqrt(norm_2);
+		}
+
+		cb->calc_chars_lpn(ad, tr_id);
+
+		delta_s = cb->calc_delta_s(ad, tr_id);
+
+		if (rp->is_pp == 1)
+		{
+			cout << "Var trajectory: " << tr_id << endl;
+			cout << "lpn_eps: " << lpn_eps << endl;
+			cout << "delta_s: " << delta_s << endl;
+			cout << endl;
+		}
+
+		if (delta_s > lpn_delta_s_high)
+		{
+			lpn_eps /= lpn_eps_change;
+		}
+
+		if (delta_s < lpn_delta_s_low)
+		{
+			lpn_eps *= lpn_eps_change;
+		}
 	}
+
 	delete[] phi_var_double;
-
-	double norm_var_2 = norm_square(phi_var, sys_size);
-	for (int st_id = 0; st_id < sys_size; st_id++)
-	{
-		phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
-		phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
-	}
-
-	double norm_2 = norm_square(phi_original, sys_size);
-	for (int st_id = 0; st_id < sys_size; st_id++)
-	{
-		phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
-		phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
-	}
-
 	delete[] phi_var;
-
-	double norm_mod_2 = norm_square(phi, sys_size);
-	for (int st_id = 0; st_id < sys_size; st_id++)
-	{
-		phi[st_id].real /= sqrt(norm_mod_2);
-		phi[st_id].imag /= sqrt(norm_mod_2);
-	}
-
-	for (int st_id = 0; st_id < sys_size; st_id++)
-	{
-		phi[st_id].real *= sqrt(norm_2);
-		phi[st_id].imag *= sqrt(norm_2);
-	}
+	delete[] phi_copy;
 }
 
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
@@ -1102,21 +1173,21 @@ void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 	int sys_size = md->sys_size;
 
-	int lpn_type = double(cp->params.find("lpn_type")->second);
-	double lpn_delta_up = double(cp->params.find("lpn_delta_up")->second);
-	double lpn_delta_down = double(cp->params.find("lpn_delta_down")->second);
+	double lpn_delta_f_high = double(cp->params.find("lpn_delta_f_high")->second);
+	double lpn_delta_f_low = double(cp->params.find("lpn_delta_f_low")->second);
 
-	double delta_f = cb->calc_delta(ad, tr_id);
+	double delta_f = cb->calc_delta_f(ad, tr_id);
 
-	if ((delta_f > lpn_delta_up) || (delta_f < lpn_delta_down))
+	if ((delta_f > lpn_delta_f_high) || (delta_f < lpn_delta_f_low))
 	{
 		ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
 
-		var_trajectory_lpn(ad, tr_id);
+		copy_stream_lpn(ad, tr_id);
+		var_trajectory_lpn(ad, cb, tr_id);
 
 		cb->calc_chars_lpn(ad, tr_id);
 
-		ed->delta_s[tr_id] = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[0]) / double(sys_size);
+		ed->delta_s[tr_id] = cb->calc_delta_s(ad, tr_id);
 
 		ed->lambda_now[tr_id] = ed->lambda[tr_id] / (double(ed->period_id) * md->T);
 	}
