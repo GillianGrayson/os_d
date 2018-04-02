@@ -15,7 +15,7 @@ num_tp_periods = 100;
 num_obs_periods = 100;
 mns = 1000000;
 ex_deep = 16;
-rk_ns = 10000;
+rk_ns = 100000;
 
 lpn_eps = 1.0e-2;
 lpn_delta_up = 1.0e-2;
@@ -23,13 +23,13 @@ N = 100;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0.0;
-drv_dimer_type = 1;
-drv_dimer_ampl = 3.4;
+drv_dimer_type = 0;
+drv_dimer_ampl = 1.5;
 drv_dimer_freq = 1.0;
 drv_dimer_phase = 0.0;
 start_type = 0;
 start_state = 0;
-prm_dimer_E = 0.0;
+prm_dimer_E = 1.0;
 prm_dimer_U = 0;
 prm_dimer_J = 1.0;
 
