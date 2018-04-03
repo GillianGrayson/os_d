@@ -24,7 +24,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 	{
 		for($curr_U = 0.01; $curr_U <= 0.010001; $curr_U += 0.01)
 		{
-			for($curr_jcs_drv_ampl = 0.1; $curr_jcs_drv_ampl <= 5.00001; $curr_jcs_drv_ampl += 0.1)
+			for($curr_jcs_drv_ampl = 0.01; $curr_jcs_drv_ampl <= 5.00001; $curr_jcs_drv_ampl += 0.01)
 			{
 				print "curr_U = $curr_U\n";
 				print "curr_cd_eps = $curr_cd_eps\n";
