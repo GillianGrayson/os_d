@@ -649,8 +649,6 @@ void DimerCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id) const
 
 	int sys_size = md->sys_size;
 
-	int lpn_type = double(cp->params.find("lpn_type")->second);
-
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
 
@@ -1165,16 +1163,36 @@ void JCSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 
 void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double lambda = 0.0;
+	double lambda_now = 0.0;
+	MKL_Complex16 spec_lpn = ed->spec[tr_id];
+
+	double delta_s = this->calc_delta_f(ad, tr_id); // Important! Here we use calc_delta_f not calc_delta_s
+
+	ed->lambda[tr_id] = lambda;
+	ed->lambda_now[tr_id] = lambda_now;
+	ed->delta_s[tr_id] = delta_s;
+
+	ed->spec_lpn[tr_id] = spec_lpn;
 }
 
 void JCSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	MKL_Complex16 spec_lpn = get_spec(ad, tr_id);
+
+	ed->spec_lpn[tr_id] = spec_lpn;
 }
 
 void JCSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
@@ -1191,25 +1209,71 @@ void JCSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
 
 void JCSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int dump_num_total = ed->dump_num_total;
+
+	int index = tr_id * dump_num_total + dump_id;
+
+	ed->lambda_evo[index] = ed->lambda_now[tr_id];
+	ed->spec_lpn_evo[index] = ed->spec_lpn[tr_id];
 }
 
 double JCSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
-	return 0.0;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int lpn_type = double(cp->params.find("lpn_type")->second);
+
+	double delta_s = 0.0;
+	if (lpn_type == 0)
+	{
+		MKL_Complex16 base = ed->spec_lpn[0];
+		MKL_Complex16 var = ed->spec_lpn[tr_id];
+		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
+		delta_s = sqrt(tmp);
+	}
+	else
+	{
+		stringstream msg;
+		msg << "Error: Wrong lpn_type: " << lpn_type << endl;
+		Error(msg.str());
+	}
+
+	return delta_s;
 }
 
 double JCSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
-	return 0.0;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int lpn_type = double(cp->params.find("lpn_type")->second);
+
+	double delta_f = 0.0;
+	if (lpn_type == 0)
+	{
+		MKL_Complex16 base = ed->spec[0];
+		MKL_Complex16 var = ed->spec[tr_id];
+		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
+		delta_f = sqrt(tmp);
+	}
+	else
+	{
+		stringstream msg;
+		msg << "Error: Wrong lpn_type: " << lpn_type << endl;
+		Error(msg.str());
+	}
+
+	return delta_f;
 }
 
 void JCSCoreBehaviour::calc_ci(AllData * ad, int tr_id) const
@@ -1242,9 +1306,27 @@ void JCSCoreBehaviour::dump_std(AllData * ad) const
 
 void JCSCoreBehaviour::dump_lpn(AllData * ad) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		double * lambda = ed->lambda_now;
+		MKL_Complex16 * spec_lpn = ed->spec_lpn;
+
+		string fn;
+
+		fn = rp->path + "lambda" + cp->fn_suffix;
+		save_double_data(fn, lambda, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_lpn" + cp->fn_suffix;
+		save_complex_data(fn, spec_lpn, num_trajectories, 16, false);
+	}
 }
 
 void JCSCoreBehaviour::dump_std_evo(AllData * ad) const
@@ -1292,9 +1374,28 @@ void JCSCoreBehaviour::dump_std_evo(AllData * ad) const
 
 void JCSCoreBehaviour::dump_lpn_evo(AllData * ad) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int dump_num_total = ed->dump_num_total;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		double * lambda_evo = ed->lambda_evo;
+		MKL_Complex16 * spec_lpn_evo = ed->spec_lpn_evo;
+
+		string fn;
+
+		fn = rp->path + "lambda_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, lambda_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_lpn_evo" + cp->fn_suffix;
+		save_2d_inv_complex_data(fn, spec_lpn_evo, dump_num_total, num_trajectories, 16, false);
+	}
 }
 
 Split * init_split_structure_dimer(AllData * ad)
