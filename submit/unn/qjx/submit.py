@@ -2,7 +2,7 @@ import pathlib
 from Infrastructure.file_system import *
 import os.path
 
-type = FSType.local
+type = FSType.cluster
 
 num_runs = 1
 
@@ -15,7 +15,7 @@ dim_num = 1
 
 dimer_U_start = 0.01
 dimer_U_shift = 0.01
-dimer_U_num = 75
+dimer_U_num = 1
 
 jcs_ampl_start = 0.01
 jcs_ampl_shift = 0.01
@@ -50,7 +50,7 @@ for eps_id in range(0, eps_num):
                 path = ''
                 seed = 0
                 mns = 1000000
-                num_threads = 32
+                num_threads = 16
                 num_trajectories = 100
                 num_tp_periods = 100
                 num_obs_periods = 100
@@ -118,30 +118,30 @@ for eps_id in range(0, eps_num):
                 if sys_id == 0:
 
                     local_path = \
-                        '\\main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
-                        '\\run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
-                        '\\N_' + str(N) + \
-                        '\\diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
-                        '\\drv_' + str(dimer_drv_type) + '_' + dimer_drv_ampl_str + '_' + dimer_drv_freq_str + '_' + dimer_drv_phase_str + \
-                        '\\prm_' + dimer_prm_E_str + '_' + dimer_prm_U_str + '_' + dimer_prm_J_str + \
-                        '\\start_' + str(start_type) + '_' + str(start_state)
+                        '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
+                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
+                        '/N_' + str(N) + \
+                        '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
+                        '/drv_' + str(dimer_drv_type) + '_' + dimer_drv_ampl_str + '_' + dimer_drv_freq_str + '_' + dimer_drv_phase_str + \
+                        '/prm_' + dimer_prm_E_str + '_' + dimer_prm_U_str + '_' + dimer_prm_J_str + \
+                        '/start_' + str(start_type) + '_' + str(start_state)
 
                 elif sys_id == 1:
 
                     local_path = \
-                        '\\main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
-                        '\\run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
-                        '\\N_' + str(N) + \
-                        '\\diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
-                        '\\drv_' + jcs_drv_part_1_str + '_' + jcs_drv_part_2_str + '_' + jcs_drv_ampl_str + \
-                        '\\prm_' + jcs_prm_alpha_str + \
-                        '\\start_' + str(start_type) + '_' + str(start_state)
+                        '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
+                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
+                        '/N_' + str(N) + \
+                        '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
+                        '/drv_' + jcs_drv_part_1_str + '_' + jcs_drv_part_2_str + '_' + jcs_drv_ampl_str + \
+                        '/prm_' + jcs_prm_alpha_str + \
+                        '/start_' + str(start_type) + '_' + str(start_state)
 
                 for ss in range(start_seed, step_seed, finish_seed):
                     fn_path = get_dir(local_path, ss, type)
                     pathlib.Path(fn_path).mkdir(parents=True, exist_ok=True)
 
-                    file_config = open(fn_path + '\\config.txt', 'w')
+                    file_config = open(fn_path + '/config.txt', 'w')
 
                     file_config.write('sys_id '             + str(sys_id) + '\n')
                     file_config.write('task_id '            + str(task_id) + '\n')
@@ -161,7 +161,7 @@ for eps_id in range(0, eps_num):
 
                     file_config.close()
 
-                    file_params = open(fn_path + '\\params.txt', 'w')
+                    file_params = open(fn_path + '/params.txt', 'w')
 
                     file_params.write('lpn_type '           + str(lpn_type) + '\n')
                     file_params.write('lpn_eps '            + str(lpn_eps) + '\n')
@@ -227,12 +227,13 @@ for eps_id in range(0, eps_num):
 
                     fn_test = ''
                     if sys_id == 0:
-                        fn_test = fn_path + '\\mean_' + fn_suffix + '.txt'
+                        fn_test = fn_path + '/mean_' + fn_suffix + '.txt'
                     elif sys_id == 1:
-                        fn_test = fn_path + '\\spec_' + fn_suffix + '.txt'
+                        fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
 
                     if not os.path.isfile(fn_test):
-                        print(fn_test)
+					
+                        os.system('sbatch run.sh ' + fn_path)
 
 
 
