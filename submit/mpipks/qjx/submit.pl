@@ -8,7 +8,7 @@ $data_path = "/data/biophys/yusipov/os_d/qjx_results";
 
 $PI = 3.1415926535897932384626433832795;
 
-$num_runs = 10;
+$num_runs = 100;
 
 $eps_exp_shift = 0.1;
 $eps_start = 1.0e-8;
@@ -22,9 +22,9 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 	for ($curr_cd_dim = 1; $curr_cd_dim <= 1; $curr_cd_dim += 1)
 	{
-		for($curr_U = 0.01; $curr_U <= 0.010001; $curr_U += 0.01)
+		for($curr_U = 0.01; $curr_U <= 0.750001; $curr_U += 0.01)
 		{
-			for($curr_jcs_drv_ampl = 0.01; $curr_jcs_drv_ampl <= 5.00001; $curr_jcs_drv_ampl += 0.01)
+			for($curr_jcs_drv_ampl = 0.01; $curr_jcs_drv_ampl <= 0.0100001; $curr_jcs_drv_ampl += 0.01)
 			{
 				print "curr_U = $curr_U\n";
 				print "curr_cd_eps = $curr_cd_eps\n";
@@ -32,20 +32,20 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 				
 				print "curr_jcs_drv_ampl = $curr_jcs_drv_ampl\n";
 				
-				$sys_id = 1;
-				$task_id = 1;
+				$sys_id = 0;
+				$task_id = 0;
 				$prop_id = 0;
 				$is_debug = 0;
-				$is_pp = 0;
+				$is_pp = 1;
 				$init_fn = "";
 				$path = "";
 				$seed = 0;
 				$mns = 1000000;
 				$num_threads = 1;
-				$num_trajectories = 1;
-				$num_tp_periods = 1000;
-				$num_obs_periods = 10000;
-				$ex_deep = 10;
+				$num_trajectories = 2;
+				$num_tp_periods = 100;
+				$num_obs_periods = 100;
+				$ex_deep = 16;
 				$rk_ns = 10000;
 				
 				$lpn_type = 0;
@@ -54,15 +54,15 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 				$lpn_delta_s_high = 1.0e-3;
 				$lpn_delta_s_low = 1.0e-4;
 				$lpn_delta_f_high = 1.0e-2;
-				$lpn_delta_f_low = 1.0e-13;
+				$lpn_delta_f_low = 1.0e-10;
 				$dump_obs = 1;
 				$dump_adr_sep = 0;
 				$dump_adr_avg = 0;
 				$dump_evo_sep = 1;
 				$dump_evo_avg = 0;
 				$dump_type = 0;
-				$dump_num = 10000;
-				$N = 200;
+				$dump_num = 100;
+				$N = 500;
 				$diss_type = 0;
 				$diss_gamma = 0.1;
 				$diss_phase = 0.0;
@@ -136,6 +136,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						
 						return  "$data_path/main_${sys_id}_${task_id}_${prop_id}/run_${ex_deep}_${rk_ns}_${num_tp_periods}_${num_obs_periods}/N_${N}/diss_${diss_type}_${diss_gamma_str}_${diss_phase_str}/drv_${jcs_drv_part_1_str}_${jcs_drv_part_2_str}_${jcs_drv_ampl_str}/prm_${jcs_prm_alpha_str}/start_${start_type}_${start_state}/ss_${key_str}";
 					}
+					
 					
 					if($sys_id == 0)
 					{

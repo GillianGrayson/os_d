@@ -33,14 +33,14 @@ sys_size = N;
 
 num_runs = 10;
 
-ampl_begin = 0.1;
-ampl_step = 0.1;
-ampl_num = 50;
+ampl_begin = 0.01;
+ampl_step = 0.01;
+ampl_num = 500;
 ampls = zeros(ampl_num, 1);
 
 spec_begin = -3.0;
 spec_end = 3.0;
-spec_num = 201;
+spec_num = 500;
 spec_shift = (spec_end - spec_begin) / spec_num;
 specs = zeros(spec_num, 1);
 for spec_id = 1 : spec_num
@@ -134,11 +134,13 @@ for ampl_id = 1:ampl_num
 	real_count = sum(pdf_real_curr);
 	pdf_real_curr = pdf_real_curr / (real_count * spec_shift);
 	real_norm = sum(pdf_real_curr) * spec_shift
+	pdf_real_curr = pdf_real_curr / max(pdf_real_curr);
 	pdf_real(ampl_id, :) = pdf_real_curr;
 	
 	imag_count = sum(pdf_imag_curr);
 	pdf_imag_curr = pdf_imag_curr / (imag_count * spec_shift);
 	imag_norm = sum(pdf_imag_curr) * spec_shift
+	pdf_imag_curr = pdf_imag_curr / max(pdf_imag_curr);
 	pdf_imag(ampl_id, :) = pdf_imag_curr;
     
 end
