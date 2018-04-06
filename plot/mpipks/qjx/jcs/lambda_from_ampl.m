@@ -8,13 +8,13 @@ prefix = 'qjx_results';
 data_path = sprintf('%s/%s', data_path, prefix);
 
 sys_id = 1; 
-task_id = 1; 
+task_id = 0; 
 prop_id = 0; 
 seed = 0; 
 mns = 1000000;
-num_trajectories = 1;
+num_trajectories = 2;
 num_tp_periods = 1000;
-num_obs_periods = 10000; 
+num_obs_periods = 1000; 
 ex_deep = 10;
 rk_ns = 10000;
  
@@ -38,29 +38,17 @@ ampl_step = 0.01;
 ampl_num = 500;
 ampls = zeros(ampl_num, 1);
 
-spec_begin = -3.0;
-spec_end = 3.0;
-spec_num = 500;
-spec_shift = (spec_end - spec_begin) / spec_num;
-specs = zeros(spec_num, 1);
-for spec_id = 1 : spec_num
-    specs(spec_id) = spec_begin + ((spec_id - 1) + 0.5) * spec_shift;
-end
+lambdas = zeros(ampl_num, 1);
+dump_id = 1001;
 
-pdf_real = zeros(ampl_num, spec_num);
-pdf_imag = zeros(ampl_num, spec_num);
-
-non_inc_real = 0;
-non_inc_imag = 0;
 
 for ampl_id = 1:ampl_num
 	
 	ampl_id = ampl_id
 	ampl = ampl_begin + ampl_step * (ampl_id - 1);
 	ampls(ampl_id) = ampl;
-   
-	pdf_real_curr = zeros(spec_num, 1);
-	pdf_imag_curr = zeros(spec_num, 1);
+
+	lambda_avg_curr = 0;
 	
 	for run_id = 1:num_runs
         
@@ -105,51 +93,17 @@ for ampl_id = 1:ampl_num
             start_state);
        
       
-		path = sprintf('%s/spec_evo_%s.txt', path_to_folder, suffix);
+		path = sprintf('%s/lambda_evo_%s.txt', path_to_folder, suffix);
 		data = importdata(path);
-		data_size = size(data, 1);
 		
-		for d_id = 1:data_size
-		
-			curr_real = data(d_id, 1);
-			if ((curr_real >= spec_begin) && (curr_real <= spec_end))
-				bin_id = floor((curr_real - spec_begin) / spec_shift + 1.0e-10) + 1;
-				pdf_real_curr(bin_id) = pdf_real_curr(bin_id) + 1;
-			else
-				non_inc_real = non_inc_real + 1;
-			end
-			
-			curr_imag = data(d_id, 2);
-			if ((curr_imag >= spec_begin) && (curr_imag <= spec_end))
-				bin_id = floor((curr_imag - spec_begin) / spec_shift + 1.0e-10) + 1;
-				pdf_imag_curr(bin_id) = pdf_imag_curr(bin_id) + 1;
-			else
-				non_inc_real = non_inc_real + 1;
-			end
-		
-		end
+		lambda_avg_curr = lambda_avg_curr + data(dump_id, 2);
        
 	end
 	
-	real_count = sum(pdf_real_curr);
-	pdf_real_curr = pdf_real_curr / (real_count * spec_shift);
-	real_norm = sum(pdf_real_curr) * spec_shift
-	pdf_real_curr = pdf_real_curr / max(pdf_real_curr);
-	pdf_real(ampl_id, :) = pdf_real_curr;
-	
-	imag_count = sum(pdf_imag_curr);
-	pdf_imag_curr = pdf_imag_curr / (imag_count * spec_shift);
-	imag_norm = sum(pdf_imag_curr) * spec_shift
-	pdf_imag_curr = pdf_imag_curr / max(pdf_imag_curr);
-	pdf_imag(ampl_id, :) = pdf_imag_curr;
+	lambda_avg_curr = lambda_avg_curr / num_runs;
+	lambdas(ampl_id) = lambda_avg_curr;
     
 end
-
-non_inc_real = non_inc_real
-non_inc_imag = non_inc_imag
-
-pdf_real = pdf_real';
-pdf_imag = pdf_imag';
 
 suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)', ...
             sys_id, ...
@@ -168,33 +122,10 @@ suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.
             start_state);
 
 fig = figure;
-hLine = imagesc(ampls, specs, pdf_real);
+hLine = plot(ampls, lambdas);
 set(gca, 'FontSize', 30);
 xlabel('$f_0$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$Re(\xi)$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, 'PDF');
-set(gca,'YDir','normal');
+ylabel('$\lambda$', 'Interpreter', 'latex');
 
-savefig(sprintf('%s/real_spec_from_ampl_%s.fig', home_figures_path, suffix));
-
-close(fig);
-
-fig = figure;
-hLine = imagesc(ampls, specs, pdf_imag);
-set(gca, 'FontSize', 30);
-xlabel('$f_0$', 'Interpreter', 'latex');
-set(gca, 'FontSize', 30);
-ylabel('$Im(\xi)$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, 'PDF');
-set(gca,'YDir','normal');
-
-savefig(sprintf('%s/imag_spec_from_ampl_%s.fig', home_figures_path, suffix));
-
-close(fig);
+savefig(sprintf('%s/lambda_from_ampl_%s.fig', home_figures_path, suffix));

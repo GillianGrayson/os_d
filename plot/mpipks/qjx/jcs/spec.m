@@ -24,7 +24,7 @@ diss_gamma = 0.1;
 diss_phase = 0;
 jcs_drv_part_1 = 0.98;
 jcs_drv_part_2 = 1;
-jcs_drv_ampl = 2.5;
+jcs_drv_ampl = 1.44;
 jcs_prm_alpha = 5;
 start_type = 0;
 start_state = 0;
@@ -40,7 +40,7 @@ ampls = zeros(ampl_num, 1);
 
 spec_begin = -3.0;
 spec_end = 3.0;
-spec_num = 501;
+spec_num = 500;
 spec_shift = (spec_end - spec_begin) / spec_num;
 specs = zeros(spec_num, 1);
 for spec_id = 1 : spec_num
