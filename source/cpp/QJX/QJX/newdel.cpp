@@ -6,8 +6,26 @@ void DimerNewDelBehaviour::init_sizes(AllData * ad) const
 	ConfigParam * cp = ad->cp; 
 	MainData * md = ad->md;
 
+	cout << "max_num_threads: " << omp_get_max_threads() << endl;
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_before_init: " << omp_get_num_threads() << endl;
+		}
+	}
 	int num_threads = rp->num_threads;
+	cout << "num_threads_target: " << num_threads << endl;
 	omp_set_num_threads(num_threads);
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_after_init: " << omp_get_num_threads() << endl;
+		}
+	}
 
 	int N = int(cp->params.find("N")->second);
 	double T = 2.0 * PI / double(cp->params.find("dimer_drv_freq")->second);
@@ -24,8 +42,26 @@ void JCSNewDelBehaviour::init_sizes(AllData * ad) const
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
+	cout << "max_num_threads: " << omp_get_max_threads() << endl;
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_before_init: " << omp_get_num_threads() << endl;
+		}
+	}
 	int num_threads = rp->num_threads;
+	cout << "num_threads_target: " << num_threads << endl;
 	omp_set_num_threads(num_threads);
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_after_init: " << omp_get_num_threads() << endl;
+		}
+	}
 
 	int N = int(cp->params.find("N")->second);
 	double T = double(cp->params.find("jcs_prm_alpha")->second);
