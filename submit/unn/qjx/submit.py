@@ -13,9 +13,9 @@ eps_num = 1
 dim_start = 1
 dim_num = 1
 
-dimer_U_start = 0.01
-dimer_U_shift = 0.01
-dimer_U_num = 1
+dimer_U_start = 0.005
+dimer_U_shift = 0.005
+dimer_U_num = 150
 
 jcs_ampl_start = 0.01
 jcs_ampl_shift = 0.01
@@ -50,10 +50,10 @@ for eps_id in range(0, eps_num):
                 path = ''
                 seed = 0
                 mns = 1000000
-                num_threads = 16
+                num_threads = 32
                 num_trajectories = 100
-                num_tp_periods = 100
-                num_obs_periods = 100
+                num_tp_periods = 1000
+                num_obs_periods = 300
                 ex_deep = 16
                 rk_ns = 10000
 
@@ -70,7 +70,7 @@ for eps_id in range(0, eps_num):
                 dump_evo_sep = 1
                 dump_evo_avg = 0
                 dump_type = 0
-                dump_num = 100
+                dump_num = 300
                 N = 100
                 diss_type = 0
                 diss_gamma = 0.1
