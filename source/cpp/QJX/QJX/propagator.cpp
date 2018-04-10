@@ -36,7 +36,7 @@ void QJPropagateBehavior::one_period_trp_deep(AllData * ad, CoreBehavior * cb, i
 
 void QJPropagateBehavior::one_period_obs_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
 {
-	cb->ex_period_trp_deep(ad, tr_id, th_id, period_id);
+	cb->ex_period_obs_deep(ad, tr_id, th_id, period_id);
 }
 
 void QJPropagateBehavior::one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const
