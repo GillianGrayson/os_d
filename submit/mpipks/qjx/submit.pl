@@ -8,7 +8,7 @@ $data_path = "/data/biophys/yusipov/os_d/qjx_results";
 
 $PI = 3.1415926535897932384626433832795;
 
-$num_runs = 100;
+$num_runs = 10;
 
 $eps_exp_shift = 0.1;
 $eps_start = 1.0e-8;
@@ -43,7 +43,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 				$mns = 1000000;
 				$num_threads = 1;
 				$num_trajectories = 2;
-				$num_tp_periods = 100;
+				$num_tp_periods = 100000;
 				$num_obs_periods = 100;
 				$ex_deep = 16;
 				$rk_ns = 10000;
@@ -62,7 +62,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 				$dump_evo_avg = 0;
 				$dump_type = 0;
 				$dump_num = 100;
-				$N = 500;
+				$N = 100;
 				$diss_type = 0;
 				$diss_gamma = 0.1;
 				$diss_phase = 0.0;

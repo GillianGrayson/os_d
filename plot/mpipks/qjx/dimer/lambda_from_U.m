@@ -9,17 +9,17 @@ data_path = sprintf('%s/%s', data_path, prefix);
 
 sys_id = 0;
 task_id = 0;
-prop_id = 1;
+prop_id = 0;
 num_trajectories = 2;
-num_tp_periods = 100;
+num_tp_periods = 10000;
 num_obs_periods = 100;
 mns = 1000000;
 ex_deep = 16;
-rk_ns = 100000;
+rk_ns = 10000;
 
 lpn_eps = 1.0e-2;
 lpn_delta_up = 1.0e-2;
-N = 100;
+N = 350;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0.0;
@@ -35,7 +35,7 @@ prm_dimer_J = 1.0;
 
 sys_size = N + 1;
 
-num_runs = 100;
+num_runs = 10;
 
 U_begin = 0.01;
 U_step = 0.01;
