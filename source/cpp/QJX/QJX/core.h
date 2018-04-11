@@ -139,3 +139,5 @@ void rk_int_dimer(AllData * ad, int tr_id, int th_id, double step);
 void rk_int_jcs(AllData * ad, int tr_id, int th_id, double step);
 void rk_step_dimer(AllData * ad, int tr_id, int th_id, double step);
 void rk_step_jcs(AllData * ad, int tr_id, int th_id, double step);
+
+void calc_ci_double(AllData * ad, int tr_id);

@@ -706,42 +706,7 @@ double DimerCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 
 void DimerCoreBehaviour::calc_ci(AllData * ad, int tr_id) const
 {
-	ConfigParam * cp = ad->cp;
-	MainData * md = ad->md;
-	ExpData * ed = ad->ed;
-
-	double eps = double(cp->params.find("cd_eps")->second);
-
-	double * curr_diff = new double[ed->cd_dim];
-	double curr_norm = 0.0;
-	double integral = 0.0;
-
-	for (int cd_p_id_1 = 0; cd_p_id_1 < ed->cd_num_points; cd_p_id_1++)
-	{
-		for (int cd_p_id_2 = 0; cd_p_id_2 < ed->cd_num_points; cd_p_id_2++)
-		{
-			if (cd_p_id_1 != cd_p_id_2)
-			{
-				for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
-				{
-					curr_diff[cd_st_id] = ed->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - ed->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
-				}
-
-				curr_norm = get_norm_cd(curr_diff, ed->cd_dim) / double(md->sys_size);
-
-				if (curr_norm < eps)
-				{
-					integral += 1.0;
-				}
-			}
-		}
-	}
-
-	integral /= (double(ed->cd_num_points) * double(ed->cd_num_points - 1));
-
-	ed->cd_i[tr_id] = integral;
-
-	delete curr_diff;
+	calc_ci_double(ad, tr_id);
 }
 
 void DimerCoreBehaviour::dump_std(AllData * ad) const
@@ -1071,9 +1036,46 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int tr_id, int th_id
 
 void JCSCoreBehaviour::ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
+
+	int dump_point_id = 0;
+	int curr_point_id = 0;
+	int global_point_id = 0;
+
+	int step_id = 0;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			step_id = part_id * num_sub_steps_per_part + sub_step_id;
+
+			global_point_id = period_id * num_sub_steps + dump_point_id;
+
+			dump_point_id++;
+
+			double observable = ed->spec[tr_id].real;
+
+			for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
+			{
+				curr_point_id = global_point_id - cd_st_id;
+
+				if (curr_point_id >= 0 && curr_point_id < ed->cd_num_points)
+				{
+					ed->cd_rec_data[tr_id][curr_point_id][cd_st_id] = observable;
+				}
+			}
+
+			one_sub_period_deep(ad, tr_id, part_id, th_id);
+			calc_chars_std(ad, tr_id);
+		}
+	}
 }
 
 void JCSCoreBehaviour::ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const
@@ -1300,9 +1302,7 @@ double JCSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 
 void JCSCoreBehaviour::calc_ci(AllData * ad, int tr_id) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
+	calc_ci_double(ad, tr_id);
 }
 
 void JCSCoreBehaviour::dump_std(AllData * ad) const
@@ -1999,4 +1999,44 @@ void rk_step_jcs(AllData * ad, int tr_id, int th_id, double step)
 
 		rk_step_jcs(ad, tr_id, th_id, end_step);
 	}
+}
+
+void calc_ci_double(AllData * ad, int tr_id)
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	double eps = double(cp->params.find("cd_eps")->second);
+
+	double * curr_diff = new double[ed->cd_dim];
+	double curr_norm = 0.0;
+	double integral = 0.0;
+
+	for (int cd_p_id_1 = 0; cd_p_id_1 < ed->cd_num_points; cd_p_id_1++)
+	{
+		for (int cd_p_id_2 = 0; cd_p_id_2 < ed->cd_num_points; cd_p_id_2++)
+		{
+			if (cd_p_id_1 != cd_p_id_2)
+			{
+				for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
+				{
+					curr_diff[cd_st_id] = ed->cd_rec_data[tr_id][cd_p_id_1][cd_st_id] - ed->cd_rec_data[tr_id][cd_p_id_2][cd_st_id];
+				}
+
+				curr_norm = get_norm_cd(curr_diff, ed->cd_dim) / double(md->sys_size);
+
+				if (curr_norm < eps)
+				{
+					integral += 1.0;
+				}
+			}
+		}
+	}
+
+	integral /= (double(ed->cd_num_points) * double(ed->cd_num_points - 1));
+
+	ed->cd_i[tr_id] = integral;
+
+	delete curr_diff;
 }

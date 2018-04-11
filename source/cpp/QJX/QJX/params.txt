@@ -25,11 +25,11 @@ dimer_prm_U 0.1
 dimer_prm_J 1.0
 jcs_drv_part_1 0.98
 jcs_drv_part_2 1.0
-jcs_drv_ampl 1.44
+jcs_drv_ampl 0.01
 jcs_prm_alpha 5.0
 start_type 0
 start_state 0
 cd_dim 2
-cd_eps 1.0e-4
+cd_eps 1.0e-8
 deep_num_steps 128
 jump 0
