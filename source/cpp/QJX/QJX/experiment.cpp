@@ -285,15 +285,9 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 
 	ed->is_obs = 1;
 
-	int deep_dump = int(cp->params.find("deep_dump")->second);
-
 	int num_trajectories = cp->num_trajectories;
 
 	int dump_num_total = ed->dump_num_total;
-	if (deep_dump == 1)
-	{
-		dump_num_total = cp->num_obs_periods + 1;
-	}
 
 	int * dump_periods = ed->dump_periods;
 
@@ -309,16 +303,8 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			cout << "dump_id: " << dump_id << endl;
 		}
 
-		if (deep_dump == 1)
-		{
-			begin_period_id = dump_id - 1;
-			end_period_id = dump_id;
-		}
-		else
-		{
-			begin_period_id = dump_periods[dump_id - 1];
-			end_period_id = dump_periods[dump_id];
-		}
+		begin_period_id = dump_periods[dump_id - 1];
+		end_period_id = dump_periods[dump_id];
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
@@ -330,17 +316,14 @@ void CorrDimExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 			}
 		}
 
-		if (deep_dump == 0)
-		{
 #pragma omp parallel for
-			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-			{
-				cb->evo_chars_std(ad, tr_id, dump_id);
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			cb->evo_chars_std(ad, tr_id, dump_id);
 
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
+			if (dump_evo_sep == 1)
+			{
+				dump_adr_single(ad, tr_id, true);
 			}
 		}
 
@@ -421,15 +404,9 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 
 	ed->is_obs = 1;
 
-	int deep_dump = int(cp->params.find("deep_dump")->second);
-
 	int num_trajectories = cp->num_trajectories;
 
 	int dump_num_total = ed->dump_num_total;
-	if (deep_dump == 1)
-	{
-		dump_num_total = cp->num_obs_periods + 1;
-	}
 
 	int * dump_periods = ed->dump_periods;
 
@@ -445,16 +422,8 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 			cout << "dump_id: " << dump_id << endl;
 		}
 
-		if (deep_dump == 1)
-		{
-			begin_period_id = dump_id - 1;
-			end_period_id = dump_id;
-		}
-		else
-		{
-			begin_period_id = dump_periods[dump_id - 1];
-			end_period_id = dump_periods[dump_id];
-		}
+		begin_period_id = dump_periods[dump_id - 1];
+		end_period_id = dump_periods[dump_id];
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
@@ -466,17 +435,14 @@ void SigmaExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * p
 			}
 		}
 
-		if (deep_dump == 0)
-		{
 #pragma omp parallel for
-			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-			{
-				cb->evo_chars_std(ad, tr_id, dump_id);
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			cb->evo_chars_std(ad, tr_id, dump_id);
 
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
+			if (dump_evo_sep == 1)
+			{
+				dump_adr_single(ad, tr_id, true);
 			}
 		}
 

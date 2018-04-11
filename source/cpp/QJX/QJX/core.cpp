@@ -202,7 +202,6 @@ void DimerCoreBehaviour::ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_i
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	int deep_dump = int(cp->params.find("deep_dump")->second);
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_branches = md->num_ham_qj;
@@ -237,18 +236,6 @@ void DimerCoreBehaviour::ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_i
 
 			one_sub_period_deep(ad, tr_id, part_id, th_id);
 			calc_chars_std(ad, tr_id);
-
-			if (deep_dump == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(ad, tr_id, dump_id);
-
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
-			}
 		}
 	}
 }
@@ -258,7 +245,6 @@ void DimerCoreBehaviour::ex_period_obs_deep_sigma(AllData * ad, int tr_id, int t
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
-	int deep_dump = int(cp->params.find("deep_dump")->second);
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_branches = md->num_ham_qj;
@@ -281,18 +267,6 @@ void DimerCoreBehaviour::ex_period_obs_deep_sigma(AllData * ad, int tr_id, int t
 
 			one_sub_period_deep(ad, tr_id, part_id, th_id);
 			calc_chars_std(ad, tr_id);
-
-			if (deep_dump == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(ad, tr_id, dump_id);
-
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
-			}
 		}
 	}
 }
@@ -442,7 +416,6 @@ void DimerCoreBehaviour::rk_period_obs_deep_cd(AllData * ad, int tr_id, int th_i
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	int deep_dump = int(cp->params.find("deep_dump")->second);
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_branches = md->num_ham_qj;
@@ -483,18 +456,6 @@ void DimerCoreBehaviour::rk_period_obs_deep_cd(AllData * ad, int tr_id, int th_i
 			}
 
 			calc_chars_std(ad, tr_id);
-
-			if (deep_dump == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(ad, tr_id, dump_id);
-
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
-			}
 		}
 	}
 }
@@ -505,7 +466,6 @@ void DimerCoreBehaviour::rk_period_obs_deep_sigma(AllData * ad, int tr_id, int t
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	int deep_dump = int(cp->params.find("deep_dump")->second);
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_branches = md->num_ham_qj;
@@ -535,18 +495,6 @@ void DimerCoreBehaviour::rk_period_obs_deep_sigma(AllData * ad, int tr_id, int t
 			}
 
 			calc_chars_std(ad, tr_id);
-
-			if (deep_dump == 1)
-			{
-				int dump_id = global_point_id + 1;
-
-				evo_chars_std(ad, tr_id, dump_id);
-
-				if (dump_evo_sep == 1)
-				{
-					dump_adr_single(ad, tr_id, true);
-				}
-			}
 		}
 	}
 }

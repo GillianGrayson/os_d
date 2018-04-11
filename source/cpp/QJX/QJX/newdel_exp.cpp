@@ -61,22 +61,13 @@ void CorrDimNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, Cor
 
 	int num_trajectories = cp->num_trajectories;
 
-	int deep_dump = int(cp->params.find("deep_dump")->second);
-
 	pb->init_prop_data_deep(ad, cb);
 	init_streams(ad);
 	copy_streams(ad);
 	leap_frog_all_streams(ad);
 	init_basic_data(ad);
 	
-	if(deep_dump == 1)
-	{
-		init_dump_periods_deep(ad);
-	}
-	else
-	{
-		init_dump_periods(ad);
-	}
+	init_dump_periods(ad);
 	
 	init_obs_std(ad);
 	init_obs_cd(ad);
@@ -103,8 +94,6 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreB
 
 	int num_trajectories = cp->num_trajectories;
 
-	int deep_dump = int(cp->params.find("deep_dump")->second);
-
 	pb->init_prop_data_deep(ad, cb);
 	init_streams(ad);
 	copy_streams(ad);
@@ -112,14 +101,7 @@ void SigmaNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreB
 
 	init_basic_data(ad);
 
-	if (deep_dump == 1)
-	{
-		init_dump_periods_deep(ad);
-	}
-	else
-	{
-		init_dump_periods(ad);
-	}
+	init_dump_periods(ad);
 
 	init_obs_std(ad);
 
