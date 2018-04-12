@@ -11,7 +11,7 @@ sys_id = 0;
 task_id = 0;
 prop_id = 0;
 num_trajectories = 2;
-num_tp_periods = 10000;
+num_tp_periods = 100000;
 num_obs_periods = 100;
 mns = 1000000;
 ex_deep = 16;
@@ -19,7 +19,7 @@ rk_ns = 10000;
 
 lpn_eps = 1.0e-2;
 lpn_delta_up = 1.0e-2;
-N = 350;
+N = 100;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0.0;
