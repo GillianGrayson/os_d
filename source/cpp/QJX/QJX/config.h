@@ -26,6 +26,7 @@
 #define SIGMA_TASK_ID 3
 #define STD_DEEP_TASK_ID 4 
 #define LPN_DEEP_TASK_ID 5
+#define LPN_ALL_TASK_ID 6
 
 #define QJ_PROP_TYPE 0
 #define RK_PROP_TYPE 1

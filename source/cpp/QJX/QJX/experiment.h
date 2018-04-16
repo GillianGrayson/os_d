@@ -93,7 +93,11 @@ void copy_trajectory_data(AllData * ad, int tr_id);
 
 void var_trajectory_lpn(AllData * ad, CoreBehavior * cb, int tr_id);
 
+void gs_orth(AllData * ad, CoreBehavior *cb);
+
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id);
+
+void lambda_lpn_all(AllData * ad, CoreBehavior *cb);
 
 void trans_process_single(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb, int tr_id, int thread_id);
 

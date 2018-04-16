@@ -706,9 +706,14 @@ void LpnAllExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * 
 		if (tr_id > 0)
 		{
 			copy_trajectory_lpn(ad, tr_id);
-			var_trajectory_lpn(ad, cb, tr_id);
 		}
+	}
 
+	gs_orth(ad, cb);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
 		resresh_times(ad, tr_id);
 
 		cb->calc_chars_std_start(ad, tr_id);
@@ -726,6 +731,84 @@ void LpnAllExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * 
 	if (dump_evo_avg == 1)
 	{
 		dump_adr_avg(ad, false);
+	}
+}
+
+void LpnAllExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	ed->is_obs = 1;
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_num_total = ed->dump_num_total;
+	int * dump_periods = ed->dump_periods;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
+
+	int begin_period_id = 0;
+	int end_period_id = 0;
+	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
+	{
+		if (rp->is_pp == 1)
+		{
+			cout << "dump_id: " << dump_id << endl;
+		}
+
+		begin_period_id = dump_periods[dump_id - 1];
+		end_period_id = dump_periods[dump_id];
+
+		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
+		{
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				int thread_id = omp_get_thread_num();
+				pb->one_period(ad, cb, tr_id, thread_id, period_id);
+				cb->calc_chars_std(ad, tr_id);
+			}
+
+			cb->calc_chars_lpn(ad, 0);
+
+			ed->period_id = (period_id + 1);
+
+			lambda_lpn_all(ad, cb);
+		}
+
+#pragma omp parallel for
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			cb->evo_chars_std(ad, tr_id, dump_id);
+			cb->evo_chars_lpn(ad, tr_id, dump_id);
+
+			if (dump_evo_sep == 1)
+			{
+				dump_adr_single(ad, tr_id, true);
+			}
+		}
+
+		if (dump_evo_avg == 1)
+		{
+			dump_adr_avg(ad, true);
+		}
+	}
+
+	cb->dump_std(ad);
+	cb->dump_lpn(ad);
+
+	if (dump_evo_sep == 1)
+	{
+		cb->dump_std_evo(ad);
+		cb->dump_lpn_evo(ad);
+	}
+
+	if (dump_evo_avg == 0)
+	{
+		dump_adr_avg(ad, true);
 	}
 }
 
@@ -1179,6 +1262,237 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 	delete[] phi_copy;
 }
 
+void gs_orth(AllData * ad, CoreBehavior *cb)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->num_trajectories;
+
+	int num_lpns = num_trajectories - 1;
+
+	double lpn_eps = double(cp->params.find("lpn_eps")->second);
+	double lpn_eps_change = double(cp->params.find("lpn_eps_change")->second);
+	double lpn_delta_s_high = double(cp->params.find("lpn_delta_s_high")->second);
+	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
+
+	MKL_Complex16 * phi_copy = new MKL_Complex16[sys_size];
+	MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
+	double * phi_var_double = new double[2 * sys_size];
+	MKL_Complex16 * phi_var_all = new MKL_Complex16[num_lpns * sys_size];
+	MKL_Complex16 * scalar_mults_all = new MKL_Complex16[num_lpns];
+
+	VSLStreamStatePtr * streams_var = ed->streams_var;
+	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+
+	// ===== First lpn =====
+
+	MKL_Complex16 * phi = &(ed->phi_all[1 * sys_size]);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_copy[st_id].real = phi[st_id].real;
+		phi_copy[st_id].imag = phi[st_id].imag;
+	}
+
+	double delta_s = lpn_delta_s_high + 1.0;
+
+	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[1], 2 * sys_size, phi_var_double, -1.0, 1.0);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
+		phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
+	}
+
+	double norm_var_2 = norm_square(phi_var, sys_size);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
+		phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
+		
+		int index = 0 * sys_size + st_id;
+		phi_var_all[index].real = phi_var[st_id].real;
+		phi_var_all[index].imag = phi_var[st_id].imag;
+	}
+
+	while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+	{
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real = phi_copy[st_id].real;
+			phi[st_id].imag = phi_copy[st_id].imag;
+		}
+
+		double norm_2 = norm_square(phi_original, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
+			phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+		}
+
+		double norm_mod_2 = norm_square(phi, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real /= sqrt(norm_mod_2);
+			phi[st_id].imag /= sqrt(norm_mod_2);
+		}
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real *= sqrt(norm_2);
+			phi[st_id].imag *= sqrt(norm_2);
+		}
+
+		cb->calc_chars_lpn(ad, 1);
+
+		delta_s = cb->calc_delta_s(ad, 1);
+
+		if (rp->is_pp == 1)
+		{
+			cout << "lpn: " << 1 << endl;
+			cout << "lpn_eps: " << lpn_eps << endl;
+			cout << "delta_s: " << delta_s << endl;
+			cout << endl;
+		}
+
+		if (delta_s > lpn_delta_s_high)
+		{
+			lpn_eps /= lpn_eps_change;
+		}
+
+		if (delta_s < lpn_delta_s_low)
+		{
+			lpn_eps *= lpn_eps_change;
+		}
+	}
+
+	// ==== All lpns ====
+	for (int tr_id = 2; tr_id < num_trajectories; tr_id++)
+	{
+		int lpn_id = tr_id - 1;
+
+		MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_copy[st_id].real = phi[st_id].real;
+			phi_copy[st_id].imag = phi[st_id].imag;
+		}
+
+		double delta_s = lpn_delta_s_high + 1.0;
+
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[tr_id], 2 * sys_size, phi_var_double, -1.0, 1.0);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
+			phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
+		}
+
+		double norm_var_2 = norm_square(phi_var, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
+			phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
+
+			int index = lpn_id * sys_size + st_id;
+			phi_var_all[index].real = phi_var[st_id].real;
+			phi_var_all[index].imag = phi_var[st_id].imag;
+		}
+
+		// orth
+		for (int lpn_id_tmp = 0; lpn_id_tmp < lpn_id; lpn_id_tmp++)
+		{
+			scalar_mults_all[lpn_id_tmp].real = 0.0;
+			scalar_mults_all[lpn_id_tmp].imag = 0.0;
+
+			for (int lpn_st_id = 0; lpn_st_id < sys_size; lpn_st_id++)
+			{
+				int index = lpn_id * sys_size + lpn_st_id;
+				int index_tmp = lpn_id_tmp * sys_size + lpn_st_id;
+				scalar_mults_all[lpn_id_tmp].real += (phi_var_all[index].real * phi_var_all[index_tmp].real + phi_var_all[index].imag * phi_var_all[index_tmp].imag);
+				scalar_mults_all[lpn_id_tmp].imag += (phi_var_all[index].imag * phi_var_all[index_tmp].real - phi_var_all[index].real * phi_var_all[index_tmp].imag);
+			}
+
+			for (int lpn_st_id = 0; lpn_st_id < sys_size; lpn_st_id++)
+			{
+				int index = lpn_id * sys_size + lpn_st_id;
+				int index_tmp = lpn_id_tmp * sys_size + lpn_st_id;
+
+				phi_var_all[index].real -= (scalar_mults_all[lpn_id_tmp].real * phi_var_all[index_tmp].real - scalar_mults_all[lpn_id_tmp].imag * phi_var_all[index_tmp].imag);
+				phi_var_all[index].imag -= (scalar_mults_all[lpn_id_tmp].imag * phi_var_all[index_tmp].real + scalar_mults_all[lpn_id_tmp].real * phi_var_all[index_tmp].imag);
+			}
+
+		}
+
+		// back orth to var
+		double norm_test = norm_square(&phi_var_all[lpn_id * sys_size], sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			int index = lpn_id * sys_size + st_id;
+			phi_var[st_id].real = phi_var_all[index].real / sqrt(norm_test);
+			phi_var[st_id].imag = phi_var_all[index].imag / sqrt(norm_test);
+		}
+
+		while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+		{
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				phi[st_id].real = phi_copy[st_id].real;
+				phi[st_id].imag = phi_copy[st_id].imag;
+			}
+
+			double norm_2 = norm_square(phi_original, sys_size);
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
+				phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+			}
+
+			double norm_mod_2 = norm_square(phi, sys_size);
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				phi[st_id].real /= sqrt(norm_mod_2);
+				phi[st_id].imag /= sqrt(norm_mod_2);
+			}
+
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				phi[st_id].real *= sqrt(norm_2);
+				phi[st_id].imag *= sqrt(norm_2);
+			}
+
+			cb->calc_chars_lpn(ad, tr_id);
+
+			delta_s = cb->calc_delta_s(ad, tr_id);
+
+			if (rp->is_pp == 1)
+			{
+				cout << "lpn: " << tr_id << endl;
+				cout << "lpn_eps: " << lpn_eps << endl;
+				cout << "delta_s: " << delta_s << endl;
+				cout << endl;
+			}
+
+			if (delta_s > lpn_delta_s_high)
+			{
+				lpn_eps /= lpn_eps_change;
+			}
+
+			if (delta_s < lpn_delta_s_low)
+			{
+				lpn_eps *= lpn_eps_change;
+			}
+		}
+	}
+
+	delete[] phi_var_double;
+	delete[] phi_var;
+	delete[] phi_copy;
+}
+
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
@@ -1209,6 +1523,57 @@ void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 	{
 		cb->calc_chars_lpn(ad, tr_id);
 		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / (double(ed->period_id) * md->T);
+	}
+}
+
+void lambda_lpn_all(AllData * ad, CoreBehavior *cb)
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->num_trajectories;
+
+	double lpn_delta_f_high = double(cp->params.find("lpn_delta_f_high")->second);
+	double lpn_delta_f_low = double(cp->params.find("lpn_delta_f_low")->second);
+
+	// Firstly check for all lpns
+	bool is_decr = false;
+
+	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+	{
+		double delta_f = cb->calc_delta_f(ad, tr_id);
+		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / (double(ed->period_id) * md->T);
+		if ((delta_f > lpn_delta_f_high) || (delta_f < lpn_delta_f_low))
+		{
+			is_decr = true;
+		}
+	}
+
+	if (is_decr)
+	{
+		for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+		{
+			double delta_f = cb->calc_delta_f(ad, tr_id);
+			ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
+			copy_stream_lpn(ad, tr_id);
+		}
+
+		gs_orth(ad, cb);
+
+		for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+		{
+			cb->calc_chars_lpn(ad, tr_id);
+			ed->delta_s[tr_id] = cb->calc_delta_s(ad, tr_id);
+		}
+	}
+	else
+	{
+		for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+		{
+			cb->calc_chars_lpn(ad, tr_id);
+		}
 	}
 }
 

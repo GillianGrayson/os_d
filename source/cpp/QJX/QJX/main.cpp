@@ -72,6 +72,11 @@ int main()
 		ndb_exp = new LpnDeepNewDelBehaviour();
 		eb = new LpnDeepExperimentBehaviour();
 	}
+	else if (rp->task_id == LPN_ALL_TASK_ID)
+	{
+		ndb_exp = new LpnNewDelBehaviour();
+		eb = new LpnAllExperimentBehaviour();
+	}
 	else
 	{
 		stringstream msg;
