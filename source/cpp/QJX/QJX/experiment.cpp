@@ -681,6 +681,54 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 	}
 }
 
+void LpnAllExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
+{
+	ConfigParam * cp = ad->cp;
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < 1; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single(ad, pb, cb, tr_id, thread_id);
+	}
+
+	cb->calc_chars_std_start(ad, 0);
+	cb->calc_chars_lpn_start(ad, 0);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		if (tr_id > 0)
+		{
+			copy_trajectory_lpn(ad, tr_id);
+			var_trajectory_lpn(ad, cb, tr_id);
+		}
+
+		resresh_times(ad, tr_id);
+
+		cb->calc_chars_std_start(ad, tr_id);
+		cb->calc_chars_lpn_start(ad, tr_id);
+
+		cb->evo_chars_std(ad, tr_id, 0);
+		cb->evo_chars_lpn(ad, tr_id, 0);
+
+		if (dump_evo_sep == 1)
+		{
+			dump_adr_single(ad, tr_id, false);
+		}
+	}
+
+	if (dump_evo_avg == 1)
+	{
+		dump_adr_avg(ad, false);
+	}
+}
+
 MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b)
 {
 	MKL_Complex16 res = { 0.0, 0.0 };
@@ -1211,3 +1259,4 @@ void trans_process_single_deep(AllData * ad, PropagateBehavior * pb, CoreBehavio
 		pb->one_period_trp_deep(ad, cb, tr_id, thread_id, period_id);
 	}
 }
+

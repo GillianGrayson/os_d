@@ -54,6 +54,13 @@ public:
 	virtual void obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
+class LpnAllExperimentBehaviour : public ExperimentBehavior
+{
+public:
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+};
+
 MKL_Complex16 mult_scalar_double(MKL_Complex16 a, double b);
 
 MKL_Complex16 mult_scalar_complex(MKL_Complex16 * a, MKL_Complex16 * b, int N);
