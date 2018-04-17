@@ -1432,8 +1432,12 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
 			int index = lpn_id * sys_size + st_id;
-			phi_var[st_id].real = phi_var_all[index].real / sqrt(norm_test);
-			phi_var[st_id].imag = phi_var_all[index].imag / sqrt(norm_test);
+
+			phi_var_all[index].real = phi_var_all[index].real / sqrt(norm_test);
+			phi_var_all[index].imag = phi_var_all[index].imag / sqrt(norm_test);
+
+			phi_var[st_id].real = phi_var_all[index].real;
+			phi_var[st_id].imag = phi_var_all[index].imag;
 		}
 
 		while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
@@ -1539,41 +1543,21 @@ void lambda_lpn_all(AllData * ad, CoreBehavior *cb)
 	double lpn_delta_f_low = double(cp->params.find("lpn_delta_f_low")->second);
 
 	// Firstly check for all lpns
-	bool is_decr = false;
 
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{
 		double delta_f = cb->calc_delta_f(ad, tr_id);
 		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / (double(ed->period_id) * md->T);
-		if ((delta_f > lpn_delta_f_high) || (delta_f < lpn_delta_f_low))
-		{
-			is_decr = true;
-		}
+		ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
+		copy_stream_lpn(ad, tr_id);
 	}
 
-	if (is_decr)
-	{
-		for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
-		{
-			double delta_f = cb->calc_delta_f(ad, tr_id);
-			ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
-			copy_stream_lpn(ad, tr_id);
-		}
+	gs_orth(ad, cb);
 
-		gs_orth(ad, cb);
-
-		for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
-		{
-			cb->calc_chars_lpn(ad, tr_id);
-			ed->delta_s[tr_id] = cb->calc_delta_s(ad, tr_id);
-		}
-	}
-	else
+	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{
-		for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
-		{
-			cb->calc_chars_lpn(ad, tr_id);
-		}
+		cb->calc_chars_lpn(ad, tr_id);
+		ed->delta_s[tr_id] = cb->calc_delta_s(ad, tr_id);
 	}
 }
 
