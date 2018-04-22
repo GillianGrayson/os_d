@@ -8,11 +8,11 @@ $data_path = "/data/biophys/yusipov/os_d/qjx_results";
 
 $PI = 3.1415926535897932384626433832795;
 
-$num_runs = 1;
+$num_runs = 50;
 
 $eps_exp_shift = 0.1;
 $eps_start = 1.0e-8;
-$eps_num = 81;
+$eps_num = 1;
 
 for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 {	
@@ -20,11 +20,11 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 	$curr_cd_eps = $eps_start * $eps_mult;
 
-	for ($curr_cd_dim = 1; $curr_cd_dim <= 5; $curr_cd_dim += 1)
+	for ($curr_cd_dim = 1; $curr_cd_dim <= 1; $curr_cd_dim += 1)
 	{
-		for($curr_U = 0.01; $curr_U <= 0.010000001; $curr_U += 0.01)
+		for($curr_U = 0.005; $curr_U <= 0.750000001; $curr_U += 0.005)
 		{
-			for($curr_jcs_drv_ampl = 0.5; $curr_jcs_drv_ampl <= 5.0000001; $curr_jcs_drv_ampl += 0.5)
+			for($curr_jcs_drv_ampl = 0.5; $curr_jcs_drv_ampl <= 0.50000001; $curr_jcs_drv_ampl += 0.5)
 			{
 				print "curr_U = $curr_U\n";
 				print "curr_cd_eps = $curr_cd_eps\n";
@@ -32,8 +32,8 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 				
 				print "curr_jcs_drv_ampl = $curr_jcs_drv_ampl\n";
 				
-				$sys_id = 1;
-				$task_id = 2;
+				$sys_id = 0;
+				$task_id = 6;
 				$prop_id = 0;
 				$is_debug = 0;
 				$is_pp = 1;
@@ -42,10 +42,10 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 				$seed = 0;
 				$mns = 1000000;
 				$num_threads = 1;
-				$num_trajectories = 1;
-				$num_tp_periods = 100;
-				$num_obs_periods = 10;
-				$ex_deep = 4;
+				$num_trajectories = 2;
+				$num_tp_periods = 5000;
+				$num_obs_periods = 100;
+				$ex_deep = 16;
 				$rk_ns = 10000;
 				
 				$lpn_type = 0;
@@ -62,7 +62,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 				$dump_evo_avg = 0;
 				$dump_type = 0;
 				$dump_num = $num_obs_periods;
-				$N = 200;
+				$N = 100;
 				$diss_type = 0;
 				$diss_gamma = 0.1;
 				$diss_phase = 0.0;
@@ -145,7 +145,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 					
 					if($sys_id == 0)
 					{
-						if ($task_id == 0)
+						if ($task_id == 0 || $task_id == 6)
 						{
 							mkdir "$data_path";
 							mkdir "$data_path/main_${sys_id}_${task_id}_${prop_id}";
@@ -222,7 +222,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 					
 					for($val = $start; $val < $finish; $val += $step)
 					{
-						if ($sys_id == 0)
+						if ($sys_id == 0 || $task_id == 6)
 						{
 							if ($task_id == 0)
 							{
@@ -260,7 +260,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 					{
 						if ($sys_id == 0)
 						{
-							if ($task_id == 0)
+							if ($task_id == 0 || $task_id == 6)
 							{
 								$key = ForderName_sys_0_sys_0_task_0($i);
 							}
@@ -352,7 +352,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						
 						if ($sys_id == 0)
 						{
-							if ($task_id == 0)
+							if ($task_id == 0 || $task_id == 6)
 							{
 								$test_file = sprintf('%s/mean_config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d).txt', $key, $sys_id, $task_id, $prop_id, $i, $mns, $N, $diss_type, $diss_gamma, $diss_phase, $dimer_drv_type, $dimer_drv_ampl, $dimer_drv_freq, $dimer_drv_phase, $dimer_prm_E, $dimer_prm_U, $dimer_prm_J, $start_type, $start_state);
 							}

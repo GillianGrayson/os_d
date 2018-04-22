@@ -4,8 +4,8 @@ use Cwd;
 $dir = getcwd;
 
 
-$id_start = 7926426;
-$num_id = 1000;
+$id_start = 8214058;
+$num_id = 10000;
  
 
 for($val = $id_start; ($val < $id_start + $num_id); $val+=1)

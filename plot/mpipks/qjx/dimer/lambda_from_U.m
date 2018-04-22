@@ -8,10 +8,10 @@ prefix = 'qjx_results';
 data_path = sprintf('%s/%s', data_path, prefix);
 
 sys_id = 0;
-task_id = 0;
+task_id = 6;
 prop_id = 0;
 num_trajectories = 2;
-num_tp_periods = 100000;
+num_tp_periods = 5000;
 num_obs_periods = 100;
 mns = 1000000;
 ex_deep = 16;
@@ -35,11 +35,11 @@ prm_dimer_J = 1.0;
 
 sys_size = N + 1;
 
-num_runs = 10;
+num_runs = 50;
 
-U_begin = 0.01;
-U_step = 0.01;
-U_num = 75;
+U_begin = 0.005;
+U_step = 0.005;
+U_num = 150;
 
 for dump_id = 101 : 100 : 101
 
@@ -61,8 +61,8 @@ for dump_id = 101 : 100 : 101
 			path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/lpn_%0.4f_%0.4f/N_%d/diss_%d_%0.4f_%0.4f/drv_%d_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
 				data_path, ...
 				sys_id, ...
-				prop_id, ...
 				task_id, ...
+				prop_id, ...
 				ex_deep, ...
 				rk_ns, ...
 				num_tp_periods, ...
