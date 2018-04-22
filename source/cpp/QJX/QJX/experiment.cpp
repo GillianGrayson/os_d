@@ -1262,6 +1262,122 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 	delete[] phi_copy;
 }
 
+void var_first(
+	MKL_Complex16 * phi_var,
+	double * phi_var_double,
+	MKL_Complex16 * phi_var_all,
+	MKL_Complex16 * scalar_mults_all,
+	AllData * ad,
+	CoreBehavior *cb
+)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->num_trajectories;
+
+	VSLStreamStatePtr * streams_var = ed->streams_var;
+
+	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[1], 2 * sys_size, phi_var_double, -1.0, 1.0);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
+		phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
+	}
+
+	double norm_var_2 = norm_square(phi_var, sys_size);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
+		phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
+
+		int index = 0 * sys_size + st_id;
+		phi_var_all[index].real = phi_var[st_id].real;
+		phi_var_all[index].imag = phi_var[st_id].imag;
+	}
+}
+
+void var_not_first(
+	int tr_id,
+	MKL_Complex16 * phi_var,
+	double * phi_var_double,
+	MKL_Complex16 * phi_var_all,
+	MKL_Complex16 * scalar_mults_all,
+	AllData * ad,
+	CoreBehavior *cb
+)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->num_trajectories;
+
+	int lpn_id = tr_id - 1;
+	
+	VSLStreamStatePtr * streams_var = ed->streams_var;
+
+	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[tr_id], 2 * sys_size, phi_var_double, -1.0, 1.0);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
+		phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
+	}
+
+	double norm_var_2 = norm_square(phi_var, sys_size);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
+		phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
+
+		int index = lpn_id * sys_size + st_id;
+		phi_var_all[index].real = phi_var[st_id].real;
+		phi_var_all[index].imag = phi_var[st_id].imag;
+	}
+
+	// orth
+	for (int lpn_id_tmp = 0; lpn_id_tmp < lpn_id; lpn_id_tmp++)
+	{
+		scalar_mults_all[lpn_id_tmp].real = 0.0;
+		scalar_mults_all[lpn_id_tmp].imag = 0.0;
+
+		for (int lpn_st_id = 0; lpn_st_id < sys_size; lpn_st_id++)
+		{
+			int index = lpn_id * sys_size + lpn_st_id;
+			int index_tmp = lpn_id_tmp * sys_size + lpn_st_id;
+			scalar_mults_all[lpn_id_tmp].real += (phi_var_all[index].real * phi_var_all[index_tmp].real + phi_var_all[index].imag * phi_var_all[index_tmp].imag);
+			scalar_mults_all[lpn_id_tmp].imag += (phi_var_all[index].imag * phi_var_all[index_tmp].real - phi_var_all[index].real * phi_var_all[index_tmp].imag);
+		}
+
+		for (int lpn_st_id = 0; lpn_st_id < sys_size; lpn_st_id++)
+		{
+			int index = lpn_id * sys_size + lpn_st_id;
+			int index_tmp = lpn_id_tmp * sys_size + lpn_st_id;
+
+			phi_var_all[index].real -= (scalar_mults_all[lpn_id_tmp].real * phi_var_all[index_tmp].real - scalar_mults_all[lpn_id_tmp].imag * phi_var_all[index_tmp].imag);
+			phi_var_all[index].imag -= (scalar_mults_all[lpn_id_tmp].imag * phi_var_all[index_tmp].real + scalar_mults_all[lpn_id_tmp].real * phi_var_all[index_tmp].imag);
+		}
+	}
+
+	// back orth to var
+	double norm_test = norm_square(&phi_var_all[lpn_id * sys_size], sys_size);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		int index = lpn_id * sys_size + st_id;
+
+		phi_var_all[index].real = phi_var_all[index].real / sqrt(norm_test);
+		phi_var_all[index].imag = phi_var_all[index].imag / sqrt(norm_test);
+
+		phi_var[st_id].real = phi_var_all[index].real;
+		phi_var[st_id].imag = phi_var_all[index].imag;
+	}
+}
+
 void gs_orth(AllData * ad, CoreBehavior *cb)
 {
 	RunParam * rp = ad->rp;
@@ -1280,6 +1396,7 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
 
 	MKL_Complex16 * phi_copy = new MKL_Complex16[sys_size];
+
 	MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
 	double * phi_var_double = new double[2 * sys_size];
 	MKL_Complex16 * phi_var_all = new MKL_Complex16[num_lpns * sys_size];
@@ -1300,23 +1417,7 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 
 	double delta_s = lpn_delta_s_high + 1.0;
 
-	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[1], 2 * sys_size, phi_var_double, -1.0, 1.0);
-	for (int st_id = 0; st_id < sys_size; st_id++)
-	{
-		phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
-		phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
-	}
-
-	double norm_var_2 = norm_square(phi_var, sys_size);
-	for (int st_id = 0; st_id < sys_size; st_id++)
-	{
-		phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
-		phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
-		
-		int index = 0 * sys_size + st_id;
-		phi_var_all[index].real = phi_var[st_id].real;
-		phi_var_all[index].imag = phi_var[st_id].imag;
-	}
+	var_first(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 
 	while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
 	{
@@ -1361,11 +1462,13 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 		if (delta_s > lpn_delta_s_high)
 		{
 			lpn_eps /= lpn_eps_change;
+			var_first(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 		}
 
 		if (delta_s < lpn_delta_s_low)
 		{
 			lpn_eps *= lpn_eps_change;
+			var_first(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 		}
 	}
 
@@ -1374,7 +1477,7 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 	{
 		int lpn_id = tr_id - 1;
 
-		MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+		phi = &(ed->phi_all[tr_id * sys_size]);
 
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
@@ -1384,61 +1487,7 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 
 		double delta_s = lpn_delta_s_high + 1.0;
 
-		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, streams_var[tr_id], 2 * sys_size, phi_var_double, -1.0, 1.0);
-		for (int st_id = 0; st_id < sys_size; st_id++)
-		{
-			phi_var[st_id].real = phi_var_double[0 * sys_size + st_id];
-			phi_var[st_id].imag = phi_var_double[1 * sys_size + st_id];
-		}
-
-		double norm_var_2 = norm_square(phi_var, sys_size);
-		for (int st_id = 0; st_id < sys_size; st_id++)
-		{
-			phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
-			phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
-
-			int index = lpn_id * sys_size + st_id;
-			phi_var_all[index].real = phi_var[st_id].real;
-			phi_var_all[index].imag = phi_var[st_id].imag;
-		}
-
-		// orth
-		for (int lpn_id_tmp = 0; lpn_id_tmp < lpn_id; lpn_id_tmp++)
-		{
-			scalar_mults_all[lpn_id_tmp].real = 0.0;
-			scalar_mults_all[lpn_id_tmp].imag = 0.0;
-
-			for (int lpn_st_id = 0; lpn_st_id < sys_size; lpn_st_id++)
-			{
-				int index = lpn_id * sys_size + lpn_st_id;
-				int index_tmp = lpn_id_tmp * sys_size + lpn_st_id;
-				scalar_mults_all[lpn_id_tmp].real += (phi_var_all[index].real * phi_var_all[index_tmp].real + phi_var_all[index].imag * phi_var_all[index_tmp].imag);
-				scalar_mults_all[lpn_id_tmp].imag += (phi_var_all[index].imag * phi_var_all[index_tmp].real - phi_var_all[index].real * phi_var_all[index_tmp].imag);
-			}
-
-			for (int lpn_st_id = 0; lpn_st_id < sys_size; lpn_st_id++)
-			{
-				int index = lpn_id * sys_size + lpn_st_id;
-				int index_tmp = lpn_id_tmp * sys_size + lpn_st_id;
-
-				phi_var_all[index].real -= (scalar_mults_all[lpn_id_tmp].real * phi_var_all[index_tmp].real - scalar_mults_all[lpn_id_tmp].imag * phi_var_all[index_tmp].imag);
-				phi_var_all[index].imag -= (scalar_mults_all[lpn_id_tmp].imag * phi_var_all[index_tmp].real + scalar_mults_all[lpn_id_tmp].real * phi_var_all[index_tmp].imag);
-			}
-
-		}
-
-		// back orth to var
-		double norm_test = norm_square(&phi_var_all[lpn_id * sys_size], sys_size);
-		for (int st_id = 0; st_id < sys_size; st_id++)
-		{
-			int index = lpn_id * sys_size + st_id;
-
-			phi_var_all[index].real = phi_var_all[index].real / sqrt(norm_test);
-			phi_var_all[index].imag = phi_var_all[index].imag / sqrt(norm_test);
-
-			phi_var[st_id].real = phi_var_all[index].real;
-			phi_var[st_id].imag = phi_var_all[index].imag;
-		}
+		var_not_first(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 
 		while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
 		{
@@ -1483,11 +1532,13 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 			if (delta_s > lpn_delta_s_high)
 			{
 				lpn_eps /= lpn_eps_change;
+				var_not_first(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 			}
 
 			if (delta_s < lpn_delta_s_low)
 			{
 				lpn_eps *= lpn_eps_change;
+				var_not_first(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 			}
 		}
 	}

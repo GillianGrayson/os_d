@@ -93,6 +93,25 @@ void copy_trajectory_data(AllData * ad, int tr_id);
 
 void var_trajectory_lpn(AllData * ad, CoreBehavior * cb, int tr_id);
 
+void var_first(
+	MKL_Complex16 * phi_var,
+	double * phi_var_double,
+	MKL_Complex16 * phi_var_all,
+	MKL_Complex16 * scalar_mults_all,
+	AllData * ad,
+	CoreBehavior *cb
+);
+
+void var_not_first(
+	int tr_id,
+	MKL_Complex16 * phi_var,
+	double * phi_var_double,
+	MKL_Complex16 * phi_var_all,
+	MKL_Complex16 * scalar_mults_all,
+	AllData * ad,
+	CoreBehavior *cb
+);
+
 void gs_orth(AllData * ad, CoreBehavior *cb);
 
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id);
