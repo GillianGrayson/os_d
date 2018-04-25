@@ -1177,7 +1177,7 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 	double curr_eps_low = lpn_eps_low;
 	double curr_eps_high = lpn_eps_high;
-	double curr_eps_diff = curr_eps_high - curr_eps_low;;
+	double curr_eps_diff = curr_eps_high - curr_eps_low;
 	int curr_eps_deep = 0;
 	double lpn_eps_start = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 	double curr_lpn_eps = lpn_eps_start;
