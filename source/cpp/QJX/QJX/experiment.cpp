@@ -709,7 +709,7 @@ void LpnAllExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * 
 		}
 	}
 
-	gs_orth(ad, cb);
+	gs_orth_init(ad, cb);
 
 #pragma omp parallel for
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -1300,6 +1300,43 @@ void var_first(
 	}
 }
 
+void var_first_with_history(
+	MKL_Complex16 * phi_var,
+	double * phi_var_double,
+	MKL_Complex16 * phi_var_all,
+	MKL_Complex16 * scalar_mults_all,
+	AllData * ad,
+	CoreBehavior *cb
+)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+	MKL_Complex16 * phi = &(ed->phi_all[1 * sys_size]);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi[st_id].real - phi_original[st_id].real;
+		phi_var[st_id].imag = phi[st_id].imag - phi_original[st_id].imag;
+	}
+
+	double norm_var_2 = norm_square(phi_var, sys_size);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
+		phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
+
+		int index = 0 * sys_size + st_id;
+		phi_var_all[index].real = phi_var[st_id].real;
+		phi_var_all[index].imag = phi_var[st_id].imag;
+	}
+}
+
 void var_not_first(
 	int tr_id,
 	MKL_Complex16 * phi_var,
@@ -1378,7 +1415,85 @@ void var_not_first(
 	}
 }
 
-void gs_orth(AllData * ad, CoreBehavior *cb)
+void var_not_first_with_history(
+	int tr_id,
+	MKL_Complex16 * phi_var,
+	double * phi_var_double,
+	MKL_Complex16 * phi_var_all,
+	MKL_Complex16 * scalar_mults_all,
+	AllData * ad,
+	CoreBehavior *cb
+)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->num_trajectories;
+
+	int lpn_id = tr_id - 1;
+
+	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi[st_id].real - phi_original[st_id].real;
+		phi_var[st_id].imag = phi[st_id].imag - phi_original[st_id].imag;
+	}
+
+	double norm_var_2 = norm_square(phi_var, sys_size);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_var[st_id].real = phi_var[st_id].real / sqrt(norm_var_2);
+		phi_var[st_id].imag = phi_var[st_id].imag / sqrt(norm_var_2);
+
+		int index = lpn_id * sys_size + st_id;
+		phi_var_all[index].real = phi_var[st_id].real;
+		phi_var_all[index].imag = phi_var[st_id].imag;
+	}
+
+	// orth
+	for (int lpn_id_tmp = 0; lpn_id_tmp < lpn_id; lpn_id_tmp++)
+	{
+		scalar_mults_all[lpn_id_tmp].real = 0.0;
+		scalar_mults_all[lpn_id_tmp].imag = 0.0;
+
+		for (int lpn_st_id = 0; lpn_st_id < sys_size; lpn_st_id++)
+		{
+			int index = lpn_id * sys_size + lpn_st_id;
+			int index_tmp = lpn_id_tmp * sys_size + lpn_st_id;
+			scalar_mults_all[lpn_id_tmp].real += (phi_var_all[index].real * phi_var_all[index_tmp].real + phi_var_all[index].imag * phi_var_all[index_tmp].imag);
+			scalar_mults_all[lpn_id_tmp].imag += (phi_var_all[index].imag * phi_var_all[index_tmp].real - phi_var_all[index].real * phi_var_all[index_tmp].imag);
+		}
+
+		for (int lpn_st_id = 0; lpn_st_id < sys_size; lpn_st_id++)
+		{
+			int index = lpn_id * sys_size + lpn_st_id;
+			int index_tmp = lpn_id_tmp * sys_size + lpn_st_id;
+
+			phi_var_all[index].real -= (scalar_mults_all[lpn_id_tmp].real * phi_var_all[index_tmp].real - scalar_mults_all[lpn_id_tmp].imag * phi_var_all[index_tmp].imag);
+			phi_var_all[index].imag -= (scalar_mults_all[lpn_id_tmp].imag * phi_var_all[index_tmp].real + scalar_mults_all[lpn_id_tmp].real * phi_var_all[index_tmp].imag);
+		}
+	}
+
+	// back orth to var
+	double norm_test = norm_square(&phi_var_all[lpn_id * sys_size], sys_size);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		int index = lpn_id * sys_size + st_id;
+
+		phi_var_all[index].real = phi_var_all[index].real / sqrt(norm_test);
+		phi_var_all[index].imag = phi_var_all[index].imag / sqrt(norm_test);
+
+		phi_var[st_id].real = phi_var_all[index].real;
+		phi_var[st_id].imag = phi_var_all[index].imag;
+	}
+}
+
+void gs_orth_init(AllData * ad, CoreBehavior *cb)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -1390,7 +1505,8 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 
 	int num_lpns = num_trajectories - 1;
 
-	double lpn_eps = double(cp->params.find("lpn_eps")->second);
+	double lpn_eps_start = double(cp->params.find("lpn_eps")->second);
+	double lpn_eps = lpn_eps_start;
 	double lpn_eps_change = double(cp->params.find("lpn_eps_change")->second);
 	double lpn_delta_s_high = double(cp->params.find("lpn_delta_s_high")->second);
 	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
@@ -1475,6 +1591,8 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 	// ==== All lpns ====
 	for (int tr_id = 2; tr_id < num_trajectories; tr_id++)
 	{
+		lpn_eps = lpn_eps_start;
+
 		int lpn_id = tr_id - 1;
 
 		phi = &(ed->phi_all[tr_id * sys_size]);
@@ -1545,7 +1663,182 @@ void gs_orth(AllData * ad, CoreBehavior *cb)
 
 	delete[] phi_var_double;
 	delete[] phi_var;
+	delete[] phi_var_all;
 	delete[] phi_copy;
+
+	delete[] scalar_mults_all;
+}
+
+void gs_orth_evo(AllData * ad, CoreBehavior *cb)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->num_trajectories;
+
+	int num_lpns = num_trajectories - 1;
+
+	double lpn_eps_start = double(cp->params.find("lpn_eps")->second);
+	double lpn_eps = lpn_eps_start;
+	double lpn_eps_change = double(cp->params.find("lpn_eps_change")->second);
+	double lpn_delta_s_high = double(cp->params.find("lpn_delta_s_high")->second);
+	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
+
+	MKL_Complex16 * phi_copy = new MKL_Complex16[sys_size];
+
+	MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
+	double * phi_var_double = new double[2 * sys_size];
+	MKL_Complex16 * phi_var_all = new MKL_Complex16[num_lpns * sys_size];
+	MKL_Complex16 * scalar_mults_all = new MKL_Complex16[num_lpns];
+
+	VSLStreamStatePtr * streams_var = ed->streams_var;
+	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+
+	// ===== First lpn =====
+
+	MKL_Complex16 * phi = &(ed->phi_all[1 * sys_size]);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		phi_copy[st_id].real = phi[st_id].real;
+		phi_copy[st_id].imag = phi[st_id].imag;
+	}
+
+	double delta_s = lpn_delta_s_high + 1.0;
+
+	var_first_with_history(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
+
+	while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+	{
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real = phi_copy[st_id].real;
+			phi[st_id].imag = phi_copy[st_id].imag;
+		}
+
+		double norm_2 = norm_square(phi_original, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
+			phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+		}
+
+		double norm_mod_2 = norm_square(phi, sys_size);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real /= sqrt(norm_mod_2);
+			phi[st_id].imag /= sqrt(norm_mod_2);
+		}
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi[st_id].real *= sqrt(norm_2);
+			phi[st_id].imag *= sqrt(norm_2);
+		}
+
+		cb->calc_chars_lpn(ad, 1);
+
+		delta_s = cb->calc_delta_s(ad, 1);
+
+		if (rp->is_pp == 1)
+		{
+			cout << "lpn: " << 1 << endl;
+			cout << "lpn_eps: " << lpn_eps << endl;
+			cout << "delta_s: " << delta_s << endl;
+			cout << endl;
+		}
+
+		if (delta_s > lpn_delta_s_high)
+		{
+			lpn_eps /= lpn_eps_change;
+		}
+
+		if (delta_s < lpn_delta_s_low)
+		{
+			lpn_eps *= lpn_eps_change;
+		}
+	}
+
+	// ==== All lpns ====
+	for (int tr_id = 2; tr_id < num_trajectories; tr_id++)
+	{
+		lpn_eps = lpn_eps_start;
+
+		int lpn_id = tr_id - 1;
+
+		phi = &(ed->phi_all[tr_id * sys_size]);
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_copy[st_id].real = phi[st_id].real;
+			phi_copy[st_id].imag = phi[st_id].imag;
+		}
+
+		double delta_s = lpn_delta_s_high + 1.0;
+
+		var_not_first_with_history(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
+
+		while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+		{
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				phi[st_id].real = phi_copy[st_id].real;
+				phi[st_id].imag = phi_copy[st_id].imag;
+			}
+
+			double norm_2 = norm_square(phi_original, sys_size);
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
+				phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+			}
+
+			double norm_mod_2 = norm_square(phi, sys_size);
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				phi[st_id].real /= sqrt(norm_mod_2);
+				phi[st_id].imag /= sqrt(norm_mod_2);
+			}
+
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				phi[st_id].real *= sqrt(norm_2);
+				phi[st_id].imag *= sqrt(norm_2);
+			}
+
+			cb->calc_chars_lpn(ad, tr_id);
+
+			delta_s = cb->calc_delta_s(ad, tr_id);
+
+			if (rp->is_pp == 1)
+			{
+				cout << "lpn: " << tr_id << endl;
+				cout << "lpn_eps: " << lpn_eps << endl;
+				cout << "delta_s: " << delta_s << endl;
+				cout << endl;
+			}
+
+			if (delta_s > lpn_delta_s_high)
+			{
+				lpn_eps /= lpn_eps_change;
+			}
+
+			if (delta_s < lpn_delta_s_low)
+			{
+				lpn_eps *= lpn_eps_change;
+			}
+		}
+	}
+
+	delete[] phi_var_double;
+	delete[] phi_var;
+	delete[] phi_var_all;
+	delete[] phi_copy;
+
+	delete[] scalar_mults_all;
 }
 
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
@@ -1603,7 +1896,7 @@ void lambda_lpn_all(AllData * ad, CoreBehavior *cb)
 		copy_stream_lpn(ad, tr_id);
 	}
 
-	gs_orth(ad, cb);
+	gs_orth_evo(ad, cb);
 
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{

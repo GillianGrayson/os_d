@@ -102,6 +102,15 @@ void var_first(
 	CoreBehavior *cb
 );
 
+void var_first_with_history(
+	MKL_Complex16 * phi_var,
+	double * phi_var_double,
+	MKL_Complex16 * phi_var_all,
+	MKL_Complex16 * scalar_mults_all,
+	AllData * ad,
+	CoreBehavior *cb
+);
+
 void var_not_first(
 	int tr_id,
 	MKL_Complex16 * phi_var,
@@ -112,7 +121,19 @@ void var_not_first(
 	CoreBehavior *cb
 );
 
-void gs_orth(AllData * ad, CoreBehavior *cb);
+void var_not_first_with_history(
+	int tr_id,
+	MKL_Complex16 * phi_var,
+	double * phi_var_double,
+	MKL_Complex16 * phi_var_all,
+	MKL_Complex16 * scalar_mults_all,
+	AllData * ad,
+	CoreBehavior *cb
+);
+
+void gs_orth_init(AllData * ad, CoreBehavior *cb);
+
+void gs_orth_evo(AllData * ad, CoreBehavior *cb);
 
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id);
 

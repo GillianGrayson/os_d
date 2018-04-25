@@ -1,6 +1,6 @@
 lpn_type 0 
 lpn_eps 0.01 
-lpn_eps_change 1.05 
+lpn_eps_change 1.25 
 lpn_delta_s_high 0.001 
 lpn_delta_s_low 0.0001 
 lpn_delta_f_high 0.01 
@@ -21,7 +21,7 @@ dimer_drv_ampl 1.5
 dimer_drv_freq 1 
 dimer_drv_phase 0 
 dimer_prm_E 1 
-dimer_prm_U 0.515 
+dimer_prm_U 0.01
 dimer_prm_J 1 
 jcs_drv_part_1 0.98 
 jcs_drv_part_2 1 
