@@ -1171,8 +1171,17 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 	int sys_size = md->sys_size;
 
-	double lpn_eps = double(cp->params.find("lpn_eps")->second);
-	double lpn_eps_change = double(cp->params.find("lpn_eps_change")->second);
+	double lpn_eps_low = double(cp->params.find("lpn_eps_low")->second);
+	double lpn_eps_high = double(cp->params.find("lpn_eps_high")->second);
+	int lpn_eps_deep = double(cp->params.find("lpn_eps_deep")->second);
+
+	double curr_eps_low = lpn_eps_low;
+	double curr_eps_high = lpn_eps_high;
+	double curr_eps_diff = curr_eps_high - curr_eps_low;;
+	int curr_eps_deep = 0;
+	double lpn_eps_start = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
+	double curr_lpn_eps = lpn_eps_start;
+
 	double lpn_delta_s_high = double(cp->params.find("lpn_delta_s_high")->second);
 	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
 
@@ -1192,7 +1201,7 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 	double delta_s = lpn_delta_s_high + 1.0;
 
-	while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+	while ((delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low) && (curr_eps_deep < lpn_eps_deep))
 	{
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
@@ -1217,8 +1226,8 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 		double norm_2 = norm_square(phi_original, sys_size);
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
-			phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
-			phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+			phi[st_id].real = phi_original[st_id].real + curr_lpn_eps * phi_var[st_id].real;
+			phi[st_id].imag = phi_original[st_id].imag + curr_lpn_eps * phi_var[st_id].imag;
 		}
 
 		double norm_mod_2 = norm_square(phi, sys_size);
@@ -1240,20 +1249,27 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 		if (rp->is_pp == 1)
 		{
-			cout << "Var trajectory: " << tr_id << endl;
-			cout << "lpn_eps: " << lpn_eps << endl;
+			cout << "lpn: " << 1 << endl;
+			cout << "curr_lpn_eps: " << curr_lpn_eps << endl;
+			cout << "lpn_deep: " << curr_eps_deep << endl;
 			cout << "delta_s: " << delta_s << endl;
 			cout << endl;
 		}
 
 		if (delta_s > lpn_delta_s_high)
 		{
-			lpn_eps /= lpn_eps_change;
+			curr_eps_high -= 0.5 * curr_eps_diff;
+			curr_eps_diff = curr_eps_high - curr_eps_low;
+			curr_eps_deep++;
+			curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 		}
 
 		if (delta_s < lpn_delta_s_low)
 		{
-			lpn_eps *= lpn_eps_change;
+			curr_eps_low += 0.5 * curr_eps_diff;
+			curr_eps_diff = curr_eps_high - curr_eps_low;
+			curr_eps_deep++;
+			curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 		}
 	}
 
@@ -1505,9 +1521,17 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 
 	int num_lpns = num_trajectories - 1;
 
-	double lpn_eps_start = double(cp->params.find("lpn_eps")->second);
-	double lpn_eps = lpn_eps_start;
-	double lpn_eps_change = double(cp->params.find("lpn_eps_change")->second);
+	double lpn_eps_low = double(cp->params.find("lpn_eps_low")->second);
+	double lpn_eps_high = double(cp->params.find("lpn_eps_high")->second);
+	int lpn_eps_deep = double(cp->params.find("lpn_eps_deep")->second);
+
+	double curr_eps_low = lpn_eps_low;
+	double curr_eps_high = lpn_eps_high;
+	double curr_eps_diff = lpn_eps_high - lpn_eps_low;
+	int curr_eps_deep = 0;
+	double lpn_eps_start = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
+	double curr_lpn_eps = lpn_eps_start;
+
 	double lpn_delta_s_high = double(cp->params.find("lpn_delta_s_high")->second);
 	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
 
@@ -1520,10 +1544,11 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 
 	VSLStreamStatePtr * streams_var = ed->streams_var;
 	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+	MKL_Complex16 * phi = NULL;
 
 	// ===== First lpn =====
 
-	MKL_Complex16 * phi = &(ed->phi_all[1 * sys_size]);
+	phi = &(ed->phi_all[1 * sys_size]);
 
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
@@ -1535,7 +1560,7 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 
 	var_first(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 
-	while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+	while ((delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low) && (curr_eps_deep < lpn_eps_deep))
 	{
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
@@ -1546,8 +1571,8 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 		double norm_2 = norm_square(phi_original, sys_size);
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
-			phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
-			phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+			phi[st_id].real = phi_original[st_id].real + curr_lpn_eps * phi_var[st_id].real;
+			phi[st_id].imag = phi_original[st_id].imag + curr_lpn_eps * phi_var[st_id].imag;
 		}
 
 		double norm_mod_2 = norm_square(phi, sys_size);
@@ -1570,20 +1595,27 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 		if (rp->is_pp == 1)
 		{
 			cout << "lpn: " << 1 << endl;
-			cout << "lpn_eps: " << lpn_eps << endl;
+			cout << "curr_lpn_eps: " << curr_lpn_eps << endl;
+			cout << "lpn_deep: " << curr_eps_deep << endl;
 			cout << "delta_s: " << delta_s << endl;
 			cout << endl;
 		}
 
 		if (delta_s > lpn_delta_s_high)
 		{
-			lpn_eps /= lpn_eps_change;
+			curr_eps_high -= 0.5 * curr_eps_diff;
+			curr_eps_diff = curr_eps_high - curr_eps_low;
+			curr_eps_deep++;
+			curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 			var_first(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 		}
 
 		if (delta_s < lpn_delta_s_low)
 		{
-			lpn_eps *= lpn_eps_change;
+			curr_eps_low += 0.5 * curr_eps_diff;
+			curr_eps_diff = curr_eps_high - curr_eps_low;
+			curr_eps_deep++;
+			curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 			var_first(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 		}
 	}
@@ -1591,7 +1623,12 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 	// ==== All lpns ====
 	for (int tr_id = 2; tr_id < num_trajectories; tr_id++)
 	{
-		lpn_eps = lpn_eps_start;
+		curr_eps_low = lpn_eps_low;
+		curr_eps_high = lpn_eps_high;
+		curr_eps_diff = curr_eps_high - curr_eps_low;
+		curr_eps_deep = 0;
+		lpn_eps_start = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
+		curr_lpn_eps = lpn_eps_start;
 
 		int lpn_id = tr_id - 1;
 
@@ -1607,7 +1644,7 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 
 		var_not_first(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 
-		while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+		while ((delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low) && (curr_eps_deep < lpn_eps_deep))
 		{
 			for (int st_id = 0; st_id < sys_size; st_id++)
 			{
@@ -1618,8 +1655,8 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 			double norm_2 = norm_square(phi_original, sys_size);
 			for (int st_id = 0; st_id < sys_size; st_id++)
 			{
-				phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
-				phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+				phi[st_id].real = phi_original[st_id].real + curr_lpn_eps * phi_var[st_id].real;
+				phi[st_id].imag = phi_original[st_id].imag + curr_lpn_eps * phi_var[st_id].imag;
 			}
 
 			double norm_mod_2 = norm_square(phi, sys_size);
@@ -1641,21 +1678,28 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 
 			if (rp->is_pp == 1)
 			{
-				cout << "lpn: " << tr_id << endl;
-				cout << "lpn_eps: " << lpn_eps << endl;
+				cout << "lpn: " << 1 << endl;
+				cout << "curr_lpn_eps: " << curr_lpn_eps << endl;
+				cout << "lpn_deep: " << curr_eps_deep << endl;
 				cout << "delta_s: " << delta_s << endl;
 				cout << endl;
 			}
 
 			if (delta_s > lpn_delta_s_high)
 			{
-				lpn_eps /= lpn_eps_change;
+				curr_eps_high -= 0.5 * curr_eps_diff;
+				curr_eps_diff = curr_eps_high - curr_eps_low;
+				curr_eps_deep++;
+				curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 				var_not_first(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 			}
 
 			if (delta_s < lpn_delta_s_low)
 			{
-				lpn_eps *= lpn_eps_change;
+				curr_eps_low += 0.5 * curr_eps_diff;
+				curr_eps_diff = curr_eps_high - curr_eps_low;
+				curr_eps_deep++;
+				curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 				var_not_first(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 			}
 		}
@@ -1681,9 +1725,17 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 
 	int num_lpns = num_trajectories - 1;
 
-	double lpn_eps_start = double(cp->params.find("lpn_eps")->second);
-	double lpn_eps = lpn_eps_start;
-	double lpn_eps_change = double(cp->params.find("lpn_eps_change")->second);
+	double lpn_eps_low = double(cp->params.find("lpn_eps_low")->second);
+	double lpn_eps_high = double(cp->params.find("lpn_eps_high")->second);
+	int lpn_eps_deep = double(cp->params.find("lpn_eps_deep")->second);
+
+	double curr_eps_low = lpn_eps_low;
+	double curr_eps_high = lpn_eps_high;
+	double curr_eps_diff = lpn_eps_high - lpn_eps_low;
+	int curr_eps_deep = 0;
+	double lpn_eps_start = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
+	double curr_lpn_eps = lpn_eps_start;
+
 	double lpn_delta_s_high = double(cp->params.find("lpn_delta_s_high")->second);
 	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
 
@@ -1696,10 +1748,10 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 
 	VSLStreamStatePtr * streams_var = ed->streams_var;
 	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+	MKL_Complex16 * phi = NULL;
 
 	// ===== First lpn =====
-
-	MKL_Complex16 * phi = &(ed->phi_all[1 * sys_size]);
+	phi = &(ed->phi_all[1 * sys_size]);
 
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
@@ -1711,7 +1763,7 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 
 	var_first_with_history(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 
-	while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+	while ((delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low) && (curr_eps_deep < lpn_eps_deep))
 	{
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
@@ -1722,8 +1774,8 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 		double norm_2 = norm_square(phi_original, sys_size);
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
-			phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
-			phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+			phi[st_id].real = phi_original[st_id].real + curr_lpn_eps * phi_var[st_id].real;
+			phi[st_id].imag = phi_original[st_id].imag + curr_lpn_eps * phi_var[st_id].imag;
 		}
 
 		double norm_mod_2 = norm_square(phi, sys_size);
@@ -1746,26 +1798,38 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 		if (rp->is_pp == 1)
 		{
 			cout << "lpn: " << 1 << endl;
-			cout << "lpn_eps: " << lpn_eps << endl;
+			cout << "curr_lpn_eps: " << curr_lpn_eps << endl;
+			cout << "lpn_deep: " << curr_eps_deep << endl;
 			cout << "delta_s: " << delta_s << endl;
 			cout << endl;
 		}
 
 		if (delta_s > lpn_delta_s_high)
 		{
-			lpn_eps /= lpn_eps_change;
+			curr_eps_high -= 0.5 * curr_eps_diff;
+			curr_eps_diff = curr_eps_high - curr_eps_low;
+			curr_eps_deep++;
+			curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 		}
 
 		if (delta_s < lpn_delta_s_low)
 		{
-			lpn_eps *= lpn_eps_change;
+			curr_eps_low += 0.5 * curr_eps_diff;
+			curr_eps_diff = curr_eps_high - curr_eps_low;
+			curr_eps_deep++;
+			curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 		}
 	}
 
 	// ==== All lpns ====
 	for (int tr_id = 2; tr_id < num_trajectories; tr_id++)
 	{
-		lpn_eps = lpn_eps_start;
+		curr_eps_low = lpn_eps_low;
+		curr_eps_high = lpn_eps_high;
+		curr_eps_diff = curr_eps_high - curr_eps_low;
+		curr_eps_deep = 0;
+		lpn_eps_start = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
+		curr_lpn_eps = lpn_eps_start;
 
 		int lpn_id = tr_id - 1;
 
@@ -1781,7 +1845,7 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 
 		var_not_first_with_history(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
 
-		while (delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low)
+		while ((delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low) && (curr_eps_deep < lpn_eps_deep))
 		{
 			for (int st_id = 0; st_id < sys_size; st_id++)
 			{
@@ -1792,8 +1856,8 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 			double norm_2 = norm_square(phi_original, sys_size);
 			for (int st_id = 0; st_id < sys_size; st_id++)
 			{
-				phi[st_id].real = phi_original[st_id].real + lpn_eps * phi_var[st_id].real;
-				phi[st_id].imag = phi_original[st_id].imag + lpn_eps * phi_var[st_id].imag;
+				phi[st_id].real = phi_original[st_id].real + curr_lpn_eps * phi_var[st_id].real;
+				phi[st_id].imag = phi_original[st_id].imag + curr_lpn_eps * phi_var[st_id].imag;
 			}
 
 			double norm_mod_2 = norm_square(phi, sys_size);
@@ -1815,20 +1879,27 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 
 			if (rp->is_pp == 1)
 			{
-				cout << "lpn: " << tr_id << endl;
-				cout << "lpn_eps: " << lpn_eps << endl;
+				cout << "lpn: " << 1 << endl;
+				cout << "curr_lpn_eps: " << curr_lpn_eps << endl;
+				cout << "lpn_deep: " << curr_eps_deep << endl;
 				cout << "delta_s: " << delta_s << endl;
 				cout << endl;
 			}
 
 			if (delta_s > lpn_delta_s_high)
 			{
-				lpn_eps /= lpn_eps_change;
+				curr_eps_high -= 0.5 * curr_eps_diff;
+				curr_eps_diff = curr_eps_high - curr_eps_low;
+				curr_eps_deep++;
+				curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 			}
 
 			if (delta_s < lpn_delta_s_low)
 			{
-				lpn_eps *= lpn_eps_change;
+				curr_eps_low += 0.5 * curr_eps_diff;
+				curr_eps_diff = curr_eps_high - curr_eps_low;
+				curr_eps_deep++;
+				curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 			}
 		}
 	}

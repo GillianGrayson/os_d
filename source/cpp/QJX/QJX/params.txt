@@ -1,6 +1,7 @@
 lpn_type 0 
-lpn_eps 0.01 
-lpn_eps_change 1.25 
+lpn_eps_deep 10 
+lpn_eps_high 0
+lpn_eps_low -4
 lpn_delta_s_high 0.001 
 lpn_delta_s_low 0.0001 
 lpn_delta_f_high 0.01 
