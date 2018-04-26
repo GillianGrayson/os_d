@@ -1678,7 +1678,7 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 
 			if (rp->is_pp == 1)
 			{
-				cout << "lpn: " << lpn_id << endl;
+				cout << "lpn: " << tr_id << endl;
 				cout << "curr_lpn_eps: " << curr_lpn_eps << endl;
 				cout << "lpn_deep: " << curr_eps_deep << endl;
 				cout << "delta_s: " << delta_s << endl;
@@ -1879,7 +1879,7 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 
 			if (rp->is_pp == 1)
 			{
-				cout << "lpn: " << lpn_id << endl;
+				cout << "lpn: " << tr_id << endl;
 				cout << "curr_lpn_eps: " << curr_lpn_eps << endl;
 				cout << "lpn_deep: " << curr_eps_deep << endl;
 				cout << "delta_s: " << delta_s << endl;
