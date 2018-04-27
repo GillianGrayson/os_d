@@ -1925,7 +1925,7 @@ void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 	double delta_f = cb->calc_delta_f(ad, tr_id);
 
-	if ((delta_f > lpn_delta_f_high) || (delta_f < lpn_delta_f_low))
+	if ((delta_f > max(lpn_delta_f_high, ed->delta_s[tr_id] * 10.0) || (delta_f < lpn_delta_f_low))
 	{
 		ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
 
