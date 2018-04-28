@@ -1713,7 +1713,38 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 	delete[] scalar_mults_all;
 }
 
-void gs_orth_evo(AllData * ad, CoreBehavior *cb)
+void only_orth(AllData * ad, CoreBehavior *cb, MKL_Complex16 * phi_var_all)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	int num_trajectories = cp->num_trajectories;
+
+	int num_lpns = num_trajectories - 1;
+
+	MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
+	double * phi_var_double = new double[2 * sys_size];
+	MKL_Complex16 * scalar_mults_all = new MKL_Complex16[num_lpns];
+
+	// ===== First lpn =====
+	var_first_with_history(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
+
+
+	// ==== All lpns ====
+	for (int tr_id = 2; tr_id < num_trajectories; tr_id++)
+	{
+		var_not_first_with_history(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
+	}
+
+	delete[] phi_var_double;
+	delete[] phi_var;
+	delete[] scalar_mults_all;
+}
+
+void gs_orth_evo(AllData * ad, CoreBehavior *cb, MKL_Complex16 *phi_var_all)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -1740,12 +1771,7 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 	double lpn_delta_s_low = double(cp->params.find("lpn_delta_s_low")->second);
 
 	MKL_Complex16 * phi_copy = new MKL_Complex16[sys_size];
-
 	MKL_Complex16 * phi_var = new MKL_Complex16[sys_size];
-	double * phi_var_double = new double[2 * sys_size];
-	MKL_Complex16 * phi_var_all = new MKL_Complex16[num_lpns * sys_size];
-	MKL_Complex16 * scalar_mults_all = new MKL_Complex16[num_lpns];
-
 	VSLStreamStatePtr * streams_var = ed->streams_var;
 	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
 	MKL_Complex16 * phi = NULL;
@@ -1761,7 +1787,12 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 
 	double delta_s = lpn_delta_s_high + 1.0;
 
-	var_first_with_history(phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		int index = 0 * sys_size + st_id;
+		phi_var[st_id].real = phi_var_all[index].real;
+		phi_var[st_id].imag = phi_var_all[index].imag;
+	}
 
 	while ((delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low) && (curr_eps_deep < lpn_eps_deep))
 	{
@@ -1843,7 +1874,12 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 
 		double delta_s = lpn_delta_s_high + 1.0;
 
-		var_not_first_with_history(tr_id, phi_var, phi_var_double, phi_var_all, scalar_mults_all, ad, cb);
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			int index = lpn_id * sys_size + st_id;
+			phi_var[st_id].real = phi_var_all[index].real;
+			phi_var[st_id].imag = phi_var_all[index].imag;
+		}
 
 		while ((delta_s > lpn_delta_s_high || delta_s < lpn_delta_s_low) && (curr_eps_deep < lpn_eps_deep))
 		{
@@ -1904,12 +1940,8 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb)
 		}
 	}
 
-	delete[] phi_var_double;
 	delete[] phi_var;
-	delete[] phi_var_all;
 	delete[] phi_copy;
-
-	delete[] scalar_mults_all;
 }
 
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
@@ -1925,7 +1957,7 @@ void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 	double delta_f = cb->calc_delta_f(ad, tr_id);
 
-	if ((delta_f > max(lpn_delta_f_high, ed->delta_s[tr_id] * 10.0) || (delta_f < lpn_delta_f_low))
+	if ((delta_f > max(lpn_delta_f_high, ed->delta_s[tr_id] * 10.0)) || (delta_f < lpn_delta_f_low))
 	{
 		ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
 
@@ -1957,23 +1989,54 @@ void lambda_lpn_all(AllData * ad, CoreBehavior *cb)
 	double lpn_delta_f_high = double(cp->params.find("lpn_delta_f_high")->second);
 	double lpn_delta_f_low = double(cp->params.find("lpn_delta_f_low")->second);
 
-	// Firstly check for all lpns
+	int num_lpns = num_trajectories - 1;
+	MKL_Complex16 * phi_var_all = new MKL_Complex16[num_lpns * sys_size];
 
+	// Firstly we must orth
+	only_orth(ad, cb, phi_var_all);
+
+	// Secondly chech for reset
+	bool is_reset = false;
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{
 		double delta_f = cb->calc_delta_f(ad, tr_id);
+		if ((delta_f > max(lpn_delta_f_high, ed->delta_s[tr_id] * 10.0)) || (delta_f < lpn_delta_f_low))
+		{
+			is_reset = true;
+			break;
+		}
+	}
+	
+	// Reset (is nesessary) and calc chars
+	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+	{
+		double delta_f = cb->calc_delta_f(ad, tr_id);
+
 		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / (double(ed->period_id) * md->T);
-		ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
+
+		if (is_reset)
+		{
+			ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
+		}
+
 		copy_stream_lpn(ad, tr_id);
 	}
 
-	gs_orth_evo(ad, cb);
+	if (is_reset)
+	{
+		gs_orth_evo(ad, cb, phi_var_all);
+	}
 
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
 	{
+		if (is_reset)
+		{
+			ed->delta_s[tr_id] = cb->calc_delta_s(ad, tr_id);
+		}
 		cb->calc_chars_lpn(ad, tr_id);
-		ed->delta_s[tr_id] = cb->calc_delta_s(ad, tr_id);
 	}
+
+	delete[] phi_var_all;
 }
 
 void trans_process_single(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb, int tr_id, int thread_id)
