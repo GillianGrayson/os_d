@@ -83,6 +83,8 @@ double get_energy(AllData * ad, int tr_id);
 
 MKL_Complex16 get_spec(AllData * ad, int tr_id);
 
+MKL_Complex16 get_num_photons(AllData * ad, int tr_id);
+
 void resresh_times(AllData * ad, int tr_id);
 
 void copy_trajectory_lpn(AllData * ad, int tr_id);

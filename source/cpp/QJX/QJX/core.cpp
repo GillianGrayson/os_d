@@ -1170,9 +1170,22 @@ void JCSCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
+	int sys_size = md->sys_size;
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
+	}
+
 	MKL_Complex16 spec = get_spec(ad, tr_id);
+	MKL_Complex16 num_photons = get_num_photons(ad, tr_id);
 
 	ed->spec[tr_id] = spec;
+	ed->mean[tr_id] = num_photons.real;
 }
 
 void JCSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
@@ -1180,9 +1193,22 @@ void JCSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
+	int sys_size = md->sys_size;
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
+	}
+
 	MKL_Complex16 spec = get_spec(ad, tr_id);
+	MKL_Complex16 num_photons = get_num_photons(ad, tr_id);
 
 	ed->spec[tr_id] = spec;
+	ed->mean[tr_id] = num_photons.real;
 }
 
 void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
@@ -1229,6 +1255,7 @@ void JCSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
 	int index = tr_id * dump_num_total + dump_id;
 
 	ed->spec_evo[index] = ed->spec[tr_id];
+	ed->mean_evo[index] = ed->mean[tr_id];
 }
 
 void JCSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
@@ -1368,6 +1395,7 @@ void JCSCoreBehaviour::dump_std_evo(AllData * ad) const
 		int * dump_periods = ed->dump_periods;
 
 		MKL_Complex16 * spec_evo = ed->spec_evo;
+		double * mean_evo = ed->mean_evo;
 
 		string fn;
 
@@ -1376,6 +1404,9 @@ void JCSCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		fn = rp->path + "spec_evo" + cp->fn_suffix;
 		save_2d_inv_complex_data(fn, spec_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "mean_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, mean_evo, dump_num_total, num_trajectories, 16, false);
 
 		if (jump == 1)
 		{

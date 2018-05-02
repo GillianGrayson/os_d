@@ -1,8 +1,8 @@
 clear all;
 
-drt = 1;
+drt = 0;
 N = 501;
-E = 0;
+E = -1;
 J = -1;
 
 U_start = 0.005;
@@ -10,16 +10,16 @@ U_shift = 0.005;
 U_num = 150;
 
 g = 0.1;
-A = -3.4;
+A = -1.5;
 omega = 1;
 seed = 1;
 
-np = 100;
+np = 1000;
 
 data_path = '../../../data/cluster/unn';
 
 Us = zeros(U_num, 1);
-Ns = linspace(1, N, N);
+Ns = linspace(0, 1, N);
 
 abs_rho_diag = zeros(U_num, N);
 
@@ -56,11 +56,12 @@ set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$n$', 'Interpreter', 'latex');
+ylim([0 1])
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);
-title(h, '\rho_{n,n}', 'FontSize', 33);
+h.Label.Interpreter = 'latex';
+title(h, '$\rho_{n,n}$', 'FontSize', 33);
 set(gca,'YDir','normal');
-ylim([Ns(1) - 0.5 Ns(end) + 0.5]);
 hold all;
 

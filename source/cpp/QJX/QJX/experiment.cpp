@@ -1098,6 +1098,96 @@ MKL_Complex16 get_spec(AllData * ad, int tr_id)
 	return result;
 }
 
+MKL_Complex16 get_num_photons(AllData * ad, int tr_id)
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double alpha = double(cp->params.find("jcs_prm_alpha")->second);
+
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi_normed = new MKL_Complex16[sys_size];
+	MKL_Complex16 * phi_normed_conj = new MKL_Complex16[sys_size];
+	double norm = sqrt(norm_square(phi, sys_size));
+	MKL_Complex16 * mult_tmp = new MKL_Complex16[sys_size];
+
+	double * a_std = new double[md->sys_size * md->sys_size];
+	double * a_dag = new double[md->sys_size * md->sys_size];
+	double * n_mtx_double = new double[md->sys_size * md->sys_size];
+	MKL_Complex16 * n_mtx = new MKL_Complex16[md->sys_size * md->sys_size];
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		mult_tmp[st_id].real = 0.0;
+		mult_tmp[st_id].imag = 0.0;
+
+		phi_normed[st_id].real = phi[st_id].real / norm;
+		phi_normed[st_id].imag = phi[st_id].imag / norm;
+
+		phi_normed_conj[st_id].real = phi_normed[st_id].real;
+		phi_normed_conj[st_id].imag = -phi_normed[st_id].imag;
+	}
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			a_std[index] = 0.0;
+			a_dag[index] = 0.0;
+			n_mtx_double[index] = 0.0;
+			n_mtx[index].real = 0.0;
+			n_mtx[index].imag = 0.0;
+		}
+	}
+
+	for (int st_id = 0; st_id < sys_size - 1; st_id++)
+	{
+		int index_std = st_id * md->sys_size + (st_id + 1);
+		int index_dag = (st_id + 1) * md->sys_size + st_id;
+		a_std[index_std] = sqrt(double(st_id + 1));
+		a_dag[index_dag] = sqrt(double(st_id + 1));
+	}
+
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, sys_size, sys_size, sys_size, 1.0, a_dag, sys_size, a_std, sys_size, 0.0, n_mtx_double, sys_size);
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			n_mtx[index].real = n_mtx_double[index];
+			n_mtx[index].imag = 0.0;
+		}
+	}
+
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, n_mtx, sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
+
+	MKL_Complex16 result = { 0.0, 0.0 };
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		result.real += (phi_normed_conj[st_id].real * mult_tmp[st_id].real - phi_normed_conj[st_id].imag * mult_tmp[st_id].imag);
+		result.imag += (phi_normed_conj[st_id].imag * mult_tmp[st_id].real + phi_normed_conj[st_id].real * mult_tmp[st_id].imag);
+	}
+
+	delete[] mult_tmp;
+	delete[] phi_normed;
+	delete[] phi_normed_conj;
+
+	delete[] a_std;
+	delete[] a_dag;
+	delete[] n_mtx_double;
+	delete[] n_mtx;
+
+	return result;
+}
+
 void resresh_times(AllData * ad, int tr_id)
 {
 	ExpData * ed = ad->ed;
