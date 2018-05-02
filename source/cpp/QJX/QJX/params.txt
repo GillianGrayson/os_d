@@ -22,7 +22,7 @@ dimer_drv_ampl 1.5
 dimer_drv_freq 1 
 dimer_drv_phase 0 
 dimer_prm_E 1 
-dimer_prm_U 0.50
+dimer_prm_U 0.51
 dimer_prm_J 1 
 jcs_drv_part_1 0.98 
 jcs_drv_part_2 1 

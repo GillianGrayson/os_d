@@ -133,7 +133,9 @@ void var_not_first_with_history(
 
 void gs_orth_init(AllData * ad, CoreBehavior *cb);
 
-void gs_orth_evo(AllData * ad, CoreBehavior *cb);
+void only_orth(AllData * ad, CoreBehavior *cb, MKL_Complex16 * phi_var_all);
+
+void gs_orth_evo(AllData * ad, CoreBehavior *cb, MKL_Complex16 *phi_var_all);
 
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id);
 
