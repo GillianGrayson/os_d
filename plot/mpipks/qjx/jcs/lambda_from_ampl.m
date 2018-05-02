@@ -15,7 +15,7 @@ mns = 1000000;
 num_trajectories = 2;
 num_tp_periods = 1000;
 num_obs_periods = 1000; 
-ex_deep = 10;
+ex_deep = 16;
 rk_ns = 10000;
  
 N = 200; 
@@ -33,9 +33,9 @@ sys_size = N;
 
 num_runs = 10;
 
-ampl_begin = 0.01;
-ampl_step = 0.01;
-ampl_num = 500;
+ampl_begin = 0.025;
+ampl_step = 0.025;
+ampl_num = 200;
 ampls = zeros(ampl_num, 1);
 
 lambdas = zeros(ampl_num, 1);
