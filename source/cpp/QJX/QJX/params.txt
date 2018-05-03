@@ -33,4 +33,4 @@ start_state 0
 cd_dim 1 
 cd_eps 1e-08 
 deep_num_steps 10000 
-jump 0 
+jump 1 

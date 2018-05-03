@@ -5,7 +5,7 @@ N = 501;
 E = -1;
 J = -1;
 
-U = 0.005;
+U = 0.5;
 
 g = 0.1;
 A = -1.5;
@@ -19,22 +19,25 @@ end_id = N;
 
 data_path = '../../../data/cluster/unn';
 
-bin_begin = 0.0;
-bin_end = 1.0;
-num_bins = 200;
-bin_shift = (bin_end - bin_begin) / num_bins;
+bin_begin = 1e-10;
+num_decades = 10;
+bin_end = bin_begin * 10.^num_decades;
+num_bin_per_decade = 5;
 
-bin_borders = zeros(num_bins + 1, 1);
-bin_centers = zeros(num_bins, 1);
-bin_pdf = zeros(num_bins, 1);
+num_bin = num_bin_per_decade * num_decades;
 
-for bin_id = 1 : num_bins + 1
-    bin_borders(bin_id) = bin_begin + ((bin_id - 1) * bin_shift);
+bin_borders = zeros(num_bin + 1, 1);
+bin_centers = zeros(num_bin, 1);
+bin_pdf = zeros(num_bin, 1);
+
+for bin_id = 1 : num_bin + 1
+    bin_borders(bin_id) = bin_begin * 10.^((bin_id - 1) / num_bin_per_decade);
+    if (bin_id <= num_bin)
+        bin_centers(bin_id) = bin_begin * 10.^((bin_id - 1 + 0.5) / num_bin_per_decade);
+    end
 end
 
-for bin_id = 1 : num_bins
-    bin_centers(bin_id) = bin_begin + ((bin_id - 1) + 0.5) * bin_shift;
-end
+bin_diff = diff(bin_borders);
 
 non_inc_count = 0;
 
@@ -73,12 +76,26 @@ for eval_id = 1 : size(curr_evals, 1)
     curr_eval = curr_evals(eval_id);
     
     if ((curr_eval >= bin_begin) && (curr_eval <= bin_end))
-        bin_id = floor(curr_eval / bin_shift + eps) + 1;
+        bin_id = floor((log10(curr_eval) - log10(bin_begin)) * num_bin / (log10(bin_end) - log10(bin_begin) + eps)) + 1;
         bin_pdf(bin_id) = bin_pdf(bin_id) + 1;
     else
         non_inc_count = non_inc_count + 1;
     end
+    
 end
+
+non_inc_count = non_inc_count
+norm = sum(bin_pdf)
+
+for bin_id = 1 : num_bin
+    bin_pdf(bin_id) = bin_pdf(bin_id) / (norm * bin_diff(bin_id));
+end
+
+norm_check = 0;
+for bin_id = 1 : num_bin
+    norm_check = norm_check + bin_pdf(bin_id) * bin_diff(bin_id);
+end
+norm_check = norm_check
 
 fig = figure;
 propertyeditor(fig);
@@ -88,5 +105,7 @@ set(gca, 'FontSize', 30);
 xlabel('$\lambda$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$P(\lambda)$', 'Interpreter', 'latex');
+set(gca,'XScale','log');
+set(gca,'YScale','log');
 propertyeditor('on');
 
