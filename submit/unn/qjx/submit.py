@@ -71,7 +71,7 @@ for eps_id in range(0, eps_num):
                 dump_evo_avg = 0
                 dump_type = 0
                 dump_num = 300
-                N = 100
+                N = 500
                 diss_type = 0
                 diss_gamma = 0.1
                 diss_phase = 0.0

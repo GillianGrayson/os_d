@@ -8,7 +8,7 @@ $root = "/home/yusipov_i/Work/os_d";
 
 $PI = 3.14159265358979323846;
 
-for($curr_N = 500; $curr_N <= 500; $curr_N += 50)
+for($curr_N = 200; $curr_N <= 200; $curr_N += 50)
 {
 	for($curr_U = 0.005; $curr_U <= 0.75000001; $curr_U += 0.005)
 	{
@@ -17,19 +17,19 @@ for($curr_N = 500; $curr_N <= 500; $curr_N += 50)
 		
 		$N = $curr_N;
 		$J = -1.0; 
-		$E0 = 0; 
+		$E0 = -1.0; 
 		$U = $curr_U;
 		$g = 0.1; 
 		$CalcEig = 0; 
 		$hasDriving = 1;
-		$driving_type = 1;
+		$driving_type = 0;
 		$avg_purity = 0;
 		$multiplicators = 0;
 		$deep_dump = 0;
-		$A0 = -3.4; 
+		$A0 = -1.5; 
 		$w = 1;
-		$N_T = 100;
-		$NSTEP = 20000;
+		$N_T = 1000;
+		$NSTEP = 10000;
 		
 		$seed_begin = 1;
 		$seed_end = 2;
