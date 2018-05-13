@@ -1,0 +1,409 @@
+#include "utils.h"
+
+void error(const string& err, const char* func, const char* file, int line)
+{
+	cout << "Error: " << err << " in " << func << " (" << file << ", line: " << line << ")" << endl;
+	exit(EXIT_FAILURE);
+}
+
+int n_choose_k(int n, int k)
+{
+	int res = 1;
+
+	if (k > n - k)
+	{
+		k = n - k;
+	}
+
+	for (int i = 0; i < k; ++i)
+	{
+		res *= (n - i);
+		res /= (i + 1);
+	}
+
+	return res;
+}
+
+int bit_count(int value)
+{
+	int count = 0;
+
+	while (value > 0)
+	{
+		if ((value & 1) == 1)
+		{
+			count++;
+		}
+		value >>= 1;
+	}
+
+	return count;
+}
+
+int bit_at(int value, int position)
+{
+	if ((value >> position) & 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void print_int_array(int * data, int N)
+{
+	cout << endl;
+	for (int i = 0; i < N; i++)
+	{
+		cout << i << ": " << data[i] << endl;
+	}
+}
+
+string file_name_suffix(ConfigParam &cp, int precision)
+{
+	stringstream fns;
+	//fns << "_N(" << cp.N << ")";
+
+	//fns << "_dt(" << cp.dt << ")";
+	//fns << "_dp(" << setprecision(precision) << fixed << cp.dp << ")";
+	//fns << "_g(" << setprecision(precision) << fixed << cp.g << ")";
+	//fns << "_g_add(" << setprecision(precision) << fixed << cp.g_add << ")";
+
+	//fns << "_J(" << setprecision(precision) << fixed << cp.J << ")";
+	//fns << "_hz(" << setprecision(precision) << fixed << cp.h_z << ")";
+	//fns << "_hx(" << setprecision(precision) << fixed << cp.h_x << ")";
+
+	//fns << "_t0(" << setprecision(precision) << fixed << cp.t_0 << ")";
+	//fns << "_t1(" << setprecision(precision) << fixed << cp.t_1 << ")";
+
+	//fns << "_seed(" << cp.seed << ")";
+
+	fns << ".txt";
+
+	return fns.str();
+}
+
+void save_double_data(string file_name, double * data, int size, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i] << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i] << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+
+		
+}
+
+void save_2d_double_data(string file_name, double ** data, int size_1, int size_2, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int row = 0; row < size_2; row++)
+			{
+				for (int col = 0; col < size_1; col++)
+				{
+					ofs << data[col][row] << " ";
+				}
+				ofs << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if(ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int row = 0; row < size_2; row++)
+			{
+				for (int col = 0; col < size_1; col++)
+				{
+					ofs << data[col][row] << " ";
+				}
+				ofs << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+}
+
+void save_int_data(string file_name, int * data, int size, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i] << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i] << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+}
+
+
+void save_complex_data(string file_name, MKL_Complex16 * data, int size, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i].real << " " << data[i].imag << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+			for (int i = 0; i < size; i++)
+			{
+				ofs << data[i].real << " " << data[i].imag << endl;
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+}
+
+void save_sparse_complex_mtx(string file_name, crsMatrix *A, int precision, bool append)
+{
+	if (append)
+	{
+		ofstream ofs = ofstream(file_name, ios::app);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int i = 0; i < A->N; i++)
+			{
+				for (int k = A->RowIndex[i]; k < A->RowIndex[i + 1]; k++)
+				{
+					ofs << i + 1 << " " << A->Col[k] + 1 << " " << A->Value[k].re << " " << A->Value[k].im << endl;
+				}
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+	else
+	{
+		ofstream ofs = ofstream(file_name);
+
+		if (ofs.is_open())
+		{
+			ofs << setprecision(precision) << scientific;
+
+			for (int i = 0; i < A->N; i++)
+			{
+				for (int k = A->RowIndex[i]; k < A->RowIndex[i + 1]; k++)
+				{
+					ofs << i + 1 << " " << A->Col[k] + 1 << " " << A->Value[k].re << " " << A->Value[k].im << endl;
+				}
+			}
+
+			ofs.close();
+		}
+		else
+		{
+			stringstream msg;
+			msg << "Unable to open file:" << endl << file_name << endl;
+			Error(msg.str());
+		}
+	}
+}
+
+vector<int> convert_int_to_vector_of_bits(int x, int size)
+{
+	vector<int> res;
+
+	int id = 0;
+
+	while (id < size)
+	{
+		if (x & 1)
+		{
+			res.push_back(1);
+		}
+		else
+		{
+			res.push_back(0);
+		}
+
+		x >>= 1;
+		id++;
+	}
+
+	reverse(res.begin(), res.end());
+
+	return res;
+}
+
+vector<int> sort_doubles_with_order(vector<double> &v)
+{
+	vector<int> order(v.size());
+
+	iota(order.begin(), order.end(), 0);
+
+	sort(order.begin(), order.end(),
+		[&v](size_t i1, size_t i2) {return v[i1] < v[i2]; });
+
+	return order;
+}
+
+void fill_cols_h_x(int * cols, int N, int i)
+{
+	int num_filled = 0;
+	int chunk_size = pow(2, i);
+
+	while (num_filled != pow(2, N))
+	{
+		cols[num_filled] = pow(2, i) + num_filled;
+		int start_id = num_filled;
+
+		num_filled++;
+
+		if (chunk_size > 1) 
+		{
+			for (int k = 1; k < chunk_size; k++)
+			{
+				cols[num_filled] = cols[num_filled - 1] + 1;
+				num_filled++;
+			}
+		}
+
+		cols[num_filled] = cols[start_id] - chunk_size;
+		num_filled++;
+
+		if (chunk_size > 1)
+		{
+			for (int k = 1; k < chunk_size; k++)
+			{
+				cols[num_filled] = cols[num_filled - 1] + 1;
+				num_filled++;
+			}
+		}
+	}
+}
+
