@@ -3612,23 +3612,17 @@ Model * createModel(int N, ConfigParam conf)
 	model->N_mat = (N + 1) * (N + 1) - 1;
 	model->conf = conf;
 
-	model->h_J = new crsMatrix(model->N_mat, model->N_mat);
-	model->h_h_z = new crsMatrix(model->N_mat, model->N_mat);
-	model->h_h_x = new crsMatrix(model->N_mat, model->N_mat);
-	model->h_s_x = new crsMatrix(model->N_mat, model->N_mat);
+	model->h_0 = new crsMatrix(model->N_mat, model->N_mat);
+	model->h_1 = new crsMatrix(model->N_mat, model->N_mat);
 
-	model->H_J = new crsMatrix(model->N_mat, model->N_mat);
-	model->H_h_z = new crsMatrix(model->N_mat, model->N_mat);
-	model->H_h_x = new crsMatrix(model->N_mat, model->N_mat);
-	model->H_s_x = new crsMatrix(model->N_mat, model->N_mat);
-
+	model->H_0 = new crsMatrix(model->N_mat, model->N_mat);
+	model->H_1 = new crsMatrix(model->N_mat, model->N_mat);
+	
 	model->H0 = NULL;
 	model->H1 = NULL;
 
-	model->Q_J_s = NULL;
-	model->Q_h_z_s = NULL;
-	model->Q_h_x_s = NULL;
-	model->Q_s_x_s = NULL;
+	model->Q_0 = NULL;
+	model->Q_1 = NULL;
 
 	model->Ks = new dcomplex[model->N_mat];
 	model->Rs = NULL;
@@ -3655,38 +3649,22 @@ Model * createModel(int N, ConfigParam conf)
 }
 void freeModel(Model * model)
 {
-	if (model->h_J != NULL)
+	if (model->h_0 != NULL)
 	{
-		delete model->h_J;
+		delete model->h_0;
 	}
-	if (model->h_h_z != NULL)
+	if (model->h_1 != NULL)
 	{
-		delete model->h_h_z;
+		delete model->h_1;
 	}
-	if (model->h_h_x != NULL)
+	
+	if (model->H_0 != NULL)
 	{
-		delete model->h_h_x;
+		delete model->H_0;
 	}
-	if (model->h_s_x != NULL)
+	if (model->H_1 != NULL)
 	{
-		delete model->h_s_x;
-	}
-
-	if (model->H_J != NULL)
-	{
-		delete model->H_J;
-	}
-	if (model->H_h_z != NULL)
-	{
-		delete model->H_h_z;
-	}
-	if (model->H_h_x != NULL)
-	{
-		delete model->H_h_x;
-	}
-	if (model->H_s_x != NULL)
-	{
-		delete model->H_s_x;
+		delete model->H_1;
 	}
 
 	if (model->H0 != NULL)
@@ -3698,21 +3676,13 @@ void freeModel(Model * model)
 		delete model->H1;
 	}
 
-	if (model->Q_J_s != NULL)
+	if (model->Q_0 != NULL)
 	{
-		delete model->Q_J_s;
+		delete model->Q_0;
 	}
-	if (model->Q_h_z_s != NULL)
+	if (model->Q_1 != NULL)
 	{
-		delete model->Q_h_z_s;
-	}
-	if (model->Q_h_x_s != NULL)
-	{
-		delete model->Q_h_x_s;
-	}
-	if (model->Q_s_x_s != NULL)
-	{
-		delete model->Q_s_x_s;
+		delete model->Q_1;
 	}
 
 	if (model->Ks != NULL)
@@ -3761,110 +3731,25 @@ void freeModel(Model * model)
 	delete model;
 }
 
-crsMatrix * create_sigma_i_x_matrix(Model * m, ConfigParam &cp, int bit_id)
+crsMatrix * create_a_std_matrix(Model * m)
 {
 	int N = m->N;
 
-	int * cols_ids = new int[N + 1];
-	for (int col_id = 0; col_id < N + 1; col_id++)
+	crsMatrix * a_mtx = new crsMatrix(N + 1, N);
+
+	for (int i = 0; i < N; i++)
 	{
-		cols_ids[col_id] = 0;
+		a_mtx->RowIndex[i] = i;
+		a_mtx->Col[i] = i+1;
+		a_mtx->Value[i].re = sqrt(double(i + 1));
 	}
-	fill_cols_h_x(cols_ids, cp.N, bit_id);
+	a_mtx->RowIndex[N] = N;
+	a_mtx->RowIndex[N + 1] = N + 1;
 
-	crsMatrix * sigma_i_x = new crsMatrix(N + 1, N + 1);
-
-	for (int i = 0; i < N + 1; i++)
-	{
-		sigma_i_x->RowIndex[i] = i;
-		sigma_i_x->Col[i] = cols_ids[i];
-		sigma_i_x->Value[i].re = 1.0;
-	}
-	sigma_i_x->RowIndex[N + 1] = N + 1;
-
-	delete[] cols_ids;
-
-	return sigma_i_x;
-}
-crsMatrix * create_sigma_i_y_matrix(Model * m, ConfigParam &cp, int bit_id)
-{
-	int N = m->N;
-
-	int * cols_ids = new int[N + 1];
-	for (int col_id = 0; col_id < N + 1; col_id++)
-	{
-		cols_ids[col_id] = 0;
-	}
-	fill_cols_h_x(cols_ids, cp.N, bit_id);
-
-	crsMatrix * sigma_i_y = new crsMatrix(N + 1, N + 1);
-
-	for (int i = 0; i < N + 1; i++)
-	{
-		sigma_i_y->RowIndex[i] = i;
-		sigma_i_y->Col[i] = cols_ids[i];
-
-		if (sigma_i_y->Col[i] > i)
-		{
-			sigma_i_y->Value[i].im = -1.0;
-		}
-		else
-		{
-			sigma_i_y->Value[i].im = 1.0;
-		}
-
-	}
-	sigma_i_y->RowIndex[N + 1] = N + 1;
-
-	delete[] cols_ids;
-
-	return sigma_i_y;
-}
-crsMatrix * create_sigma_i_z_matrix(Model * m, ConfigParam &cp, int bit_id)
-{
-	int N = m->N;
-
-	crsMatrix * sigma_i_z = new crsMatrix(N + 1, N + 1);
-	int * RowIndex = sigma_i_z->RowIndex;
-	int * Col = sigma_i_z->Col;
-	dcomplex * Value = sigma_i_z->Value;
-
-	double * diag_array = new double[N + 1];
-
-	for (int state_id = 0; state_id < N + 1; state_id++)
-	{
-		int bit = bit_at(state_id, bit_id);
-
-		if (bit == 0)
-		{
-			diag_array[state_id] = 1.0;
-		}
-		else
-		{
-			diag_array[state_id] = -1.0;
-		}
-	}
-
-	int i, j;
-	RowIndex[0] = 0;
-	for (i = 0; i < N + 1; i++)
-	{
-		RowIndex[i] = i;
-		Col[i] = i;
-	}
-	RowIndex[i] = i;
-
-	for (i = 0; i < N + 1; i++)
-	{
-		Value[i].re = diag_array[i];
-	}
-
-	delete[] diag_array;
-
-	return sigma_i_z;
+	return a_mtx;
 }
 
-crsMatrix * create_H_J_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
+crsMatrix * create_H_0_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	int N = m->N;
 
@@ -3919,7 +3804,7 @@ crsMatrix * create_H_J_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData
 
 	return H_J;
 }
-void init_h_J_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
+void init_h_0_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	crsMatrix * H_J = create_H_J_matrix(m, rp, cp, md), *res;
 	m->H_J = H_J;
@@ -3929,7 +3814,7 @@ void init_h_J_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 	to_F_basis(H_J, h_J);
 }
 
-crsMatrix * create_H_h_z_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
+crsMatrix * create_H_1_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	int N = m->N;
 
@@ -3983,7 +3868,7 @@ crsMatrix * create_H_h_z_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainDa
 
 	return H_h_z;
 }
-void init_h_h_z_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
+void init_h_1_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	crsMatrix * H_h_z = create_H_h_z_matrix(m, rp, cp, md), *res;
 	m->H_h_z = H_h_z;
@@ -3992,143 +3877,6 @@ void init_h_h_z_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 	crsMatrix * h_h_z = m->h_h_z;
 
 	to_F_basis(H_h_z, h_h_z);
-}
-
-crsMatrix * create_H_h_x_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
-{
-	int N = m->N;
-
-	crsMatrix * H_h_x = new crsMatrix(N + 1, N + 1);
-	for (int i = 0; i < N + 1; i++)
-	{
-		H_h_x->RowIndex[i] = i;
-		H_h_x->Col[i] = i;
-	}
-	H_h_x->RowIndex[N + 1] = N + 1;
-
-
-	for (int bit_id = 0; bit_id < cp.N; bit_id++)
-	{
-		int * cols_ids = new int[N + 1];
-		for (int col_id = 0; col_id < N + 1; col_id++)
-		{
-			cols_ids[col_id] = 0;
-		}
-		fill_cols_h_x(cols_ids, cp.N, bit_id);
-
-		crsMatrix * tmp_mtx_1 = new crsMatrix(N + 1, N + 1);
-
-		for (int i = 0; i < N + 1; i++)
-		{
-			tmp_mtx_1->RowIndex[i] = i;
-			tmp_mtx_1->Col[i] = cols_ids[i];
-			tmp_mtx_1->Value[i].re = -md.disorder_h_x[bit_id];
-		}
-		tmp_mtx_1->RowIndex[N + 1] = N + 1;
-
-
-		crsMatrix * tmp_mtx_2 = new crsMatrix(*H_h_x);
-
-		dcomplex beta;
-		beta.re = 1.0;
-		beta.im = 0.0;
-
-		SparseMKLAdd(*tmp_mtx_1, beta, *tmp_mtx_2, *H_h_x);
-
-		delete tmp_mtx_1;
-		delete tmp_mtx_2;
-
-		delete[] cols_ids;
-	}
-
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "H_h_x" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, H_h_x, 16, false);
-	}
-
-	return H_h_x;
-}
-void init_h_h_x_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
-{
-	crsMatrix * H_h_x = create_H_h_x_matrix(m, rp, cp, md), *res;
-	m->H_h_x = H_h_x;
-	int N = m->N;
-	crsMatrix * h_h_x = m->h_h_x;
-
-	if (fabs(cp.h_x) > 1.0e-14)
-	{
-		to_F_basis(H_h_x, h_h_x);
-	}
-	else
-	{
-		to_F_basis_for_zeros(H_h_x, h_h_x);
-	}
-}
-
-crsMatrix * create_H_s_x_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
-{
-	int N = m->N;
-
-	crsMatrix * H_s_x = new crsMatrix(N + 1, N + 1);
-	for (int i = 0; i < N + 1; i++)
-	{
-		H_s_x->RowIndex[i] = i;
-		H_s_x->Col[i] = i;
-	}
-	H_s_x->RowIndex[N + 1] = N + 1;
-
-
-	for (int bit_id = 0; bit_id < cp.N; bit_id++)
-	{
-		int * cols_ids = new int[N + 1];
-		for (int col_id = 0; col_id < N + 1; col_id++)
-		{
-			cols_ids[col_id] = 0;
-		}
-		fill_cols_h_x(cols_ids, cp.N, bit_id);
-
-		crsMatrix * tmp_mtx_1 = new crsMatrix(N + 1, N + 1);
-
-		for (int i = 0; i < N + 1; i++)
-		{
-			tmp_mtx_1->RowIndex[i] = i;
-			tmp_mtx_1->Col[i] = cols_ids[i];
-			tmp_mtx_1->Value[i].re = 1.0;
-		}
-		tmp_mtx_1->RowIndex[N + 1] = N + 1;
-
-
-		crsMatrix * tmp_mtx_2 = new crsMatrix(*H_s_x);
-
-		dcomplex beta;
-		beta.re = 1.0;
-		beta.im = 0.0;
-
-		SparseMKLAdd(*tmp_mtx_1, beta, *tmp_mtx_2, *H_s_x);
-
-		delete tmp_mtx_1;
-		delete tmp_mtx_2;
-
-		delete[] cols_ids;
-	}
-
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "H_s_x" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, H_s_x, 16, false);
-	}
-
-	return H_s_x;
-}
-void init_h_s_x_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
-{
-	crsMatrix * H_s_x = create_H_s_x_matrix(m, rp, cp, md), *res;
-	m->H_s_x = H_s_x;
-	int N = m->N;
-	crsMatrix * h_s_x = m->h_s_x;
-
-	to_F_basis(H_s_x, h_s_x);
 }
 
 void init_H0(Model * m)
