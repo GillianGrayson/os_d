@@ -1,5 +1,5 @@
 task 1
-debug 0
+debug 1
 issmtx 1
 ipp 1
 init_file 

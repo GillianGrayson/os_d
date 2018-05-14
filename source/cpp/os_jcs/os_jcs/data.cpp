@@ -5,6 +5,9 @@ void init_main_data(RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	md.size = cp.N;
 
+	cp.t_0 *= cp.prm_alpha;
+	cp.t_1 *= cp.prm_alpha;
+
 	md.T = cp.t_0 + cp.t_1;
 
 	md.step_t_0 = cp.t_0 / double(cp.num_steps_t_0);

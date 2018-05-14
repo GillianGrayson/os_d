@@ -4,7 +4,7 @@ cpp_path = '../../../cpp/os_jcs/os_jcs';
 
 alfa=5;
 
-N = 20; 
+N = 50; 
 a_std = zeros(N,N);
 for n=1:(N-1)
     a_std(n,n+1)=sqrt(n);

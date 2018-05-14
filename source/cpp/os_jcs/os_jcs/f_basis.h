@@ -137,8 +137,8 @@ void calc_Q_1(Model * m);
 void calcKs(Model *m);
 void calcRs(Model *m);
 crsMatrix* calcSubRs(Model *m, int start, int finish);
-void calc_G_0_s(Model *m);
-void calc_G_1_s(Model *m);
+void calc_G_0_s(Model *m, ConfigParam &cp);
+void calc_G_1_s(Model *m, ConfigParam &cp);
 
 void init_conditions(dcomplex *mtx, RunParam &rp, ConfigParam &cp, MainData &md);
 void initRhoODE(Model *m, RunParam &rp, ConfigParam &cp, MainData &md);

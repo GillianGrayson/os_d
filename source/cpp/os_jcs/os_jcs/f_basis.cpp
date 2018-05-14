@@ -1367,6 +1367,31 @@ crsMatrix * create_A1_diss1_matrix(Model * m, int diss_id, RunParam &rp, ConfigP
 
 	return a_std;
 }
+
+crsMatrix * create_A1_diss1_matrix_new(Model * m, int diss_id, RunParam &rp, ConfigParam &cp)
+{
+	int N = m->N;
+
+	crsMatrix * mat;
+
+	mat = new crsMatrix((N + 1), (N + 1));
+
+	int * RowIndex = mat->RowIndex;
+	int * Col = mat->Col;
+	dcomplex * Value = mat->Value;
+
+	for (int state_id_1 = 0; state_id_1 < N + 1; state_id_1++)
+	{
+		Col[state_id_1] = state_id_1;
+		RowIndex[state_id_1] = state_id_1;
+		Value[state_id_1].re = 0.0;
+		Value[state_id_1].im = 0.0;
+	}
+	RowIndex[N + 1] = N + 1;
+
+	return mat;
+}
+
 crsMatrix * create_A2_diss1_matrix(Model * m, int diss_id, RunParam &rp, ConfigParam &cp)
 {
 	int N = m->N;
@@ -1388,6 +1413,25 @@ crsMatrix * create_A2_diss1_matrix(Model * m, int diss_id, RunParam &rp, ConfigP
 	RowIndex[N + 1] = N + 1;
 
 	return mat;
+}
+
+crsMatrix * create_A2_diss1_matrix_new(Model * m, int diss_id, RunParam &rp, ConfigParam &cp)
+{
+	int N = m->N;
+
+	crsMatrix * a_mtx = new crsMatrix(N + 1, N);
+
+	for (int i = 0; i < N; i++)
+	{
+		a_mtx->RowIndex[i] = i;
+		a_mtx->Col[i] = i + 1;
+		a_mtx->Value[i].re = 0.0;
+		a_mtx->Value[i].im = -sqrt(double(i + 1));
+	}
+	a_mtx->RowIndex[N] = N;
+	a_mtx->RowIndex[N + 1] = N;
+
+	return a_mtx;
 }
 
 vector<pair<int, dcomplex> > * create_a_std_matrix(crsMatrix * a1_mat, crsMatrix * a2_mat, int N_mat)
@@ -3128,20 +3172,29 @@ crsMatrix* calcSubRs(Model *m, int start, int finish)
 	return Rs;
 }
 
-void calc_G_0_s(Model *m)
+void calc_G_0_s(Model *m, ConfigParam &cp)
 {
 	int N_mat = m->N_mat;
 	crsMatrix * G_0_s = new crsMatrix();
 
-	dcomplex sum;
-	sum.re = 1.0;
-	sum.im = 0.0;
+	crsMatrix * subSum = new crsMatrix();
 
-	SparseMKLAdd(*(m->Q_0), sum, *(m->Rs), *G_0_s);
+	dcomplex sum_0;
+	sum_0.re = cp.drv_ampl;
+	sum_0.im = 0.0;
+
+	dcomplex sum_1;
+	sum_1.re = 1.0;
+	sum_1.im = 0.0;
+
+	SparseMKLAdd(*(m->Q_0), sum_0, *(m->Q_1), *subSum);
+	SparseMKLAdd(*(subSum), sum_1, *(m->Rs), *G_0_s);
 
 	m->G_0_s = G_0_s;
+
+	delete subSum;
 }
-void calc_G_1_s(Model *m)
+void calc_G_1_s(Model *m, ConfigParam &cp)
 {
 	int N_mat = m->N_mat;
 	crsMatrix * G_1_s = new crsMatrix();
@@ -3150,7 +3203,7 @@ void calc_G_1_s(Model *m)
 	sum.re = 1.0;
 	sum.im = 0.0;
 
-	SparseMKLAdd(*(m->Q_1), sum, *(m->Rs), *G_1_s);
+	SparseMKLAdd(*(m->Q_0), sum, *(m->Rs), *G_1_s);
 
 	m->G_1_s = G_1_s;
 }
@@ -3858,7 +3911,7 @@ void f_basis_init(Model* model, RunParam &rp, ConfigParam &cp, MainData &md)
 		save_sparse_complex_mtx(fn, model->Rs, 16, false);
 	}
 
-	calc_G_0_s(model);
+	calc_G_0_s(model, cp);
 	time = omp_get_wtime() - init_time;
 	cout << "time of calc_G_0_s: " << time << endl << endl;
 
@@ -3868,7 +3921,7 @@ void f_basis_init(Model* model, RunParam &rp, ConfigParam &cp, MainData &md)
 		save_sparse_complex_mtx(fn, model->G_0_s, 16, false);
 	}
 
-	calc_G_1_s(model);
+	calc_G_1_s(model, cp);
 	time = omp_get_wtime() - init_time;
 	cout << "time of calc_G_1_s: " << time << endl << endl;
 

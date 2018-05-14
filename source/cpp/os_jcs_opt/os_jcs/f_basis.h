@@ -118,8 +118,8 @@ void calc_Q_1(Model * m);
 
 void calcKs(Model *m);
 void calcRs(Model *m);
-void calc_G_0_s(Model *m);
-void calc_G_1_s(Model *m);
+void calc_G_0_s(Model *m, ConfigParam &cp);
+void calc_G_1_s(Model *m, ConfigParam &cp);
 
 void multMatVec(crsMatrix *mat, double * x, double * res);
 void multMatVec_complex(crsMatrix *mat, dcomplex * x, dcomplex * res);
