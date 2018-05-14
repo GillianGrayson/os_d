@@ -25,12 +25,12 @@ struct PropData
 	double * deep_evals;
 	MKL_Complex16 * deep_avg_rho;
 
-	dcomplex * k1;
-	dcomplex * k2;
-	dcomplex * k3;
-	dcomplex * k4;
-	dcomplex * val;
-	dcomplex * tmp;
+	double * k1;
+	double * k2;
+	double * k3;
+	double * k4;
+	double * val;
+	double * tmp;
 };
 
 void f_basis_prop_std(RunParam &rp, ConfigParam &cp, MainData &md);

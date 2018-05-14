@@ -8,2787 +8,6 @@
 #define IndJ(i, j) ((int)(((N - 1) + (N - i))/2.0 * (i) + (j - i - 1)) * 2 + 1)
 #define IndD(l)    (N * (N-1) + l - 1)
 
-ulli max_bit(ulli * mas, unsigned int n)
-{
-	ulli mask = 0;
-
-	for (unsigned int i = 0; i < n; i++)
-	{
-		mask |= mas[i];
-	}
-
-	ulli res = 1;
-	mask = mask >> 1;
-
-	while (res < mask)
-	{
-		res = res << 1;
-	}
-
-	return res;
-}
-inline void swap(Tensor_Coordinates  * mas, unsigned int i, unsigned int j)
-{
-	ulli tmp_ulli = mas->hash[i];
-	mas->hash[i] = mas->hash[j];
-	mas->hash[j] = tmp_ulli;
-
-	unsigned int tmp_ui = mas->coord1[i];
-	mas->coord1[i] = mas->coord1[j];
-	mas->coord1[j] = tmp_ui;
-
-	tmp_ui = mas->coord2[i];
-	mas->coord2[i] = mas->coord2[j];
-	mas->coord2[j] = tmp_ui;
-
-	tmp_ui = mas->coord3[i];
-	mas->coord3[i] = mas->coord3[j];
-	mas->coord3[j] = tmp_ui;
-
-	dcomplex tmp_mklc = mas->data[i];
-	mas->data[i] = mas->data[j];
-	mas->data[j] = tmp_mklc;
-}
-void msd_sort(Tensor_Coordinates * mas, unsigned int from, unsigned int to, ulli bit, int threads_level)
-{
-	if (!bit || to < from + 1) return;
-
-	unsigned int left = from, right = to - 1;
-
-	while (true) {
-
-		while (left < right && !(mas->hash[left] & bit)) left++;
-
-		while (left < right && (mas->hash[right] & bit)) right--;
-
-		if (left >= right)
-			break;
-		else
-			swap(mas, left, right);
-	}
-
-	if (!(bit & mas->hash[left]) && left < to) left++;
-
-	bit >>= 1;
-	if (threads_level == 0)
-	{
-		msd_sort(mas, from, left, bit, threads_level);
-		msd_sort(mas, left, to, bit, threads_level);
-	}
-	else
-	{
-		threads_level = threads_level - 1;
-#pragma omp parallel
-#pragma omp single nowait
-		{
-#pragma omp task
-			{
-				msd_sort(mas, from, left, bit, threads_level);
-			}
-#pragma omp task
-			{
-				msd_sort(mas, left, to, bit, threads_level);
-			}
-		}
-	}
-}
-void sort_matrix(Tensor_Coordinates * matrix)
-{
-	unsigned int threads_level = 0;
-	ulli bit = max_bit(matrix->hash, matrix->k);
-
-	msd_sort(matrix, 0, matrix->k, bit, threads_level);
-}
-
-Tensor_Coordinates * create_matrix(int NZ)
-{
-	Tensor_Coordinates * matrix = new Tensor_Coordinates;
-	matrix->data = new dcomplex[NZ];
-	matrix->coord1 = new unsigned int[NZ];
-	matrix->coord2 = new unsigned int[NZ];
-	matrix->coord3 = new unsigned int[NZ];
-	matrix->hash = new unsigned long long int[NZ];
-	matrix->k = NZ;
-	return matrix;
-}
-void free_matrix(Tensor_Coordinates * matrix)
-{
-	delete[](matrix->data);
-	delete[](matrix->coord1);
-	delete[](matrix->coord2);
-	delete[](matrix->coord3);
-	delete[](matrix->hash);
-	matrix->k = 0;
-}
-
-void fijk_coord(Tensor_Coordinates * f_ijk, int N)
-{
-	unsigned int size = 5 * N * N * N - 9 * N * N - 2 * N + 6;
-	double tmp = 0.0;
-	f_ijk->data = new dcomplex[size];
-	memset(f_ijk->data, 0, size * sizeof(dcomplex));
-	f_ijk->coord1 = new unsigned int[size];
-	memset(f_ijk->coord1, 0, size * sizeof(unsigned int));
-	f_ijk->coord2 = new unsigned int[size];
-	memset(f_ijk->coord2, 0, size * sizeof(unsigned int));
-	f_ijk->coord3 = new unsigned int[size];
-	memset(f_ijk->coord3, 0, size * sizeof(unsigned int));
-	f_ijk->hash = new ulli[size];
-	memset(f_ijk->hash, 0, size * sizeof(unsigned int));
-	f_ijk->k = 0;
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			f_ijk->data[f_ijk->k].re = (i) / sqrt((double)(i) * (i + 1));
-			f_ijk->coord1[f_ijk->k] = IndD(i);
-			f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord3[f_ijk->k] = IndS(i, j);
-			f_ijk->hash[f_ijk->k] = IND(IndD(i), IndJ(i, j), IndS(i, j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			f_ijk->coord1[f_ijk->k] = IndD(i);
-			f_ijk->coord2[f_ijk->k] = IndS(i, j);
-			f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-			f_ijk->hash[f_ijk->k] = IND(IndD(i), IndS(i, j), IndJ(i, j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord2[f_ijk->k] = IndD(i);
-			f_ijk->coord3[f_ijk->k] = IndS(i, j);
-			f_ijk->hash[f_ijk->k] = IND(IndJ(i, j), IndD(i), IndS(i, j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = (i) / sqrt((double)(i) * (i + 1));
-			f_ijk->coord1[f_ijk->k] = IndS(i, j);
-			f_ijk->coord2[f_ijk->k] = IndD(i);
-			f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-			f_ijk->hash[f_ijk->k] = IND(IndS(i, j), IndD(i), IndJ(i, j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = (i) / sqrt((double)(i) * (i + 1));
-			f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord2[f_ijk->k] = IndS(i, j);
-			f_ijk->coord3[f_ijk->k] = IndD(i);
-			f_ijk->hash[f_ijk->k] = IND(IndJ(i, j), IndS(i, j), IndD(i));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			f_ijk->coord1[f_ijk->k] = IndS(i, j);
-			f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord3[f_ijk->k] = IndD(i);
-			f_ijk->hash[f_ijk->k] = IND(IndS(i, j), IndJ(i, j), IndD(i));
-			f_ijk->k++;
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int m = i + 1; m < j; m++)
-			{
-				f_ijk->data[f_ijk->k].re = -1.0 / sqrt((double)(m) * (m + 1));
-				f_ijk->coord1[f_ijk->k] = IndD(m);
-				f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-				f_ijk->coord3[f_ijk->k] = IndS(i, j);
-				f_ijk->hash[f_ijk->k] = IND(IndD(m), IndJ(i, j), IndS(i, j));
-				f_ijk->k++;
-
-				f_ijk->data[f_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				f_ijk->coord1[f_ijk->k] = IndD(m);
-				f_ijk->coord2[f_ijk->k] = IndS(i, j);
-				f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-				f_ijk->hash[f_ijk->k] = IND(IndD(m), IndS(i, j), IndJ(i, j));
-				f_ijk->k++;
-
-				f_ijk->data[f_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-				f_ijk->coord2[f_ijk->k] = IndD(m);
-				f_ijk->coord3[f_ijk->k] = IndS(i, j);
-				f_ijk->hash[f_ijk->k] = IND(IndJ(i, j), IndD(m), IndS(i, j));
-				f_ijk->k++;
-
-				f_ijk->data[f_ijk->k].re = -1.0 / sqrt((double)(m) * (m + 1));
-				f_ijk->coord1[f_ijk->k] = IndS(i, j);
-				f_ijk->coord2[f_ijk->k] = IndD(m);
-				f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-				f_ijk->hash[f_ijk->k] = IND(IndS(i, j), IndD(m), IndJ(i, j));
-				f_ijk->k++;
-
-				f_ijk->data[f_ijk->k].re = -1.0 / sqrt((double)(m) * (m + 1));
-				f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-				f_ijk->coord2[f_ijk->k] = IndS(i, j);
-				f_ijk->coord3[f_ijk->k] = IndD(m);
-				f_ijk->hash[f_ijk->k] = IND(IndJ(i, j), IndS(i, j), IndD(m));
-				f_ijk->k++;
-
-				f_ijk->data[f_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				f_ijk->coord1[f_ijk->k] = IndS(i, j);
-				f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-				f_ijk->coord3[f_ijk->k] = IndD(m);
-				f_ijk->hash[f_ijk->k] = IND(IndS(i, j), IndJ(i, j), IndD(m));
-				f_ijk->k++;
-			}
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			f_ijk->data[f_ijk->k].re = -(1 + j) / sqrt((double)(j) * (j + 1));
-			f_ijk->coord1[f_ijk->k] = IndD(j);
-			f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord3[f_ijk->k] = IndS(i, j);
-			f_ijk->hash[f_ijk->k] = IND(IndD(j), IndJ(i, j), IndS(i, j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = (1 + j) / sqrt((double)(j) * (j + 1));
-			f_ijk->coord1[f_ijk->k] = IndD(j);
-			f_ijk->coord2[f_ijk->k] = IndS(i, j);
-			f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-			f_ijk->hash[f_ijk->k] = IND(IndD(j), IndS(i, j), IndJ(i, j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = (1 + j) / sqrt((double)(j) * (j + 1));
-			f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord2[f_ijk->k] = IndD(j);
-			f_ijk->coord3[f_ijk->k] = IndS(i, j);
-			f_ijk->hash[f_ijk->k] = IND(IndJ(i, j), IndD(j), IndS(i, j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = -(1 + j) / sqrt((double)(j) * (j + 1));
-			f_ijk->coord1[f_ijk->k] = IndS(i, j);
-			f_ijk->coord2[f_ijk->k] = IndD(j);
-			f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-			f_ijk->hash[f_ijk->k] = IND(IndS(i, j), IndD(j), IndJ(i, j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = -(1 + j) / sqrt((double)(j) * (j + 1));
-			f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord2[f_ijk->k] = IndS(i, j);
-			f_ijk->coord3[f_ijk->k] = IndD(j);
-			f_ijk->hash[f_ijk->k] = IND(IndJ(i, j), IndS(i, j), IndD(j));
-			f_ijk->k++;
-
-			f_ijk->data[f_ijk->k].re = (1 + j) / sqrt((double)(j) * (j + 1));
-			f_ijk->coord1[f_ijk->k] = IndS(i, j);
-			f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord3[f_ijk->k] = IndD(j);
-			f_ijk->hash[f_ijk->k] = IND(IndS(i, j), IndJ(i, j), IndD(j));
-			f_ijk->k++;
-		}
-	}
-
-	for (int i = 0; i < N - 1; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int k = 0; k < N; k++)
-			{
-				if (k > j)
-				{
-					if (k > i)
-					{
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0); //-i*Jjk*[Sij,Sik]  //and symmetric Ski, Jkj
-						f_ijk->coord1[f_ijk->k] = IndJ(j, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(i, k);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(j, k), IndS(i, j), IndS(i, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0); //-i*Jik*[Sij,Sjk]  //and symmetric Skj, Jki
-						f_ijk->coord1[f_ijk->k] = IndJ(i, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(j, k);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(i, k), IndS(i, j), IndS(j, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0); //-i*Sjk*[Sij,Jik]  //and symmetric Skj, Jki
-						f_ijk->coord1[f_ijk->k] = IndS(j, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(i, k);
-						f_ijk->hash[f_ijk->k] = IND(IndS(j, k), IndS(i, j), IndJ(i, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0); //-i*Sik*[Sij,Jjk]  //and symmetric Ski, Jkj
-						f_ijk->coord1[f_ijk->k] = IndS(i, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(j, k);
-						f_ijk->hash[f_ijk->k] = IND(IndS(i, k), IndS(i, j), IndJ(j, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0); //-i*Sjk*[Jij,Sik]  //and symmetric Ski, Skj
-						f_ijk->coord1[f_ijk->k] = IndS(j, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(i, k);
-						f_ijk->hash[f_ijk->k] = IND(IndS(j, k), IndJ(i, j), IndS(i, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0); //-i*Sik*[Jij,Sjk]  //and symmetric Skj, Ski
-						f_ijk->coord1[f_ijk->k] = IndS(i, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(j, k);
-						f_ijk->hash[f_ijk->k] = IND(IndS(i, k), IndJ(i, j), IndS(j, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0); //-i*Jjk*[Jij,Jik]  //and symmetric Jkj, Jki
-						f_ijk->coord1[f_ijk->k] = IndJ(j, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(i, k);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(j, k), IndJ(i, j), IndJ(i, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0); //-i*Jik*[Jij,Jjk]  //and symmetric Jki, Jkj
-						f_ijk->coord1[f_ijk->k] = IndJ(i, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(j, k);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(i, k), IndJ(i, j), IndJ(j, k));
-						f_ijk->k++;
-					}
-				}
-				if (k < j)
-				{
-					if (k > i)
-					{
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndJ(k, j);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(i, k);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(k, j), IndS(i, j), IndS(i, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndJ(i, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, j);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(i, k), IndS(i, j), IndS(k, j));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndS(k, j);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(i, k);
-						f_ijk->hash[f_ijk->k] = IND(IndS(k, j), IndS(i, j), IndJ(i, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndS(i, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, j);
-						f_ijk->hash[f_ijk->k] = IND(IndS(i, k), IndS(i, j), IndJ(k, j));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndS(k, j);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(i, k);
-						f_ijk->hash[f_ijk->k] = IND(IndS(k, j), IndJ(i, j), IndS(i, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndS(i, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, j);
-						f_ijk->hash[f_ijk->k] = IND(IndS(i, k), IndJ(i, j), IndS(k, j));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndJ(k, j);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(i, k);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(k, j), IndJ(i, j), IndJ(i, k));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndJ(i, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, j);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(i, k), IndJ(i, j), IndJ(k, j));
-						f_ijk->k++;
-					}
-					if (k < i)
-					{
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndJ(k, j);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, i);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(k, j), IndS(i, j), IndS(k, i));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndJ(k, i);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, j);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(k, i), IndS(i, j), IndS(k, j));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndS(k, j);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, i);
-						f_ijk->hash[f_ijk->k] = IND(IndS(k, j), IndS(i, j), IndJ(k, i));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndS(k, i);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, j);
-						f_ijk->hash[f_ijk->k] = IND(IndS(k, i), IndS(i, j), IndJ(k, j));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndS(k, j);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, i);
-						f_ijk->hash[f_ijk->k] = IND(IndS(k, j), IndJ(i, j), IndS(k, i));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndS(k, i);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, j);
-						f_ijk->hash[f_ijk->k] = IND(IndS(k, i), IndJ(i, j), IndS(k, j));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndJ(k, j);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, i);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(k, j), IndJ(i, j), IndJ(k, i));
-						f_ijk->k++;
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						f_ijk->coord1[f_ijk->k] = IndJ(k, i);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, j);
-						f_ijk->hash[f_ijk->k] = IND(IndJ(k, i), IndJ(i, j), IndJ(k, j));
-						f_ijk->k++;
-					}
-				}
-			}
-		}
-	}
-}
-void dijk_coord(Tensor_Coordinates * d_ijk, int N)
-{
-	unsigned int size = 6 * N * N * N - (N * (21 * N + 7)) / 2 + 1;
-	d_ijk->data = new dcomplex[size];
-	memset(d_ijk->data, 0, size * sizeof(dcomplex));
-	d_ijk->coord1 = new unsigned int[size];
-	memset(d_ijk->coord1, 0, size * sizeof(unsigned int));
-	d_ijk->coord2 = new unsigned int[size];
-	memset(d_ijk->coord2, 0, size * sizeof(unsigned int));
-	d_ijk->coord3 = new unsigned int[size];
-	memset(d_ijk->coord3, 0, size * sizeof(unsigned int));
-	d_ijk->hash = new ulli[size];
-	memset(d_ijk->hash, 0, size * sizeof(unsigned int));
-	d_ijk->k = 0;
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			d_ijk->coord1[d_ijk->k] = IndD(i);
-			d_ijk->coord2[d_ijk->k] = IndS(i, j);
-			d_ijk->coord3[d_ijk->k] = IndS(i, j);
-			d_ijk->hash[d_ijk->k] = IND(IndD(i), IndS(i, j), IndS(i, j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			d_ijk->coord1[d_ijk->k] = IndS(i, j);
-			d_ijk->coord2[d_ijk->k] = IndD(i);
-			d_ijk->coord3[d_ijk->k] = IndS(i, j);
-			d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndD(i), IndS(i, j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			d_ijk->coord1[d_ijk->k] = IndD(i);
-			d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-			d_ijk->hash[d_ijk->k] = IND(IndD(i), IndJ(i, j), IndJ(i, j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord2[d_ijk->k] = IndD(i);
-			d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-			d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndD(i), IndJ(i, j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			d_ijk->coord1[d_ijk->k] = IndS(i, j);
-			d_ijk->coord2[d_ijk->k] = IndS(i, j);
-			d_ijk->coord3[d_ijk->k] = IndD(i);
-			d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndS(i, j), IndD(i));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i) * (i + 1));
-			d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord3[d_ijk->k] = IndD(i);
-			d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndJ(i, j), IndD(i));
-			d_ijk->k++;
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int m = i + 1; m < j; m++)
-			{
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				d_ijk->coord1[d_ijk->k] = IndD(m);
-				d_ijk->coord2[d_ijk->k] = IndS(i, j);
-				d_ijk->coord3[d_ijk->k] = IndS(i, j);
-				d_ijk->hash[d_ijk->k] = IND(IndD(m), IndS(i, j), IndS(i, j));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				d_ijk->coord1[d_ijk->k] = IndS(i, j);
-				d_ijk->coord2[d_ijk->k] = IndD(m);
-				d_ijk->coord3[d_ijk->k] = IndS(i, j);
-				d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndD(m), IndS(i, j));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				d_ijk->coord1[d_ijk->k] = IndD(m);
-				d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-				d_ijk->hash[d_ijk->k] = IND(IndD(m), IndJ(i, j), IndJ(i, j));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord2[d_ijk->k] = IndD(m);
-				d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-				d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndD(m), IndJ(i, j));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				d_ijk->coord1[d_ijk->k] = IndS(i, j);
-				d_ijk->coord2[d_ijk->k] = IndS(i, j);
-				d_ijk->coord3[d_ijk->k] = IndD(m);
-				d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndS(i, j), IndD(m));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m) * (m + 1));
-				d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord3[d_ijk->k] = IndD(m);
-				d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndJ(i, j), IndD(m));
-				d_ijk->k++;
-			}
-		}
-	}
-
-	for (int j = 2; j < N; j++)
-	{
-		int i = 0;
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndD(j);
-		d_ijk->coord2[d_ijk->k] = IndS(i, j);
-		d_ijk->coord3[d_ijk->k] = IndS(i, j);
-		d_ijk->hash[d_ijk->k] = IND(IndD(j), IndS(i, j), IndS(i, j));
-		d_ijk->k++;
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndS(i, j);
-		d_ijk->coord2[d_ijk->k] = IndD(j);
-		d_ijk->coord3[d_ijk->k] = IndS(i, j);
-		d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndD(j), IndS(i, j));
-		d_ijk->k++;
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndD(j);
-		d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-		d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-		d_ijk->hash[d_ijk->k] = IND(IndD(j), IndJ(i, j), IndJ(i, j));
-		d_ijk->k++;
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-		d_ijk->coord2[d_ijk->k] = IndD(j);
-		d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-		d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndD(j), IndJ(i, j));
-		d_ijk->k++;
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndS(i, j);
-		d_ijk->coord2[d_ijk->k] = IndS(i, j);
-		d_ijk->coord3[d_ijk->k] = IndD(j);
-		d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndS(i, j), IndD(j));
-		d_ijk->k++;
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-		d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-		d_ijk->coord3[d_ijk->k] = IndD(j);
-		d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndJ(i, j), IndD(j));
-		d_ijk->k++;
-	}
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndD(j);
-			d_ijk->coord2[d_ijk->k] = IndS(i, j);
-			d_ijk->coord3[d_ijk->k] = IndS(i, j);
-			d_ijk->hash[d_ijk->k] = IND(IndD(j), IndS(i, j), IndS(i, j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndS(i, j);
-			d_ijk->coord2[d_ijk->k] = IndD(j);
-			d_ijk->coord3[d_ijk->k] = IndS(i, j);
-			d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndD(j), IndS(i, j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndD(j);
-			d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-			d_ijk->hash[d_ijk->k] = IND(IndD(j), IndJ(i, j), IndJ(i, j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord2[d_ijk->k] = IndD(j);
-			d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-			d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndD(j), IndJ(i, j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndS(i, j);
-			d_ijk->coord2[d_ijk->k] = IndS(i, j);
-			d_ijk->coord3[d_ijk->k] = IndD(j);
-			d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndS(i, j), IndD(j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord3[d_ijk->k] = IndD(j);
-			d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndJ(i, j), IndD(j));
-			d_ijk->k++;
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int z = j + 1; z < N; z++)
-			{
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z) * (z + 1));
-				d_ijk->coord1[d_ijk->k] = IndD(z);
-				d_ijk->coord2[d_ijk->k] = IndS(i, j);
-				d_ijk->coord3[d_ijk->k] = IndS(i, j);
-				d_ijk->hash[d_ijk->k] = IND(IndD(z), IndS(i, j), IndS(i, j));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z) * (z + 1));
-				d_ijk->coord1[d_ijk->k] = IndS(i, j);
-				d_ijk->coord2[d_ijk->k] = IndD(z);
-				d_ijk->coord3[d_ijk->k] = IndS(i, j);
-				d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndD(z), IndS(i, j));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z) * (z + 1));
-				d_ijk->coord1[d_ijk->k] = IndD(z);
-				d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-				d_ijk->hash[d_ijk->k] = IND(IndD(z), IndJ(i, j), IndJ(i, j));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z) * (z + 1));
-				d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord2[d_ijk->k] = IndD(z);
-				d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-				d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndD(z), IndJ(i, j));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z) * (z + 1));
-				d_ijk->coord1[d_ijk->k] = IndS(i, j);
-				d_ijk->coord2[d_ijk->k] = IndS(i, j);
-				d_ijk->coord3[d_ijk->k] = IndD(z);
-				d_ijk->hash[d_ijk->k] = IND(IndS(i, j), IndS(i, j), IndD(z));
-				d_ijk->k++;
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z) * (z + 1));
-				d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord3[d_ijk->k] = IndD(z);
-				d_ijk->hash[d_ijk->k] = IND(IndJ(i, j), IndJ(i, j), IndD(z));
-				d_ijk->k++;
-			}
-		}
-	}
-
-	for (int i = 0; i < N - 1; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int k = 0; k < N; k++)
-			{
-				if (k > j)
-				{
-					if (k > i)
-					{
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Sjk*{Sij,Sik}  //and symmetric Ski, Skj
-						d_ijk->coord1[d_ijk->k] = IndS(j, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(i, k);
-						d_ijk->hash[d_ijk->k] = IND(IndS(j, k), IndS(i, j), IndS(i, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Sik*{Sij,Sjk}  //and symmetric Skj, Ski
-						d_ijk->coord1[d_ijk->k] = IndS(i, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(j, k);
-						d_ijk->hash[d_ijk->k] = IND(IndS(i, k), IndS(i, j), IndS(j, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Jjk*{Sij,Jik}  //and symmetric Jkj, Jki
-						d_ijk->coord1[d_ijk->k] = IndJ(j, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(i, k);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(j, k), IndS(i, j), IndJ(i, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Jik*{Sij,Jjk}  //and symmetric Jki, Jkj
-						d_ijk->coord1[d_ijk->k] = IndJ(i, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(j, k);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(i, k), IndS(i, j), IndJ(j, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);  //Jjk*{Jij,Sik}  //and symmetric Ski, Jkj
-						d_ijk->coord1[d_ijk->k] = IndJ(j, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(i, k);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(j, k), IndJ(i, j), IndS(i, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Jik*{Jij,Sjk}  //and symmetric Skj, Jki
-						d_ijk->coord1[d_ijk->k] = IndJ(i, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(j, k);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(i, k), IndJ(i, j), IndS(j, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Sjk*{Jij,Jik}  //and symmetric Skj, Jki
-						d_ijk->coord1[d_ijk->k] = IndS(j, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(i, k);
-						d_ijk->hash[d_ijk->k] = IND(IndS(j, k), IndJ(i, j), IndJ(i, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);  //Sik*{Jij,Jjk}  //and symmetric Ski, Jkj
-						d_ijk->coord1[d_ijk->k] = IndS(i, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(j, k);
-						d_ijk->hash[d_ijk->k] = IND(IndS(i, k), IndJ(i, j), IndJ(j, k));
-						d_ijk->k++;
-					}
-				}
-				if (k < j)
-				{
-					if (k > i)
-					{
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndS(k, j);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(i, k);
-						d_ijk->hash[d_ijk->k] = IND(IndS(k, j), IndS(i, j), IndS(i, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndS(i, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, j);
-						d_ijk->hash[d_ijk->k] = IND(IndS(i, k), IndS(i, j), IndS(k, j));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndJ(k, j);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(i, k);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(k, j), IndS(i, j), IndJ(i, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndJ(i, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, j);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(i, k), IndS(i, j), IndJ(k, j));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndJ(k, j);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(i, k);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(k, j), IndJ(i, j), IndS(i, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndJ(i, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, j);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(i, k), IndJ(i, j), IndS(k, j));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndS(k, j);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(i, k);
-						d_ijk->hash[d_ijk->k] = IND(IndS(k, j), IndJ(i, j), IndJ(i, k));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndS(i, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, j);
-						d_ijk->hash[d_ijk->k] = IND(IndS(i, k), IndJ(i, j), IndJ(k, j));
-						d_ijk->k++;
-					}
-					if (k < i)
-					{
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndS(k, j);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, i);
-						d_ijk->hash[d_ijk->k] = IND(IndS(k, j), IndS(i, j), IndS(k, i));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndS(k, i);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, j);
-						d_ijk->hash[d_ijk->k] = IND(IndS(k, i), IndS(i, j), IndS(k, j));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndJ(k, j);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, i);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(k, j), IndS(i, j), IndJ(k, i));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndJ(k, i);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, j);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(k, i), IndS(i, j), IndJ(k, j));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndJ(k, j);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, i);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(k, j), IndJ(i, j), IndS(k, i));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndJ(k, i);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, j);
-						d_ijk->hash[d_ijk->k] = IND(IndJ(k, i), IndJ(i, j), IndS(k, j));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndS(k, j);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, i);
-						d_ijk->hash[d_ijk->k] = IND(IndS(k, j), IndJ(i, j), IndJ(k, i));
-						d_ijk->k++;
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						d_ijk->coord1[d_ijk->k] = IndS(k, i);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, j);
-						d_ijk->hash[d_ijk->k] = IND(IndS(k, i), IndJ(i, j), IndJ(k, j));
-						d_ijk->k++;
-					}
-				}
-			}
-		}
-	}
-
-
-	for (int j = 2; j < N; j++)
-	{
-		int i = 1;
-		d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndD(j);
-		d_ijk->coord2[d_ijk->k] = IndD(i);
-		d_ijk->coord3[d_ijk->k] = IndD(i);
-		d_ijk->hash[d_ijk->k] = IND(IndD(j), IndD(i), IndD(i));
-		d_ijk->k++;
-
-		d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndD(i);
-		d_ijk->coord2[d_ijk->k] = IndD(i);
-		d_ijk->coord3[d_ijk->k] = IndD(j);
-		d_ijk->hash[d_ijk->k] = IND(IndD(i), IndD(i), IndD(j));
-		d_ijk->k++;
-
-		d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j) * (j + 1));
-		d_ijk->coord1[d_ijk->k] = IndD(i);
-		d_ijk->coord2[d_ijk->k] = IndD(j);
-		d_ijk->coord3[d_ijk->k] = IndD(i);
-		d_ijk->hash[d_ijk->k] = IND(IndD(i), IndD(j), IndD(i));
-		d_ijk->k++;
-	}
-
-	for (int i = 2; i < N; i++)
-	{
-		d_ijk->data[d_ijk->k].re = 2.0 * (1 - i) / sqrt((double)(i) * (i + 1));
-		d_ijk->coord1[d_ijk->k] = IndD(i);
-		d_ijk->coord2[d_ijk->k] = IndD(i);
-		d_ijk->coord3[d_ijk->k] = IndD(i);
-		d_ijk->hash[d_ijk->k] = IND(IndD(i), IndD(i), IndD(i));
-		d_ijk->k++;
-
-		for (int j = i + 1; j < N; j++)
-		{
-			d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndD(j);
-			d_ijk->coord2[d_ijk->k] = IndD(i);
-			d_ijk->coord3[d_ijk->k] = IndD(i);
-			d_ijk->hash[d_ijk->k] = IND(IndD(j), IndD(i), IndD(i));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndD(i);
-			d_ijk->coord2[d_ijk->k] = IndD(i);
-			d_ijk->coord3[d_ijk->k] = IndD(j);
-			d_ijk->hash[d_ijk->k] = IND(IndD(i), IndD(i), IndD(j));
-			d_ijk->k++;
-
-			d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j) * (j + 1));
-			d_ijk->coord1[d_ijk->k] = IndD(i);
-			d_ijk->coord2[d_ijk->k] = IndD(j);
-			d_ijk->coord3[d_ijk->k] = IndD(i);
-			d_ijk->hash[d_ijk->k] = IND(IndD(i), IndD(j), IndD(i));
-			d_ijk->k++;
-		}
-	}
-}
-
-ulli fijk_coord_sym(crsMatrix *sel, int N)
-{
-	ulli cnt = 0, ind;
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			ind = IndD(i);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndD(i);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndJ(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndS(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndJ(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndS(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int m = i + 1; m < j; m++)
-			{
-				ind = IndD(m);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndD(m);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndJ(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndS(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndJ(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndS(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-			}
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			ind = IndD(j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndD(j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndJ(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndS(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndJ(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndS(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-
-	for (int i = 0; i < N - 1; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int k = 0; k < N; k++)
-			{
-				if (k > j)
-				{
-					if (k > i)
-					{
-						ind = IndJ(j, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(j, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(j, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(j, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-				}
-				if (k < j)
-				{
-					if (k > i)
-					{
-						ind = IndJ(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-					if (k < i)
-					{
-						ind = IndJ(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, i);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, i);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, i);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, i);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-				}
-			}
-		}
-	}
-	return cnt;
-}
-ulli dijk_coord_sym(crsMatrix *sel, int N)
-{
-	ulli cnt = 0, ind;
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			ind = IndD(i);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndS(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndD(i);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndJ(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndS(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndJ(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int m = i + 1; m < j; m++)
-			{
-				ind = IndD(m);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndS(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndD(m);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndJ(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndS(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndJ(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-			}
-		}
-	}
-
-	for (int j = 2; j < N; j++)
-	{
-		int i = 0;
-		ind = IndD(j);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		ind = IndS(i, j);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		ind = IndD(j);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		ind = IndJ(i, j);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		ind = IndS(i, j);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		ind = IndJ(i, j);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-	}
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			ind = IndD(j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndS(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndD(j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndJ(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndS(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndJ(i, j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int z = j + 1; z < N; z++)
-			{
-				ind = IndD(z);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndS(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndD(z);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndJ(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndS(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				ind = IndJ(i, j);
-				cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-			}
-		}
-	}
-
-	for (int i = 0; i < N - 1; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int k = 0; k < N; k++)
-			{
-				if (k > j)
-				{
-					if (k > i)
-					{
-						ind = IndS(j, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(j, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(j, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(j, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-				}
-				if (k < j)
-				{
-					if (k > i)
-					{
-						ind = IndS(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(i, k);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-					if (k < i)
-					{
-						ind = IndS(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, i);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, i);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndJ(k, i);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, j);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						ind = IndS(k, i);
-						cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-				}
-			}
-		}
-	}
-
-
-	for (int j = 2; j < N; j++)
-	{
-		int i = 1;
-		ind = IndD(j);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		ind = IndD(i);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		ind = IndD(i);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-	}
-
-	for (int i = 2; i < N; i++)
-	{
-		ind = IndD(i);
-		cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		for (int j = i + 1; j < N; j++)
-		{
-			ind = IndD(j);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndD(i);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			ind = IndD(i);
-			cnt += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-	return cnt;
-}
-
-void fijk_coord_ch(Tensor_Coordinates * f_ijk, crsMatrix *sel, ulli NZ, int N)
-{
-	ulli ind;
-	ulli size = NZ + 1;
-	ulli step1 = N*N;
-	ulli step2 = step1 * step1;
-
-	double tmp = 0.0;
-	f_ijk->data = new dcomplex[size];
-	memset(f_ijk->data, 0, size * sizeof(dcomplex));
-	f_ijk->coord1 = new unsigned int[size];
-	memset(f_ijk->coord1, 0, size * sizeof(unsigned int));
-	f_ijk->coord2 = new unsigned int[size];
-	memset(f_ijk->coord2, 0, size * sizeof(unsigned int));
-	f_ijk->coord3 = new unsigned int[size];
-	memset(f_ijk->coord3, 0, size * sizeof(unsigned int));
-	f_ijk->hash = new ulli[size];
-	memset(f_ijk->hash, 0, size * sizeof(unsigned int));
-	f_ijk->k = 0;
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			f_ijk->data[f_ijk->k].re = (i) / sqrt((double)(i)* (i + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndD(i);
-			f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord3[f_ijk->k] = IndS(i, j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndD(i);
-			f_ijk->coord2[f_ijk->k] = IndS(i, j);
-			f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord2[f_ijk->k] = IndD(i);
-			f_ijk->coord3[f_ijk->k] = IndS(i, j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = (i) / sqrt((double)(i)* (i + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndS(i, j);
-			f_ijk->coord2[f_ijk->k] = IndD(i);
-			f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = (i) / sqrt((double)(i)* (i + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord2[f_ijk->k] = IndS(i, j);
-			f_ijk->coord3[f_ijk->k] = IndD(i);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndS(i, j);
-			f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord3[f_ijk->k] = IndD(i);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int m = i + 1; m < j; m++)
-			{
-				f_ijk->data[f_ijk->k].re = -1.0 / sqrt((double)(m)* (m + 1));
-				ind = f_ijk->coord1[f_ijk->k] = IndD(m);
-				f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-				f_ijk->coord3[f_ijk->k] = IndS(i, j);
-				f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-				f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				f_ijk->data[f_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = f_ijk->coord1[f_ijk->k] = IndD(m);
-				f_ijk->coord2[f_ijk->k] = IndS(i, j);
-				f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-				f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-				f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				f_ijk->data[f_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-				f_ijk->coord2[f_ijk->k] = IndD(m);
-				f_ijk->coord3[f_ijk->k] = IndS(i, j);
-				f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-				f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				f_ijk->data[f_ijk->k].re = -1.0 / sqrt((double)(m)* (m + 1));
-				ind = f_ijk->coord1[f_ijk->k] = IndS(i, j);
-				f_ijk->coord2[f_ijk->k] = IndD(m);
-				f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-				f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-				f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				f_ijk->data[f_ijk->k].re = -1.0 / sqrt((double)(m)* (m + 1));
-				ind = f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-				f_ijk->coord2[f_ijk->k] = IndS(i, j);
-				f_ijk->coord3[f_ijk->k] = IndD(m);
-				f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-				f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				f_ijk->data[f_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = f_ijk->coord1[f_ijk->k] = IndS(i, j);
-				f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-				f_ijk->coord3[f_ijk->k] = IndD(m);
-				f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-				f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-			}
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			f_ijk->data[f_ijk->k].re = -(1 + j) / sqrt((double)(j)* (j + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndD(j);
-			f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord3[f_ijk->k] = IndS(i, j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = (1 + j) / sqrt((double)(j)* (j + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndD(j);
-			f_ijk->coord2[f_ijk->k] = IndS(i, j);
-			f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = (1 + j) / sqrt((double)(j)* (j + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord2[f_ijk->k] = IndD(j);
-			f_ijk->coord3[f_ijk->k] = IndS(i, j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = -(1 + j) / sqrt((double)(j)* (j + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndS(i, j);
-			f_ijk->coord2[f_ijk->k] = IndD(j);
-			f_ijk->coord3[f_ijk->k] = IndJ(i, j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = -(1 + j) / sqrt((double)(j)* (j + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord2[f_ijk->k] = IndS(i, j);
-			f_ijk->coord3[f_ijk->k] = IndD(j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			f_ijk->data[f_ijk->k].re = (1 + j) / sqrt((double)(j)* (j + 1));
-			ind = f_ijk->coord1[f_ijk->k] = IndS(i, j);
-			f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-			f_ijk->coord3[f_ijk->k] = IndD(j);
-			f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-			f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-
-	for (int i = 0; i < N - 1; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int k = 0; k < N; k++)
-			{
-				if (k > j)
-				{
-					if (k > i)
-					{
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0); //-i*Jjk*[Sij,Sik]  //and symmetric Ski, Jkj
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(j, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(i, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0); //-i*Jik*[Sij,Sjk]  //and symmetric Skj, Jki
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(i, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(j, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0); //-i*Sjk*[Sij,Jik]  //and symmetric Skj, Jki
-						ind = f_ijk->coord1[f_ijk->k] = IndS(j, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(i, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0); //-i*Sik*[Sij,Jjk]  //and symmetric Ski, Jkj
-						ind = f_ijk->coord1[f_ijk->k] = IndS(i, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(j, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0); //-i*Sjk*[Jij,Sik]  //and symmetric Ski, Skj
-						ind = f_ijk->coord1[f_ijk->k] = IndS(j, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(i, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0); //-i*Sik*[Jij,Sjk]  //and symmetric Skj, Ski
-						ind = f_ijk->coord1[f_ijk->k] = IndS(i, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(j, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0); //-i*Jjk*[Jij,Jik]  //and symmetric Jkj, Jki
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(j, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(i, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0); //-i*Jik*[Jij,Jjk]  //and symmetric Jki, Jkj
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(i, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(j, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-				}
-				if (k < j)
-				{
-					if (k > i)
-					{
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(k, j);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(i, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(i, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, j);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndS(k, j);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(i, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndS(i, k);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, j);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndS(k, j);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(i, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndS(i, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, j);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(k, j);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(i, k);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(i, k);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, j);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-					if (k < i)
-					{
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(k, j);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, i);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(k, i);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, j);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndS(k, j);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, i);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndS(k, i);
-						f_ijk->coord2[f_ijk->k] = IndS(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, j);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndS(k, j);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, i);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndS(k, i);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndS(k, j);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(k, j);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, i);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						f_ijk->data[f_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = f_ijk->coord1[f_ijk->k] = IndJ(k, i);
-						f_ijk->coord2[f_ijk->k] = IndJ(i, j);
-						f_ijk->coord3[f_ijk->k] = IndJ(k, j);
-						f_ijk->hash[f_ijk->k] = f_ijk->coord1[f_ijk->k] + f_ijk->coord2[f_ijk->k] * step2 + step1 * f_ijk->coord3[f_ijk->k];
-						f_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-				}
-			}
-		}
-	}
-}
-void dijk_coord_ch(Tensor_Coordinates * d_ijk, crsMatrix *sel, ulli NZ, int N)
-{
-	ulli ind;
-	ulli size = NZ + 1;
-	ulli step1 = N*N;
-	ulli step2 = step1 * step1;
-
-	d_ijk->data = new dcomplex[size];
-	memset(d_ijk->data, 0, size * sizeof(dcomplex));
-	d_ijk->coord1 = new unsigned int[size];
-	memset(d_ijk->coord1, 0, size * sizeof(unsigned int));
-	d_ijk->coord2 = new unsigned int[size];
-	memset(d_ijk->coord2, 0, size * sizeof(unsigned int));
-	d_ijk->coord3 = new unsigned int[size];
-	memset(d_ijk->coord3, 0, size * sizeof(unsigned int));
-	d_ijk->hash = new ulli[size];
-	memset(d_ijk->hash, 0, size * sizeof(unsigned int));
-	d_ijk->k = 0;
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndD(i);
-			d_ijk->coord2[d_ijk->k] = IndS(i, j);
-			d_ijk->coord3[d_ijk->k] = IndS(i, j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-			d_ijk->coord2[d_ijk->k] = IndD(i);
-			d_ijk->coord3[d_ijk->k] = IndS(i, j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndD(i);
-			d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord2[d_ijk->k] = IndD(i);
-			d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-			d_ijk->coord2[d_ijk->k] = IndS(i, j);
-			d_ijk->coord3[d_ijk->k] = IndD(i);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = -(i) / sqrt((double)(i)* (i + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord3[d_ijk->k] = IndD(i);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int m = i + 1; m < j; m++)
-			{
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndD(m);
-				d_ijk->coord2[d_ijk->k] = IndS(i, j);
-				d_ijk->coord3[d_ijk->k] = IndS(i, j);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-				d_ijk->coord2[d_ijk->k] = IndD(m);
-				d_ijk->coord3[d_ijk->k] = IndS(i, j);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndD(m);
-				d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord2[d_ijk->k] = IndD(m);
-				d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-				d_ijk->coord2[d_ijk->k] = IndS(i, j);
-				d_ijk->coord3[d_ijk->k] = IndD(m);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 1.0 / sqrt((double)(m)* (m + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord3[d_ijk->k] = IndD(m);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-			}
-		}
-	}
-
-	for (int j = 2; j < N; j++)
-	{
-		int i = 0;
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndD(j);
-		d_ijk->coord2[d_ijk->k] = IndS(i, j);
-		d_ijk->coord3[d_ijk->k] = IndS(i, j);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-		d_ijk->coord2[d_ijk->k] = IndD(j);
-		d_ijk->coord3[d_ijk->k] = IndS(i, j);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndD(j);
-		d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-		d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-		d_ijk->coord2[d_ijk->k] = IndD(j);
-		d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-		d_ijk->coord2[d_ijk->k] = IndS(i, j);
-		d_ijk->coord3[d_ijk->k] = IndD(j);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-		d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-		d_ijk->coord3[d_ijk->k] = IndD(j);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-	}
-
-	for (int i = 1; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndD(j);
-			d_ijk->coord2[d_ijk->k] = IndS(i, j);
-			d_ijk->coord3[d_ijk->k] = IndS(i, j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-			d_ijk->coord2[d_ijk->k] = IndD(j);
-			d_ijk->coord3[d_ijk->k] = IndS(i, j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndD(j);
-			d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord2[d_ijk->k] = IndD(j);
-			d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-			d_ijk->coord2[d_ijk->k] = IndS(i, j);
-			d_ijk->coord3[d_ijk->k] = IndD(j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = (1 - j) / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-			d_ijk->coord3[d_ijk->k] = IndD(j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int z = j + 1; z < N; z++)
-			{
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z)* (z + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndD(z);
-				d_ijk->coord2[d_ijk->k] = IndS(i, j);
-				d_ijk->coord3[d_ijk->k] = IndS(i, j);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z)* (z + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-				d_ijk->coord2[d_ijk->k] = IndD(z);
-				d_ijk->coord3[d_ijk->k] = IndS(i, j);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z)* (z + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndD(z);
-				d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z)* (z + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord2[d_ijk->k] = IndD(z);
-				d_ijk->coord3[d_ijk->k] = IndJ(i, j);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z)* (z + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndS(i, j);
-				d_ijk->coord2[d_ijk->k] = IndS(i, j);
-				d_ijk->coord3[d_ijk->k] = IndD(z);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-				d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(z)* (z + 1));
-				ind = d_ijk->coord1[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-				d_ijk->coord3[d_ijk->k] = IndD(z);
-				d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-				d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-			}
-		}
-	}
-
-	for (int i = 0; i < N - 1; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			for (int k = 0; k < N; k++)
-			{
-				if (k > j)
-				{
-					if (k > i)
-					{
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Sjk*{Sij,Sik}  //and symmetric Ski, Skj
-						ind = d_ijk->coord1[d_ijk->k] = IndS(j, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(i, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Sik*{Sij,Sjk}  //and symmetric Skj, Ski
-						ind = d_ijk->coord1[d_ijk->k] = IndS(i, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(j, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Jjk*{Sij,Jik}  //and symmetric Jkj, Jki
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(j, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(i, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Jik*{Sij,Jjk}  //and symmetric Jki, Jkj
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(i, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(j, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);  //Jjk*{Jij,Sik}  //and symmetric Ski, Jkj
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(j, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(i, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Jik*{Jij,Sjk}  //and symmetric Skj, Jki
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(i, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(j, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);  //Sjk*{Jij,Jik}  //and symmetric Skj, Jki
-						ind = d_ijk->coord1[d_ijk->k] = IndS(j, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(i, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);  //Sik*{Jij,Jjk}  //and symmetric Ski, Jkj
-						ind = d_ijk->coord1[d_ijk->k] = IndS(i, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(j, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-				}
-				if (k < j)
-				{
-					if (k > i)
-					{
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndS(k, j);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(i, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndS(i, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, j);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(k, j);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(i, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(i, k);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, j);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(k, j);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(i, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(i, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, j);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndS(k, j);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(i, k);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndS(i, k);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, j);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-					if (k < i)
-					{
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndS(k, j);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, i);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndS(k, i);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, j);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(k, j);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, i);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(k, i);
-						d_ijk->coord2[d_ijk->k] = IndS(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, j);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(k, j);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, i);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndJ(k, i);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndS(k, j);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = -1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndS(k, j);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, i);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-						d_ijk->data[d_ijk->k].re = 1.0 / sqrt(2.0);
-						ind = d_ijk->coord1[d_ijk->k] = IndS(k, i);
-						d_ijk->coord2[d_ijk->k] = IndJ(i, j);
-						d_ijk->coord3[d_ijk->k] = IndJ(k, j);
-						d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-						d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-					}
-				}
-			}
-		}
-	}
-
-
-	for (int j = 2; j < N; j++)
-	{
-		int i = 1;
-		d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndD(j);
-		d_ijk->coord2[d_ijk->k] = IndD(i);
-		d_ijk->coord3[d_ijk->k] = IndD(i);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndD(i);
-		d_ijk->coord2[d_ijk->k] = IndD(i);
-		d_ijk->coord3[d_ijk->k] = IndD(j);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j)* (j + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndD(i);
-		d_ijk->coord2[d_ijk->k] = IndD(j);
-		d_ijk->coord3[d_ijk->k] = IndD(i);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-	}
-
-	for (int i = 2; i < N; i++)
-	{
-		d_ijk->data[d_ijk->k].re = 2.0 * (1 - i) / sqrt((double)(i)* (i + 1));
-		ind = d_ijk->coord1[d_ijk->k] = IndD(i);
-		d_ijk->coord2[d_ijk->k] = IndD(i);
-		d_ijk->coord3[d_ijk->k] = IndD(i);
-		d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-		d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-		for (int j = i + 1; j < N; j++)
-		{
-			d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndD(j);
-			d_ijk->coord2[d_ijk->k] = IndD(i);
-			d_ijk->coord3[d_ijk->k] = IndD(i);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndD(i);
-			d_ijk->coord2[d_ijk->k] = IndD(i);
-			d_ijk->coord3[d_ijk->k] = IndD(j);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-
-			d_ijk->data[d_ijk->k].re = 2.0 / sqrt((double)(j)* (j + 1));
-			ind = d_ijk->coord1[d_ijk->k] = IndD(i);
-			d_ijk->coord2[d_ijk->k] = IndD(j);
-			d_ijk->coord3[d_ijk->k] = IndD(i);
-			d_ijk->hash[d_ijk->k] = d_ijk->coord1[d_ijk->k] + d_ijk->coord2[d_ijk->k] * step2 + step1 * d_ijk->coord3[d_ijk->k];
-			d_ijk->k += sel->RowIndex[ind + 1] - sel->RowIndex[ind];
-		}
-	}
-}
-
-void calc_CooQs(int N_mat, Model *m, Tensor_Coordinates * f_ijk, crsMatrix *hMat, crsMatrix *&res)
-{
-	Tensor_Coordinates * select = new Tensor_Coordinates;
-	int *hash = new int[N_mat];
-	int *rowi = new int[N_mat + 1];
-	dcomplex *hash_calc = new dcomplex[N_mat];
-	ulli cnt;
-
-	cnt = fijk_coord_sym(hMat, m->N + 1);
-	fijk_coord_ch(select, hMat, cnt + 1, m->N + 1);
-
-	for (ulli i = 0; i < select->k; i++)
-	{
-		int j = select->coord1[i];
-		dcomplex val1 = select->data[i];
-		dcomplex val2 = hMat->Value[hMat->RowIndex[j]];
-		select->data[i].re = val1.re * val2.re - val1.im * val2.im;
-		select->data[i].im = val1.re * val2.im + val1.re * val2.im;
-
-		ulli step = N_mat;
-		select->hash[i] = select->coord2[i] + step * select->coord3[i];
-	}
-
-	sort_matrix(select);
-
-
-	for (int i = 0; i < N_mat; i++)
-	{
-		rowi[i] = -1;
-	}
-	for (ulli i = 0; i < select->k; i++)
-	{
-		if (rowi[select->coord3[i]] == -1)
-		{
-			rowi[select->coord3[i]] = i;
-		}
-	}
-	rowi[N_mat] = select->k;
-	for (int i = N_mat - 1; i >0; i--)
-	{
-		if (rowi[i] == -1)
-		{
-			rowi[i] = rowi[i + 1];
-		}
-	}
-	rowi[N_mat] = select->k;
-
-	res = new crsMatrix(N_mat, 1);
-
-	int countNotZero = 0;
-	for (int j = 0; j < N_mat; j++)
-	{
-		res->RowIndex[j] = countNotZero;
-		memset(hash, 0, sizeof(int) * N_mat);
-		int start, finish;
-		start = rowi[j];
-		finish = rowi[j + 1];
-		for (int k = start; k < finish; k++)
-		{
-			if (hash[select->coord2[k]] == 0)
-			{
-				hash[select->coord2[k]] = 1;
-				countNotZero++;
-			}
-		}
-	}
-	res->RowIndex[N_mat] = countNotZero;
-	res->setNZ(countNotZero);
-
-	countNotZero = 0;
-	for (int j = 0; j < N_mat; j++)
-	{
-		memset(hash, 0, sizeof(int) * N_mat);
-		int start, finish;
-		start = rowi[j];
-		finish = rowi[j + 1];
-		for (int k = start; k < finish; k++)
-		{
-			if (hash[select->coord2[k]] == 0)
-			{
-				hash[select->coord2[k]] = 1;
-				res->Col[countNotZero] = select->coord2[k];
-				countNotZero++;
-				hash_calc[select->coord2[k]] = select->data[k];
-			}
-			else
-			{
-				hash_calc[select->coord2[k]].re += select->data[k].re;
-				hash_calc[select->coord2[k]].im += select->data[k].im;
-			}
-		}
-		start = res->RowIndex[j];
-		finish = res->RowIndex[j + 1];
-		for (int k = start; k < finish; k++)
-		{
-			res->Value[k] = hash_calc[res->Col[k]];
-		}
-	}
-
-	crsMatrix * R = new crsMatrix(*res);
-	Transpose(*res, *R, false);
-	Transpose(*R, *res, false);
-
-	delete R;
-	delete[] hash;
-	delete[] hash_calc;
-	delete[] rowi;
-
-	free_matrix(select);
-	delete select;
-}
-ulli calcZ_ijk(Tensor_Coordinates *f_ijk, Tensor_Coordinates *d_ijk, Tensor_Coordinates *&Z_ijk)
-{
-	ulli i1 = f_ijk->hash[0];
-	ulli i2 = d_ijk->hash[0];
-	ulli j1 = 0, j2 = 0;
-	ulli cnt = 0;
-	while ((j1 < f_ijk->k) && (j2 < d_ijk->k))
-	{
-		i1 = f_ijk->hash[j1];
-		i2 = d_ijk->hash[j2];
-		if (i1 < i2)
-		{
-			j1++;
-		}
-		else
-		{
-			if (i1 > i2)
-			{
-				j2++;
-			}
-			else
-			{
-				j1++;
-				j2++;
-			}
-		}
-		cnt++;
-	}
-	cnt += -(j1 - f_ijk->k) - (j2 - d_ijk->k);
-	Z_ijk = create_matrix(cnt);
-
-	j1 = 0; j2 = 0; cnt = 0;
-	while ((j1 < f_ijk->k) && (j2 < d_ijk->k))
-	{
-		i1 = f_ijk->hash[j1];
-		i2 = d_ijk->hash[j2];
-		if (i1 < i2)
-		{
-			Z_ijk->coord1[cnt] = f_ijk->coord1[j1];
-			Z_ijk->coord2[cnt] = f_ijk->coord2[j1];
-			Z_ijk->coord3[cnt] = f_ijk->coord3[j1];
-			Z_ijk->data[cnt] = f_ijk->data[j1];
-			Z_ijk->hash[cnt] = f_ijk->hash[j1];
-
-			j1++;
-		}
-		else
-		{
-			if (i1 > i2)
-			{
-				Z_ijk->coord1[cnt] = d_ijk->coord1[j2];
-				Z_ijk->coord2[cnt] = d_ijk->coord2[j2];
-				Z_ijk->coord3[cnt] = d_ijk->coord3[j2];
-				Z_ijk->data[cnt].re = -d_ijk->data[j2].im;
-				Z_ijk->data[cnt].im = d_ijk->data[j2].re;
-				Z_ijk->hash[cnt] = d_ijk->hash[j2];
-				j2++;
-			}
-			else
-			{
-				Z_ijk->coord1[cnt] = d_ijk->coord1[j2];
-				Z_ijk->coord2[cnt] = d_ijk->coord2[j2];
-				Z_ijk->coord3[cnt] = d_ijk->coord3[j2];
-				Z_ijk->data[cnt] = f_ijk->data[j1];
-				Z_ijk->data[cnt].re += -d_ijk->data[j2].im;
-				Z_ijk->data[cnt].im += d_ijk->data[j2].re;
-				Z_ijk->hash[cnt] = d_ijk->hash[j2];
-				j1++;
-				j2++;
-			}
-		}
-		cnt++;
-	}
-	while ((j1 < f_ijk->k))
-	{
-		Z_ijk->coord1[cnt] = f_ijk->coord1[j1];
-		Z_ijk->coord2[cnt] = f_ijk->coord2[j1];
-		Z_ijk->coord3[cnt] = f_ijk->coord3[j1];
-		Z_ijk->data[cnt] = f_ijk->data[j1];
-		Z_ijk->hash[cnt] = f_ijk->hash[j1];
-		j1++;
-		cnt++;
-	}
-	while ((j2 < d_ijk->k))
-	{
-		Z_ijk->coord1[cnt] = d_ijk->coord1[j2];
-		Z_ijk->coord2[cnt] = d_ijk->coord2[j2];
-		Z_ijk->coord3[cnt] = d_ijk->coord3[j2];
-		Z_ijk->data[cnt].re = -d_ijk->data[j2].im;
-		Z_ijk->data[cnt].im = d_ijk->data[j2].re;
-		Z_ijk->hash[cnt] = d_ijk->hash[j2];
-		j2++;
-		cnt++;
-	}
-
-	return cnt;
-}
-
-void createIndex(Tensor_Coordinates *m_ijk, ulli N_Mat, unsigned int * index)
-{
-	for (int i = 0; i < N_Mat + 1; i++)
-	{
-		index[i] = N_Mat + 1;
-	}
-	index[m_ijk->coord2[0]] = 0;
-
-	for (ulli i = 1; i < m_ijk->k; i++)
-	{
-		if (m_ijk->coord2[i] != m_ijk->coord2[i - 1])
-		{
-			index[m_ijk->coord2[i]] = i;
-		}
-	}
-
-	index[N_Mat] = m_ijk->k;
-	for (int i = N_Mat - 1; i >= 0; i--)
-	{
-		if (index[i] == N_Mat + 1)
-		{
-			index[i] = index[i + 1];
-		}
-	}
-
-}
-ulli multTmpRsSTD(ulli N_mat, unsigned int * indexF, unsigned int * indexZ, Tensor_Coordinates *z_ijk, Tensor_Coordinates *f_ijk, crsMatrix * l_mat, bool swapInd, vector<map<int, dcomplex> > & mat)
-{
-	ulli step1 = N_mat;
-
-	unsigned int c1, c2, j1, j2;
-	ulli cnt = 0;
-	dcomplex v;
-	for (unsigned int i = 0; i < N_mat; i++)
-	{
-		c1 = (indexF[i + 1] - indexF[i]);
-		c2 = (indexZ[i + 1] - indexZ[i]);
-		for (unsigned int j = 0; j < c1 * c2; j++)
-		{
-			j1 = indexF[i] + j % c1;
-			j2 = indexZ[i] + j / c1;
-			dcomplex v1 = z_ijk->data[j2];
-			dcomplex v2 = f_ijk->data[j1];
-
-			int ind_i, ind_j, ind_tmp;
-			ind_i = f_ijk->coord1[j1];
-			ind_j = z_ijk->coord1[j2];
-
-			if (swapInd)
-			{
-				ind_tmp = ind_i; ind_i = ind_j; ind_j = ind_tmp;
-			}
-
-			dcomplex v3;// = l_mat->Value[ind_i + ind_j * l_mat->N];
-			v3.re = v3.im = 0.0;
-
-			int si = l_mat->RowIndex[ind_j];
-			int fi = l_mat->RowIndex[ind_j + 1];
-			for (int ind_f = si; ind_f < fi; ind_f++)
-			{
-				if (l_mat->Col[ind_f] == ind_i)
-				{
-					v3 = l_mat->Value[ind_f];
-					break;
-				}
-			}
-
-			dcomplex tmp1;
-			tmp1.re = v1.re * v2.re - v1.im * v2.im;
-			tmp1.im = v1.re * v2.im + v1.im * v2.re;
-			tmp1.re = tmp1.re * v3.re - tmp1.im * v3.im;
-			tmp1.im = tmp1.re * v3.im + tmp1.im * v3.re;
-
-			if ((tmp1.re != 0.0) || (tmp1.im != 0.0))
-			{
-				v = mat[f_ijk->coord3[j1]][z_ijk->coord3[j2]];
-				v.re += tmp1.re;
-				v.im += tmp1.im;
-
-				mat[f_ijk->coord3[j1]][z_ijk->coord3[j2]] = v;
-			}
-		}
-		cnt += c1 * c2;
-
-	}
-
-	return cnt;
-}
-
-void to_F_basis_for_zeros(crsMatrix * Mat, crsMatrix * vec)
-{
-	int N = Mat->N;
-	int N_mat = N * N - 1;
-	int cnt = 0;
-	int *mask = new int[N_mat];
-	int *col = new int[N_mat];
-	dcomplex *value = new dcomplex[N_mat];
-	for (int i = 0; i < N_mat; i++)
-	{
-		mask[i] = 0;
-		value[i].re = 0.0;
-		value[i].im = 0.0;
-	}
-
-	dcomplex sum;
-	sum.re = 0.0;
-	sum.im = 0.0;
-	for (int i = 0; i < N; i++)
-	{
-		int start = Mat->RowIndex[i];
-		int finish = Mat->RowIndex[i + 1];
-		for (int j = start; j < finish; j++)
-		{
-			int k = Mat->Col[j];
-
-			if (k != i)
-			{
-				int ii = i;
-				int jj = k;
-				int z = -1;
-				if (ii > jj) {
-					ii = k;
-					jj = i;
-					z = 1;
-				}
-
-				int index = ((N - 1 + N - ii) * ii) + jj - ii - 1;
-				if (mask[index] != 1)
-				{
-					col[cnt + 0] = index + 0;
-					col[cnt + 1] = index + 1;
-					cnt += 2;
-				}
-
-				mask[index] = 1;
-				mask[index + 1] = 1;
-
-				value[index].re += Mat->Value[j].re / sqrt(2.0);
-				value[index].im += Mat->Value[j].im / sqrt(2.0);
-
-				value[index + 1].re += z * Mat->Value[j].im / sqrt(2.0);
-				value[index + 1].im += -z * Mat->Value[j].re / sqrt(2.0);
-
-			}
-			else
-			{
-				if (k != 0)
-				{
-					int index = N * (N - 1) + k - 1;
-					mask[index] = 1;
-					double value_d = 1.0 / sqrt((double)((k + 0)* (k + 1)));
-					value[index].re = sum.re * value_d;
-					value[index].re -= Mat->Value[j].re * (k + 0) * value_d;
-					value[index].im = sum.im * value_d;
-					value[index].im -= Mat->Value[j].im * (k + 0) * value_d;
-					col[cnt] = index;
-					cnt++;
-				}
-
-				sum.re += Mat->Value[j].re;
-				sum.im += Mat->Value[j].im;
-			}
-		}
-	}
-
-	std::sort(col, col + cnt);
-
-	vec->NZ = cnt;
-	for (int i = 0; i < vec->N + 1; i++)
-	{
-		vec->RowIndex[i] = 0;
-	}
-	for (int i = 0; i < cnt; i++)
-	{
-		vec->Col[i] = col[i];
-		vec->Value[i] = value[col[i]];
-		vec->RowIndex[col[i] + 1] ++;
-	}
-	for (int i = 0; i < vec->N; i++)
-	{
-		vec->RowIndex[i + 1] = vec->RowIndex[i] + vec->RowIndex[i + 1];
-	}
-
-	delete[] mask;
-	delete[] col;
-	delete[] value;
-}
-void to_F_basis(crsMatrix * Mat, crsMatrix * vec)
-{
-	int N = Mat->N;
-	int N_mat = N * N - 1;
-	int cnt = 0;
-	int *mask = new int[N_mat];
-	int *col = new int[N_mat];
-	dcomplex *value = new dcomplex[N_mat];
-	for (int i = 0; i < N_mat; i++)
-	{
-		mask[i] = 0;
-		value[i].re = 0.0;
-		value[i].im = 0.0;
-	}
-
-	dcomplex sum;
-	sum.re = 0.0;
-	sum.im = 0.0;
-	for (int i = 0; i < N; i++)
-	{
-		int start = Mat->RowIndex[i];
-		int finish = Mat->RowIndex[i + 1];
-		for (int j = start; j < finish; j++)
-		{
-			int k = Mat->Col[j];
-
-			if (k != i)
-			{
-				int ii = i;
-				int jj = k;
-				int z = -1;
-				if (ii > jj) {
-					ii = k;
-					jj = i;
-					z = 1;
-				}
-
-				int index = ((N - 1 + N - ii) * ii) + (jj - ii - 1) * 2;
-				if (mask[index] != 1)
-				{
-					col[cnt + 0] = index + 0;
-					col[cnt + 1] = index + 1;
-					cnt += 2;
-				}
-
-				mask[index] = 1;
-				mask[index + 1] = 1;
-
-				value[index].re += Mat->Value[j].re / sqrt(2.0);
-				value[index].im += Mat->Value[j].im / sqrt(2.0);
-
-				value[index + 1].re += z * Mat->Value[j].im / sqrt(2.0);
-				value[index + 1].im += -z * Mat->Value[j].re / sqrt(2.0);
-
-			}
-			else
-			{
-				if (k != 0)
-				{
-					int index = N * (N - 1) + k - 1;
-					mask[index] = 1;
-					double value_d = 1.0 / sqrt((double)((k + 0)* (k + 1)));
-					value[index].re = sum.re * value_d;
-					value[index].re -= Mat->Value[j].re * (k + 0) * value_d;
-					value[index].im = sum.im * value_d;
-					value[index].im -= Mat->Value[j].im * (k + 0) * value_d;
-					col[cnt] = index;
-					cnt++;
-				}
-
-				sum.re += Mat->Value[j].re;
-				sum.im += Mat->Value[j].im;
-			}
-		}
-	}
-
-	for (int i = 0; i < cnt; i++)
-	{
-		if ((value[col[i]].re == 0.0) && (value[col[i]].im == 0.0))
-		{
-			cnt--;
-			col[i] = col[cnt];
-			i--;
-		}
-	}
-	std::sort(col, col + cnt);
-
-	vec->NZ = cnt;
-	for (int i = 0; i < vec->N + 1; i++)
-	{
-		vec->RowIndex[i] = 0;
-	}
-	for (int i = 0; i < cnt; i++)
-	{
-		vec->Col[i] = col[i];
-		vec->Value[i] = value[col[i]];
-		vec->RowIndex[col[i] + 1] ++;
-	}
-	for (int i = 0; i < vec->N; i++)
-	{
-		vec->RowIndex[i + 1] = vec->RowIndex[i] + vec->RowIndex[i + 1];
-	}
-
-	delete[] mask;
-	delete[] col;
-	delete[] value;
-}
-
 int SparseMKLMult(crsMatrix &A, crsMatrix &B, crsMatrix &C, bool resize)
 {
 	int N = A.N;
@@ -3268,24 +487,6 @@ int SparseMKLAddOne(crsMatrix &A, dcomplex beta, crsMatrix &B, crsMatrix &C, boo
 	return 0;
 }
 
-void complex_to_real(dcomplex *mat, int N)
-{
-	double *value = (double *)(mat);
-	for (int i = 0; i <N; i++)
-	{
-		value[i] = mat[i].re;
-	}
-}
-void real_to_complex(dcomplex *mat, int N)
-{
-	double *value = (double *)(mat);
-	for (int i = N - 1; i >= 0; i--)
-	{
-		mat[i].re = value[i];
-		mat[i].im = 0;
-	}
-}
-
 void toOneBase(crsMatrix &A)
 {
 	int i, j, n = A.N;
@@ -3612,14 +813,23 @@ Model * createModel(int N, ConfigParam conf)
 	model->N_mat = (N + 1) * (N + 1) - 1;
 	model->conf = conf;
 
-	model->h_0 = new crsMatrix(model->N_mat, model->N_mat);
-	model->h_1 = new crsMatrix(model->N_mat, model->N_mat);
+	model->Fs = new FMatrixs;
+	createFMatrixs(model->Fs, N);
+
+	model->h_0 = new dcomplex[model->N_mat];
+	model->h_1 = new dcomplex[model->N_mat];
 
 	model->H_0 = new crsMatrix(model->N_mat, model->N_mat);
 	model->H_1 = new crsMatrix(model->N_mat, model->N_mat);
 	
 	model->H0 = NULL;
 	model->H1 = NULL;
+
+	model->f_mat = NULL;
+	model->f_H_mat = NULL;
+	model->d_mat = NULL;
+
+	model->a_mat = NULL;
 
 	model->Q_0 = NULL;
 	model->Q_1 = NULL;
@@ -3641,22 +851,15 @@ Model * createModel(int N, ConfigParam conf)
 
 	model->Rho = NULL;
 
-	model->f_ijk = NULL;
-
-	model->l_mat = NULL;
-
 	return model;
 }
 void freeModel(Model * model)
 {
-	if (model->h_0 != NULL)
-	{
-		delete model->h_0;
-	}
-	if (model->h_1 != NULL)
-	{
-		delete model->h_1;
-	}
+	freeFMatrixs(model->Fs);
+	delete model->Fs;
+
+	delete[] model->h_0;
+	delete[] model->h_1;
 	
 	if (model->H_0 != NULL)
 	{
@@ -3674,6 +877,41 @@ void freeModel(Model * model)
 	if (model->H1 != NULL)
 	{
 		delete model->H1;
+	}
+
+	if (model->f_mat != NULL)
+	{
+		int N = model->N;
+		for (int i = 0; i < (N + 1) * (N + 1) - 1; i++)
+		{
+			delete model->f_mat[i];
+		}
+		delete[] model->f_mat;
+	}
+
+	if (model->f_H_mat != NULL)
+	{
+		int N = model->N;
+		for (int i = 0; i < (N + 1) * (N + 1) - 1; i++)
+		{
+			delete model->f_H_mat[i];
+		}
+		delete[] model->f_H_mat;
+	}
+
+	if (model->d_mat != NULL)
+	{
+		int N = model->N;
+		for (int i = 0; i < (N + 1) * (N + 1) - 1; i++)
+		{
+			delete model->d_mat[i];
+		}
+		delete[] model->d_mat;
+	}
+
+	if (model->a_mat != NULL)
+	{
+		delete model->a_mat;
 	}
 
 	if (model->Q_0 != NULL)
@@ -3716,19 +954,157 @@ void freeModel(Model * model)
 	{
 		delete model->Rho;
 	}
+}
 
-	if (model->l_mat != NULL)
+void createFMatrixs(FMatrixs * Fs, int N)
+{
+	Fs->countF = (2 + N) * N + 1;
+	Fs->F = new crsMatrix *[Fs->countF];
+	for (int i = 0; i < Fs->countF; i++)
 	{
-		delete model->l_mat;
+		Fs->F[i] = NULL;
+	}
+}
+void freeFMatrixs(FMatrixs * Fs)
+{
+	for (int i = 0; i < Fs->countF; i++)
+	{
+		if (Fs->F[i] != NULL)
+		{
+			delete Fs->F[i];
+		}
+	}
+	delete[] Fs->F;
+}
+
+void initFs(FMatrixs *Fs, int N)
+{
+	int i, j, k;
+	Fs->F[0] = createFeyeType(N + 1);
+	k = 1;
+	for (i = 0; i < N + 1; i++)
+	{
+		for (j = i + 1; j < N + 1; j++)
+		{
+			Fs->F[k] = createFPairTypeRe(N + 1, i, j); k++;
+			Fs->F[k] = createFPairTypeIm(N + 1, i, j); k++;
+		}
 	}
 
-	if (model->f_ijk != NULL)
+	for (i = 0; i < N; i++)
 	{
-		free_matrix(model->f_ijk);
-		delete model->f_ijk;
+		if (k < Fs->countF)
+		{
+			Fs->F[k] = createLastType(N + 1, i); k++;
+		}
+		else
+		{
+			throw("error count calc (no mem)");
+		}
 	}
 
-	delete model;
+	if (k != Fs->countF)
+	{
+		throw("error count calc (countF > k)");
+	}
+
+	//outFs(Fs);
+}
+void outFs(FMatrixs *Fs)
+{
+	for (int i = 0; i < Fs->countF; i++)
+	{
+		printMatrixVal(Fs->F[i]);
+	}
+}
+crsMatrix * createFeyeType(int N)
+{
+	crsMatrix * mat;
+	mat = new crsMatrix(N, N);
+	for (int i = 0; i < N; i++)
+	{
+		mat->Col[i] = i;
+		mat->RowIndex[i] = i;
+		mat->Value[i].re = 1.0;
+	}
+	mat->RowIndex[N] = N;
+
+	return mat;
+}
+crsMatrix * createFPairTypeRe(int N, int i, int j)
+{
+	double val = 1.0 / sqrt(2.0);
+	crsMatrix * mat;
+	mat = new crsMatrix(N, 2);
+	mat->Value[0].re = val;
+	mat->Value[1].re = val;
+	mat->Col[0] = j;
+	mat->Col[1] = i;
+
+	for (int ii = 0; ii < i + 1; ii++)
+	{
+		mat->RowIndex[ii] = 0;
+	}
+	for (int ii = i + 1; ii < j + 1; ii++)
+	{
+		mat->RowIndex[ii] = 1;
+	}
+	for (int ii = j + 1; ii <= N; ii++)
+	{
+		mat->RowIndex[ii] = 2;
+	}
+
+	return mat;
+}
+crsMatrix * createFPairTypeIm(int N, int i, int j)
+{
+	double val = -1.0 / sqrt(2.0);
+	crsMatrix * mat;
+	mat = new crsMatrix(N, 2);
+	mat->Value[0].im = val;
+	mat->Value[1].im = -val;
+	mat->Col[0] = j;
+	mat->Col[1] = i;
+
+	for (int ii = 0; ii < i + 1; ii++)
+	{
+		mat->RowIndex[ii] = 0;
+	}
+	for (int ii = i + 1; ii < j + 1; ii++)
+	{
+		mat->RowIndex[ii] = 1;
+	}
+	for (int ii = j + 1; ii <= N; ii++)
+	{
+		mat->RowIndex[ii] = 2;
+	}
+
+	return mat;
+}
+crsMatrix * createLastType(int N, int i)
+{
+	crsMatrix * mat;
+	mat = new crsMatrix(N, i + 2);
+	int ii;
+	double val = 1.0 / sqrt((double)((i + 1)* (i + 2)));
+	mat->RowIndex[0] = 0;
+	for (ii = 0; ii <= i; ii++)
+	{
+		mat->Col[ii] = ii;
+		mat->RowIndex[ii + 1] = mat->RowIndex[ii] + 1;
+		mat->Value[ii].re = val;
+	}
+	mat->Col[ii] = ii;
+	mat->RowIndex[ii + 1] = mat->RowIndex[ii] + 1;
+	mat->Value[ii].re = -(i + 1) * val;
+	ii++;
+
+	for (; ii < N; ii++)
+	{
+		mat->RowIndex[ii + 1] = mat->RowIndex[ii];
+	}
+
+	return mat;
 }
 
 crsMatrix * create_a_std_matrix(Model * m)
@@ -3744,7 +1120,24 @@ crsMatrix * create_a_std_matrix(Model * m)
 		a_mtx->Value[i].re = sqrt(double(i + 1));
 	}
 	a_mtx->RowIndex[N] = N;
-	a_mtx->RowIndex[N + 1] = N + 1;
+	a_mtx->RowIndex[N + 1] = N;
+
+	return a_mtx;
+}
+crsMatrix * create_a_dag_matrix(Model * m)
+{
+	int N = m->N;
+
+	crsMatrix * a_mtx = new crsMatrix(N + 1, N);
+
+	a_mtx->RowIndex[0] = 0;
+	for (int i = 0; i < N; i++)
+	{
+		a_mtx->RowIndex[i+1] = i;
+		a_mtx->Col[i] = i;
+		a_mtx->Value[i].re = sqrt(double(i + 1));
+	}
+	a_mtx->RowIndex[N + 1] = N;
 
 	return a_mtx;
 }
@@ -3753,147 +1146,147 @@ crsMatrix * create_H_0_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData
 {
 	int N = m->N;
 
-	crsMatrix * H_J = new crsMatrix(N + 1, N + 1);
-	int * RowIndex = H_J->RowIndex;
-	int * Col = H_J->Col;
-	dcomplex * Value = H_J->Value;
-
-	double * diag_array = new double[N + 1];
-
-	for (int state_id = 0; state_id < N + 1; state_id++)
-	{
-		diag_array[state_id] = 0.0;
-
-		for (int bit_id = 0; bit_id < cp.N - 1; bit_id++)
-		{
-			int first_bit = bit_at(state_id, bit_id);
-			int second_bit = bit_at(state_id, bit_id + 1);
-
-			if (first_bit == second_bit)
-			{
-				diag_array[state_id] += -(1.0 * md.disorder_J[bit_id]);
-			}
-			else
-			{
-				diag_array[state_id] += -(-1.0 * md.disorder_J[bit_id]);
-			}
-		}
-	}
-
-	int i, j;
-	RowIndex[0] = 0;
-	for (i = 0; i < N + 1; i++)
-	{
-		RowIndex[i] = i;
-		Col[i] = i;
-	}
-	RowIndex[i] = i;
-
-	for (i = 0; i < N + 1; i++)
-	{
-		Value[i].re = diag_array[i];
-	}
-
-	delete[] diag_array;
+	crsMatrix * a_std = create_a_std_matrix(m);
+	crsMatrix * a_std_copy = new crsMatrix(*a_std);
+	crsMatrix * a_dag = create_a_dag_matrix(m);
+	crsMatrix * a_dag_copy = new crsMatrix(*a_dag);
 
 	if (rp.debug == 1)
 	{
-		string fn = rp.path + "H_J" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, H_J, 16, false);
+		string fn = rp.path + "a_std" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, a_std, 16, false);
+
+		fn = rp.path + "a_dag" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, a_dag, 16, false);
 	}
 
-	return H_J;
+	crsMatrix * tmp_0 = new crsMatrix;
+	crsMatrix * tmp_1 = new crsMatrix;
+	crsMatrix * tmp_2 = new crsMatrix;
+
+	SparseMKLMult(*a_dag, *a_dag_copy, *tmp_0);
+	SparseMKLMult(*a_std, *a_std_copy, *tmp_1);
+	SparseMKLMult(*tmp_0, *tmp_1, *tmp_2);
+
+	double coeff = 0.5 * 1.0 / pow(cp.prm_alpha, 3);
+
+	scalar_mult(tmp_2, coeff);
+
+	crsMatrix * H_0 = new crsMatrix(*tmp_2);
+
+	if (rp.debug == 1)
+	{
+		string fn = rp.path + "H_0" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, H_0, 16, false);
+
+		fn = rp.path + "a_std" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, a_std, 16, false);
+
+		fn = rp.path + "a_dag" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, a_dag, 16, false);
+	}
+
+	delete a_std;
+	delete a_std_copy;
+	delete a_dag;
+	delete a_dag_copy;
+	
+	delete tmp_0;
+	delete tmp_1;
+	delete tmp_2;
+
+	return H_0;
 }
 void init_h_0_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
-	crsMatrix * H_J = create_H_J_matrix(m, rp, cp, md), *res;
-	m->H_J = H_J;
+	crsMatrix * H_0 = create_H_0_matrix(m, rp, cp, md), *res;
+	m->H_0 = H_0;
 	int N = m->N;
-	crsMatrix * h_J = m->h_J;
+	FMatrixs *Fs = m->Fs;
+	dcomplex * h_0 = m->h_0;
 
-	to_F_basis(H_J, h_J);
+	int i = 0;
+	for (i = 0; i < (N + 1) * (N + 1) - 1; i++)
+	{
+		res = new crsMatrix;
+		SparseMKLMult(*H_0, *(Fs->F[i + 1]), *res);
+		h_0[i] = trace(*res);
+
+		delete res;
+	}
 }
 
 crsMatrix * create_H_1_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	int N = m->N;
 
-	crsMatrix * H_h_z = new crsMatrix(N + 1, N + 1);
-	int * RowIndex = H_h_z->RowIndex;
-	int * Col = H_h_z->Col;
-	dcomplex * Value = H_h_z->Value;
+	crsMatrix * a_std = create_a_std_matrix(m);
+	crsMatrix * a_dag = create_a_dag_matrix(m);
 
-	double * diag_array = new double[N + 1];
+	crsMatrix * tmp_0 = new crsMatrix();
 
-	for (int state_id = 0; state_id < N + 1; state_id++)
+	dcomplex beta = { -1.0, 0.0 };
+
+	SparseMKLAdd(*a_dag, beta, *a_std, *tmp_0);
+	
+	int NZ = tmp_0->NZ;
+	dcomplex * Value = tmp_0->Value;
+	double real = 0.0;
+	double imag = 0.0;
+	for (int nz_id = 0; nz_id < NZ; nz_id++)
 	{
-		diag_array[state_id] = 0.0;
+		real = Value[nz_id].re;
+		imag = Value[nz_id].im;
 
-		for (int bit_id = 0; bit_id < cp.N; bit_id++)
-		{
-			int bit = bit_at(state_id, bit_id);
-			
-			if (bit == 0)
-			{
-				diag_array[state_id] += -(1.0 * md.disorder_h_z[bit_id]);
-			}
-			else
-			{
-				diag_array[state_id] += -(-1.0 * md.disorder_h_z[bit_id]);
-			}
-		}
+		Value[nz_id].re = -imag;
+		Value[nz_id].im = real;
 	}
 
-	int i, j;
-	RowIndex[0] = 0;
-	for (i = 0; i < N + 1; i++)
-	{
-		RowIndex[i] = i;
-		Col[i] = i;
-	}
-	RowIndex[i] = i;
-
-	for (i = 0; i < N + 1; i++)
-	{
-		Value[i].re = diag_array[i];
-	}
-
-	delete[] diag_array;
+	crsMatrix * H_1 = new crsMatrix(*tmp_0);
 
 	if (rp.debug == 1)
 	{
-		string fn = rp.path + "H_h_z" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, H_h_z, 16, false);
+		string fn = rp.path + "H_1" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, H_1, 16, false);
 	}
 
-	return H_h_z;
+	delete a_std;
+	delete a_dag;
+
+	delete tmp_0;
+
+	return H_1;
 }
 void init_h_1_vector(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
-	crsMatrix * H_h_z = create_H_h_z_matrix(m, rp, cp, md), *res;
-	m->H_h_z = H_h_z;
+	crsMatrix * H_1 = create_H_1_matrix(m, rp, cp, md), *res;
+	m->H_1 = H_1;
 	int N = m->N;
+	FMatrixs *Fs = m->Fs;
+	dcomplex * h_1 = m->h_1;
 
-	crsMatrix * h_h_z = m->h_h_z;
+	int i = 0;
+	for (i = 0; i < (N + 1) * (N + 1) - 1; i++)
+	{
+		res = new crsMatrix;
+		SparseMKLMult(*H_1, *(Fs->F[i + 1]), *res);
+		h_1[i] = trace(*res);
 
-	to_F_basis(H_h_z, h_h_z);
+		delete res;
+	}
 }
 
-void init_H0(Model * m)
+void init_H0(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	int N_mat = m->N_mat;
-	crsMatrix * H0 = new crsMatrix();
-
-	crsMatrix * subSum1 = new crsMatrix();
-
-	dcomplex sum;
-	sum.re = 1.0;
-	sum.im = 0.0;
-
-	SparseMKLAdd(*(m->H_J), sum, *(m->H_h_z), *subSum1);
-	SparseMKLAdd(*subSum1, sum, *(m->H_h_x), *H0);
-
+	crsMatrix * H0 = create_H_0_matrix(m, rp, cp, md);
 	m->H0 = H0;
+}
+void init_H1(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
+{
+	int N_mat = m->N_mat;
+	crsMatrix * H1 = create_H_1_matrix(m, rp, cp, md);
+	m->H1 = H1;
 }
 
 crsMatrix * stdToCrs(vector<map<int, dcomplex> > & mat, int N)
@@ -3954,7 +1347,7 @@ crsMatrix * stdToCrs(vector<pair<int, dcomplex> > * mat, int N)
 	return res;
 }
 
-void gamma_mult(crsMatrix * res, double gamma)
+void scalar_mult(crsMatrix * res, double gamma)
 {
 	int NZ = res->NZ;
 	dcomplex * Value = res->Value;
@@ -3970,24 +1363,9 @@ crsMatrix * create_A1_diss1_matrix(Model * m, int diss_id, RunParam &rp, ConfigP
 {
 	int N = m->N;
 
-	crsMatrix * mat;
+	crsMatrix * a_std = create_a_std_matrix(m);
 
-	mat = new crsMatrix((N + 1), (N + 1) / 2);
-	int * RowIndex = mat->RowIndex;
-	int * Col = mat->Col;
-	dcomplex * Value = mat->Value;
-
-	init_diss1_A1_rows(RowIndex, cp.N, diss_id, cp);
-	init_diss1_A1_cols(Col, cp.N, diss_id, cp);
-	init_diss1_A1_vals(Value, cp.N, diss_id, cp);
-
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "A1_" + to_string(diss_id) + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, mat, 16, false);
-	}
-
-	return mat;
+	return a_std;
 }
 crsMatrix * create_A2_diss1_matrix(Model * m, int diss_id, RunParam &rp, ConfigParam &cp)
 {
@@ -3995,152 +1373,19 @@ crsMatrix * create_A2_diss1_matrix(Model * m, int diss_id, RunParam &rp, ConfigP
 
 	crsMatrix * mat;
 
-	mat = new crsMatrix((N + 1), (N + 1) / 2);
-	int * RowIndex = mat->RowIndex;
-	int * Col = mat->Col;
-	dcomplex * Value = mat->Value;
-
-	init_diss1_A2_rows(RowIndex, cp.N, diss_id, cp);
-	init_diss1_A2_cols(Col, cp.N, diss_id, cp);
-	init_diss1_A2_vals(Value, cp.N, diss_id, cp);
-
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "A2_" + to_string(diss_id) + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, mat, 16, false);
-	}
-
-	return mat;
-}
-crsMatrix * create_A1_diss2_matrix(Model * m, int diss_id, RunParam &rp, ConfigParam &cp)
-{
-	int N = m->N;
-
-	crsMatrix * mat = new crsMatrix();;
-
-	crsMatrix * sigma_x_1 = create_sigma_i_x_matrix(m, cp, diss_id);
-	crsMatrix * sigma_x_2 = create_sigma_i_x_matrix(m, cp, diss_id + 1);
-
-	crsMatrix * sigma_z_1 = create_sigma_i_z_matrix(m, cp, diss_id);
-	crsMatrix * sigma_z_2 = create_sigma_i_z_matrix(m, cp, diss_id + 1);
-
-	dcomplex sum;
-	sum.re = 1.0;
-	sum.im = 0.0;
-
-	crsMatrix * sub_sum_1 = new crsMatrix();
-	SparseMKLAdd(*(sigma_x_1), sum, *(sigma_x_2), *sub_sum_1);
-
-	dcomplex sub;
-	sub.re = -1.0;
-	sub.im = 0.0;
-
-	crsMatrix * sub_sum_2 = new crsMatrix();
-	SparseMKLAdd(*(sigma_z_1), sub, *(sigma_z_2), *sub_sum_2);
-
-	SparseMKLMult(*(sub_sum_1), *(sub_sum_2), *mat);
-
-	delete sigma_x_1;
-	delete sigma_x_2;
-	delete sigma_z_1;
-	delete sigma_z_2;
-	delete sub_sum_1;
-	delete sub_sum_2;
-
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "A1_" + to_string(diss_id) + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, mat, 16, false);
-	}
-
-	return mat;
-}
-crsMatrix * create_A2_diss2_matrix(Model * m, int diss_id, RunParam &rp, ConfigParam &cp)
-{
-	int N = m->N;
-
-	crsMatrix * mat;
-
 	mat = new crsMatrix((N + 1), (N + 1));
+
 	int * RowIndex = mat->RowIndex;
 	int * Col = mat->Col;
 	dcomplex * Value = mat->Value;
 
-	for (int state_id_1 = 0; state_id_1 < (N + 1); state_id_1++)
+	for (int state_id_1 = 0; state_id_1 < N + 1; state_id_1++)
 	{
 		Col[state_id_1] = state_id_1;
 		RowIndex[state_id_1] = state_id_1;
 		Value[state_id_1].re = 0.0;
 	}
-	RowIndex[(N + 1)] = (N + 1);
-
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "A2_" + to_string(diss_id) + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, mat, 16, false);
-	}
-
-	return mat;
-}
-crsMatrix * create_A1_diss0_matrix(Model * m, int diss_id, RunParam &rp, ConfigParam &cp)
-{
-	int N = m->N;
-
-	crsMatrix * mat;
-
-	mat = new crsMatrix((N + 1), (N + 1));
-	int * RowIndex = mat->RowIndex;
-	int * Col = mat->Col;
-	dcomplex * Value = mat->Value;
-
-	for (int state_id_1 = 0; state_id_1 < (N + 1); state_id_1++)
-	{
-		Col[state_id_1] = state_id_1;
-		RowIndex[state_id_1] = state_id_1;
-
-		if (bit_at(state_id_1, diss_id) == 1)
-		{
-			Value[state_id_1].re = 1.0;
-		}
-		else
-		{
-			Value[state_id_1].re = 0.0;
-		}
-	}
-	RowIndex[(N + 1)] = (N + 1);
-
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "A2_" + to_string(diss_id) + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, mat, 16, false);
-	}
-
-	return mat;
-}
-crsMatrix * create_A2_diss0_matrix(Model * m, int diss_id, RunParam &rp, ConfigParam &cp)
-{
-	int N = m->N;
-
-	crsMatrix * mat;
-
-	mat = new crsMatrix((N + 1), (N + 1));
-	int * RowIndex = mat->RowIndex;
-	int * Col = mat->Col;
-	dcomplex * Value = mat->Value;
-
-	for (int state_id_1 = 0; state_id_1 < (N + 1); state_id_1++)
-	{
-		Col[state_id_1] = state_id_1;
-		RowIndex[state_id_1] = state_id_1;
-		Value[state_id_1].re = 0.0;
-	}
-	RowIndex[(N + 1)] = (N + 1);
-
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "A2_" + to_string(diss_id) + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, mat, 16, false);
-	}
+	RowIndex[N + 1] = N + 1;
 
 	return mat;
 }
@@ -4195,6 +1440,7 @@ vector<pair<int, dcomplex> > * create_a_std_matrix(crsMatrix * a1_mat, crsMatrix
 void init_diss_1(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	int N = m->N;
+	FMatrixs *Fs = m->Fs;
 
 	int N_mat = m->N_mat;
 
@@ -4209,8 +1455,46 @@ void init_diss_1(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 	crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
 	crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
 
-	to_F_basis(A1, a1_mat);
-	to_F_basis(A2, a2_mat);
+	cout << "Dissipation" << endl;
+
+	int k = 0;
+
+	crsMatrix * res;
+	int cnt;
+	a1_mat->RowIndex[0] = 0;
+	for (int i = 0; i < N_mat; i++)
+	{
+		res = new crsMatrix;
+		SparseMKLMult(*A1, *(Fs->F[i + 1]), *res);
+		cnt = trace_struct(*res);
+		if (cnt > 0)
+		{
+			a1_mat->Value[k] = trace(*res);
+			a1_mat->Col[k] = i;
+			k++;
+		}
+		a1_mat->RowIndex[i + 1] = k;
+		delete res;
+	}
+	a1_mat->NZ = k;
+
+	k = 0;
+	a2_mat->RowIndex[0] = 0;
+	for (int i = 0; i < N_mat; i++)
+	{
+		res = new crsMatrix;
+		SparseMKLMult(*A2, *(Fs->F[i + 1]), *res);
+		cnt = trace_struct(*res);
+		if (cnt > 0)
+		{
+			a2_mat->Value[k] = trace(*res);
+			a2_mat->Col[k] = i;
+			k++;
+		}
+		a2_mat->RowIndex[i + 1] = k;
+		delete res;
+	}
+	a2_mat->NZ = k;
 
 	vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
 
@@ -4225,512 +1509,1328 @@ void init_diss_1(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 
 	delete[] a_std;
 
-	gamma_mult(a1_i_a2_mat, cp.g);
+	scalar_mult(a1_i_a2_mat, cp.g);
 	result_a_matrix = new crsMatrix(*a1_i_a2_mat);
+
+	m->a_mat = new crsMatrix(*a1_i_a2_mat);
 
 	delete a1_i_a2_mat;
 
 	time = omp_get_wtime() - init_time;
 	cout << "time of a_" << "0 : " << time << endl << endl;
+}
 
-	int diss_num = cp.N - 1;
+void sort_matrix(Tensor_Coordinates * matrix)
+{
+	unsigned int key;
+	unsigned int pos;
+	MKL_Complex16 data_tmp;
+	unsigned int int_tmp;
 
-	if (N > 1)
+	for (unsigned int i = 0; i < matrix[0].k; i++)
 	{
-		for (int dissId = 1; dissId < diss_num; dissId++)
+		key = matrix[0].hash[i];
+		pos = i;
+		for (unsigned int j = i + 1; j < matrix[0].k; j++)
 		{
-			crsMatrix * A1 = create_A1_diss1_matrix(m, dissId, rp, cp);
-			crsMatrix * A2 = create_A2_diss1_matrix(m, dissId, rp, cp);
+			if (matrix[0].hash[j] < key)
+			{
+				key = matrix[0].hash[j];
+				pos = j;
+			}
+		}
+		if (pos != i)
+		{
+			data_tmp = matrix[0].data[i];
+			matrix[0].data[i] = matrix[0].data[pos];
+			matrix[0].data[pos] = data_tmp;
 
-			crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-			crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
+			int_tmp = matrix[0].coord1[i];
+			matrix[0].coord1[i] = matrix[0].coord1[pos];
+			matrix[0].coord1[pos] = int_tmp;
 
-			to_F_basis(A1, a1_mat);
-			to_F_basis(A2, a2_mat);
+			int_tmp = matrix[0].coord2[i];
+			matrix[0].coord2[i] = matrix[0].coord2[pos];
+			matrix[0].coord2[pos] = int_tmp;
 
-			vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
+			int_tmp = matrix[0].coord3[i];
+			matrix[0].coord3[i] = matrix[0].coord3[pos];
+			matrix[0].coord3[pos] = int_tmp;
 
-			delete a1_mat;
-			delete a2_mat;
+			int_tmp = matrix[0].hash[i];
+			matrix[0].hash[i] = matrix[0].hash[pos];
+			matrix[0].hash[pos] = int_tmp;
+		}
+	}
+}
+void allocMemMat(Tensor_Coordinates_1 * mat)
+{
+	mat->coord2 = new unsigned  int[mat->N];
+	mat->coord3 = new unsigned  int[mat->N];
+	mat->data = new MKL_Complex16[mat->N];
+}
+void swap_row(Tensor_Coordinates_1 &mat, int i, int j)
+{
+	unsigned int t;
+	MKL_Complex16 v;
+	t = mat.coord2[i]; mat.coord2[i] = mat.coord2[j]; mat.coord2[j] = t;
+	t = mat.coord3[i]; mat.coord3[i] = mat.coord3[j]; mat.coord3[j] = t;
+	v = mat.data[i]; mat.data[i] = mat.data[j]; mat.data[j] = v;
+}
+void sort_matrix(Tensor_Coordinates * matrix, Tensor_Coordinates_1 * mat_res, int Nmat)
+{
+	int i = 0;
+	int NN = matrix->k;
+	for (i = 0; i < Nmat; i++)
+	{
+		mat_res[i].coord1 = i;
+		mat_res[i].N = 0;
+	}
 
-			delete A1;
-			delete A2;
-
-			crsMatrix * a1_i_a2_mat = NULL;
-			a1_i_a2_mat = stdToCrs(a_std, N_mat);
-
-			delete[] a_std;
-
-			gamma_mult(a1_i_a2_mat, cp.g);
-
-			crsMatrix * a_mat_tmp = new crsMatrix(*result_a_matrix);
-			delete result_a_matrix;
-			result_a_matrix = new crsMatrix();
-
-			dcomplex beta;
-			beta.re = 1.0;
-			beta.im = 0.0;
-
-			SparseMKLAdd(*a_mat_tmp, beta, *a1_i_a2_mat, *result_a_matrix);
-
-			delete a_mat_tmp;
-			delete a1_i_a2_mat;
-
-			time = omp_get_wtime() - init_time;
-			cout << "time of a_" << dissId << " : " << time << endl << endl;
+	for (i = 0; i < NN; i++)
+	{
+		int jj = matrix->coord1[i];
+		if (jj < Nmat)
+		{
+			mat_res[jj].N++;
+		}
+		else
+		{
+			printf("*");
 		}
 	}
 
-	if (rp.debug == 1)
+	for (i = 0; i < Nmat; i++)
 	{
-		string fn = rp.path + "a" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, result_a_matrix, 16, false);
+		allocMemMat(mat_res + i);
+		mat_res[i].N = 0;
 	}
 
-	m->l_mat = new crsMatrix(*result_a_matrix);
-	delete result_a_matrix;
+	int jj, ii, k;
+	for (i = 0; i < NN; i++)
+	{
+		jj = matrix->coord1[i];
+		ii = mat_res[jj].N;
+		mat_res[jj].coord2[ii] = matrix->coord2[i];
+		mat_res[jj].coord3[ii] = matrix->coord3[i];
+		mat_res[jj].data[ii] = matrix->data[i];
+		mat_res[jj].N++;
+	}
+
+	for (i = 0; i < Nmat; i++)
+	{
+		Tensor_Coordinates_1 tmp = mat_res[i];
+		for (ii = 0; ii < tmp.N - 1; ii++)
+		{
+			for (jj = 0; jj < tmp.N - 1; jj++)
+			{
+				if (tmp.coord2[jj] > tmp.coord2[jj + 1])
+				{
+					swap_row(tmp, jj, jj + 1);
+				}
+				else
+				{
+					if (tmp.coord2[jj] == tmp.coord2[jj + 1])
+					{
+						if (tmp.coord3[jj] > tmp.coord3[jj + 1])
+						{
+							swap_row(tmp, jj, jj + 1);
+						}
+					}
+				}
+			}
+		}
+	}
 }
-void init_diss_2(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
+void fijk_coord(Tensor_Coordinates * f_ijk, int N)
+{
+	unsigned int size = 5 * N * N * N - 9 * N * N - 2 * N + 6;
+	f_ijk[0].data = new MKL_Complex16[size];
+	memset(f_ijk[0].data, 0, size * sizeof(MKL_Complex16));
+	f_ijk[0].coord1 = new unsigned int[size];
+	memset(f_ijk[0].coord1, 0, size * sizeof(unsigned int));
+	f_ijk[0].coord2 = new unsigned int[size];
+	memset(f_ijk[0].coord2, 0, size * sizeof(unsigned int));
+	f_ijk[0].coord3 = new unsigned int[size];
+	memset(f_ijk[0].coord3, 0, size * sizeof(unsigned int));
+	f_ijk[0].hash = new unsigned int[size];
+	memset(f_ijk[0].hash, 0, size * sizeof(unsigned int));
+	f_ijk[0].k = 0;
+
+	for (int i = 1; i < N; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			f_ijk[0].data[f_ijk[0].k].real = (i) / sqrt((double)(i) * (i + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndD(i);
+			f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndD(i), IndJ(i, j), IndS(i, j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndD(i);
+			f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndD(i), IndS(i, j), IndJ(i, j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndD(i);
+			f_ijk[0].coord3[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, j), IndD(i), IndS(i, j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = (i) / sqrt((double)(i) * (i + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndD(i);
+			f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, j), IndD(i), IndJ(i, j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = (i) / sqrt((double)(i) * (i + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndD(i);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, j), IndS(i, j), IndD(i));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndD(i);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, j), IndJ(i, j), IndD(i));
+			f_ijk[0].k++;
+		}
+	}
+
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			for (int m = i + 1; m < j; m++)
+			{
+				f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt((double)(m) * (m + 1));
+				f_ijk[0].coord1[f_ijk[0].k] = IndD(m);
+				f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+				f_ijk[0].coord3[f_ijk[0].k] = IndS(i, j);
+				f_ijk[0].hash[f_ijk[0].k] = IND(IndD(m), IndJ(i, j), IndS(i, j));
+				f_ijk[0].k++;
+
+				f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				f_ijk[0].coord1[f_ijk[0].k] = IndD(m);
+				f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+				f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, j);
+				f_ijk[0].hash[f_ijk[0].k] = IND(IndD(m), IndS(i, j), IndJ(i, j));
+				f_ijk[0].k++;
+
+				f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, j);
+				f_ijk[0].coord2[f_ijk[0].k] = IndD(m);
+				f_ijk[0].coord3[f_ijk[0].k] = IndS(i, j);
+				f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, j), IndD(m), IndS(i, j));
+				f_ijk[0].k++;
+
+				f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt((double)(m) * (m + 1));
+				f_ijk[0].coord1[f_ijk[0].k] = IndS(i, j);
+				f_ijk[0].coord2[f_ijk[0].k] = IndD(m);
+				f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, j);
+				f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, j), IndD(m), IndJ(i, j));
+				f_ijk[0].k++;
+
+				f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt((double)(m) * (m + 1));
+				f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, j);
+				f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+				f_ijk[0].coord3[f_ijk[0].k] = IndD(m);
+				f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, j), IndS(i, j), IndD(m));
+				f_ijk[0].k++;
+
+				f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				f_ijk[0].coord1[f_ijk[0].k] = IndS(i, j);
+				f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+				f_ijk[0].coord3[f_ijk[0].k] = IndD(m);
+				f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, j), IndJ(i, j), IndD(m));
+				f_ijk[0].k++;
+			}
+		}
+	}
+
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			f_ijk[0].data[f_ijk[0].k].real = -(1 + j) / sqrt((double)(j) * (j + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndD(j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndD(j), IndJ(i, j), IndS(i, j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = (1 + j) / sqrt((double)(j) * (j + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndD(j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndD(j), IndS(i, j), IndJ(i, j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = (1 + j) / sqrt((double)(j) * (j + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndD(j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, j), IndD(j), IndS(i, j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = -(1 + j) / sqrt((double)(j) * (j + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndD(j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, j), IndD(j), IndJ(i, j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = -(1 + j) / sqrt((double)(j) * (j + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndD(j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, j), IndS(i, j), IndD(j));
+			f_ijk[0].k++;
+
+			f_ijk[0].data[f_ijk[0].k].real = (1 + j) / sqrt((double)(j) * (j + 1));
+			f_ijk[0].coord1[f_ijk[0].k] = IndS(i, j);
+			f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+			f_ijk[0].coord3[f_ijk[0].k] = IndD(j);
+			f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, j), IndJ(i, j), IndD(j));
+			f_ijk[0].k++;
+		}
+	}
+
+	for (int i = 0; i < N - 1; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			for (int k = 0; k < N; k++)
+			{
+				if (k > j)
+				{
+					if (k > i)
+					{
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0); //-i*Jjk*[Sij,Sik]  //and symmetric Ski, Jkj
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(j, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(i, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(j, k), IndS(i, j), IndS(i, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0); //-i*Jik*[Sij,Sjk]  //and symmetric Skj, Jki
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(j, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, k), IndS(i, j), IndS(j, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0); //-i*Sjk*[Sij,Jik]  //and symmetric Skj, Jki
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(j, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(j, k), IndS(i, j), IndJ(i, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0); //-i*Sik*[Sij,Jjk]  //and symmetric Ski, Jkj
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(i, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(j, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, k), IndS(i, j), IndJ(j, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0); //-i*Sjk*[Jij,Sik]  //and symmetric Ski, Skj
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(j, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(i, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(j, k), IndJ(i, j), IndS(i, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0); //-i*Sik*[Jij,Sjk]  //and symmetric Skj, Ski
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(i, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(j, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, k), IndJ(i, j), IndS(j, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0); //-i*Jjk*[Jij,Jik]  //and symmetric Jkj, Jki
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(j, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(j, k), IndJ(i, j), IndJ(i, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0); //-i*Jik*[Jij,Jjk]  //and symmetric Jki, Jkj
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(j, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, k), IndJ(i, j), IndJ(j, k));
+						f_ijk[0].k++;
+					}
+				}
+				if (k < j)
+				{
+					if (k > i)
+					{
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(k, j);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(i, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(k, j), IndS(i, j), IndS(i, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(k, j);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, k), IndS(i, j), IndS(k, j));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(k, j);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(k, j), IndS(i, j), IndJ(i, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(i, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(k, j);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, k), IndS(i, j), IndJ(k, j));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(k, j);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(i, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(k, j), IndJ(i, j), IndS(i, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(i, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(k, j);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(i, k), IndJ(i, j), IndS(k, j));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(k, j);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(i, k);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(k, j), IndJ(i, j), IndJ(i, k));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(i, k);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(k, j);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(i, k), IndJ(i, j), IndJ(k, j));
+						f_ijk[0].k++;
+					}
+					if (k < i)
+					{
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(k, j);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(k, i);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(k, j), IndS(i, j), IndS(k, i));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(k, i);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(k, j);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(k, i), IndS(i, j), IndS(k, j));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(k, j);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(k, i);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(k, j), IndS(i, j), IndJ(k, i));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(k, i);
+						f_ijk[0].coord2[f_ijk[0].k] = IndS(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(k, j);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(k, i), IndS(i, j), IndJ(k, j));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(k, j);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(k, i);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(k, j), IndJ(i, j), IndS(k, i));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndS(k, i);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndS(k, j);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndS(k, i), IndJ(i, j), IndS(k, j));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = 1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(k, j);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(k, i);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(k, j), IndJ(i, j), IndJ(k, i));
+						f_ijk[0].k++;
+
+						f_ijk[0].data[f_ijk[0].k].real = -1.0 / sqrt(2.0);
+						f_ijk[0].coord1[f_ijk[0].k] = IndJ(k, i);
+						f_ijk[0].coord2[f_ijk[0].k] = IndJ(i, j);
+						f_ijk[0].coord3[f_ijk[0].k] = IndJ(k, j);
+						f_ijk[0].hash[f_ijk[0].k] = IND(IndJ(k, i), IndJ(i, j), IndJ(k, j));
+						f_ijk[0].k++;
+					}
+				}
+			}
+		}
+	}
+}
+void dijk_coord(Tensor_Coordinates * d_ijk, int N)
+{
+	unsigned int size = 6 * N * N * N - (N * (21 * N + 7)) / 2 + 1;
+	d_ijk[0].data = new MKL_Complex16[size];
+	memset(d_ijk[0].data, 0, size * sizeof(MKL_Complex16));
+	d_ijk[0].coord1 = new unsigned int[size];
+	memset(d_ijk[0].coord1, 0, size * sizeof(unsigned int));
+	d_ijk[0].coord2 = new unsigned int[size];
+	memset(d_ijk[0].coord2, 0, size * sizeof(unsigned int));
+	d_ijk[0].coord3 = new unsigned int[size];
+	memset(d_ijk[0].coord3, 0, size * sizeof(unsigned int));
+	d_ijk[0].hash = new unsigned int[size];
+	memset(d_ijk[0].hash, 0, size * sizeof(unsigned int));
+	d_ijk[0].k = 0;
+
+	for (int i = 1; i < N; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			d_ijk[0].data[d_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndD(i);
+			d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndD(i), IndS(i, j), IndS(i, j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndD(i);
+			d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndD(i), IndS(i, j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndD(i);
+			d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndD(i), IndJ(i, j), IndJ(i, j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndD(i);
+			d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndD(i), IndJ(i, j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndD(i);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndS(i, j), IndD(i));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = -(i) / sqrt((double)(i) * (i + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndD(i);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndJ(i, j), IndD(i));
+			d_ijk[0].k++;
+		}
+	}
+
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			for (int m = i + 1; m < j; m++)
+			{
+				d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndD(m);
+				d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndD(m), IndS(i, j), IndS(i, j));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].coord2[d_ijk[0].k] = IndD(m);
+				d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndD(m), IndS(i, j));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndD(m);
+				d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndD(m), IndJ(i, j), IndJ(i, j));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].coord2[d_ijk[0].k] = IndD(m);
+				d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndD(m), IndJ(i, j));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].coord3[d_ijk[0].k] = IndD(m);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndS(i, j), IndD(m));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt((double)(m) * (m + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].coord3[d_ijk[0].k] = IndD(m);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndJ(i, j), IndD(m));
+				d_ijk[0].k++;
+			}
+		}
+	}
+
+	for (int j = 2; j < N; j++)
+	{
+		int i = 0;
+		d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndD(j);
+		d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+		d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndD(j), IndS(i, j), IndS(i, j));
+		d_ijk[0].k++;
+
+		d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+		d_ijk[0].coord2[d_ijk[0].k] = IndD(j);
+		d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndD(j), IndS(i, j));
+		d_ijk[0].k++;
+
+		d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndD(j);
+		d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+		d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndD(j), IndJ(i, j), IndJ(i, j));
+		d_ijk[0].k++;
+
+		d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+		d_ijk[0].coord2[d_ijk[0].k] = IndD(j);
+		d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndD(j), IndJ(i, j));
+		d_ijk[0].k++;
+
+		d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+		d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+		d_ijk[0].coord3[d_ijk[0].k] = IndD(j);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndS(i, j), IndD(j));
+		d_ijk[0].k++;
+
+		d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+		d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+		d_ijk[0].coord3[d_ijk[0].k] = IndD(j);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndJ(i, j), IndD(j));
+		d_ijk[0].k++;
+	}
+
+	for (int i = 1; i < N; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndD(j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndD(j), IndS(i, j), IndS(i, j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndD(j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndD(j), IndS(i, j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndD(j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndD(j), IndJ(i, j), IndJ(i, j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndD(j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndD(j), IndJ(i, j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndD(j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndS(i, j), IndD(j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = (1 - j) / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndD(j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndJ(i, j), IndD(j));
+			d_ijk[0].k++;
+		}
+	}
+
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			for (int z = j + 1; z < N; z++)
+			{
+				d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(z) * (z + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndD(z);
+				d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndD(z), IndS(i, j), IndS(i, j));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(z) * (z + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].coord2[d_ijk[0].k] = IndD(z);
+				d_ijk[0].coord3[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndD(z), IndS(i, j));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(z) * (z + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndD(z);
+				d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndD(z), IndJ(i, j), IndJ(i, j));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(z) * (z + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].coord2[d_ijk[0].k] = IndD(z);
+				d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndD(z), IndJ(i, j));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(z) * (z + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+				d_ijk[0].coord3[d_ijk[0].k] = IndD(z);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, j), IndS(i, j), IndD(z));
+				d_ijk[0].k++;
+
+				d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(z) * (z + 1));
+				d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+				d_ijk[0].coord3[d_ijk[0].k] = IndD(z);
+				d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, j), IndJ(i, j), IndD(z));
+				d_ijk[0].k++;
+			}
+		}
+	}
+
+	for (int i = 0; i < N - 1; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			for (int k = 0; k < N; k++)
+			{
+				if (k > j)
+				{
+					if (k > i)
+					{
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);  //Sjk*{Sij,Sik}  //and symmetric Ski, Skj
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(j, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(i, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(j, k), IndS(i, j), IndS(i, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);  //Sik*{Sij,Sjk}  //and symmetric Skj, Ski
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(i, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(j, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, k), IndS(i, j), IndS(j, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);  //Jjk*{Sij,Jik}  //and symmetric Jkj, Jki
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(j, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(j, k), IndS(i, j), IndJ(i, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);  //Jik*{Sij,Jjk}  //and symmetric Jki, Jkj
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(j, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, k), IndS(i, j), IndJ(j, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = -1.0 / sqrt(2.0);  //Jjk*{Jij,Sik}  //and symmetric Ski, Jkj
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(j, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(i, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(j, k), IndJ(i, j), IndS(i, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);  //Jik*{Jij,Sjk}  //and symmetric Skj, Jki
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(j, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, k), IndJ(i, j), IndS(j, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);  //Sjk*{Jij,Jik}  //and symmetric Skj, Jki
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(j, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(j, k), IndJ(i, j), IndJ(i, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = -1.0 / sqrt(2.0);  //Sik*{Jij,Jjk}  //and symmetric Ski, Jkj
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(i, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(j, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, k), IndJ(i, j), IndJ(j, k));
+						d_ijk[0].k++;
+					}
+				}
+				if (k < j)
+				{
+					if (k > i)
+					{
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(k, j);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(i, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(k, j), IndS(i, j), IndS(i, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(i, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(k, j);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, k), IndS(i, j), IndS(k, j));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = -1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(k, j);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(k, j), IndS(i, j), IndJ(i, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = -1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(k, j);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, k), IndS(i, j), IndJ(k, j));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(k, j);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(i, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(k, j), IndJ(i, j), IndS(i, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(i, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(k, j);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(i, k), IndJ(i, j), IndS(k, j));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(k, j);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(i, k);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(k, j), IndJ(i, j), IndJ(i, k));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(i, k);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(k, j);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(i, k), IndJ(i, j), IndJ(k, j));
+						d_ijk[0].k++;
+					}
+					if (k < i)
+					{
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(k, j);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(k, i);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(k, j), IndS(i, j), IndS(k, i));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(k, i);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(k, j);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(k, i), IndS(i, j), IndS(k, j));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(k, j);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(k, i);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(k, j), IndS(i, j), IndJ(k, i));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(k, i);
+						d_ijk[0].coord2[d_ijk[0].k] = IndS(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(k, j);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(k, i), IndS(i, j), IndJ(k, j));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(k, j);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(k, i);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(k, j), IndJ(i, j), IndS(k, i));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = -1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndJ(k, i);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndS(k, j);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndJ(k, i), IndJ(i, j), IndS(k, j));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = -1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(k, j);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(k, i);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(k, j), IndJ(i, j), IndJ(k, i));
+						d_ijk[0].k++;
+
+						d_ijk[0].data[d_ijk[0].k].real = 1.0 / sqrt(2.0);
+						d_ijk[0].coord1[d_ijk[0].k] = IndS(k, i);
+						d_ijk[0].coord2[d_ijk[0].k] = IndJ(i, j);
+						d_ijk[0].coord3[d_ijk[0].k] = IndJ(k, j);
+						d_ijk[0].hash[d_ijk[0].k] = IND(IndS(k, i), IndJ(i, j), IndJ(k, j));
+						d_ijk[0].k++;
+					}
+				}
+			}
+		}
+	}
+
+
+	for (int j = 2; j < N; j++)
+	{
+		int i = 1;
+		d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndD(j);
+		d_ijk[0].coord2[d_ijk[0].k] = IndD(i);
+		d_ijk[0].coord3[d_ijk[0].k] = IndD(i);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndD(j), IndD(i), IndD(i));
+		d_ijk[0].k++;
+
+		d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndD(i);
+		d_ijk[0].coord2[d_ijk[0].k] = IndD(i);
+		d_ijk[0].coord3[d_ijk[0].k] = IndD(j);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndD(i), IndD(i), IndD(j));
+		d_ijk[0].k++;
+
+		d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(j) * (j + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndD(i);
+		d_ijk[0].coord2[d_ijk[0].k] = IndD(j);
+		d_ijk[0].coord3[d_ijk[0].k] = IndD(i);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndD(i), IndD(j), IndD(i));
+		d_ijk[0].k++;
+	}
+
+	for (int i = 2; i < N; i++)
+	{
+		d_ijk[0].data[d_ijk[0].k].real = 2.0 * (1 - i) / sqrt((double)(i) * (i + 1));
+		d_ijk[0].coord1[d_ijk[0].k] = IndD(i);
+		d_ijk[0].coord2[d_ijk[0].k] = IndD(i);
+		d_ijk[0].coord3[d_ijk[0].k] = IndD(i);
+		d_ijk[0].hash[d_ijk[0].k] = IND(IndD(i), IndD(i), IndD(i));
+		d_ijk[0].k++;
+
+		for (int j = i + 1; j < N; j++)
+		{
+			d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndD(j);
+			d_ijk[0].coord2[d_ijk[0].k] = IndD(i);
+			d_ijk[0].coord3[d_ijk[0].k] = IndD(i);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndD(j), IndD(i), IndD(i));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndD(i);
+			d_ijk[0].coord2[d_ijk[0].k] = IndD(i);
+			d_ijk[0].coord3[d_ijk[0].k] = IndD(j);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndD(i), IndD(i), IndD(j));
+			d_ijk[0].k++;
+
+			d_ijk[0].data[d_ijk[0].k].real = 2.0 / sqrt((double)(j) * (j + 1));
+			d_ijk[0].coord1[d_ijk[0].k] = IndD(i);
+			d_ijk[0].coord2[d_ijk[0].k] = IndD(j);
+			d_ijk[0].coord3[d_ijk[0].k] = IndD(i);
+			d_ijk[0].hash[d_ijk[0].k] = IND(IndD(i), IndD(j), IndD(i));
+			d_ijk[0].k++;
+		}
+	}
+}
+void print_matrix(Tensor_Coordinates * matrix, FILE * f)
+{
+	for (unsigned int i = 0; i < matrix[0].k; i++)
+	{
+		fprintf(f, "%2.3i %2.3i %2.3i %lf\n", matrix[0].coord1[i] + 1, matrix[0].coord2[i] + 1, matrix[0].coord3[i] + 1, matrix[0].data[i].real);
+	}
+}
+void free_matrix(Tensor_Coordinates * matrix)
+{
+	delete(matrix[0].data);
+	delete(matrix[0].coord1);
+	delete(matrix[0].coord2);
+	delete(matrix[0].coord3);
+	delete(matrix[0].hash);
+	matrix[0].k = 0;
+}
+
+void init_f_d(Model *m)
 {
 	int N = m->N;
-
 	int N_mat = m->N_mat;
 
-	crsMatrix * result_a_matrix = NULL;
+	FMatrixs * Fs = m->Fs;
 
-	double time = omp_get_wtime();
-	double init_time = time;
+	crsMatrix * Fjk, *Fkj, *Fk, *Fsum, *Fsub, *Fres;
 
-	crsMatrix * A1 = create_A1_diss2_matrix(m, 0, rp, cp);
-	crsMatrix * A2 = create_A2_diss2_matrix(m, 0, rp, cp);
+	dcomplex add, sub;
+	add.re = 1.0; add.im = 0.0;
+	sub.re = -1.0; sub.im = 0.0;
 
-	crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-	crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
+	vector<pair<int, dcomplex> > * f_std;
+	vector<pair<int, dcomplex> > * d_std;
 
-	to_F_basis(A1, a1_mat);
-	to_F_basis(A2, a2_mat);
+	m->d_mat = new crsMatrix *[N_mat];
+	m->f_mat = new crsMatrix *[N_mat];
 
-	vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
+	int i, j, k, cnt;
 
-	delete a1_mat;
-	delete a2_mat;
+	Fjk = new crsMatrix;
+	Fkj = new crsMatrix;
 
-	delete A1;
-	delete A2;
+	Fsum = new crsMatrix;
+	Fsub = new crsMatrix;
 
-	crsMatrix * a1_i_a2_mat = NULL;
-	a1_i_a2_mat = stdToCrs(a_std, N_mat);
+	Fres = new crsMatrix;
 
-	delete[] a_std;
-
-	gamma_mult(a1_i_a2_mat, cp.g);
-
-	result_a_matrix = new crsMatrix(*a1_i_a2_mat);
-
-	delete a1_i_a2_mat;
-
-	time = omp_get_wtime() - init_time;
-	cout << "time of a_" << "0 : " << time << endl << endl;
-
-	int diss_num = cp.N - 1;
-
-	if (N > 1)
+	for (i = 0; i < N_mat; i++)
 	{
-		for (int dissId = 1; dissId < diss_num; dissId++)
+		f_std = new vector<pair<int, dcomplex> >[N_mat];
+		d_std = new vector<pair<int, dcomplex> >[N_mat];
+
+		for (j = 0; j < N_mat; j++)
 		{
-			crsMatrix * A1 = create_A1_diss2_matrix(m, dissId, rp, cp);
-			crsMatrix * A2 = create_A2_diss2_matrix(m, dissId, rp, cp);
+			for (k = 0; k < N_mat; k++)
+			{
 
-			crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-			crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
+				Fk = new crsMatrix(*(Fs->F[k + 1]));
 
-			to_F_basis(A1, a1_mat);
-			to_F_basis(A2, a2_mat);
+				SparseMKLMult(*(Fs->F[j + 1]), *Fk, *Fjk, true);
+				SparseMKLMult(*Fk, *(Fs->F[j + 1]), *Fkj, true);
+				delete Fk;
 
-			vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
+				SparseMKLAdd(*Fjk, add, *Fkj, *Fsum, true);
+				SparseMKLAdd(*Fjk, sub, *Fkj, *Fsub, true);
 
-			delete a1_mat;
-			delete a2_mat;
 
-			delete A1;
-			delete A2;
+				SparseMKLMult(*(Fs->F[i + 1]), *Fsub, *Fres, true);
+				cnt = trace_struct(*Fres);
+				if (cnt > 0)
+				{
+					dcomplex val, tr;
+					tr = trace(*Fres);
+					val.re = tr.im;
+					val.im = -tr.re;
+					f_std[j].push_back(make_pair(k, val));
+				}
 
-			crsMatrix * a1_i_a2_mat = NULL;
-			a1_i_a2_mat = stdToCrs(a_std, N_mat);
-
-			delete[] a_std;
-
-			gamma_mult(a1_i_a2_mat, cp.g);
-
-			crsMatrix * a_mat_tmp = new crsMatrix(*result_a_matrix);
-			delete result_a_matrix;
-			result_a_matrix = new crsMatrix();
-
-			dcomplex beta;
-			beta.re = 1.0;
-			beta.im = 0.0;
-
-			SparseMKLAdd(*a_mat_tmp, beta, *a1_i_a2_mat, *result_a_matrix);
-
-			delete a_mat_tmp;
-			delete a1_i_a2_mat;
-
-			time = omp_get_wtime() - init_time;
-			cout << "time of a_" << dissId << " : " << time << endl << endl;
+				SparseMKLMult(*(Fs->F[i + 1]), *Fsum, *Fres, true);
+				cnt = trace_struct(*Fres);
+				if (cnt > 0)
+				{
+					dcomplex val;
+					val = trace(*Fres);
+					d_std[j].push_back(make_pair(k, val));
+				}
+			}
 		}
-	}
 
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "a" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, result_a_matrix, 16, false);
-	}
+		m->f_mat[i] = stdToCrs(f_std, N_mat);
+		m->d_mat[i] = stdToCrs(d_std, N_mat);
 
-	m->l_mat = new crsMatrix(*result_a_matrix);
-	delete result_a_matrix;
+		//    printMatrixVal(m->f_mat[i]);
+		//    printMatrixVal(m->d_mat[i]);
+
+		delete[] f_std;
+		delete[] d_std;
+	}
+	delete Fjk;
+	delete Fkj;
+
+	delete Fsum;
+	delete Fsub;
+
+	delete Fres;
+
 }
-void init_diss_3(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
+crsMatrix * TensorToCrs(Tensor_Coordinates &t_ijk, int s, int f, int N)
+{
+	crsMatrix *  mat = new crsMatrix(N, f - s);
+	int i = 0;
+	dcomplex val;
+
+	for (i = 0; i < f - s; i++)
+	{
+		val.re = t_ijk.data[s + i].real;
+		val.im = t_ijk.data[s + i].imag;
+		mat->Value[i] = val;
+		mat->Col[i] = t_ijk.coord3[s + i];
+	}
+
+	for (i = 0; i < N + 1; i++)
+	{
+		mat->RowIndex[i] = 0;
+	}
+
+	for (i = 0; i < f - s; i++)
+	{
+		mat->RowIndex[t_ijk.coord2[s + i] + 1]++;
+	}
+
+	int cnt = 0;
+
+	for (i = 0; i < N; i++)
+	{
+		mat->RowIndex[i] = cnt;
+		cnt += mat->RowIndex[i + 1];
+	}
+	mat->RowIndex[i] = cnt;
+
+	return mat;
+}
+crsMatrix * TensorToCrs(Tensor_Coordinates_1 &t_ijk, int s, int f, int N)
+{
+	crsMatrix *  mat = new crsMatrix(N, f - s);
+	int i = 0;
+	dcomplex val;
+
+	for (i = 0; i < f - s; i++)
+	{
+		val.re = t_ijk.data[s + i].real;
+		val.im = t_ijk.data[s + i].imag;
+		mat->Value[i] = val;
+		mat->Col[i] = t_ijk.coord3[s + i];
+	}
+
+	for (i = 0; i < N + 1; i++)
+	{
+		mat->RowIndex[i] = 0;
+	}
+
+	for (i = 0; i < f - s; i++)
+	{
+		mat->RowIndex[t_ijk.coord2[s + i] + 1]++;
+	}
+
+	int cnt = 0;
+
+	for (i = 0; i < N; i++)
+	{
+		mat->RowIndex[i] = cnt;
+		cnt += mat->RowIndex[i + 1];
+	}
+	mat->RowIndex[i] = cnt;
+
+	return mat;
+}
+void init_f_d_valentin(Model *m)
 {
 	int N = m->N;
-
 	int N_mat = m->N_mat;
+	int i;
 
-	crsMatrix * result_a_matrix = NULL;
+	m->d_mat = new crsMatrix *[N_mat];
+	m->f_mat = new crsMatrix *[N_mat];
 
-	double time = omp_get_wtime();
-	double init_time = time;
+	//  vector<pair<int , dcomplex> > * f_std;
+	//  vector<pair<int , dcomplex> > * d_std;
 
-	crsMatrix * A1 = create_A1_diss1_matrix(m, 0, rp, cp);
-	crsMatrix * A2 = create_A2_diss1_matrix(m, 0, rp, cp);
+	Tensor_Coordinates f_ijk;
+	Tensor_Coordinates d_ijk;
+	Tensor_Coordinates_1 * f_1 = new Tensor_Coordinates_1[N_mat];
+	Tensor_Coordinates_1 * d_1 = new Tensor_Coordinates_1[N_mat];
 
-	crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-	crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
+	fijk_coord(&f_ijk, N + 1);
+	sort_matrix(&f_ijk, f_1, N_mat);
+	//  sort_matrix(&f_ijk);
 
-	to_F_basis(A1, a1_mat);
-	to_F_basis(A2, a2_mat);
+	dijk_coord(&d_ijk, N + 1);
+	sort_matrix(&d_ijk, d_1, N_mat);
+	//  sort_matrix(&d_ijk);
 
-	vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
+	int k, s, f;
 
-	delete a1_mat;
-	delete a2_mat;
-
-	delete A1;
-	delete A2;
-
-	crsMatrix * a1_i_a2_mat = NULL;
-	a1_i_a2_mat = stdToCrs(a_std, N_mat);
-
-	delete[] a_std;
-
-	gamma_mult(a1_i_a2_mat, cp.g);
-	result_a_matrix = new crsMatrix(*a1_i_a2_mat);
-
-	delete a1_i_a2_mat;
-
-	time = omp_get_wtime() - init_time;
-	cout << "time of a_" << "0 : " << time << endl << endl;
-
-	int diss_num = cp.N - 1;
-
-	if (N > 1)
+	//  k = 0;
+	for (i = 0; i < N_mat; i++)
 	{
-		for (int dissId = 1; dissId < diss_num; dissId++)
+		//    s = k;
+		//    while(f_ijk.coord1[k] == i)
+		//    {
+		//      k++;
+		//    }
+		//    f = k;
+		//    m->f_mat[i] = TensorToCrs(f_ijk, s, f, N_mat);
+		m->f_mat[i] = TensorToCrs(f_1[i], 0, f_1[i].N, N_mat);
+	}
+
+	//  k = 0;
+	for (i = 0; i < N_mat; i++)
+	{
+		//    s = k;
+		//    while(d_ijk.coord1[k] == i)
+		//    {
+		//      k++;
+		//    }
+		//    f = k;
+		//    m->d_mat[i] = TensorToCrs(d_ijk, s, f, N_mat);
+		m->d_mat[i] = TensorToCrs(d_1[i], 0, d_1[i].N, N_mat);
+	}
+
+	for (i = 0; i < N_mat; i++)
+	{
+		delete[] f_1[i].coord2;
+		delete[] f_1[i].coord3;
+		delete[] f_1[i].data;
+		delete[] d_1[i].coord2;
+		delete[] d_1[i].coord3;
+		delete[] d_1[i].data;
+	}
+	delete[] f_1;
+	delete[] d_1;
+
+	free_matrix(&f_ijk);
+	free_matrix(&d_ijk);
+}
+
+void transpFs(Model *m)
+{
+	int N_mat = m->N_mat;
+	crsMatrix **f_mat = m->f_mat;
+	crsMatrix **f_H_mat = new crsMatrix*[N_mat];
+	for (int i = 0; i < N_mat; i++)
+	{
+		f_H_mat[i] = new crsMatrix(*(f_mat[i]));
+		Transpose(*(f_mat[i]), *(f_H_mat[i]), false);
+		//    printMatrixVal(f_H_mat[i]);
+	}
+	m->f_H_mat = f_H_mat;
+}
+
+void calc_Q_0(Model * m)
+{
+	int N_mat = m->N_mat;
+	dcomplex * h_0 = m->h_0;
+
+	crsMatrix ** f_mat = m->f_H_mat;
+	crsMatrix * Q_0 = new crsMatrix(m->N_mat, 1);
+	crsMatrix * resSum;
+
+	Q_0->Col[0] = 0;
+	Q_0->RowIndex[0] = 0;
+	for (int i = 1; i <= N_mat; i++)
+	{
+		Q_0->RowIndex[i] = 0;
+	}
+
+	for (int i = 0; i < N_mat; i++)
+	{
+		if ((h_0[i].re != 0.0) || (h_0[i].im != 0.0))
 		{
-			crsMatrix * A1 = create_A1_diss1_matrix(m, dissId, rp, cp);
-			crsMatrix * A2 = create_A2_diss1_matrix(m, dissId, rp, cp);
-
-			crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-			crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
-
-			to_F_basis(A1, a1_mat);
-			to_F_basis(A2, a2_mat);
-			vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
-
-			delete a1_mat;
-			delete a2_mat;
-
-			delete A1;
-			delete A2;
-
-			crsMatrix * a1_i_a2_mat = NULL;
-			a1_i_a2_mat = stdToCrs(a_std, N_mat);
-
-			delete[] a_std;
-
-			gamma_mult(a1_i_a2_mat, cp.g);
-
-			crsMatrix * a_mat_tmp = new crsMatrix(*result_a_matrix);
-			delete result_a_matrix;
-			result_a_matrix = new crsMatrix();
-
-			dcomplex beta;
-			beta.re = 1.0;
-			beta.im = 0.0;
-
-			SparseMKLAdd(*a_mat_tmp, beta, *a1_i_a2_mat, *result_a_matrix);
-
-			delete a_mat_tmp;
-			delete a1_i_a2_mat;
-
-			time = omp_get_wtime() - init_time;
-			cout << "time of a_" << dissId << " : " << time << endl << endl;
-
-		}
-
-		int diss_num = cp.N;
-
-		for (int dissId = 0; dissId < diss_num; dissId++)
-		{
-			crsMatrix * A1 = create_A1_diss0_matrix(m, dissId, rp, cp);
-			crsMatrix * A2 = create_A2_diss0_matrix(m, dissId, rp, cp);
-
-			crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-			crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
-
-			to_F_basis(A1, a1_mat);
-			to_F_basis(A2, a2_mat);
-
-			vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
-
-			delete a1_mat;
-			delete a2_mat;
-
-			delete A1;
-			delete A2;
-
-			crsMatrix * a1_i_a2_mat = NULL;
-			a1_i_a2_mat = stdToCrs(a_std, N_mat);
-
-			delete[] a_std;
-
-			gamma_mult(a1_i_a2_mat, cp.g_add);
-
-			crsMatrix * a_mat_tmp = new crsMatrix(*result_a_matrix);
-			delete result_a_matrix;
-			result_a_matrix = new crsMatrix();
-
-			dcomplex beta;
-			beta.re = 1.0;
-			beta.im = 0.0;
-
-			SparseMKLAdd(*a_mat_tmp, beta, *a1_i_a2_mat, *result_a_matrix);
-
-			delete a_mat_tmp;
-			delete a1_i_a2_mat;
-
-			time = omp_get_wtime() - init_time;
-			cout << "time of a_" << dissId << " : " << time << endl << endl;
-
+			resSum = new crsMatrix;
+			SparseMKLAdd(*Q_0, h_0[i], *(f_mat[i]), *resSum);
+			delete Q_0;
+			Q_0 = resSum;
 		}
 	}
 
-	if (rp.debug == 1)
+	m->Q_0 = Q_0;
+}
+void calc_Q_1(Model * m)
+{
+	int N_mat = m->N_mat;
+	dcomplex * h_1 = m->h_1;
+
+	crsMatrix ** f_mat = m->f_H_mat;
+	crsMatrix * Q_1 = new crsMatrix(m->N_mat, 1);
+	crsMatrix * resSum;
+
+	Q_1->Col[0] = 0;
+	Q_1->RowIndex[0] = 0;
+	for (int i = 1; i <= N_mat; i++)
 	{
-		string fn = rp.path + "a" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, result_a_matrix, 16, false);
+		Q_1->RowIndex[i] = 0;
 	}
 
-	m->l_mat = new crsMatrix(*result_a_matrix);
-	delete result_a_matrix;
-}
-void init_diss_4(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
-{
-	int N = m->N;
-
-	int N_mat = m->N_mat;
-
-	crsMatrix * result_a_matrix = NULL;
-
-	double time = omp_get_wtime();
-	double init_time = time;
-
-	crsMatrix * A1 = create_A1_diss2_matrix(m, 0, rp, cp);
-	crsMatrix * A2 = create_A2_diss2_matrix(m, 0, rp, cp);
-
-	crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-	crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
-
-	to_F_basis(A1, a1_mat);
-	to_F_basis(A2, a2_mat);
-
-	vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
-
-	delete a1_mat;
-	delete a2_mat;
-
-	delete A1;
-	delete A2;
-
-	crsMatrix * a1_i_a2_mat = NULL;
-	a1_i_a2_mat = stdToCrs(a_std, N_mat);
-
-	delete[] a_std;
-
-	gamma_mult(a1_i_a2_mat, cp.g);
-	result_a_matrix = new crsMatrix(*a1_i_a2_mat);
-
-	delete a1_i_a2_mat;
-
-	time = omp_get_wtime() - init_time;
-	cout << "time of a_" << "0 : " << time << endl << endl;
-
-	int diss_num = cp.N - 1;
-
-	if (N > 1)
+	for (int i = 0; i < N_mat; i++)
 	{
-		for (int dissId = 1; dissId < diss_num; dissId++)
+		if ((h_1[i].re != 0.0) || (h_1[i].im != 0.0))
 		{
-			crsMatrix * A1 = create_A1_diss2_matrix(m, dissId, rp, cp);
-			crsMatrix * A2 = create_A2_diss2_matrix(m, dissId, rp, cp);
-
-			crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-			crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
-
-			to_F_basis(A1, a1_mat);
-			to_F_basis(A2, a2_mat);
-
-			vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
-
-			delete a1_mat;
-			delete a2_mat;
-
-			delete A1;
-			delete A2;
-
-			crsMatrix * a1_i_a2_mat = NULL;
-			a1_i_a2_mat = stdToCrs(a_std, N_mat);
-
-			delete[] a_std;
-
-			gamma_mult(a1_i_a2_mat, cp.g);
-
-			crsMatrix * a_mat_tmp = new crsMatrix(*result_a_matrix);
-			delete result_a_matrix;
-			result_a_matrix = new crsMatrix();
-
-			dcomplex beta;
-			beta.re = 1.0;
-			beta.im = 0.0;
-
-			SparseMKLAdd(*a_mat_tmp, beta, *a1_i_a2_mat, *result_a_matrix);
-
-			delete a_mat_tmp;
-			delete a1_i_a2_mat;
-
-			time = omp_get_wtime() - init_time;
-			cout << "time of a_" << dissId << " : " << time << endl << endl;
-
-		}
-
-		int diss_num = cp.N;
-
-		for (int dissId = 0; dissId < diss_num; dissId++)
-		{
-			crsMatrix * A1 = create_A1_diss0_matrix(m, dissId, rp, cp);
-			crsMatrix * A2 = create_A2_diss0_matrix(m, dissId, rp, cp);
-
-			crsMatrix * a1_mat = new crsMatrix(N_mat, N_mat);
-			crsMatrix * a2_mat = new crsMatrix(N_mat, N_mat);
-
-			to_F_basis(A1, a1_mat);
-			to_F_basis(A2, a2_mat);
-
-			vector<pair<int, dcomplex> > * a_std = create_a_std_matrix(a1_mat, a2_mat, N_mat);
-
-			delete a1_mat;
-			delete a2_mat;
-
-			delete A1;
-			delete A2;
-
-			crsMatrix * a1_i_a2_mat = NULL;
-			a1_i_a2_mat = stdToCrs(a_std, N_mat);
-
-			delete[] a_std;
-
-			gamma_mult(a1_i_a2_mat, cp.g_add);
-
-			crsMatrix * a_mat_tmp = new crsMatrix(*result_a_matrix);
-			delete result_a_matrix;
-			result_a_matrix = new crsMatrix();
-
-			dcomplex beta;
-			beta.re = 1.0;
-			beta.im = 0.0;
-
-			SparseMKLAdd(*a_mat_tmp, beta, *a1_i_a2_mat, *result_a_matrix);
-
-			delete a_mat_tmp;
-			delete a1_i_a2_mat;
-
-			time = omp_get_wtime() - init_time;
-			cout << "time of a_" << dissId << " : " << time << endl << endl;
-
+			resSum = new crsMatrix;
+			SparseMKLAdd(*Q_1, h_1[i], *(f_mat[i]), *resSum);
+			delete Q_1;
+			Q_1 = resSum;
 		}
 	}
 
-	if (rp.debug == 1)
-	{
-		string fn = rp.path + "a" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, result_a_matrix, 16, false);
-	}
-
-	m->l_mat = new crsMatrix(*result_a_matrix);
-	delete result_a_matrix;
-}
-
-void calc_Q_J_s(Model * m)
-{
-	int N_mat = m->N_mat;
-	crsMatrix * h_J = m->h_J;
-
-	crsMatrix * Q_J_s;
-	calc_CooQs(N_mat, m, m->f_ijk, h_J, Q_J_s);
-
-	m->Q_J_s = Q_J_s;
-}
-void calc_Q_h_z_s(Model * m)
-{
-	int N_mat = m->N_mat;
-	crsMatrix * h_h_z = m->h_h_z;
-
-	crsMatrix * Q_h_z_s;
-	calc_CooQs(N_mat, m, m->f_ijk, h_h_z, Q_h_z_s);
-
-	m->Q_h_z_s = Q_h_z_s;
-}
-void calc_Q_h_x_s(Model * m)
-{
-	int N_mat = m->N_mat;
-	crsMatrix * h_h_x = m->h_h_x;
-
-	crsMatrix * Q_h_x_s;
-	calc_CooQs(N_mat, m, m->f_ijk, h_h_x, Q_h_x_s);
-
-	m->Q_h_x_s = Q_h_x_s;
-}
-void calc_Q_s_x_s(Model * m)
-{
-	int N_mat = m->N_mat;
-	crsMatrix * h_s_x = m->h_s_x;
-
-	crsMatrix * Q_s_x_s;
-	calc_CooQs(N_mat, m, m->f_ijk, h_s_x, Q_s_x_s);
-
-	m->Q_s_x_s = Q_s_x_s;
+	m->Q_1 = Q_1;
 }
 
 void calcKs(Model *m)
 {
 	int N = m->N;
 	int N_mat = m->N_mat;
+	crsMatrix *Ks_tmp;
+	crsMatrix *FsT;
 	dcomplex  *Ks = m->Ks;
-
-	crsMatrix * l_mat = m->l_mat;
-
-	m->f_ijk = new Tensor_Coordinates;
-	fijk_coord(m->f_ijk, m->N + 1);
-	Tensor_Coordinates * f_ijk = m->f_ijk;
+	crsMatrix *As = m->a_mat;
+	crsMatrix **Fs = m->f_mat;
+	crsMatrix *AsT;
 
 	for (int i = 0; i < N_mat; i++)
 	{
@@ -4738,55 +2838,60 @@ void calcKs(Model *m)
 		Ks[i].im = 0.0;
 	}
 
-	ulli uN = l_mat->N;
-	ulli uN2 = uN * uN;
-	for (ulli i = 0; i < f_ijk->k; i++)
+	//  printMatrixVal(As);
+	for (int i = 0; i < N_mat; i++)
 	{
-		int ii = f_ijk->coord1[i];
-		int ji = f_ijk->coord2[i];
-		int ki = f_ijk->coord3[i];
-		f_ijk->hash[i] = ji * uN + ii;
-	}
-	sort_matrix(f_ijk);
-
-	dcomplex * hash = new dcomplex[l_mat->N];
-
-	for (ulli i = 0; i < f_ijk->k; i++)
-	{
-		int sji = f_ijk->coord2[i];
-
-		memset(hash, 0, sizeof(dcomplex) * l_mat->N);
-		int start = l_mat->RowIndex[sji];
-		int finish = l_mat->RowIndex[sji + 1];
-		for (int ind = start; ind < finish; ind++)
+		AsT = As;
+		//AsT = new crsMatrix(*(As));
+		//Transpose(*(As), *AsT);
+		FsT = Fs[i];
+		FsT = new crsMatrix(*(Fs[i]));
+		Transpose(*(Fs[i]), *FsT, false);
+		//    printMatrixVal(FsT);
+		for (int j = 0; j < N_mat; j++)
 		{
-			hash[l_mat->Col[ind]] = l_mat->Value[ind];
+			int ii, jj, m1, m2;
+			ii = As->RowIndex[i];
+			m1 = As->RowIndex[i + 1];
+			jj = FsT->RowIndex[j];
+			m2 = FsT->RowIndex[j + 1];
+
+			while ((ii < m1) && (jj < m2))
+			{
+				if (AsT->Col[ii] < FsT->Col[jj])
+				{
+					ii++;
+				}
+				else
+				{
+					if (AsT->Col[ii] > FsT->Col[jj])
+					{
+						jj++;
+					}
+					else
+					{
+						dcomplex as, fs;
+						as = AsT->Value[ii];
+						fs = FsT->Value[jj];
+						Ks[j].re += as.re * fs.re - as.im * fs.im;
+						Ks[j].im += as.re * fs.im + as.im * fs.re;
+
+						ii++;
+						jj++;
+					}
+				}
+			}
+
 		}
-
-		while ((i < f_ijk->k) && (f_ijk->coord2[i] == sji))
-		{
-			int ii = f_ijk->coord1[i];
-			int ki = f_ijk->coord3[i];
-			int ji = f_ijk->coord2[i];
-
-			dcomplex v1 = hash[ii];
-			dcomplex v2 = f_ijk->data[i];
-			dcomplex tmp;
-			tmp.re = v1.re * v2.re - v1.im * v2.im;
-			tmp.im = v1.re * v2.im + v1.im * v2.re;
-
-			Ks[ki].re += tmp.re;
-			Ks[ki].im += tmp.im;
-			i++;
-		}
-		i--;
+		delete FsT;
+		//delete AsT;
 	}
 
 	dcomplex val;
 	for (int i = 0; i < N_mat; i++)
 	{
-		Ks[i].re *= (1.0) / (N + 1);
-		Ks[i].im *= (-1.0) / (N + 1);
+		Ks[i].re *= (-1.0) / (N + 1);
+		Ks[i].im *= (1.0) / (N + 1);
 		val = Ks[i];
 		Ks[i].re = val.im;
 		Ks[i].im = val.re;
@@ -4801,70 +2906,114 @@ void calcRs(Model *m)
 	int N_mat = m->N_mat;
 
 	crsMatrix * Rs_tmp;
-	crsMatrix * Rs;
+	crsMatrix ** RsTh;
+	crsMatrix * Rs = new crsMatrix(m->N_mat, 1);
 
-	Tensor_Coordinates * subF_ijk;
-	Tensor_Coordinates * subD_ijk;
-	Tensor_Coordinates * subZ_ijk;
-
-	ulli cnt;
-
-	unsigned int *indexZ = new unsigned int[N_mat + 1];
-	unsigned int *indexF = new unsigned int[N_mat + 1];
-
-	subD_ijk = new Tensor_Coordinates;
-	dijk_coord(subD_ijk, m->N + 1);
-
-
-	subF_ijk = m->f_ijk;
-
-	ulli uN = m->l_mat->N;
-	ulli uN2 = uN * uN;
-	for (ulli i = 0; i < subF_ijk->k; i++)
+	Rs->Col[0] = 1;
+	Rs->RowIndex[0] = 1;
+	for (int i = 1; i <= N_mat; i++)
 	{
-		int ii = subF_ijk->coord1[i];
-		int ji = subF_ijk->coord2[i];
-		int ki = subF_ijk->coord3[i];
-		subF_ijk->hash[i] = ji * uN2 + ii * uN + ki;
-	}
-	for (ulli i = 0; i < subD_ijk->k; i++)
-	{
-		int ii = subD_ijk->coord1[i];
-		int ji = subD_ijk->coord2[i];
-		int ki = subD_ijk->coord3[i];
-		subD_ijk->hash[i] = ji * uN2 + ii * uN + ki;
-	}
-	sort_matrix(subF_ijk);
-	sort_matrix(subD_ijk);
-
-	calcZ_ijk(subF_ijk, subD_ijk, subZ_ijk);
-
-	vector<map<int, dcomplex> > mat(N_mat + 1);
-
-	createIndex(subZ_ijk, N_mat, indexZ);
-	createIndex(subF_ijk, N_mat, indexF);
-
-	multTmpRsSTD(N_mat, indexF, indexZ, subZ_ijk, subF_ijk, m->l_mat, false, mat);
-
-	for (ulli i = 0; i < subZ_ijk->k; i++)
-	{
-		subZ_ijk->data[i].im = -subZ_ijk->data[i].im;
+		Rs->RowIndex[i] = 1;
 	}
 
-	multTmpRsSTD(N_mat, indexF, indexZ, subZ_ijk, subF_ijk, m->l_mat, true, mat);
+	int nThread = 1;
+	//  omp_set_num_threads(3);
+#pragma omp parallel
+	{
+#pragma omp single
+		nThread = omp_get_num_threads();
+	}
+	printf("nThread %d \n", nThread);
 
-	crsMatrix * Rs_std = stdToCrs(mat, N_mat);
+	int SubTask = 1;
+	int CntTask = nThread * SubTask;
 
-	free_matrix(subD_ijk);
-	free_matrix(subZ_ijk);
-	delete subD_ijk;
-	delete subZ_ijk;
+	RsTh = new crsMatrix *[CntTask];
 
-	Rs = Rs_std;
+	crsMatrix ** f_mat = m->f_mat;
+	crsMatrix ** f_H_mat = m->f_H_mat;
+	crsMatrix ** d_mat = m->d_mat;
 
-	delete[] indexZ;
-	delete[] indexF;
+	for (int i = 0; i < N_mat; i++)
+	{
+		toOneBase(*(f_mat[i]));
+		toOneBase(*(d_mat[i]));
+		toOneBase(*(f_H_mat[i]));
+	}
 
+	int size = N_mat / CntTask;
+	//  int *start = new int[CntTask];
+	//  int *finish = new int[CntTask];
+
+	//  start[0] = 0;
+	//  finish[0] = size;
+	//  if((N_mat % CntTask) != 0) finish[0]++;
+	printf("N_mat %d \n", N_mat);
+	//  printf("%d %d \n", start[0], finish[0]);
+	//  for(int i = 1; i < CntTask; i++)
+	//  {
+	//    start[i] = finish[i - 1];
+	//    finish[i] = start[i] + size;
+	//    if((N_mat % CntTask) >  i)finish[i]++;
+	//    printf("%d %d \n", start[i], finish[i]);
+	//  }
+
+
+	int id = 0;
+	int portion = 100;
+#pragma omp parallel
+	{
+		int tid = omp_get_thread_num();
+		int localTskID;
+		while (true)
+		{
+#pragma omp critical
+			{
+				localTskID = id;
+				id++;
+			}
+			int start = localTskID * portion;
+			int finish = (localTskID + 1) * portion;
+			if (start > N_mat) break;
+			if (finish > N_mat) {
+				finish = N_mat;
+				printf("%d %d \n", start, finish);
+			}
+			RsTh[tid] = calcSubRs(m, start, finish);
+#pragma omp critical
+			{
+				Rs_tmp = new crsMatrix;
+				SparseMKLAddOne(*Rs, sum, *RsTh[tid], *Rs_tmp);
+				delete RsTh[tid];
+				delete Rs;
+				Rs = Rs_tmp;
+			}
+		}
+
+	}
+	//delete [] start;
+	//delete [] finish;
+
+	//  for(int i = 0; i < CntTask; i++)
+	//  {
+	//      Rs_tmp = new crsMatrix;
+	//      SparseMKLAddOne(*Rs, sum, *RsTh[i], *Rs_tmp);
+	//      delete RsTh[i];
+	//      delete Rs;
+	//      Rs = Rs_tmp;
+	//  }
+	delete[] RsTh;
+
+	//Rs = calcSubRs(m, 0, N_mat);
+	toZeroBase(*Rs);
+	for (int i = 0; i < N_mat; i++)
+	{
+		toZeroBase(*(f_mat[i]));
+		toZeroBase(*(d_mat[i]));
+		toZeroBase(*(f_H_mat[i]));
+	}
+	//  delete FkT;
+	//  delete FiT;
 
 	double mm = -1.0 / 4.0;
 	for (int i = 0; i < Rs->NZ; i++)
@@ -4874,27 +3023,123 @@ void calcRs(Model *m)
 	}
 	m->Rs = Rs;
 }
-void calc_G_0_s(Model *m)
+crsMatrix* calcSubRs(Model *m, int start, int finish)
 {
 	int N_mat = m->N_mat;
-	crsMatrix * G_0_s = new crsMatrix();
-
-	crsMatrix * subSum1 = new crsMatrix();
-	crsMatrix * subSum2 = new crsMatrix();
+	dcomplex sum_i;
+	sum_i.re = 0.0;
+	sum_i.im = 1.0;
 
 	dcomplex sum;
 	sum.re = 1.0;
 	sum.im = 0.0;
 
-	SparseMKLAdd(*(m->Q_J_s), sum, *(m->Q_h_z_s), *subSum1);
-	SparseMKLAdd(*(m->Q_h_x_s), sum, *(m->Rs), *subSum2);
+	crsMatrix * tmp;
+	crsMatrix * MatSDi, *MatSDk;
+	crsMatrix * M1, *M2, *Rsum;
 
-	SparseMKLAdd(*(subSum1), sum, *(subSum2), *G_0_s);
+	crsMatrix * Rs_tmp;
+	crsMatrix * Rs = new crsMatrix(m->N_mat, 1);
+
+	Rs->Col[0] = 1;
+	Rs->RowIndex[0] = 1;
+	for (int i = 1; i <= N_mat; i++)
+	{
+		Rs->RowIndex[i] = 1;
+	}
+
+	crsMatrix ** f_mat = m->f_mat;
+	crsMatrix ** f_H_mat = m->f_H_mat;
+	crsMatrix ** d_mat = m->d_mat;
+	crsMatrix *  As = m->a_mat;
+
+	M1 = new crsMatrix;
+	M2 = new crsMatrix;
+	MatSDi = new crsMatrix;
+	MatSDk = new crsMatrix;
+	Rsum = new crsMatrix;
+
+	//  for(int i = 0; i < N_mat; i++)
+	//  {
+	//    toOneBase(*(f_mat[i]));
+	//    toOneBase(*(d_mat[i]));
+	//    toOneBase(*(f_H_mat[i]));
+	//  }
+
+	for (int i = start; i < finish; i++)
+	{
+		SparseMKLAddOne(*(f_mat[i]), sum_i, *(d_mat[i]), *MatSDi, true);
+
+		int st = As->RowIndex[i];
+		int fn = As->RowIndex[i + 1];
+
+		for (int j = st; j < fn; j++)
+		{
+			int k = As->Col[j];
+			SparseMKLAddOne(*(f_mat[k]), sum_i, *(d_mat[k]), *MatSDk, true);
+
+			for (int conj_i = 0; conj_i < MatSDk->NZ; conj_i++)
+				MatSDk->Value[conj_i].im = -MatSDk->Value[conj_i].im;
+
+			SparseMKLMultOne(*(f_H_mat[k]), *MatSDi, *M1, true);
+			SparseMKLMultOne(*(f_H_mat[i]), *MatSDk, *M2, true);
+
+			SparseMKLAddOne(*M1, sum, *M2, *Rsum, true);
+
+			dcomplex val1 = As->Value[j];
+			for (int ii = 0; ii < Rsum->NZ; ii++)
+			{
+				dcomplex val2 = Rsum->Value[ii];
+				Rsum->Value[ii].re = val1.re *  val2.re - val1.im *  val2.im;
+				Rsum->Value[ii].im = val1.re *  val2.im + val1.im *  val2.re;
+			}
+
+			Rs_tmp = new crsMatrix;
+			SparseMKLAddOne(*Rs, sum, *Rsum, *Rs_tmp);
+			delete Rs;
+			Rs = Rs_tmp;
+		}
+	}
+
+	//  toZeroBase(*Rs);
+	//  for(int i = 0; i < N_mat; i++)
+	//  {
+	//    toZeroBase(*(f_mat[i]));
+	//    toZeroBase(*(d_mat[i]));
+	//    toZeroBase(*(f_H_mat[i]));
+	//  }
+	//  delete FkT;
+	//  delete FiT;
+
+	delete Rsum;
+
+	delete MatSDi;
+	delete MatSDk;
+
+	delete M1;
+	delete M2;
+
+	//double mm = -m->conf.g / 4.0 / m->N;
+	//for(int i = 0; i < Rs->NZ; i++)
+	//{
+	//  Rs->Value[i].re *= mm;
+	//  Rs->Value[i].im *= mm;
+	//}
+	return Rs;
+}
+
+void calc_G_0_s(Model *m)
+{
+	int N_mat = m->N_mat;
+	crsMatrix * G_0_s = new crsMatrix();
+
+	dcomplex sum;
+	sum.re = 1.0;
+	sum.im = 0.0;
+
+	SparseMKLAdd(*(m->Q_0), sum, *(m->Rs), *G_0_s);
 
 	m->G_0_s = G_0_s;
-
-	delete subSum1;
-	delete subSum2;
 }
 void calc_G_1_s(Model *m)
 {
@@ -4905,63 +3150,9 @@ void calc_G_1_s(Model *m)
 	sum.re = 1.0;
 	sum.im = 0.0;
 
-	SparseMKLAdd(*(m->Q_s_x_s), sum, *(m->Rs), *G_1_s);
+	SparseMKLAdd(*(m->Q_1), sum, *(m->Rs), *G_1_s);
 
 	m->G_1_s = G_1_s;
-}
-
-void multMatVec(crsMatrix *mat, double * x, double * res)
-{
-	char trans = 'n';
-	double *value = (double *)(mat->Value);
-	mkl_dcsrgemv(&trans, &(mat->N), value, mat->RowIndex, mat->Col, x, res);
-}
-void multMatVec_complex(crsMatrix *mat, dcomplex * x, dcomplex * res)
-{
-	int i, j, s, f;
-	for (i = 0; i < mat->N; i++)
-	{
-		s = mat->RowIndex[i];
-		f = mat->RowIndex[i + 1];
-		res[i].re = 0.0;
-		res[i].im = 0.0;
-		for (j = s; j < f; j++)
-		{
-			dcomplex v1 = mat->Value[j];
-			dcomplex v2 = x[mat->Col[j]];
-			res[i].re += v1.re * v2.re;
-			res[i].im = 0.0;
-		}
-	}
-}
-
-void calcVectValue_t0(double h, Model * m, double *x, double * res, double * tmp)
-{
-	int i;
-	int N_mat = m->N_mat;
-	crsMatrix * G_0_s = m->G_0_s;
-	double  * Ks = (double *)m->Ks;
-
-	multMatVec(G_0_s, x, tmp);
-
-	for (i = 0; i < N_mat; i++)
-	{
-		res[i] = (tmp[i] - Ks[i]) * h;
-	}
-}
-void calcVectValue_t1(double h, Model * m, double *x, double * res, double * tmp)
-{
-	int i;
-	int N_mat = m->N_mat;
-	crsMatrix * G_1_s = m->G_1_s;
-	double  * Ks = (double *)m->Ks;
-
-	multMatVec(G_1_s, x, tmp);
-
-	for (i = 0; i < N_mat; i++)
-	{
-		res[i] = (tmp[i] - Ks[i]) * h;
-	}
 }
 
 void init_conditions(dcomplex *mtx, RunParam &rp, ConfigParam &cp, MainData &md)
@@ -4988,53 +3179,6 @@ void init_conditions(dcomplex *mtx, RunParam &rp, ConfigParam &cp, MainData &md)
 			mtx[s_id_1 * md.size + s_id_1].im = 0.0;
 		}
 	}
-	else if (cp.int_ist == 2)
-	{
-		double * init_vec = new double[md.size];
-
-		for (int s_id = 0; s_id < md.size; s_id++)
-		{
-			init_vec[s_id] = 1.0;
-			for (int bit_id = 0; bit_id < cp.N; bit_id++)
-			{
-				if (bit_at(s_id, bit_id) == 0)
-				{
-					init_vec[s_id] *= cos(PI * 0.125);
-				}
-				else
-				{
-					init_vec[s_id] *= sin(PI * 0.125);
-				}
-			}
-		}
-
-		for (int s_id_1 = 0; s_id_1 < md.size; s_id_1++)
-		{
-			for (int s_id_2 = 0; s_id_2 < md.size; s_id_2++)
-			{
-				mtx[s_id_1 * md.size + s_id_2].re = init_vec[s_id_1] * init_vec[s_id_2];
-				mtx[s_id_1 * md.size + s_id_2].im = 0.0;
-			}
-		}
-
-		delete[] init_vec;
-	}
-	else if (cp.int_ist == 3)
-	{
-		int random = 0;
-		VSLStreamStatePtr stream;
-		vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
-		vslLeapfrogStream(stream, cp.seed, cp.max_num_seeds);
-		viRngUniform(VSL_RNG_METHOD_UNIFORM_STD, stream, 1, &random, 0, pow(2, cp.N));
-
-		cout << "Random state: " << random << endl;
-
-		string fn = rp.path + "init_state" + file_name_suffix(cp, 4);
-		save_int_data(fn, &random, 1, false);
-
-		mtx[random * md.size + random].re = 1.0;
-		mtx[random * md.size + random].im = 0.0;
-	}
 	else
 	{
 		stringstream msg;
@@ -5042,6 +3186,58 @@ void init_conditions(dcomplex *mtx, RunParam &rp, ConfigParam &cp, MainData &md)
 		Error(msg.str());
 	}
 }
+
+void multMatVec(crsMatrix *mat, dcomplex * x, dcomplex * res)
+{
+	int i, j, s, f;
+	for (i = 0; i < mat->N; i++)
+	{
+		s = mat->RowIndex[i];
+		f = mat->RowIndex[i + 1];
+		res[i].re = 0.0;
+		res[i].im = 0.0;
+		for (j = s; j < f; j++)
+		{
+			dcomplex v1 = mat->Value[j];
+			dcomplex v2 = x[mat->Col[j]];
+			res[i].re += v1.re * v2.re;// - v1.im * v2.im;
+			res[i].im = 0.0;//+= v1.re * v2.im + v1.im * v2.re;
+		}
+	}
+}
+
+void calcVectValue_t0(double h, Model * m, dcomplex *x, dcomplex * res, dcomplex * tmp)
+{
+	int i;
+	int N_mat = m->N_mat;
+	crsMatrix * G_0_s = m->G_0_s;
+	dcomplex  * Ks = m->Ks;
+
+	multMatVec(G_0_s, x, tmp);
+
+	for (i = 0; i < N_mat; i++)
+	{
+		res[i].re = (tmp[i].re - Ks[i].re) * h;
+		res[i].im = 0.0;
+	}
+}
+
+void calcVectValue_t1(double h, Model * m, dcomplex *x, dcomplex * res, dcomplex * tmp)
+{
+	int i;
+	int N_mat = m->N_mat;
+	crsMatrix * G_1_s = m->G_1_s;
+	dcomplex  * Ks = m->Ks;
+
+	multMatVec(G_1_s, x, tmp);
+
+	for (i = 0; i < N_mat; i++)
+	{
+		res[i].re = (tmp[i].re - Ks[i].re) * h;
+		res[i].im = 0.0;
+	}
+}
+
 void initRhoODE(Model *m, RunParam &rp, ConfigParam &cp, MainData &md)
 {
 	int N = m->N;
@@ -5107,70 +3303,111 @@ dcomplex calcDiffIter(Model *m)
 	return max_diff;
 }
 
-void before(Model *m)
+void calcODE_trans(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
 {
-	complex_to_real(m->G_0_s->Value, m->G_0_s->NZ);
-	complex_to_real(m->G_1_s->Value, m->G_1_s->NZ);
+	int i;
+	int N_mat = m->N_mat;
+	dcomplex * RhoF = m->RhoF;
 
-	complex_to_real(m->Q_J_s->Value, m->Q_J_s->NZ);
-	complex_to_real(m->Q_h_z_s->Value, m->Q_h_z_s->NZ);
-	complex_to_real(m->Q_h_x_s->Value, m->Q_h_x_s->NZ);
-	complex_to_real(m->Q_s_x_s->Value, m->Q_s_x_s->NZ);
+	double eps = 1.0e-10;
 
-	complex_to_real(m->Ks, m->N_mat);
-	complex_to_real(m->RhoF, m->N_mat);
+	for (i = 0; i < N_mat; i++)
+	{
+		m->prevRhoF[i] = RhoF[i];
+	}
 
-	toOneBase(*(m->G_0_s));
-	toOneBase(*(m->G_1_s));
+	dcomplex * k1 = pd.k1;
+	dcomplex * k2 = pd.k2;
+	dcomplex * k3 = pd.k3;
+	dcomplex * k4 = pd.k4;
+	dcomplex * val = pd.val;
+	dcomplex * tmp = pd.tmp;
 
-	toOneBase(*(m->Q_J_s));
-	toOneBase(*(m->Q_h_z_s));
-	toOneBase(*(m->Q_h_x_s));
-	toOneBase(*(m->Q_s_x_s));
-}
+	double step_t_0 = md.step_t_0;
+	double step_t_1 = md.step_t_1;
 
-void after(Model *m)
-{
-	toZeroBase(*(m->G_0_s));
-	toZeroBase(*(m->G_1_s));
 
-	toZeroBase(*(m->Q_J_s));
-	toZeroBase(*(m->Q_h_z_s));
-	toZeroBase(*(m->Q_h_x_s));
-	toZeroBase(*(m->Q_s_x_s));
+	for (int period = 1; period <= cp.num_periods_trans; period++)
+	{
+		for (int t_0_step_id = 0; t_0_step_id < cp.num_steps_t_0; t_0_step_id++)
+		{
+			calcVectValue_t0(step_t_0, m, RhoF, k1, tmp);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k1[i].re / 2.0;
+				val[i].im = RhoF[i].im + k1[i].im / 2.0;
+			}
+			calcVectValue_t0(step_t_0, m, val, k2, tmp);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k2[i].re / 2.0;
+				val[i].im = RhoF[i].im + k2[i].im / 2.0;
+			}
+			calcVectValue_t0(step_t_0, m, val, k3, tmp);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k3[i].re;
+				val[i].im = RhoF[i].im + k3[i].im;
+			}
+			calcVectValue_t0(step_t_0, m, val, k4, tmp);
 
-	real_to_complex(m->G_0_s->Value, m->G_0_s->NZ);
-	real_to_complex(m->G_1_s->Value, m->G_1_s->NZ);
+			for (i = 0; i < N_mat; i++)
+			{
+				RhoF[i].re += (k1[i].re + 2.0 * k2[i].re + 2.0 * k3[i].re + k4[i].re) / 6.0;
+				RhoF[i].im += (k1[i].im + 2.0 * k2[i].im + 2.0 * k3[i].im + k4[i].im) / 6.0;
+			}
+		}
 
-	real_to_complex(m->Q_J_s->Value, m->Q_J_s->NZ);
-	real_to_complex(m->Q_h_z_s->Value, m->Q_h_z_s->NZ);
-	real_to_complex(m->Q_h_x_s->Value, m->Q_h_x_s->NZ);
-	real_to_complex(m->Q_s_x_s->Value, m->Q_s_x_s->NZ);
+		for (int t_1_step_id = 0; t_1_step_id < cp.num_steps_t_1; t_1_step_id++)
+		{
+			calcVectValue_t1(step_t_1, m, RhoF, k1, tmp);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k1[i].re / 2.0;
+				val[i].im = RhoF[i].im + k1[i].im / 2.0;
+			}
+			calcVectValue_t1(step_t_1, m, val, k2, tmp);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k2[i].re / 2.0;
+				val[i].im = RhoF[i].im + k2[i].im / 2.0;
+			}
+			calcVectValue_t1(step_t_1, m, val, k3, tmp);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i].re = RhoF[i].re + k3[i].re;
+				val[i].im = RhoF[i].im + k3[i].im;
+			}
+			calcVectValue_t1(step_t_1, m, val, k4, tmp);
 
-	real_to_complex(m->Ks, m->N_mat);
-	real_to_complex(m->RhoF, m->N_mat);
+			for (i = 0; i < N_mat; i++)
+			{
+				RhoF[i].re += (k1[i].re + 2.0 * k2[i].re + 2.0 * k3[i].re + k4[i].re) / 6.0;
+				RhoF[i].im += (k1[i].im + 2.0 * k2[i].im + 2.0 * k3[i].im + k4[i].im) / 6.0;
+			}
+		}
+	}
 }
 
 void calcODE_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
 {
 	int i;
 	int N_mat = m->N_mat;
-	double * RhoF = (double *)(m->RhoF);
-	double * prevRhoF = (double *)(m->prevRhoF);
+	dcomplex * RhoF = m->RhoF;
 
 	double eps = 1.0e-10;
 
 	for (i = 0; i < N_mat; i++)
 	{
-		prevRhoF[i] = RhoF[i];
+		m->prevRhoF[i] = RhoF[i];
 	}
 
-	double * k1 = pd.k1;
-	double * k2 = pd.k2;
-	double * k3 = pd.k3;
-	double * k4 = pd.k4;
-	double * val = pd.val;
-	double * tmp = pd.tmp;
+	dcomplex * k1 = pd.k1;
+	dcomplex * k2 = pd.k2;
+	dcomplex * k3 = pd.k3;
+	dcomplex * k4 = pd.k4;
+	dcomplex * val = pd.val;
+	dcomplex * tmp = pd.tmp;
 
 	double step_t_0 = md.step_t_0;
 	double step_t_1 = md.step_t_1;
@@ -5180,37 +3417,37 @@ void calcODE_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData
 
 	calcRho(m);
 
-	init_sign_sigma_z_start(m, cp, md, pd);
-
 	characteristics_std(m, rp, cp, md, pd, dump_id);
 	dump_id++;
-	
-	before(m);
 
-	for (int period = 1; period <= cp.num_periods; period++)
+	for (int period = 1; period <= cp.num_periods_obser; period++)
 	{
 		for (int t_0_step_id = 0; t_0_step_id < cp.num_steps_t_0; t_0_step_id++)
 		{
 			calcVectValue_t0(step_t_0, m, RhoF, k1, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k1[i] / 2.0;
+				val[i].re = RhoF[i].re + k1[i].re / 2.0;
+				val[i].im = RhoF[i].im + k1[i].im / 2.0;
 			}
 			calcVectValue_t0(step_t_0, m, val, k2, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k2[i] / 2.0;
+				val[i].re = RhoF[i].re + k2[i].re / 2.0;
+				val[i].im = RhoF[i].im + k2[i].im / 2.0;
 			}
 			calcVectValue_t0(step_t_0, m, val, k3, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k3[i];
+				val[i].re = RhoF[i].re + k3[i].re;
+				val[i].im = RhoF[i].im + k3[i].im;
 			}
 			calcVectValue_t0(step_t_0, m, val, k4, tmp);
 
 			for (i = 0; i < N_mat; i++)
 			{
-				RhoF[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) / 6.0;
+				RhoF[i].re += (k1[i].re + 2.0 * k2[i].re + 2.0 * k3[i].re + k4[i].re) / 6.0;
+				RhoF[i].im += (k1[i].im + 2.0 * k2[i].im + 2.0 * k3[i].im + k4[i].im) / 6.0;
 			}
 		}
 
@@ -5219,23 +3456,27 @@ void calcODE_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData
 			calcVectValue_t1(step_t_1, m, RhoF, k1, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k1[i] / 2.0;
+				val[i].re = RhoF[i].re + k1[i].re / 2.0;
+				val[i].im = RhoF[i].im + k1[i].im / 2.0;
 			}
 			calcVectValue_t1(step_t_1, m, val, k2, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k2[i] / 2.0;
+				val[i].re = RhoF[i].re + k2[i].re / 2.0;
+				val[i].im = RhoF[i].im + k2[i].im / 2.0;
 			}
 			calcVectValue_t1(step_t_1, m, val, k3, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k3[i];
+				val[i].re = RhoF[i].re + k3[i].re;
+				val[i].im = RhoF[i].im + k3[i].im;
 			}
 			calcVectValue_t1(step_t_1, m, val, k4, tmp);
 
 			for (i = 0; i < N_mat; i++)
 			{
-				RhoF[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) / 6.0;
+				RhoF[i].re += (k1[i].re + 2.0 * k2[i].re + 2.0 * k3[i].re + k4[i].re) / 6.0;
+				RhoF[i].im += (k1[i].im + 2.0 * k2[i].im + 2.0 * k3[i].im + k4[i].im) / 6.0;
 			}
 		}
 
@@ -5249,158 +3490,14 @@ void calcODE_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData
 				cout << endl << "Dump period: " << period << endl;
 			}
 
-			after(m);
 			calcRho(m);
 			characteristics_std(m, rp, cp, md, pd, dump_id);
-			before(m);
 
 			dump_id++;
 		}
 	}
-
-	after(m);
 }
-void calcODE_rate(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
-{
-	int i;
-	int N_mat = m->N_mat;
-	double * RhoF = (double *)(m->RhoF);
-	double * prevRhoF = (double *)(m->prevRhoF);
 
-	double eps = 1.0e-10;
-
-	for (i = 0; i < N_mat; i++)
-	{
-		prevRhoF[i] = RhoF[i];
-	}
-
-	double * k1 = pd.k1;
-	double * k2 = pd.k2;
-	double * k3 = pd.k3;
-	double * k4 = pd.k4;
-	double * val = pd.val;
-	double * tmp = pd.tmp;
-
-	double step_t_0 = md.step_t_0;
-	double step_t_1 = md.step_t_1;
-
-	double curr_time = 0.0;
-	int dump_id = 0;
-
-	calcRho(m);
-
-	init_sign_sigma_z_start(m, cp, md, pd);
-
-	characteristics_std(m, rp, cp, md, pd, dump_id);
-	dump_id++;
-
-	before(m);
-
-	int period = 1;
-
-	while (period <= cp.num_periods)
-	{
-		for (int t_0_step_id = 0; t_0_step_id < cp.num_steps_t_0; t_0_step_id++)
-		{
-			calcVectValue_t0(step_t_0, m, RhoF, k1, tmp);
-			for (i = 0; i < N_mat; i++)
-			{
-				val[i] = RhoF[i] + k1[i] / 2.0;
-			}
-			calcVectValue_t0(step_t_0, m, val, k2, tmp);
-			for (i = 0; i < N_mat; i++)
-			{
-				val[i] = RhoF[i] + k2[i] / 2.0;
-			}
-			calcVectValue_t0(step_t_0, m, val, k3, tmp);
-			for (i = 0; i < N_mat; i++)
-			{
-				val[i] = RhoF[i] + k3[i];
-			}
-			calcVectValue_t0(step_t_0, m, val, k4, tmp);
-
-			for (i = 0; i < N_mat; i++)
-			{
-				RhoF[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) / 6.0;
-			}
-
-			after(m);
-			calcRho(m);
-			if (period - 1 < cp.rate_num_periods)
-			{
-				characteristics_rate(m, rp, cp, md, pd, 0, period);
-			}
-			else
-			{
-				characteristics_rate(m, rp, cp, md, pd, 1, period);
-			}
-			before(m);
-		}
-
-		for (int t_1_step_id = 0; t_1_step_id < cp.num_steps_t_1; t_1_step_id++)
-		{
-			calcVectValue_t1(step_t_1, m, RhoF, k1, tmp);
-			for (i = 0; i < N_mat; i++)
-			{
-				val[i] = RhoF[i] + k1[i] / 2.0;
-			}
-			calcVectValue_t1(step_t_1, m, val, k2, tmp);
-			for (i = 0; i < N_mat; i++)
-			{
-				val[i] = RhoF[i] + k2[i] / 2.0;
-			}
-			calcVectValue_t1(step_t_1, m, val, k3, tmp);
-			for (i = 0; i < N_mat; i++)
-			{
-				val[i] = RhoF[i] + k3[i];
-			}
-			calcVectValue_t1(step_t_1, m, val, k4, tmp);
-
-			for (i = 0; i < N_mat; i++)
-			{
-				RhoF[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) / 6.0;
-			}
-
-			after(m);
-			calcRho(m);
-			if (period - 1 < cp.rate_num_periods)
-			{
-				characteristics_rate(m, rp, cp, md, pd, 0, period);
-			}
-			else
-			{
-				characteristics_rate(m, rp, cp, md, pd, 1, period);
-			}
-			before(m);
-		}
-
-		if((period - 1) % cp.rate_num_periods == 0)
-		{ 
-			characteristics_rate(m, rp, cp, md, pd, 2, period);
-		}
-
-		curr_time = period * md.T;
-
-		if (period == pd.dump_periods[dump_id])
-		{
-			after(m);
-			calcRho(m);
-			characteristics_std(m, rp, cp, md, pd, dump_id);
-			before(m);
-
-			dump_id++;
-		}
-
-		if (rp.ipp == 1)
-		{
-			cout << endl << "Period: " << period << endl;
-		}
-
-		period++;
-	}
-
-	after(m);
-}
 void calcODE_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
 {
 	string fn;
@@ -5410,22 +3507,21 @@ void calcODE_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropDat
 
 	int i;
 	int N_mat = m->N_mat;
-	double * RhoF = (double *)(m->RhoF);
-	double * prevRhoF = (double *)(m->prevRhoF);
+	dcomplex * RhoF = m->RhoF;
 
 	double eps = 1.0e-10;
 
 	for (i = 0; i < N_mat; i++)
 	{
-		prevRhoF[i] = RhoF[i];
+		m->prevRhoF[i] = RhoF[i];
 	}
 
-	double * k1 = pd.k1;
-	double * k2 = pd.k2;
-	double * k3 = pd.k3;
-	double * k4 = pd.k4;
-	double * val = pd.val;
-	double * tmp = pd.tmp;
+	dcomplex * k1 = pd.k1;
+	dcomplex * k2 = pd.k2;
+	dcomplex * k3 = pd.k3;
+	dcomplex * k4 = pd.k4;
+	dcomplex * val = pd.val;
+	dcomplex * tmp = pd.tmp;
 
 	double step_t_0 = md.step_t_0;
 	double step_t_1 = md.step_t_1;
@@ -5444,39 +3540,39 @@ void calcODE_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropDat
 	characteristics_deep(m, rp, cp, md, pd, dump_id);
 	dump_id++;
 
-	before(m);
-
-	for (int period = 1; period <= cp.num_periods; period++)
+	for (int period = 1; period <= cp.num_periods_obser; period++)
 	{
 		for (int t_0_step_id = 0; t_0_step_id < cp.num_steps_t_0; t_0_step_id++)
 		{
 			calcVectValue_t0(step_t_0, m, RhoF, k1, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k1[i] / 2.0;
+				val[i].re = RhoF[i].re + k1[i].re / 2.0;
+				val[i].im = RhoF[i].im + k1[i].im / 2.0;
 			}
 			calcVectValue_t0(step_t_0, m, val, k2, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k2[i] / 2.0;
+				val[i].re = RhoF[i].re + k2[i].re / 2.0;
+				val[i].im = RhoF[i].im + k2[i].im / 2.0;
 			}
 			calcVectValue_t0(step_t_0, m, val, k3, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k3[i];
+				val[i].re = RhoF[i].re + k3[i].re;
+				val[i].im = RhoF[i].im + k3[i].im;
 			}
 			calcVectValue_t0(step_t_0, m, val, k4, tmp);
 
 			for (i = 0; i < N_mat; i++)
 			{
-				RhoF[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) / 6.0;
+				RhoF[i].re += (k1[i].re + 2.0 * k2[i].re + 2.0 * k3[i].re + k4[i].re) / 6.0;
+				RhoF[i].im += (k1[i].im + 2.0 * k2[i].im + 2.0 * k3[i].im + k4[i].im) / 6.0;
 			}
 
 			if (rp.debug == 1)
 			{
-				after(m);
 				calcRho(m);
-				before(m);
 
 				fn = rp.path + "rho" + "_" + to_string(dump_id) + file_name_suffix(cp, 4);
 				save_sparse_complex_mtx(fn, m->Rho, 16, false);
@@ -5484,11 +3580,8 @@ void calcODE_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropDat
 
 			if (t_0_step_id % dupm_step_t_0 == 0)
 			{
-				after(m);
 				calcRho(m);
-				
 				characteristics_deep(m, rp, cp, md, pd, dump_id);
-				before(m);
 				dump_id++;
 			}		
 		}
@@ -5498,30 +3591,32 @@ void calcODE_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropDat
 			calcVectValue_t1(step_t_1, m, RhoF, k1, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k1[i] / 2.0;
+				val[i].re = RhoF[i].re + k1[i].re / 2.0;
+				val[i].im = RhoF[i].im + k1[i].im / 2.0;
 			}
 			calcVectValue_t1(step_t_1, m, val, k2, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k2[i] / 2.0;
+				val[i].re = RhoF[i].re + k2[i].re / 2.0;
+				val[i].im = RhoF[i].im + k2[i].im / 2.0;
 			}
 			calcVectValue_t1(step_t_1, m, val, k3, tmp);
 			for (i = 0; i < N_mat; i++)
 			{
-				val[i] = RhoF[i] + k3[i];
+				val[i].re = RhoF[i].re + k3[i].re;
+				val[i].im = RhoF[i].im + k3[i].im;
 			}
 			calcVectValue_t1(step_t_1, m, val, k4, tmp);
 
 			for (i = 0; i < N_mat; i++)
 			{
-				RhoF[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) / 6.0;
+				RhoF[i].re += (k1[i].re + 2.0 * k2[i].re + 2.0 * k3[i].re + k4[i].re) / 6.0;
+				RhoF[i].im += (k1[i].im + 2.0 * k2[i].im + 2.0 * k3[i].im + k4[i].im) / 6.0;
 			}
 
 			if (rp.debug == 1)
 			{
-				after(m);
 				calcRho(m);
-				before(m);
 
 				fn = rp.path + "rho" + "_" + to_string(dump_id) + file_name_suffix(cp, 4);
 				save_sparse_complex_mtx(fn, m->Rho, 16, false);
@@ -5529,11 +3624,8 @@ void calcODE_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropDat
 
 			if (t_1_step_id % dupm_step_t_1 == 0)
 			{
-				after(m);
 				calcRho(m);
-
 				characteristics_deep(m, rp, cp, md, pd, dump_id);
-				before(m);
 				dump_id++;
 			}
 		}
@@ -5545,8 +3637,6 @@ void calcODE_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropDat
 			cout << endl << "Dump period: " << period << endl;
 		}
 	}
-
-	after(m);
 }
 
 void calcRho(Model *m)
@@ -5615,166 +3705,12 @@ void calcRho(Model *m)
 
 void characteristics_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd, int dump_id)
 {
-	int is_dump_adr = cp.int_is_dump_adr;
-
-	MKL_Complex16 * rho_in_d = new MKL_Complex16[md.size * md.size];
-
-	for (int state_id_1 = 0; state_id_1 < md.size; state_id_1++)
-	{
-		for (int state_id_2 = 0; state_id_2 < md.size; state_id_2++)
-		{
-			rho_in_d[state_id_1 * md.size + state_id_2].real = 0.0;
-			rho_in_d[state_id_1 * md.size + state_id_2].imag = 0.0;
-		}
-	}
-
-	for (int i = 0; i < m->Rho->N; i++)
-	{
-		for (int k = m->Rho->RowIndex[i]; k < m->Rho->RowIndex[i + 1]; k++)
-		{
-			rho_in_d[i * md.size + m->Rho->Col[k]].real = m->Rho->Value[k].re;
-			rho_in_d[i * md.size + m->Rho->Col[k]].imag = m->Rho->Value[k].im;
-		}
-	}
-
-	if (is_dump_adr == 1)
-	{
-		double * adr_avg = new double[md.size];
-
-		for (int st_id = 0; st_id < md.size; st_id++)
-		{
-			adr_avg[st_id] = rho_in_d[st_id * md.size + st_id].real;
-		}
-
-		string fn = rp.path + "adr_avg" + file_name_suffix(cp, 4);
-
-		int append = 0;
-		if (dump_id > 0)
-		{
-			append = 1;
-		}
-
-		save_double_data(fn, adr_avg, md.size, 16, append);
-
-		delete[] adr_avg;
-	}
-
-	for (int spin_id = 0; spin_id < cp.N; spin_id++)
-	{
-		crsMatrix * sigma_i_z = create_sigma_i_z_matrix(m, cp, spin_id);
-
-		crsMatrix * mult_z = new crsMatrix();
-
-		SparseMKLMult(*(sigma_i_z), *(m->Rho), *(mult_z));
-
-		dcomplex curr_trace_z = trace(*mult_z);
-
-		int current_period = pd.dump_periods[dump_id];
-		int curr_sign = 0;
-		if (current_period % 2 == 0)
-		{
-			curr_sign = 1;
-		}
-		else
-		{
-			curr_sign = -1;
-		}
-
-		double val = double(curr_sign) * curr_trace_z.re * double(pd.sign_sigma_z_start[spin_id]);
-
-		delete sigma_i_z;
-		delete mult_z;
-
-		crsMatrix * sigma_i_x = create_sigma_i_x_matrix(m, cp, spin_id);
-		crsMatrix * mult_x = new crsMatrix();
-		SparseMKLMult(*(sigma_i_x), *(m->Rho), *(mult_x));
-		dcomplex curr_trace_x = trace(*mult_x);
-		delete sigma_i_x;
-		delete mult_x;
-
-		crsMatrix * sigma_i_y = create_sigma_i_y_matrix(m, cp, spin_id);
-
-		crsMatrix * mult_y = new crsMatrix();
-		SparseMKLMult(*(sigma_i_y), *(m->Rho), *(mult_y));
-		dcomplex curr_trace_y = trace(*mult_y);
-		delete sigma_i_y;
-		delete mult_y;
-
-		pd.magnetization[spin_id][dump_id] = val;
-		pd.sigma_x[spin_id][dump_id] = curr_trace_x.re;
-		pd.sigma_y[spin_id][dump_id] = curr_trace_y.re;
-		pd.sigma_z[spin_id][dump_id] = curr_trace_z.re;
-	}
-
-	delete[] rho_in_d;	
-}
-void characteristics_rate(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd, int type, int period)
-{
-	for (int spin_id = 0; spin_id < cp.N; spin_id++)
-	{
-		if (type == 2)
-		{
-			if (pd.rate_flag[spin_id] == 0)
-			{
-				if (pd.rate_ampl_curr[spin_id] < cp.rate_ampl_part * pd.rate_ampl_start[spin_id])
-				{
-					pd.rate_result[spin_id] = period;
-					pd.rate_flag[spin_id] = 1;
-				}
-			}
-
-			pd.rate_max_curr[spin_id] = -1.0e16;
-			pd.rate_min_curr[spin_id] = 1.0e16;
-			pd.rate_ampl_curr[spin_id] = 0.0;
-		}
-		else
-		{
-			crsMatrix * sigma_i_z = create_sigma_i_z_matrix(m, cp, spin_id);
-			crsMatrix * mult_z = new crsMatrix();
-			SparseMKLMult(*(sigma_i_z), *(m->Rho), *(mult_z));
-			dcomplex curr_trace_z = trace(*mult_z);
-			delete sigma_i_z;
-			delete mult_z;
-
-			double sigma_z_curr = curr_trace_z.re;
-
-			if (type == 0)
-			{
-				if (sigma_z_curr > pd.rate_max_curr[spin_id])
-				{
-					pd.rate_max_curr[spin_id] = sigma_z_curr;
-					pd.rate_ampl_start[spin_id] = pd.rate_max_curr[spin_id] - pd.rate_min_curr[spin_id];
-					pd.rate_ampl_curr[spin_id] = pd.rate_ampl_start[spin_id];
-				}
-				if (sigma_z_curr < pd.rate_min_curr[spin_id])
-				{
-					pd.rate_min_curr[spin_id] = sigma_z_curr;
-					pd.rate_ampl_start[spin_id] = pd.rate_max_curr[spin_id] - pd.rate_min_curr[spin_id];
-					pd.rate_ampl_curr[spin_id] = pd.rate_ampl_start[spin_id];
-				}
-			}
-			else if (type == 1)
-			{
-				if (sigma_z_curr > pd.rate_max_curr[spin_id])
-				{
-					pd.rate_max_curr[spin_id] = sigma_z_curr;
-					pd.rate_ampl_curr[spin_id] = pd.rate_max_curr[spin_id] - pd.rate_min_curr[spin_id];
-				}
-				if (sigma_z_curr < pd.rate_min_curr[spin_id])
-				{
-					pd.rate_min_curr[spin_id] = sigma_z_curr;
-					pd.rate_ampl_curr[spin_id] = pd.rate_max_curr[spin_id] - pd.rate_min_curr[spin_id];
-				}
-
-			}
-		}
-	}
+	// Add here regular characteristics
 }
 void characteristics_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd, int dump_id)
 {
-	int is_dump_adr = cp.int_is_dump_adr;
-
 	MKL_Complex16 * rho_in_d = new MKL_Complex16[md.size * md.size];
+	MKL_Complex16 * evals = new MKL_Complex16[md.size];
 
 	for (int state_id_1 = 0; state_id_1 < md.size; state_id_1++)
 	{
@@ -5794,243 +3730,41 @@ void characteristics_deep(Model *m, RunParam &rp, ConfigParam &cp, MainData &md,
 		}
 	}
 
-	if (is_dump_adr == 1)
+	for (int st_id_1 = 0; st_id_1 < md.size; st_id_1++)
 	{
-		double * adr_avg = new double[md.size];
-
-		for (int st_id = 0; st_id < md.size; st_id++)
+		for (int st_id_2 = 0; st_id_2 < md.size; st_id_2++)
 		{
-			adr_avg[st_id] = rho_in_d[st_id * md.size + st_id].real;
+			pd.deep_avg_rho[st_id_1 * md.size + st_id_2].real += rho_in_d[st_id_1 * md.size + st_id_2].real;
+			pd.deep_avg_rho[st_id_1 * md.size + st_id_2].imag += rho_in_d[st_id_1 * md.size + st_id_2].imag;
 		}
-
-		string fn = rp.path + "adr_avg" + file_name_suffix(cp, 4);
-
-		int append = 0;
-		if (dump_id > 0)
-		{
-			append = 1;
-		}
-
-		save_double_data(fn, adr_avg, md.size, 16, append);
-
-		delete[] adr_avg;
 	}
 
+	int info = LAPACKE_zgeev(
+		LAPACK_ROW_MAJOR,
+		'N',
+		'N',
+		md.size,
+		rho_in_d,
+		md.size,
+		evals,
+		NULL,
+		md.size,
+		NULL,
+		md.size);
+
+	if (info > 0) 
+	{
+		printf("The algorithm failed to compute eigenvalues.\n");
+		exit(1);
+	}
+
+	for (int st_id = 0; st_id < md.size; st_id++)
+	{
+		pd.deep_evals[dump_id * md.size + st_id] = evals[st_id].real;
+	}
+
+	delete[] evals;
 	delete[] rho_in_d;
-
-	string fn;
-
-	for (int spin_id = 0; spin_id < cp.N; spin_id++)
-	{
-		crsMatrix * sigma_i_z = create_sigma_i_z_matrix(m, cp, spin_id);
-
-		if (rp.debug)
-		{
-			fn = rp.path + "sigma_z_mtx_" + to_string(spin_id) + "_" + to_string(dump_id) + file_name_suffix(cp, 4);
-			save_sparse_complex_mtx(fn, sigma_i_z, 16, false);
-		}
-
-		crsMatrix * mult_z = new crsMatrix();
-		SparseMKLMult(*(sigma_i_z), *(m->Rho), *(mult_z));
-		dcomplex curr_trace_z = trace(*mult_z);
-		delete sigma_i_z;
-		delete mult_z;
-
-		crsMatrix * sigma_i_x = create_sigma_i_x_matrix(m, cp, spin_id);
-
-		if (rp.debug)
-		{
-			fn = rp.path + "sigma_x_mtx_" + to_string(spin_id) + "_" + to_string(dump_id) + file_name_suffix(cp, 4);
-			save_sparse_complex_mtx(fn, sigma_i_x, 16, false);
-		}
-
-		crsMatrix * mult_x = new crsMatrix();
-		SparseMKLMult(*(sigma_i_x), *(m->Rho), *(mult_x));
-		dcomplex curr_trace_x = trace(*mult_x);
-		delete sigma_i_x;
-		delete mult_x;
-
-		crsMatrix * sigma_i_y = create_sigma_i_y_matrix(m, cp, spin_id);
-
-		if (rp.debug)
-		{
-			fn = rp.path + "sigma_y_mtx_" + to_string(spin_id) + "_" + to_string(dump_id) + file_name_suffix(cp, 4);
-			save_sparse_complex_mtx(fn, sigma_i_y, 16, false);
-		}
-
-		crsMatrix * mult_y = new crsMatrix();
-		SparseMKLMult(*(sigma_i_y), *(m->Rho), *(mult_y));
-		dcomplex curr_trace_y = trace(*mult_y);
-		delete sigma_i_y;
-		delete mult_y;
-
-		pd.sigma_x[spin_id][dump_id] = curr_trace_x.re;
-		pd.sigma_y[spin_id][dump_id] = curr_trace_y.re;
-		pd.sigma_z[spin_id][dump_id] = curr_trace_z.re;
-	}
-}
-
-void init_sign_sigma_z_start(Model* m, ConfigParam &cp, MainData &md, PropData &pd)
-{
-	for (int spin_id = 0; spin_id < cp.N; spin_id++)
-	{
-		crsMatrix * sigma_i_z = create_sigma_i_z_matrix(m, cp, spin_id);
-
-		crsMatrix * mult = new crsMatrix();
-
-		SparseMKLMult(*(sigma_i_z), *(m->Rho), *(mult));
-
-		dcomplex curr_trace = trace(*mult);
-
-		if (curr_trace.re > 0)
-		{
-			pd.sign_sigma_z_start[spin_id] = 1;
-		}
-		else
-		{
-			pd.sign_sigma_z_start[spin_id] = -1;
-		}
-
-		delete sigma_i_z;
-		delete mult;
-	}	
-}
-
-void init_diss1_A1_rows(int * rows, int N, int i, ConfigParam &cp)
-{
-	int size = pow(2, N);
-	int shift = pow(2, i);
-	int chunk = 2 * shift;
-	int area = pow(2, i + 2);
-
-	rows[0] = 0;
-
-	for (int st_id = 1; st_id < size + 1; st_id++)
-	{
-		if ((st_id % area >= shift + 1) && (st_id % area <= shift + chunk))
-		{
-			rows[st_id] = rows[st_id - 1] + 1;
-		}
-		else
-		{
-			rows[st_id] = rows[st_id - 1];
-		}
-	}
-}
-void init_diss1_A1_cols(int * cols, int N, int i, ConfigParam &cp)
-{
-	int size = pow(2, N);
-	int shift = pow(2, i);
-	int chunk = 2 * shift;
-	int area = pow(2, i + 2);
-
-	int num_filled = 0;
-
-	for (int st_id = 0; st_id < size; st_id++)
-	{
-		if ((st_id % area >= shift) && (st_id % area < shift + chunk))
-		{
-			cols[num_filled] = st_id;
-			num_filled++;
-		}
-	}
-}
-void init_diss1_A1_vals(dcomplex * vals, int N, int i, ConfigParam &cp)
-{
-	int size = pow(2, N);
-
-	int num_filled = 0;
-	for (int st_id = 0; st_id < size; st_id++)
-	{
-		if (bit_at(st_id, i) > bit_at(st_id, i + 1))
-		{
-			vals[num_filled].re = 1.0;
-			vals[num_filled].im = 0.0;
-
-			num_filled++;
-		}
-
-		if (bit_at(st_id, i) < bit_at(st_id, i + 1))
-		{
-			vals[num_filled].re = -1.0;
-			vals[num_filled].im = 0.0;
-
-			num_filled++;
-		}
-	}
-}
-void init_diss1_A2_rows(int * rows, int N, int i, ConfigParam &cp)
-{
-	int size = pow(2, N);
-	int shift = pow(2, i);
-	int chunk = 2 * shift;
-	int area = pow(2, i + 2);
-
-	rows[0] = 0;
-
-	for (int st_id = 1; st_id < size + 1; st_id++)
-	{
-		if ((st_id % area >= shift + 1) && (st_id % area <= shift + chunk))
-		{
-			rows[st_id] = rows[st_id - 1] + 1;
-		}
-		else
-		{
-			rows[st_id] = rows[st_id - 1];
-		}
-	}
-}
-void init_diss1_A2_cols(int * cols, int N, int i, ConfigParam &cp)
-{
-	int size = pow(2, N);
-	int shift = pow(2, i);
-	int chunk = 2 * shift;
-	int area = pow(2, i + 2);
-
-	int num_filled = 0;
-
-	for (int st_id = 0; st_id < size; st_id++)
-	{
-		int mod = st_id % area;
-
-		if ((mod >= shift) && (mod < shift + chunk))
-		{
-			if (mod < 2 * shift)
-			{
-				cols[num_filled] = st_id + shift;
-				num_filled++;
-			}
-			else
-			{
-				cols[num_filled] = st_id - shift;
-				num_filled++;
-			}
-		}
-	}
-}
-void init_diss1_A2_vals(dcomplex * vals, int N, int i, ConfigParam &cp)
-{
-	int size = pow(2, N);
-
-	int num_filled = 0;
-	for (int st_id = 0; st_id < size; st_id++)
-	{
-		if (bit_at(st_id, i) > bit_at(st_id, i + 1))
-		{
-			vals[num_filled].re = sin(-cp.dp);
-			vals[num_filled].im = -cos(-cp.dp);
-
-			num_filled++;
-		}
-
-		if (bit_at(st_id, i) < bit_at(st_id, i + 1))
-		{
-			vals[num_filled].re = -sin(cp.dp);
-			vals[num_filled].im = cos(cp.dp);
-
-			num_filled++;
-		}
-	}
 }
 
 void f_basis_init(Model* model, RunParam &rp, ConfigParam &cp, MainData &md)
@@ -6043,43 +3777,20 @@ void f_basis_init(Model* model, RunParam &rp, ConfigParam &cp, MainData &md)
 	time = omp_get_wtime() - init_time;
 	cout << "Time of createModel: " << time << endl << endl;
 
-	init_h_J_vector(model, rp, cp, md);
-	time = omp_get_wtime() - init_time;
-	cout << "Time of init_h_J_vector: " << time << endl << endl;
-	if (rp.debug == 1)
-	{
-		fn = rp.path + "h_j_vec" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->h_J, 16, false);
-	}
+	initFs(model->Fs, model->N);
+	time = omp_get_wtime() - init_time;;
+	cout << "Time of initFs: " << time << endl << endl;
 
-	init_h_h_z_vector(model, rp, cp, md);
+	init_h_0_vector(model, rp, cp, md);
 	time = omp_get_wtime() - init_time;
-	cout << "Time of init_h_h_z_vector: " << time << endl << endl;
-	if (rp.debug == 1)
-	{
-		fn = rp.path + "h_h_z_vec" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->h_h_z, 16, false);
-	}
+	cout << "Time of init_h_0_vector: " << time << endl << endl;
 
-	init_h_h_x_vector(model, rp, cp, md);
+	init_h_1_vector(model, rp, cp, md);
 	time = omp_get_wtime() - init_time;
-	cout << "Time of init_h_h_x_vector: " << time << endl << endl;
-	if (rp.debug == 1)
-	{
-		fn = rp.path + "h_h_x_vec" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->h_h_x, 16, false);
-	}
+	cout << "Time of init_h_1_vector: " << time << endl << endl;
 
-	init_h_s_x_vector(model, rp, cp, md);
-	time = omp_get_wtime() - init_time;
-	cout << "Time of init_h_s_x_vector: " << time << endl << endl;
-	if (rp.debug == 1)
-	{
-		fn = rp.path + "h_s_x_vec" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->h_s_x, 16, false);
-	}
-
-	init_H0(model);
+	init_H0(model, rp, cp, md); 
+	init_H1(model, rp, cp, md);
 
 	if (rp.issmtx == 1)
 	{
@@ -6087,24 +3798,12 @@ void f_basis_init(Model* model, RunParam &rp, ConfigParam &cp, MainData &md)
 		save_sparse_complex_mtx(fn, model->H0, 16, false);
 
 		fn = rp.path + "H1" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->H_s_x, 16, false);
+		save_sparse_complex_mtx(fn, model->H1, 16, false);
 	}
 
 	if (cp.dt == 1)
 	{
 		init_diss_1(model, rp, cp, md);
-	}
-	else if (cp.dt == 2)
-	{
-		init_diss_2(model, rp, cp, md);
-	}
-	else if (cp.dt == 3)
-	{
-		init_diss_3(model, rp, cp, md);
-	}
-	else if (cp.dt == 4)
-	{
-		init_diss_4(model, rp, cp, md);
 	}
 	else
 	{
@@ -6114,40 +3813,30 @@ void f_basis_init(Model* model, RunParam &rp, ConfigParam &cp, MainData &md)
 	time = omp_get_wtime() - init_time;
 	cout << "time of init_diss_" << to_string(cp.dt) << ": " << time << endl << endl;
 
-	calc_Q_J_s(model);
+	init_f_d_valentin(model);
 	time = omp_get_wtime() - init_time;
-	cout << "time of calc_Q_J_s: " << time << endl << endl;
+	cout << "time of init_f_d_valentin: " << time << endl << endl;
+
+	transpFs(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of transpFs: " << time << endl << endl;
+
+	calc_Q_0(model);
+	time = omp_get_wtime() - init_time;
+	cout << "time of calc_Q_0: " << time << endl << endl;
 	if (rp.debug == 1)
 	{
-		fn = rp.path + "Q_J_s" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->Q_J_s, 16, false);
+		fn = rp.path + "Q_0" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, model->Q_0, 16, false);
 	}
 
-	calc_Q_h_z_s(model);
+	calc_Q_1(model);
 	time = omp_get_wtime() - init_time;
-	cout << "time of calc_Q_h_z_s: " << time << endl << endl;
+	cout << "time of calc_Q_1: " << time << endl << endl;
 	if (rp.debug == 1)
 	{
-		fn = rp.path + "Q_h_z_s" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->Q_h_z_s, 16, false);
-	}
-
-	calc_Q_h_x_s(model);
-	time = omp_get_wtime() - init_time;
-	cout << "time of calc_Q_h_x_s: " << time << endl << endl;
-	if (rp.debug == 1)
-	{
-		fn = rp.path + "Q_h_x_s" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->Q_h_x_s, 16, false);
-	}
-
-	calc_Q_s_x_s(model);
-	time = omp_get_wtime() - init_time;
-	cout << "time of calc_Q_s_x_s: " << time << endl << endl;
-	if (rp.debug == 1)
-	{
-		fn = rp.path + "Q_s_x_s" + file_name_suffix(cp, 4);
-		save_sparse_complex_mtx(fn, model->Q_s_x_s, 16, false);
+		fn = rp.path + "Q_1" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, model->Q_1, 16, false);
 	}
 
 	calcKs(model);

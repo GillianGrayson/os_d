@@ -135,12 +135,12 @@ void init_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &p
 
 	int N_mat = md.size * md.size - 1;
 
-	pd.k1 = new dcomplex[N_mat];
-	pd.k2 = new dcomplex[N_mat];
-	pd.k3 = new dcomplex[N_mat];
-	pd.k4 = new dcomplex[N_mat];
-	pd.val = new dcomplex[N_mat];
-	pd.tmp = new dcomplex[N_mat];
+	pd.k1 = new double[N_mat];
+	pd.k2 = new double[N_mat];
+	pd.k3 = new double[N_mat];
+	pd.k4 = new double[N_mat];
+	pd.val = new double[N_mat];
+	pd.tmp = new double[N_mat];
 }
 
 void init_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
@@ -212,12 +212,12 @@ void init_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &
 
 	int N_mat = md.size * md.size - 1;
 
-	pd.k1 = new dcomplex[N_mat];
-	pd.k2 = new dcomplex[N_mat];
-	pd.k3 = new dcomplex[N_mat];
-	pd.k4 = new dcomplex[N_mat];
-	pd.val = new dcomplex[N_mat];
-	pd.tmp = new dcomplex[N_mat];
+	pd.k1 = new double[N_mat];
+	pd.k2 = new double[N_mat];
+	pd.k3 = new double[N_mat];
+	pd.k4 = new double[N_mat];
+	pd.val = new double[N_mat];
+	pd.tmp = new double[N_mat];
 }
 
 void free_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)

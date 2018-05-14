@@ -18,7 +18,7 @@
 
 #define TASK_ID_STD 0
 #define TASK_ID_DEEP 1
-
+#define TASK_ID_RATE 2
 
 using namespace std;
 

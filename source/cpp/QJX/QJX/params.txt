@@ -13,7 +13,7 @@ dump_evo_sep 1
 dump_evo_avg 0 
 dump_type 0 
 dump_num 1 
-N 100 
+N 50 
 diss_type 0 
 diss_gamma 0.1 
 diss_phase 0 
@@ -26,11 +26,11 @@ dimer_prm_U 0.51
 dimer_prm_J 1 
 jcs_drv_part_1 0.98 
 jcs_drv_part_2 1 
-jcs_drv_ampl 0.5 
+jcs_drv_ampl 3.2 
 jcs_prm_alpha 5 
 start_type 0 
 start_state 0 
 cd_dim 1 
 cd_eps 1e-08 
 deep_num_steps 10000 
-jump 1 
+jump 0
