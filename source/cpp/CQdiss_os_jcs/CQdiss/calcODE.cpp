@@ -1,5 +1,4 @@
 #include "calcODE.h"
-#include "calcRho.h"
 #include "characteristics.h"
 
 void init_conditions(dcomplex *mtx, RunParam &rp, ConfigParam &cp, MainData &md)

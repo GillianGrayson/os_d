@@ -15,7 +15,7 @@ $(NAME_APP): $(OBJS)
 		$(AR) $(prefix)lib$@.a $^
 
 .cpp.o:
-	$(CC) $(OPTC) -c $*.cpp $(OUTC)$*.o
+	$(CC) $(OPTC) -c $*.cpp $(OUTC) $*.o
 
 clean:
 	$(RM) *.o 

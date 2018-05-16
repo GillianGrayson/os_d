@@ -3,6 +3,7 @@
 
 #include "Model.h"
 #include "data.h"
+#include "CalcRho.h"
 
 void init_conditions(dcomplex *mtx, RunParam &rp, ConfigParam &cp, MainData &md);
 
