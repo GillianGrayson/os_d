@@ -1,0 +1,50 @@
+#pragma once
+#include "Config.h"
+#include "utils.h"
+#include "Model.h"
+
+struct MainData
+{
+	int size;
+
+	double step_t_0;					// Integration step with 0-Hamiltonian
+	double step_t_1;					// Integration step with 1-Hamiltonian
+
+	double T;							// Full period
+};
+
+void init_main_data(RunParam &rp, ConfigParam &cp, MainData &md);
+void delete_main_data(MainData &md);
+
+struct PropData
+{
+	int total_num_dumps;
+
+	int * dump_periods;
+
+	double * deep_dump_times;
+	double * deep_evals;
+	MKL_Complex16 * deep_avg_rho;
+
+	dcomplex * k1;
+	dcomplex * k2;
+	dcomplex * k3;
+	dcomplex * k4;
+	dcomplex * val;
+	dcomplex * tmp;
+};
+
+void f_basis_init(Model* model, RunParam &rp, ConfigParam &cp, MainData &md);
+
+void f_basis_prop_std(RunParam &rp, ConfigParam &cp, MainData &md);
+void f_basis_prop_deep(RunParam &rp, ConfigParam &cp, MainData &md);
+
+void init_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void init_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+
+void free_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void free_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+
+void dump_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void dump_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+
