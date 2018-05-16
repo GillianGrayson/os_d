@@ -1,6 +1,6 @@
 clear all;
 
-cpp_path = '../../../cpp/os_jcs/os_jcs';
+cpp_path = '../../../cpp/CQdiss_os_jcs/CQdiss';
 
 N = 50; 
 
