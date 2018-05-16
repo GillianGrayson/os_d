@@ -1,0 +1,25 @@
+task 1
+debug 0
+issmtx 1
+ipp 1
+init_file 
+path
+N 50
+dt 1
+dp 0
+g 0.1
+g_add 0.1
+drv_ampl 3.2
+prm_alpha 5.0
+num_steps_t_0 1000
+num_steps_t_1 1000
+num_periods_trans 100
+num_periods_obser 1
+t_0 0.98
+t_1 1.00
+seed 1
+max_num_seeds 1000000
+int_ist 1
+int_isi 0
+int_dt 0
+int_dn 100

@@ -1,6 +1,6 @@
 clear all;
 
-cpp_path = '../../../cpp/CQdiss_os_jcs/CQdiss';
+cpp_path = '../../../cpp/CQdiss_os_jcs_opt/CQdiss_fbasis';
 
 N = 50; 
 
