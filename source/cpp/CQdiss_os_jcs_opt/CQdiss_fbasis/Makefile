@@ -1,5 +1,5 @@
 topdir = ..
-NAME_APP = cdiss_os_anderson
+NAME_APP = cdiss_os_jcs
 prefix   = ../bin/
 
 include $(topdir)/Makefile.inc

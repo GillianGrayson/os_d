@@ -21,7 +21,7 @@ InitH.o \
 Model.o \
 sortTensor.o \
 stdToCrs.o \
-utils. o \
+utils.o \
 
 
 default: build

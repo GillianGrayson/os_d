@@ -1,5 +1,5 @@
 #include <omp.h>
-#include "config.h"
+#include "Config.h"
 #include "data.h"
 #include "read_config.h"
 

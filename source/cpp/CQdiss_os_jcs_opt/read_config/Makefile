@@ -4,7 +4,7 @@ prefix   = ../bin/
 
 include $(topdir)/Makefile.inc
 
-OBJS = read_config.o read_config_util.o
+OBJS = read_config.o
 
 
 default: build

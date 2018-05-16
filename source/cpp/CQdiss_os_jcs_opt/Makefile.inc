@@ -1,5 +1,5 @@
-CC  = icc -openmp
-CXX = icpc -openmp
+CC  = icc -qopenmp
+CXX = icpc -qopenmp
 FF  = ifort
 AR  = ar rc 
 RANLIB = ranlib
@@ -12,7 +12,7 @@ LIBPREF = lib
 OUTC    = -o
 OUTF    = -o 
 
-CFLAGS   = -O3 -mkl std=c++11
+CFLAGS   = -O3 -mkl -std=c++11
 OPTF = $(CFLAGS)
 OPTC = $(CFLAGS)
 LD_FLAGS = 
