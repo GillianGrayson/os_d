@@ -4,23 +4,24 @@ prefix   = ../bin/
 
 include $(topdir)/Makefile.inc
 
-OBJS = CalcEigs.o \
-CalcGs.o \
+OBJS = CalcGs.o \
 CalcKs.o \
 calcODE.o \
 CalcQs.o \
 CalcRho.o \
 CalcRs.o \
+characteristics.o \
 coef_coord.o \
+data.o \
+f_basis_init.o \
 f_d_ch.o \
 f_d_sym.o \
 Init_a1_a2.o \
 InitH.o \
-linSolv.o \
 Model.o \
 sortTensor.o \
-stdToCrs.o 
-
+stdToCrs.o \
+utils. o \
 
 
 default: build

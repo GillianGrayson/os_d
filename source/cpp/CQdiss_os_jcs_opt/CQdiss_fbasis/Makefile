@@ -16,7 +16,7 @@ $(NAME_APP): $(OBJS)
 		-L$(prefix) -lcdiss -lread_config -lmatrix_op
 
 .cpp.o:
-	$(CC) -I../SparceM_op/ -I../CQdiss/ -I../read_config/ $(OPTC) -c $*.cpp $(OUTC)$*.o
+	$(CC) -I../SparceM_op/ -I../CQdiss/ -I../read_config/ $(OPTC) -c $*.cpp $(OUTC) $*.o
 
 clean:
 	$(RM) *.o 
