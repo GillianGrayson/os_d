@@ -1,10 +1,10 @@
 clear all;
 
-N = 5;
+N = 50;
 
-data_path = '../../../source/cpp/CQdiss/CQdiss_fbasis';
+data_path = '../../../source/cpp/CQdiss_os_jcs_opt/CQdiss_fbasis';
 
-fn = sprintf('%s/rho_34_init.txt', data_path);
+fn = sprintf('%s/rho.txt', data_path);
 rho_data = importdata(fn);
 
 d_size = size(rho_data, 1);
@@ -19,7 +19,7 @@ for d_id = 1:d_size
 end
 
 fig = figure;
-hLine = imagesc(states, states, curr_rho);
+hLine = imagesc(states, states, abs(curr_rho));
 set(gca, 'FontSize', 30);
 xlabel('$n$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
