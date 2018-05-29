@@ -292,6 +292,8 @@ void free_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &
 
 void free_prop_data_floquet(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
 {
+	delete[] pd.dump_periods;
+
 	delete[] pd.k1;
 	delete[] pd.k2;
 	delete[] pd.k3;
