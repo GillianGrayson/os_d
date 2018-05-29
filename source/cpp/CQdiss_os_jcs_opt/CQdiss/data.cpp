@@ -87,6 +87,30 @@ void f_basis_prop_deep(RunParam &rp, ConfigParam &cp, MainData &md)
 	delete_main_data(md);
 }
 
+void f_basis_prop_floquet(RunParam &rp, ConfigParam &cp, MainData &md)
+{
+	string fn;
+
+	init_main_data(rp, cp, md);
+
+	Model * model;
+	model = createModel(md.size - 1, cp);
+
+	f_basis_init(model, rp, cp, md);
+
+	PropData pd;
+	init_prop_data_floquet(rp, cp, md, pd);
+
+	calcODE_floquet(model, rp, cp, md, pd);
+
+	dump_prop_data_floquet(rp, cp, md, pd);
+
+	free_prop_data_floquet(rp, cp, md, pd);
+
+	freeModel(model);
+	delete_main_data(md);
+}
+
 void init_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
 {
 	if (cp.int_dt == 0)
@@ -225,6 +249,20 @@ void init_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &
 	pd.tmp = new double[N_mat];
 }
 
+void init_prop_data_floquet(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
+{
+	int N_mat = md.size * md.size - 1;
+
+	pd.k1 = new double[N_mat];
+	pd.k2 = new double[N_mat];
+	pd.k3 = new double[N_mat];
+	pd.k4 = new double[N_mat];
+	pd.val = new double[N_mat];
+	pd.tmp = new double[N_mat];
+
+	pd.floquet = new MKL_Complex16[md.size * md.size * md.size * md.size];
+}
+
 void free_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
 {
 	delete[] pd.dump_periods;
@@ -250,6 +288,20 @@ void free_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &
 	delete[] pd.k4;
 	delete[] pd.val;
 	delete[] pd.tmp;
+}
+
+void free_prop_data_floquet(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
+{
+	delete[] pd.dump_periods;
+
+	delete[] pd.k1;
+	delete[] pd.k2;
+	delete[] pd.k3;
+	delete[] pd.k4;
+	delete[] pd.val;
+	delete[] pd.tmp;
+
+	delete[] pd.floquet;
 }
 
 void dump_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
@@ -282,3 +334,40 @@ void dump_prop_data_deep(RunParam &rp, ConfigParam &cp, MainData &md, PropData &
 	cout << "Saving times to file:" << endl << fn << endl << endl;
 	save_complex_data(fn, pd.deep_avg_rho, md.size * md.size, 16, false);
 }
+
+void dump_prop_data_floquet(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
+{
+	int size_xtd = md.size * md.size;
+	MKL_Complex16 * evals = new MKL_Complex16[size_xtd];
+
+	int info = LAPACKE_zgeev(
+		LAPACK_ROW_MAJOR,
+		'N',
+		'N',
+		size_xtd,
+		pd.floquet,
+		size_xtd,
+		evals,
+		NULL,
+		size_xtd,
+		NULL,
+		size_xtd
+	);
+
+	/* Check for convergence */
+	if (info > 0) {
+		printf("The algorithm failed to compute eigenvalues.\n");
+		exit(1);
+	}
+
+	cout << "Saving specs to files" << endl << endl;
+
+	string fn = rp.path;
+
+	fn = rp.path + "floquet_evals" + file_name_suffix(cp, 4);
+	cout << "Saving floquet_evals to file:" << endl << fn << endl << endl;
+	save_complex_data(fn, evals, size_xtd, 16, false);
+
+	delete[] evals;
+}
+

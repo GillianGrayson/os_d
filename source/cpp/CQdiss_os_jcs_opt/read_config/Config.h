@@ -16,6 +16,7 @@
 
 #define TASK_ID_STD 0
 #define TASK_ID_DEEP 1
+#define FLOQUET_ID_DEEP 2
 
 using namespace std;
 

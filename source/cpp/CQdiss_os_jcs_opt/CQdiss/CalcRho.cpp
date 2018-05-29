@@ -61,6 +61,7 @@ void calcRho(Model *m)
 	if (m->Rho != NULL)
 	{
 		delete m->Rho;
+		m->Rho = NULL;
 	}
 	m->Rho = mRho;
 }

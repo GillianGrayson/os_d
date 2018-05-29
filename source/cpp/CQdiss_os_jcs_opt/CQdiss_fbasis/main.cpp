@@ -26,6 +26,10 @@ int main(int argc, char ** argv)
 	{
 		f_basis_prop_deep(rp, cp, md);
 	}
+	else if (rp.task == FLOQUET_ID_DEEP)
+	{
+		f_basis_prop_floquet(rp, cp, md);
+	}
 	else
 	{
 		stringstream msg;
