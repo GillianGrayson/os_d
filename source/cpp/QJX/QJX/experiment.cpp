@@ -613,8 +613,12 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
+	MainData * md = ad->md;
 
 	ed->is_obs = 1;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
 	int num_trajectories = cp->num_trajectories;
 
@@ -639,6 +643,8 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
+			int dump_id = (period_id + 1) * num_sub_steps;
+
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
@@ -656,6 +662,7 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 				if (tr_id > 0)
 				{
 					lambda_lpn(ad, cb, tr_id);
+					cb->evo_chars_lpn(ad, tr_id, dump_id);
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 clear all;
 
 sys_id = 0;
-task_id = 0;
+task_id = 5;
 prop_id = 0;
 
 seed = 1;
@@ -15,19 +15,19 @@ drv_ampl = 1.5;
 drv_freq = 1.0;
 drv_phase = 0.0;
 prm_E = 1.0;
-prm_U = 0.5;
+prm_U = 0.14;
 prm_J = 1.0;
 start_type = 0;
 start_state = 0;
 
 T = 2 * pi / drv_freq;
 
-cd_dump_deep = 0;
-cd_num_sub_steps = 1;
+cd_dump_deep = 1;
+cd_num_sub_steps = 128;
 
 size_sys = N + 1;
 
-tr_id = 0;
+tr_id = 1;
 
 is_mean = 1;
 
@@ -62,7 +62,7 @@ if(cd_dump_deep == 1)
     dump_shift = 1 / (2 * cd_num_sub_steps);
     dump_periods(1) = 0;
     for dump_id = 2:num_dumps
-        dump_periods(dump_id) = dump_shift * (dump_id - 1);
+        dump_periods(dump_id) = 1 * (dump_id - 1);
     end
 end
 
@@ -70,12 +70,18 @@ adr = zeros(size_sys, num_dumps);
 
 states = linspace(1, size_sys, size_sys) / size_sys;
 
-fn = sprintf('%s/mean_lpn_evo_%s.txt', data_path, suffix);
+fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
 mean_evo_data = importdata(fn);
 mean_evo = mean_evo_data(:, tr_id + 1);
 
+fn = sprintf('%s/mean_lpn_evo_%s.txt', data_path, suffix);
+mean_evo_data = importdata(fn);
+mean_lpn_evo = mean_evo_data(:, tr_id + 1);
+
+mean_diff = mean_evo - mean_lpn_evo;
+
 fig = figure;
-hLine = plot(dump_periods, mean_evo / size_sys);
+hLine = plot(dump_periods, mean_diff);
 title_str = sprintf('config(%d %d %d) tr(%d) N(%d) drv(%d %0.2f) prm(%0.2f %0.2f %0.2f)', ...
     sys_id, ...
     task_id, ...
@@ -92,7 +98,7 @@ set(gca, 'FontSize', 30);
 xlabel('$t/T$', 'Interpreter', 'latex');
 xlim([dump_periods(1) dump_periods(end)])
 set(gca, 'FontSize', 30);
-ylabel('$n$', 'Interpreter', 'latex');
+ylabel('$diff$', 'Interpreter', 'latex');
 hold all;
 
 propertyeditor(fig)
