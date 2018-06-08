@@ -1,12 +1,12 @@
 clear all;
 
 sys_id = 0;
-task_id = 0;
+task_id = 5;
 prop_id = 0;
 
 seed = 1;
 mns = 1000000;
-N = 100;
+N = 200;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0.0;
@@ -22,8 +22,8 @@ start_state = 0;
 
 T = 2 * pi / drv_freq;
 
-cd_dump_deep = 0;
-cd_num_sub_steps = 100;
+cd_dump_deep = 1;
+cd_num_sub_steps = 500;
 
 size_sys = N + 1;
 

@@ -1,12 +1,12 @@
 clear all;
 
 sys_id = 0;
-task_id = 0;
+task_id = 5;
 prop_id = 0;
 
 seed = 1;
 mns = 1000000;
-N = 100;
+N = 200;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0.0;
@@ -22,12 +22,12 @@ start_state = 0;
 
 T = 2 * pi / drv_freq;
 
-cd_dump_deep = 0;
-cd_num_sub_steps = 100;
+cd_dump_deep = 1;
+cd_num_sub_steps = 500;
 
 size_sys = N + 1;
 
-tr_id = 1;
+num_tr = 7;
 
 is_mean = 1;
 
@@ -66,38 +66,42 @@ if(cd_dump_deep == 1)
     end
 end
 
-adr = zeros(size_sys, num_dumps);
-
 states = linspace(1, size_sys, size_sys) / size_sys;
 
 fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
 mean_evo_data = importdata(fn);
 
 mean_evo_base = mean_evo_data(:, 1);
-mean_evo_var = mean_evo_data(:, tr_id + 1);
 
-mean_evo_diff = abs(mean_evo_base - mean_evo_var);
 
 fig = figure;
-hLine = plot(dump_periods, mean_evo_diff / size_sys);
-title_str = sprintf('config(%d %d %d) tr(%d) N(%d) drv(%d %0.2f) prm(%0.2f %0.2f %0.2f)', ...
-    sys_id, ...
-    task_id, ...
-    prop_id, ...
-    tr_id, ...
-    N, ... 
-    drv_type, ...
-    drv_ampl, ...
-    prm_E, ...
-    prm_U, ...
-    prm_J);
-title(title_str, 'FontSize', 33, 'interpreter','latex');
-set(gca, 'FontSize', 30);
-xlabel('$t/T$', 'Interpreter', 'latex');
-xlim([dump_periods(1) dump_periods(end)])
-set(gca, 'FontSize', 30);
-ylabel('$|\Delta|$', 'Interpreter', 'latex');
-hold all;
+for tr_id = 1:num_tr
+    mean_evo_var = mean_evo_data(:, tr_id + 1);
+
+    mean_evo_diff = abs(mean_evo_base - mean_evo_var);
+
+    hLine = plot(dump_periods, mean_evo_diff / size_sys);
+    title_str = sprintf('config(%d %d %d) tr(%d) N(%d) drv(%d %0.2f) prm(%0.2f %0.2f %0.2f)', ...
+        sys_id, ...
+        task_id, ...
+        prop_id, ...
+        tr_id, ...
+        N, ... 
+        drv_type, ...
+        drv_ampl, ...
+        prm_E, ...
+        prm_U, ...
+        prm_J);
+    title(title_str, 'FontSize', 33, 'interpreter','latex');
+    legend(hLine, sprintf('tr=%d', tr_id))
+    set(gca, 'FontSize', 30);
+    xlabel('$t/T$', 'Interpreter', 'latex');
+    xlim([dump_periods(1) dump_periods(end)])
+    set(gca, 'FontSize', 30);
+    ylabel('$|\Delta|$', 'Interpreter', 'latex');
+    hold all;
+    
+end
 
 propertyeditor(fig)
 

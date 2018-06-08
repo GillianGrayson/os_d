@@ -15,7 +15,7 @@ public:
 	virtual void one_period(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const = 0;
 	virtual void one_period_trp_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const = 0;
 	virtual void one_period_obs_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const = 0;
-	virtual void one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const = 0;
+	virtual void one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int period_id) const = 0;
 	virtual void one_period_obs_deep_cd(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const = 0;
 	virtual void one_period_obs_deep_sigma(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const = 0;
 };
@@ -32,7 +32,7 @@ public:
 	virtual void one_period(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
 	virtual void one_period_trp_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
 	virtual void one_period_obs_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
-	virtual void one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
+	virtual void one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int period_id) const;
 	virtual void one_period_obs_deep_cd(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
 	virtual void one_period_obs_deep_sigma(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
 };
@@ -49,7 +49,7 @@ public:
 	virtual void one_period(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
 	virtual void one_period_trp_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
 	virtual void one_period_obs_deep(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
-	virtual void one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
+	virtual void one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int period_id) const;
 	virtual void one_period_obs_deep_cd(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
 	virtual void one_period_obs_deep_sigma(AllData * ad, CoreBehavior * cb, int tr_id, int th_id, int period_id) const;
 };

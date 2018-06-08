@@ -643,28 +643,8 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
-			int dump_id = (period_id + 1) * num_sub_steps;
-
-#pragma omp parallel for
-			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-			{
-				int thread_id = omp_get_thread_num();
-				pb->one_period_obs_deep_lpn(ad, cb, tr_id, thread_id, period_id);
-			}
-
-			cb->calc_chars_lpn(ad, 0);
-
+			pb->one_period_obs_deep_lpn(ad, cb, period_id);
 			ed->period_id = (period_id + 1);
-
-#pragma omp parallel for
-			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
-			{
-				if (tr_id > 0)
-				{
-					lambda_lpn(ad, cb, tr_id);
-					cb->evo_chars_lpn(ad, tr_id, dump_id);
-				}
-			}
 		}
 
 		if (dump_evo_avg == 1)
