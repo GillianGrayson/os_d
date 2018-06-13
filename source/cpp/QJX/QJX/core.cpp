@@ -843,18 +843,21 @@ void DimerCoreBehaviour::dump_std_evo(AllData * ad) const
 		fn = rp->path + "energy_evo" + cp->fn_suffix;
 		save_2d_inv_double_data(fn, energy_evo, dump_num_total, num_trajectories, 16, false);
 
-		if (jump == 1)
+		if (jump > 0)
 		{
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
 				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
 
-				fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
-				save_double_vector(fn, ed->jump_norms[tr_id], 16, false);
+				if (jump > 1)
+				{
+					fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
+					save_double_vector(fn, ed->jump_norms[tr_id], 16, false);
 
-				fn = rp->path + "jump_etas_" + to_string(tr_id) + cp->fn_suffix;
-				save_double_vector(fn, ed->jump_etas[tr_id], 16, false);
+					fn = rp->path + "jump_etas_" + to_string(tr_id) + cp->fn_suffix;
+					save_double_vector(fn, ed->jump_etas[tr_id], 16, false);
+				}
 			}
 		}
 	}
@@ -1430,18 +1433,21 @@ void JCSCoreBehaviour::dump_std_evo(AllData * ad) const
 		fn = rp->path + "mean_evo" + cp->fn_suffix;
 		save_2d_inv_double_data(fn, mean_evo, dump_num_total, num_trajectories, 16, false);
 
-		if (jump == 1)
+		if (jump > 0)
 		{
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
 				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
 
-				fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
-				save_double_vector(fn, ed->jump_norms[tr_id], 16, false);
+				if (jump > 1)
+				{
+					fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
+					save_double_vector(fn, ed->jump_norms[tr_id], 16, false);
 
-				fn = rp->path + "jump_etas_" + to_string(tr_id) + cp->fn_suffix;
-				save_double_vector(fn, ed->jump_etas[tr_id], 16, false);
+					fn = rp->path + "jump_etas_" + to_string(tr_id) + cp->fn_suffix;
+					save_double_vector(fn, ed->jump_etas[tr_id], 16, false);
+				}
 			}
 		}
 	}
