@@ -280,7 +280,7 @@ void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
 
-				if (jump == 1 && ed->is_obs == 1)
+				if (jump > 0 && ed->is_obs == 1)
 				{
 					double jump_time = ed->times_all[tr_id] + branch->dt;
 					double jump_norm = norm_square(phi_aux, branch->N);
