@@ -1976,7 +1976,7 @@ void rk_step_dimer(AllData * ad, int tr_id, int th_id, double step)
 
 		rk_int_dimer(ad, tr_id, th_id, begin_step);
 
-		if (jump == 1 && ed->is_obs == 1)
+		if (jump > 0 && ed->is_obs == 1)
 		{
 			double jump_time = ed->times_all[tr_id];
 			double jump_norm = norm_square(phi, sys_size);
@@ -2038,7 +2038,7 @@ void rk_step_jcs(AllData * ad, int tr_id, int th_id, double step)
 
 		rk_int_jcs(ad, tr_id, th_id, begin_step);
 
-		if (jump == 1 && ed->is_obs == 1)
+		if (jump > 0 && ed->is_obs == 1)
 		{
 			double jump_time = ed->times_all[tr_id];
 			double jump_norm = norm_square(phi, sys_size);

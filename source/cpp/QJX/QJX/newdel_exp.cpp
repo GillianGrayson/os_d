@@ -278,7 +278,7 @@ void init_basic_data(AllData * ad)
 	}
 
 	int jump = int(cp->params.find("jump")->second);
-	if (jump == 1)
+	if (jump > 0)
 	{
 		ed->jump_times = new vector<double>[num_trajectories];
 		ed->jump_norms = new vector<double>[num_trajectories];
@@ -572,7 +572,7 @@ void free_basic_data(AllData * ad)
 	delete[] ed->etas_all;
 
 	int jump = int(cp->params.find("jump")->second);
-	if (jump == 1)
+	if (jump > 0)
 	{
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
