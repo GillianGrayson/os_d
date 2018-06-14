@@ -53,6 +53,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
+	MainData * md = ad->md;
 
 	ed->is_obs = 1;
 
@@ -88,7 +89,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 
 			cb->calc_chars_lpn(ad, 0);
 
-			ed->period_id = (period_id + 1);
+			ed->curr_time = (period_id + 1) * md->T;
 
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -644,7 +645,6 @@ void LpnDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
 			pb->one_period_obs_deep_lpn(ad, cb, period_id);
-			ed->period_id = (period_id + 1);
 		}
 
 		if (dump_evo_avg == 1)
@@ -726,6 +726,7 @@ void LpnAllExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * 
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
+	MainData * md = ad->md;
 
 	ed->is_obs = 1;
 
@@ -761,7 +762,7 @@ void LpnAllExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * 
 
 			cb->calc_chars_lpn(ad, 0);
 
-			ed->period_id = (period_id + 1);
+			ed->curr_time = (period_id + 1) * md->T;
 
 			lambda_lpn_all(ad, cb);
 		}
@@ -2045,12 +2046,12 @@ void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 		ed->delta_s[tr_id] = cb->calc_delta_s(ad, tr_id);
 
-		ed->lambda_now[tr_id] = ed->lambda[tr_id] / (double(ed->period_id) * md->T);
+		ed->lambda_now[tr_id] = ed->lambda[tr_id] / ed->curr_time;
 	}
 	else
 	{
 		cb->calc_chars_lpn(ad, tr_id);
-		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / (double(ed->period_id) * md->T);
+		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / ed->curr_time;
 	}
 }
 
@@ -2089,7 +2090,7 @@ void lambda_lpn_all(AllData * ad, CoreBehavior *cb)
 	{
 		double delta_f = cb->calc_delta_f(ad, tr_id);
 
-		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / (double(ed->period_id) * md->T);
+		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / ed->curr_time;
 
 		if (is_reset)
 		{

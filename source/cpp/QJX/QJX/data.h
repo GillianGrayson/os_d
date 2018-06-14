@@ -45,9 +45,10 @@ struct ExpData
 	vector<double> * jump_norms;				// Norms before jumps
 	vector<double> * jump_etas;					// Etas
 
-	int period_id;								// Curr period_id
+	double curr_time;								// Curr period_id
+
 	int dump_type;								// Type of dumping
-	int dump_num_total;						// Total number of dumps
+	int dump_num_total;							// Total number of dumps
 	int * dump_periods;							// Dump periods
 
 	// ======== RK Data ========

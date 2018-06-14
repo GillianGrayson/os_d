@@ -292,7 +292,7 @@ void init_dump_periods_deep(AllData * ad)
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	ed->period_id = 0;
+	ed->curr_time = 0.0;
 
 	ed->dump_type = int(cp->params.find("dump_type")->second);
 	int dump_num = int(cp->params.find("dump_num")->second);
@@ -322,7 +322,7 @@ void init_dump_periods(AllData * ad)
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
 
-	ed->period_id = 0;
+	ed->curr_time = 0.0;
 
 	ed->dump_type = int(cp->params.find("dump_type")->second);
 	int dump_num = int(cp->params.find("dump_num")->second);

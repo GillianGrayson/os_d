@@ -66,21 +66,18 @@ if(cd_dump_deep == 1)
     end
 end
 
-states = linspace(1, size_sys, size_sys) / size_sys;
 
-fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
-mean_evo_data = importdata(fn);
+fn = sprintf('%s/lambda_evo_%s.txt', data_path, suffix);
+evo_data = importdata(fn);
 
-mean_evo_base = mean_evo_data(:, 1);
 
 
 fig = figure;
 for tr_id = 1:num_tr
-    mean_evo_var = mean_evo_data(:, tr_id + 1);
 
-    mean_evo_diff = abs(mean_evo_base - mean_evo_var);
+    evo_curr = evo_data(:, tr_id + 1);
 
-    hLine = plot(dump_periods, mean_evo_diff / size_sys);
+    hLine = plot(dump_periods, evo_curr);
     title_str = sprintf('config(%d %d %d) tr(%d) N(%d) drv(%d %0.2f) prm(%0.2f %0.2f %0.2f)', ...
         sys_id, ...
         task_id, ...
@@ -98,7 +95,7 @@ for tr_id = 1:num_tr
     xlabel('$t/T$', 'Interpreter', 'latex');
     xlim([dump_periods(1) dump_periods(end)])
     set(gca, 'FontSize', 30);
-    ylabel('$|\Delta|$', 'Interpreter', 'latex');
+    ylabel('$\lambda$', 'Interpreter', 'latex');
     hold all;
     
 end

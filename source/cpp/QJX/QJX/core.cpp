@@ -183,6 +183,8 @@ void DimerCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) con
 			dump_point_id++;
 			int dump_id = global_point_id + 1;
 
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * md->T;
+
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
 			calc_chars_lpn(ad, 0);
