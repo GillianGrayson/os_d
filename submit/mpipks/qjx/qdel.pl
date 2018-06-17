@@ -4,11 +4,11 @@ use Cwd;
 $dir = getcwd;
 
 
-$id_start = 8214058;
+$id_start = 5817780;
 $num_id = 10000;
  
 
-for($val = $id_start; ($val < $id_start + $num_id); $val+=1)
+for($val = $id_start; ($val <= $id_start + $num_id); $val+=1)
 {
 	system "qdel $val";
 }

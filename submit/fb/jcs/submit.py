@@ -16,13 +16,13 @@ for drv_ampl_id in range(0, drv_ampl_num):
 
     print('curr_drv_ampl: ' + str(curr_drv_ampl))
 
-    task = 1
+    task = 2
     debug = 0
     issmtx = 1
     ipp = 1
     init_file = ''
     path = ''
-    N = 100
+    N = 10
     dt = 1
     dp = 0.0
     g = 0.1

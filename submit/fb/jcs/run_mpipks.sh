@@ -12,8 +12,8 @@
 
 module load intel/2015.2
 
-scratch=/scratch/yusipov/os_anderson/$1
-code_base=$HOME/Work/os_anderson/source/cpp/CQdiss/bin
+scratch=/scratch/yusipov/os_d/$1
+code_base=$HOME/Work/os_d/source/cpp/CQdiss_os_jcs_opt/bin
 
 mkdir -p $scratch
 mkdir -p $1
@@ -26,7 +26,7 @@ echo " We are in $(pwd) "
 
 cat config.txt
 
-$code_base/cdiss 16
+$code_base/cdiss_os_jcs 16
 
 cp -r $scratch/* $1
 rm -r $scratch/*

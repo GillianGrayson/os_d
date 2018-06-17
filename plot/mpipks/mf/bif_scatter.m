@@ -8,9 +8,9 @@ prefix = 'mf_results';
 data_path = sprintf('%s/%s', data_path, prefix);
 
 task = 2;
-U_start = 0.001;
-U_shift = 0.001;
-U_num = 1000;
+U_start = 0.05;
+U_shift = 0.05;
+U_num = 20;
 seed_start = 0;
 seed_num = 10;
 path = ''; 
@@ -18,21 +18,24 @@ mt = 0;
 num_steps = 10000;
 npt = 2000;
 np = 2000;
-E = 1.0;
-A = 1.3 ;
+E = 0.0;
+A = 0.0 ;
 omega = 1.0;
 phase = 0.0;
 gamma = 0.1;
-J = 1.0;
+J = -1.0;
 
 nppp = 100;
 
-N = 400;
+N = 100;
 
-states = linspace(1, N, N) / N;
+states = linspace(1, N, N);
 
 Us = zeros(U_num, 1);
 BD = zeros(U_num , N);
+
+scatter_data_x = [];
+scatter_data_y = [];
 
 for U_id = 1 : U_num
     
@@ -88,21 +91,20 @@ for U_id = 1 : U_num
     
     BD(U_id, :) = BD(U_id, :) / max(BD(U_id, :));
     
+    [pks,locs] = findpeaks(BD(U_id, :));
+    
+    for loc_id = 1:size(locs, 2)
+        scatter_data_x = vertcat(scatter_data_x, U);
+        scatter_data_y = vertcat(scatter_data_y, locs(loc_id));
+    end
 end
 
-BD = BD';
-
 fig = figure;
-hLine = imagesc(Us, states, BD);
+hLine = scatter(scatter_data_x, scatter_data_y);
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$n$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-%title(h, '$PDF$', 'Interpreter', 'latex');
-set(gca,'YDir','normal');
 
 fn_suffix = sprintf('mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)_A(%0.4f)_U(%0.4f)_seed_num(%d)', ...
     mt, ...
@@ -115,4 +117,4 @@ fn_suffix = sprintf('mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)
     U, ...
     seed_num);
 
-savefig(sprintf('%s/mf_bifurcation_%s.fig', home_figures_path, fn_suffix));
+savefig(sprintf('%s/mf_bif_scatter_%s.fig', home_figures_path, fn_suffix));
