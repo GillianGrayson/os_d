@@ -15,7 +15,7 @@ drv_ampl = 1.5;
 drv_freq = 1.0;
 drv_phase = 0.0;
 prm_E = 1.0;
-prm_U = 0.05;
+prm_U = 0.15;
 prm_J = 1.0;
 start_type = 0;
 start_state = 0;
@@ -23,7 +23,7 @@ start_state = 0;
 T = 2 * pi / drv_freq;
 
 cd_dump_deep = 1;
-cd_num_sub_steps = 200;
+cd_num_sub_steps = 100;
 
 size_sys = N + 1;
 
