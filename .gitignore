@@ -106,3 +106,5 @@ source/cpp/QJX/QJX/My Inspector Results - QJX/
 *.pyc
 
 *.iml
+
+*.ipch
