@@ -346,8 +346,6 @@ void init_dump_periods(AllData * ad)
 		ed->dump_num_total = dump_num + 2;
 		ed->dump_periods = new int[ed->dump_num_total];
 
-		ed->dump_periods = 0;
-
 		double begin_decade = log10(1.0);
 		double end_decade = log10(double(num_obs_periods));
 		double num_decades = end_decade - begin_decade;

@@ -462,11 +462,11 @@ vector<int> sort_doubles_with_order(vector<double> &v)
 void fill_cols_h_x(int * cols, int N, int i)
 {
 	int num_filled = 0;
-	int chunk_size = pow(2, i);
+	int chunk_size = int(pow(2, i));
 
 	while (num_filled != pow(2, N))
 	{
-		cols[num_filled] = pow(2, i) + num_filled;
+		cols[num_filled] = int(pow(2, i)) + num_filled;
 		int start_id = num_filled;
 
 		num_filled++;

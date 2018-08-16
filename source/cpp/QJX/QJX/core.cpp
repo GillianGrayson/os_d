@@ -88,7 +88,7 @@ void DimerCoreBehaviour::ex_period(AllData * ad, int tr_id, int th_id, int perio
 	int sys_size = md->sys_size;
 	Split * head = &(md->splits)[th_id];
 
-	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
+	for (int b_id = 0; b_id < head->counter; b_id++)
 	{
 		one_period_branch(ad, head, tr_id, &(head->next)[b_id]);
 	}
@@ -678,7 +678,7 @@ double DimerCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 
 	int sys_size = md->sys_size;
 
-	int lpn_type = double(cp->params.find("lpn_type")->second);
+	int lpn_type = int(cp->params.find("lpn_type")->second);
 
 	double delta_s = 0.0;
 	if (lpn_type == 0)
@@ -707,7 +707,7 @@ double DimerCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 
 	int sys_size = md->sys_size;
 
-	int lpn_type = double(cp->params.find("lpn_type")->second);
+	int lpn_type = int(cp->params.find("lpn_type")->second);
 
 	double delta_f = 0.0;
 	if (lpn_type == 0)
@@ -1306,7 +1306,7 @@ double JCSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 
 	int sys_size = md->sys_size;
 
-	int lpn_type = double(cp->params.find("lpn_type")->second);
+	int lpn_type = int(cp->params.find("lpn_type")->second);
 
 	double delta_s = 0.0;
 	if (lpn_type == 0)
@@ -1334,7 +1334,7 @@ double JCSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 
 	int sys_size = md->sys_size;
 
-	int lpn_type = double(cp->params.find("lpn_type")->second);
+	int lpn_type = int(cp->params.find("lpn_type")->second);
 
 	double delta_f = 0.0;
 	if (lpn_type == 0)
@@ -1498,7 +1498,7 @@ Split * init_split_structure_dimer(AllData * ad)
 	head->N = N;
 	head->next = new Split[num_branches];
 
-	for (unsigned int i = 0; i < num_branches; i++)
+	for (int i = 0; i < num_branches; i++)
 	{
 		(head->next)[i].prev = head;
 		init_split_branches(&((head->next)[i]), i, ad);
@@ -1743,7 +1743,7 @@ void rk_right_part_dimer(AllData * ad, int sub_step, int tr_id, int th_id)
 
 	double dimer_prm_E = double(cp->params.find("dimer_prm_E")->second);
 
-	int dimer_drv_type = double(cp->params.find("dimer_drv_type")->second);
+	int dimer_drv_type = int(cp->params.find("dimer_drv_type")->second);
 	double dimer_drv_ampl = double(cp->params.find("dimer_drv_ampl")->second);
 	double dimer_drv_freq = double(cp->params.find("dimer_drv_freq")->second);
 	double dimer_drv_phase = double(cp->params.find("dimer_drv_phase")->second);
@@ -2099,5 +2099,5 @@ void calc_ci_double(AllData * ad, int tr_id)
 
 	ed->cd_i[tr_id] = integral;
 
-	delete curr_diff;
+	delete[] curr_diff;
 }

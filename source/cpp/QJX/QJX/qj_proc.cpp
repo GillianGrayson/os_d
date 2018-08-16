@@ -15,6 +15,8 @@ void init_split_branches(Split * branch, int branch_id, AllData * ad)
 	double T = (node->prev)->dt;
 	double dt = T * 0.5;
 
+	int mtx_syze = sys_size * sys_size;
+
 	for (int i = 0; i < deep - 1; i++)
 	{
 		node->steps = 2;
@@ -41,7 +43,7 @@ void init_split_branches(Split * branch, int branch_id, AllData * ad)
 
 		Eigen::MatrixXcd matrix_eigen = ham_qj_eigen.exp();
 
-		node->matrix = new MKL_Complex16[sys_size * sys_size];
+		node->matrix = new MKL_Complex16[mtx_syze];
 		for (int st_id_1 = 0; st_id_1 < sys_size; st_id_1++)
 		{
 			for (int st_id_2 = 0; st_id_2 < sys_size; st_id_2++)
@@ -83,7 +85,7 @@ void init_split_branches(Split * branch, int branch_id, AllData * ad)
 
 	Eigen::MatrixXcd matrix_eigen = ham_qj_eigen.exp();
 
-	node->matrix = new MKL_Complex16[sys_size * sys_size];
+	node->matrix = new MKL_Complex16[mtx_syze];
 	for (int st_id_1 = 0; st_id_1 < sys_size; st_id_1++)
 	{
 		for (int st_id_2 = 0; st_id_2 < sys_size; st_id_2++)
@@ -141,7 +143,7 @@ void copy_struct_not_member(Split * src, Split * dst)
 	dst->counter = src->counter;
 	dst->N = src->N;
 	dst->next = new Split[dst->counter];
-	for (unsigned int i = 0; i < dst->counter; i++)
+	for (int i = 0; i < dst->counter; i++)
 	{
 		(dst->next)[i].prev = dst;
 		copy_branch_not_member(&((src->next)[i]), &((dst->next)[i]));
@@ -192,7 +194,7 @@ void delete_branch(Split * branch)
 
 void delete_split_struct(Split * head)
 {
-	for (unsigned int i = 0; i < head->counter; i++)
+	for (int i = 0; i < head->counter; i++)
 	{
 		delete_branch(&(head->next)[i]);
 	}
@@ -238,7 +240,7 @@ void delete_branch_not_member(Split * branch)
 
 void delete_split_struct_not_member(Split * head)
 {
-	for (unsigned int i = 0; i < head->counter; i++)
+	for (int i = 0; i < head->counter; i++)
 	{
 		delete_branch_not_member(&(head->next)[i]);
 	}
@@ -338,7 +340,7 @@ void one_sub_period_deep(AllData * ad, int tr_id, int part_id, int thread_id)
 
 	Split * head = &(md->splits)[split_id];
 
-	for (unsigned int b_id = 0; b_id < head->counter; b_id++)
+	for (int b_id = 0; b_id < head->counter; b_id++)
 	{
 		one_period_branch(ad, head, tr_id, &(head->next)[b_id]);
 	}

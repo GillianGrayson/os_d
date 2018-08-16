@@ -3,6 +3,13 @@
 Processor::Processor(AllData * ad)
 {
 	this->ad = ad;
+	this->db = nullptr;
+	this->ob = nullptr;
+	this->ndb = nullptr;
+	this->ndb_exp = nullptr;
+	this->eb = nullptr;
+	this->pb = nullptr;
+	this->cb = nullptr;
 }
 
 void Processor::set_debug_behaviour(DebugBehavior* db)

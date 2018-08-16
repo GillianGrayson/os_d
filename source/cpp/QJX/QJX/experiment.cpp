@@ -877,7 +877,7 @@ void recovery(AllData * ad, Split * head, int tr_id)
 	double ran = 0.0;
 	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, &ran, 0.0, 1.0);
 
-	for (unsigned int i = 0; i < k; i++)
+	for (int i = 0; i < k; i++)
 	{
 		cblas_zgemv(
 			CblasRowMajor,
@@ -947,8 +947,8 @@ void recovery(AllData * ad, Split * head, int tr_id)
 		phi[st_id].imag = res[st_id].imag / sqrt(gnorms[index] / g[index]);
 	}
 
-	delete(res);
-	delete(gnorms);
+	delete[] res;
+	delete[] gnorms;
 }
 
 double get_norm_cd(double * vec, int size)
@@ -1251,7 +1251,7 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 	double lpn_eps_low = double(cp->params.find("lpn_eps_low")->second);
 	double lpn_eps_high = double(cp->params.find("lpn_eps_high")->second);
-	int lpn_eps_deep = double(cp->params.find("lpn_eps_deep")->second);
+	int lpn_eps_deep = int(cp->params.find("lpn_eps_deep")->second);
 
 	double curr_eps_low = lpn_eps_low;
 	double curr_eps_high = lpn_eps_high;
@@ -1601,7 +1601,7 @@ void gs_orth_init(AllData * ad, CoreBehavior *cb)
 
 	double lpn_eps_low = double(cp->params.find("lpn_eps_low")->second);
 	double lpn_eps_high = double(cp->params.find("lpn_eps_high")->second);
-	int lpn_eps_deep = double(cp->params.find("lpn_eps_deep")->second);
+	int lpn_eps_deep = int(cp->params.find("lpn_eps_deep")->second);
 
 	double curr_eps_low = lpn_eps_low;
 	double curr_eps_high = lpn_eps_high;
@@ -1836,7 +1836,7 @@ void gs_orth_evo(AllData * ad, CoreBehavior *cb, MKL_Complex16 *phi_var_all)
 
 	double lpn_eps_low = double(cp->params.find("lpn_eps_low")->second);
 	double lpn_eps_high = double(cp->params.find("lpn_eps_high")->second);
-	int lpn_eps_deep = double(cp->params.find("lpn_eps_deep")->second);
+	int lpn_eps_deep = int(cp->params.find("lpn_eps_deep")->second);
 
 	double curr_eps_low = lpn_eps_low;
 	double curr_eps_high = lpn_eps_high;

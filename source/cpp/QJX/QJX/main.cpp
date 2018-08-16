@@ -13,12 +13,12 @@ int main()
 
 	init_params(rp, cp, "config.txt", "params.txt");
 
-	DebugBehavior * db;
-	OutputBehavior * ob;
-	NewDelBehavior * ndb;
-	ExpNewDelBehavior * ndb_exp;
-	ExperimentBehavior * eb;
-	PropagateBehavior * pb;
+	DebugBehavior * db = nullptr;
+	OutputBehavior * ob = nullptr;
+	NewDelBehavior * ndb = nullptr;
+	ExpNewDelBehavior * ndb_exp = nullptr;
+	ExperimentBehavior * eb = nullptr;
+	PropagateBehavior * pb = nullptr;
 	CoreBehavior * cb;
 
 	if (rp->sys_id == DIMER_SYS_ID)

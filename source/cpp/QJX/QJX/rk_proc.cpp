@@ -69,8 +69,8 @@ void init_rk_deep(AllData * ad)
 
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
-
-	ed->rk_step = md->T / (double(cp->rk_ns * num_sub_steps));
+	int total_steps = cp->rk_ns * num_sub_steps;
+	ed->rk_step = md->T / (double(total_steps));
 
 	init_rk_data(ad);
 }
@@ -288,8 +288,8 @@ void rk_recovery(AllData * ad, int tr_id, int th_id)
 		phi[st_id].imag = res[st_id].imag / sqrt(gnorms[index] / 1.0);
 	}
 
-	delete(res);
-	delete(gnorms);
+	delete[] res;
+	delete[] gnorms;
 }
 
 void save_phi_prev(AllData * ad, int tr_id, int th_id)
