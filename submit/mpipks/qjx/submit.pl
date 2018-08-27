@@ -8,7 +8,7 @@ $data_path = "/data/biophys/yusipov/os_d/qjx_results";
 
 $PI = 3.1415926535897932384626433832795;
 
-$num_runs = 1;
+$num_runs = 10;
 
 $eps_exp_shift = 0.1;
 $eps_start = 1.0e-8;
@@ -22,9 +22,9 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 	for ($curr_cd_dim = 1; $curr_cd_dim <= 1; $curr_cd_dim += 1)
 	{
-		for($curr_A = 1.3; $curr_A <= 1.300000001; $curr_A += 0.01)
+		for($curr_A = 1.5; $curr_A <= 1.500000001; $curr_A += 0.01)
 		{	
-			for($curr_U = 0.001; $curr_U <= 1.000000001; $curr_U += 0.001)
+			for($curr_U = 0.15; $curr_U <= 0.150000001; $curr_U += 0.01)
 			{
 				for($curr_jcs_drv_ampl = 0.05; $curr_jcs_drv_ampl <= 0.05000001; $curr_jcs_drv_ampl += 0.05)
 				{
@@ -46,9 +46,9 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						$seed = 0;
 						$mns = 1000000;
 						$num_threads = 1;
-						$num_trajectories = 50;
-						$num_tp_periods = 1200;
-						$num_obs_periods = 1000;
+						$num_trajectories = 10;
+						$num_tp_periods = 2000;
+						$num_obs_periods = 2000;
 						$ex_deep = 16;
 						$rk_ns = 10000;
 						
@@ -67,7 +67,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						$dump_evo_avg = 0;
 						$dump_type = 0;
 						$dump_num = 1;
-						$N = 200;
+						$N = 1000;
 						$diss_type = 0;
 						$diss_gamma = 0.1;
 						$diss_phase = 0.0;

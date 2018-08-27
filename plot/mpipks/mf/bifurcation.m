@@ -8,21 +8,21 @@ prefix = 'mf_results';
 data_path = sprintf('%s/%s', data_path, prefix);
 
 task = 2;
-U_start = 0.001;
-U_shift = 0.001;
-U_num = 1000;
+U_start = 0.01;
+U_shift = 0.01;
+U_num = 100;
 seed_start = 0;
-seed_num = 10;
+seed_num = 100;
 path = ''; 
 mt = 0;
 num_steps = 10000;
 npt = 2000;
 np = 2000;
 E = 1.0;
-A = 1.3 ;
+A = 1.5 ;
 omega = 1.0;
 phase = 0.0;
-gamma = 0.1;
+gamma = 0.01;
 J = 1.0;
 
 nppp = 100;

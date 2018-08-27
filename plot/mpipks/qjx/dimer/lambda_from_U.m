@@ -11,8 +11,8 @@ sys_id = 0;
 task_id = 0;
 prop_id = 0;
 num_trajectories = 10;
-num_tp_periods = 1200;
-num_obs_periods = 1000;
+num_tp_periods = 2000;
+num_obs_periods = 2000;
 mns = 1000000;
 ex_deep = 16;
 rk_ns = 10000;
@@ -21,10 +21,10 @@ lpn_eps = 1.0e-2;
 lpn_delta_up = 1.0e-2;
 N = 100;
 diss_type = 0;
-diss_gamma = 0.1;
+diss_gamma = 0.01;
 diss_phase = 0.0;
 drv_dimer_type = 0;
-drv_dimer_ampl = 1.3;
+drv_dimer_ampl = 1.5;
 drv_dimer_freq = 1.0;
 drv_dimer_phase = 0.0;
 start_type = 0;
@@ -37,9 +37,9 @@ sys_size = N + 1;
 
 num_runs = 1;
 
-U_begin = 0.001;
-U_step = 0.001;
-U_num = 1000;
+U_begin = 0.01;
+U_step = 0.01;
+U_num = 100;
 
 Us = zeros(U_num, 1);
 lambdas = zeros(U_num, 1);
@@ -107,7 +107,7 @@ for U_id = 1:U_num
 		
 		tmp_avg = sum(data(2:end)) / (num_trajectories - 1);
 	   
-		curr_lambda_avg = curr_lambda_avg + data(dump_id, 2);
+		curr_lambda_avg = curr_lambda_avg + tmp_avg;
 	end
    
 	curr_lambda_avg = curr_lambda_avg / num_runs;
@@ -127,12 +127,11 @@ xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$\lambda$', 'Interpreter', 'latex');
 
-suffix = sprintf('task(%d_%d_%d)_tp(%d)_dump(%d)_ns(%d)_lpn(%0.4f_%0.4f)_qj(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
+suffix = sprintf('task(%d_%d_%d)_tp(%d)_ns(%d)_lpn(%0.4f_%0.4f)_qj(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
 			sys_id, ...
 			prop_id, ...
 			task_id, ...
 			num_tp_periods, ...
-			dump_id, ...
 			num_runs * num_trajectories, ...
 			lpn_eps, ...
 			lpn_delta_up, ...
