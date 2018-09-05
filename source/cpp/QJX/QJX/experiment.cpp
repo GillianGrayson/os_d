@@ -187,8 +187,11 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
+	int jumps_counts_lim = int(cp->params.find("jumps_counts")->second);
+
 	int begin_period_id = 0;
 	int end_period_id = 0;
+	bool all_traj_finished = false;
 	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
 	{
 		if (rp->is_pp == 1)
@@ -201,11 +204,22 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
+			all_traj_finished = true;
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
 				int thread_id = omp_get_thread_num();
 				pb->one_period(ad, cb, tr_id, thread_id, period_id);
+				
+				if (ed->jumps_counts[tr_id] < jumps_counts_lim)
+				{
+					all_traj_finished = false;
+				}
+			}
+
+			if (all_traj_finished == true && jumps_counts_lim > 0)
+			{
+				break;
 			}
 		}
 
@@ -225,6 +239,11 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 		if (dump_evo_avg == 1)
 		{
 			dump_adr_avg(ad, true);
+		}
+
+		if (all_traj_finished == true && jumps_counts_lim > 0)
+		{
+			break;
 		}
 	}
 

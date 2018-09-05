@@ -1998,6 +1998,8 @@ void rk_step_dimer(AllData * ad, int tr_id, int th_id, double step)
 			ed->jump_times[tr_id].push_back(jump_time);
 			ed->jump_norms[tr_id].push_back(jump_norm);
 			ed->jump_etas[tr_id].push_back(jump_eta);
+
+			ed->jumps_counts[tr_id]++;
 		}
 
 		rk_recovery(ad, tr_id, th_id);
@@ -2060,6 +2062,8 @@ void rk_step_jcs(AllData * ad, int tr_id, int th_id, double step)
 			ed->jump_times[tr_id].push_back(jump_time);
 			ed->jump_norms[tr_id].push_back(jump_norm);
 			ed->jump_etas[tr_id].push_back(jump_eta);
+		
+			ed->jumps_counts[tr_id]++;
 		}
 
 		rk_recovery(ad, tr_id, th_id);

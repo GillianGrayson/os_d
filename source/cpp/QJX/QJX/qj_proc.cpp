@@ -281,7 +281,6 @@ void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 			prop_step(phi, branch->matrix, phi_aux, branch->N);
 			if (is_norm_crossed(phi_aux, eta, branch->N))
 			{
-
 				if (jump > 0 && ed->is_obs == 1)
 				{
 					double jump_time = ed->times_all[tr_id] + branch->dt;
@@ -291,6 +290,8 @@ void one_period_branch(AllData * ad, Split * head, int tr_id, Split * branch)
 					ed->jump_times[tr_id].push_back(jump_time);
 					ed->jump_norms[tr_id].push_back(jump_norm);
 					ed->jump_etas[tr_id].push_back(jump_eta);
+
+					ed->jumps_counts[tr_id]++;
 				}
 
 				recovery(ad, head, tr_id);

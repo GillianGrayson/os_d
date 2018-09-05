@@ -38,6 +38,7 @@ struct ExpData
 
 	double * times_all;							// Curr times for each trajectory
 	double * etas_all;							// Etas
+	int * jumps_counts;							// Jump count for each trajectory
 
 	int is_obs;
 

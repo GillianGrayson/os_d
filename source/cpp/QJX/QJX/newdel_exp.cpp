@@ -258,6 +258,7 @@ void init_basic_data(AllData * ad)
 	ed->abs_diag_rho_all = new double[num_trajectories * sys_size];
 	ed->times_all = new double[num_trajectories];
 	ed->etas_all = new double[num_trajectories];
+	ed->jumps_counts = new int[num_trajectories];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
@@ -275,6 +276,7 @@ void init_basic_data(AllData * ad)
 
 		ed->times_all[tr_id] = 0.0;
 		ed->etas_all[tr_id] = 0.0;
+		ed->jumps_counts[tr_id] = 0.0;
 	}
 
 	int jump = int(cp->params.find("jump")->second);
@@ -568,6 +570,7 @@ void free_basic_data(AllData * ad)
 	delete[] ed->abs_diag_rho_all;
 	delete[] ed->times_all;
 	delete[] ed->etas_all;
+	delete[] ed->jumps_counts;
 
 	int jump = int(cp->params.find("jump")->second);
 	if (jump > 0)
