@@ -14,7 +14,7 @@ seed = 0;
 mns = 1000000;
 num_trajectories = 100;
 num_tp_periods = 1337;
-num_obs_periods = 1000;
+num_obs_periods = 10000;
 ex_deep = 16;
 rk_ns = 10000;
 
@@ -33,9 +33,9 @@ sys_size = N;
 
 num_runs = 1;
 
-ampl_begin = 0.025;
-ampl_step = 0.025;
-ampl_num = 200;
+ampl_begin = 0.05;
+ampl_step = 0.05;
+ampl_num = 100;
 ampls = zeros(ampl_num, 1);
 
 bin_begin = 1e-10;
