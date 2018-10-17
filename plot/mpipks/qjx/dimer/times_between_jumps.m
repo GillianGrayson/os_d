@@ -12,13 +12,13 @@ task_id = 1;
 prop_id = 0;
 seed = 0;
 mns = 1000000;
-num_trajectories = 10;
-num_tp_periods = 1666;
-num_obs_periods = 1000;
+num_trajectories = 100;
+num_tp_periods = 1337;
+num_obs_periods = 10000;
 ex_deep = 16;
 rk_ns = 10000;
 
-N = 200;
+N = 100;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0;
@@ -27,14 +27,14 @@ dimer_drv_ampl = 1.5;
 dimer_drv_freq = 1; 
 dimer_drv_phase = 0; 
 dimer_prm_E = 1;
-dimer_prm_U = 0.7;
+dimer_prm_U = 0.6;
 dimer_prm_J = 1; 
 start_type = 0;
 start_state = 0;
 
 sys_size = N;
 
-num_runs = 10;
+num_runs = 1;
 
 ampl = 5.0;
 

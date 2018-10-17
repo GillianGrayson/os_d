@@ -3,7 +3,7 @@
 
 # --- Mandatory qsub arguments
 # Hardware requirements.
-#$ -l h_rss=4000M,h_fsize=4000M,h_cpu=80:00:00,hw=x86_64
+#$ -l h_rss=20000M,h_fsize=4000M,h_cpu=80:00:00,hw=x86_64
 
 # --- Optional qsub arguments
 # Change working directory - your job will be run from the directory

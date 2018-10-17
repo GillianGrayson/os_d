@@ -36,9 +36,9 @@ ampl_step = 0.05;
 ampl_num = 100;
 ampls = linspace(ampl_begin, ampl_num * ampl_step, ampl_num);
 
-T_begin = 0.05;
+T_begin = 4.20;
 T_step = 0.05;
-T_num = 100;
+T_num = 20;
 Ts = linspace(T_begin, T_num * T_step, T_num);
 
 bin_begin = 1e-10;
@@ -64,11 +64,12 @@ decades = zeros(ampl_num, T_num);
 
 for T_id = 1:T_num
     
-    T = T_begin + T_step * (T_id - 1)
+    T = T_begin + T_step * (T_id - 1);
     
     for ampl_id = 1:ampl_num
         
-        ampl = ampl_begin + ampl_step * (ampl_id - 1);
+		T = T
+        ampl = ampl_begin + ampl_step * (ampl_id - 1)
         
         curr_pdf = zeros(num_bins, 1);
         
@@ -89,8 +90,8 @@ for T_id = 1:T_num
                 diss_type, ...
                 diss_gamma, ...
                 diss_phase, ...
-                jcs_drv_part_1, ...
-                jcs_drv_part_2, ...
+                jcs_drv_part_1 * T, ...
+                jcs_drv_part_2 * T, ...
                 ampl, ...
                 jcs_prm_alpha, ...
                 start_type, ...
@@ -107,8 +108,8 @@ for T_id = 1:T_num
                 diss_type, ...
                 diss_gamma, ...
                 diss_phase, ...
-                jcs_drv_part_1, ...
-                jcs_drv_part_2, ...
+                jcs_drv_part_1 * T, ...
+                jcs_drv_part_2 * T, ...
                 ampl, ...
                 jcs_prm_alpha, ...
                 start_type, ...
@@ -133,6 +134,8 @@ for T_id = 1:T_num
                     end
                     
                 end
+				
+				data = [];
             end
             
         end
@@ -148,12 +151,28 @@ for T_id = 1:T_num
         norm_check = norm_check;
         
         [x_min, x_max] = find_range(bin_centers, curr_pdf);
-        [alphas, coef, R2, yy, R2_, cnt] = powerlaw_regression(bin_centers, curr_pdf, x_min, x_max);
+        [alpha, coef, R2, yy, R2_, cnt] = powerlaw_regression(bin_centers, curr_pdf, x_min, x_max);
+		
+		curr_pdf = [];
+		
+		x_min = x_min;
+		x_max = x_max;
+		
+		alpha = alpha;
+		decade = log10(x_max) - log10(x_min);
         
-        alphas(ampl_id, T_id) = alphas;
+        alphas(ampl_id, T_id) = abs(alpha);
         decades(ampl_id, T_id) = log10(x_max) - log10(x_min);
         
     end
+	
+	name = sprintf('T_%0.4f.txt', T);
+	file_id = fopen(name, 'w');
+	for id = 1:ampl_num
+		fprintf(file_id, '%0.16e %0.16e\n', alphas(id, T_id), decades(id, T_id));
+	end
+	fclose(file_id);
+	
     
 end
 
@@ -230,6 +249,7 @@ function [alpha, coef, R2, yy, R2_, cnt] = powerlaw_regression(x, y, mn, mx)
     alpha = a;
     yy = coef * xx .^ alpha;
     R2_ = 1 - sum((y0 - yy).^2) / sum((y0 - mean(y0)).^2);
+	
 end
 
 function [i_max, j_max] = find_range(x, y)
@@ -263,6 +283,6 @@ function [i_max, j_max] = find_range(x, y)
                 end
             end
         end
-    end    
+    end 
 end
 
