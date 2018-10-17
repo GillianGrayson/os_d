@@ -108,3 +108,7 @@ source/cpp/QJX/QJX/My Inspector Results - QJX/
 *.iml
 
 *.ipch
+
+*.advixeproj
+
+*.advixeexp
