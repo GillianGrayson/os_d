@@ -22,13 +22,13 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 
 	for ($curr_cd_dim = 1; $curr_cd_dim <= 1; $curr_cd_dim += 1)
 	{
-		for($curr_A = 0.02; $curr_A <= 2.000000001; $curr_A += 0.02)
+		for($curr_A = 0.02; $curr_A <= 0.0200000001; $curr_A += 0.02)
 		{	
-			for($curr_U = 0.02; $curr_U <= 2.00000001; $curr_U += 0.02)
+			for($curr_U = 0.02; $curr_U <= 0.020000001; $curr_U += 0.02)
 			{
-				for($curr_jcs_drv_ampl = 0.05; $curr_jcs_drv_ampl <= 0.05000001; $curr_jcs_drv_ampl += 0.05)
+				for($curr_jcs_drv_ampl = 0.025; $curr_jcs_drv_ampl <= 4.05000001; $curr_jcs_drv_ampl += 0.025)
 				{
-					for($curr_jcs_T = 0.0500; $curr_jcs_T <= 0.050000001; $curr_jcs_T += 0.05)
+					for($curr_jcs_T = 0.02500; $curr_jcs_T <= 1.050000001; $curr_jcs_T += 0.025)
 					{
 						print "curr_U = $curr_U\n";
 						print "curr_cd_eps = $curr_cd_eps\n";
@@ -37,7 +37,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						print "curr_jcs_drv_ampl = $curr_jcs_drv_ampl\n";
 						print "curr_jcs_T = $curr_jcs_T\n";
 						
-						$sys_id = 0;
+						$sys_id = 1;
 						$task_id = 1;
 						$prop_id = 0;
 						$is_debug = 0;
@@ -47,7 +47,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						$seed = 0;
 						$mns = 1000000;
 						$num_threads = 1;
-						$num_trajectories = 100;
+						$num_trajectories = 10;
 						$num_tp_periods = 1337;
 						$num_obs_periods = 10000;
 						$ex_deep = 16;
@@ -68,7 +68,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						$dump_evo_avg = 0;
 						$dump_type = 0;
 						$dump_num = 1;
-						$N = 100;
+						$N = 200;
 						$diss_type = 0;
 						$diss_gamma = 0.1;
 						$diss_phase = 0.0;

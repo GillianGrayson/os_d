@@ -12,7 +12,7 @@ task_id = 1;
 prop_id = 0;
 seed = 0;
 mns = 1000000;
-num_trajectories = 100;
+num_trajectories = 10;
 num_tp_periods = 1337;
 num_obs_periods = 10000;
 ex_deep = 16;
@@ -36,9 +36,9 @@ ampl_step = 0.05;
 ampl_num = 100;
 ampls = linspace(ampl_begin, ampl_num * ampl_step, ampl_num);
 
-T_begin = 4.20;
+T_begin = 0.05;
 T_step = 0.05;
-T_num = 20;
+T_num = 100;
 Ts = linspace(T_begin, T_num * T_step, T_num);
 
 bin_begin = 1e-10;
@@ -257,7 +257,7 @@ function [i_max, j_max] = find_range(x, y)
     ids = y > 0;
     x = x(ids);
     y = y(ids);
-    len = 1.3;
+    len = 1.0;
     R2_max = 0;
     for i = 1:size(x)
         for j = i:size(x)
@@ -266,7 +266,7 @@ function [i_max, j_max] = find_range(x, y)
                 continue;
             end
             curlen = log10(x(j)) - log10(x(i));
-            if R2_pow > 0.98 &&  curlen > 1.3
+            if R2_pow > 0.98 &&  curlen > 1.0
                  curlen = curlen + 120 * (R2_pow - 0.98);
                 if abs(len - curlen) <= 0.01
                     if R2_pow > R2_max
