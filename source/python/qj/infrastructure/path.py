@@ -45,8 +45,8 @@ def get_details_path(config):
     details = config.details
     path = 'details_' \
            + str(details.step_metrics) + '_' \
-           + str(details.num_periods_obser) + '_' \
-           + str(details.num_periods_trans)
+           + str(details.num_periods_trans) + '_' \
+           + str(details.num_periods_obser)
     return path
 
 
@@ -66,10 +66,10 @@ def get_dict_path(name, data):
 
 def get_params_path(config):
     params = config.params
-    path = get_dict_path('size', params.size) \
-           + get_dict_path('dissipation', params.dissipation) \
-           + get_dict_path('driving', params.driving) \
-           + get_dict_path('model', params.model) \
+    path = get_dict_path('size', params.size) + '/' \
+           + get_dict_path('dissipation', params.dissipation) + '/' \
+           + get_dict_path('driving', params.driving)+ '/' \
+           + get_dict_path('model', params.model)+ '/' \
            + get_dict_path('init_cond', params.init_cond)
     return path
 

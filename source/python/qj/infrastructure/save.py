@@ -11,10 +11,10 @@ def create_file(config):
     f.write('prop_id ' + str(config.run.propagation.value) + '\n')
     f.write('ex_deep ' + str(config.details.step_metrics) + '\n')
     f.write('rk_ns ' + str(config.details.step_metrics) + '\n')
-    f.write('num_tp_periods ' + str(config.details.num_periods_trans.value) + '\n')
-    f.write('num_obs_periods ' + str(config.details.num_periods_obser.value) + '\n')
-    f.write('seed ' + str(config.random.seed.value) + '\n')
-    f.write('mns ' + str(config.random.num_seeds.value) + '\n')
+    f.write('num_tp_periods ' + str(config.details.num_periods_trans) + '\n')
+    f.write('num_obs_periods ' + str(config.details.num_periods_obser) + '\n')
+    f.write('seed ' + str(config.random.seed) + '\n')
+    f.write('mns ' + str(config.random.num_seeds) + '\n')
     f.write('is_debug ' + str(config.auxiliary['is_debug']) + '\n')
     f.write('is_pp ' + str(config.auxiliary['is_pp']) + '\n')
     f.write('init_fn ' + str(config.auxiliary['init_fn']) + '\n')
@@ -30,7 +30,6 @@ def create_file(config):
     f.write('lpn_eps_deep ' + str(config.auxiliary['lpn_eps_deep']) + '\n')
     f.write('lpn_eps_high ' + str(config.auxiliary['lpn_eps_high']) + '\n')
     f.write('lpn_eps_low ' + str(config.auxiliary['lpn_eps_low']) + '\n')
-    f.write('lpn_eps_change ' + str(config.auxiliary['lpn_eps_change']) + '\n')
     f.write('lpn_delta_s_high ' + str(config.auxiliary['lpn_delta_s_high']) + '\n')
     f.write('lpn_delta_s_low ' + str(config.auxiliary['lpn_delta_s_low']) + '\n')
     f.write('lpn_delta_f_high ' + str(config.auxiliary['lpn_delta_f_high']) + '\n')
@@ -46,7 +45,7 @@ def create_file(config):
     f.write('cd_eps ' + str(config.auxiliary['cd_eps']) + '\n')
     f.write('deep_num_steps ' + str(config.auxiliary['deep_num_steps']) + '\n')
     f.write('jump ' + str(config.auxiliary['jump']) + '\n')
-    f.write('jumps_counts ' + str(config.auxiliary['jumps_counts']))
+    f.write('jumps_counts ' + str(config.auxiliary['jumps_counts']) + '\n')
 
     params_size = config.params.size
     for key, value in params_size.items():
