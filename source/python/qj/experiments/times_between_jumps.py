@@ -12,12 +12,12 @@ def get_space(config):
         x_start = 0.025
         x_shift = 0.025
         x_num = 1
-        xs = np.linspace(x_start, x_start + (x_num - 1) * x_shift)
+        xs = np.linspace(x_start, x_start + (x_num - 1) * x_shift, x_num)
 
         y_start = 0.025
         y_shift = 0.025
         y_num = 1
-        ys = np.linspace(y_start, y_start + (y_num - 1) * y_shift)
+        ys = np.linspace(y_start, y_start + (y_num - 1) * y_shift, y_num)
 
         for x in xs:
             for y in ys:
@@ -33,12 +33,12 @@ def get_space(config):
         x_start = 0.01
         x_shift = 0.01
         x_num = 1
-        xs = np.linspace(x_start, x_start + (x_num - 1) * x_shift)
+        xs = np.linspace(x_start, x_start + (x_num - 1) * x_shift, x_num)
 
         y_start = 0.01
         y_shift = 0.01
         y_num = 1
-        ys = np.linspace(y_start, y_start + (y_num - 1) * y_shift)
+        ys = np.linspace(y_start, y_start + (y_num - 1) * y_shift, y_num)
 
         for x in xs:
             for y in ys:

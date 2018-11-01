@@ -4,7 +4,7 @@ import collections
 import os
 
 
-def get_root_path(config):
+def get_root_path():
     root_path = ''
     host_name = socket.gethostname()
     if host_name == 'MSI':
@@ -20,11 +20,11 @@ def get_root_path(config):
 
 
 def get_data_path(config):
-    path = get_root_path(config) + '/' \
+    path = get_root_path() + '/' \
            + get_run_path(config) + '/' \
            + get_details_path(config) + '/' \
-           + get_random_path(config) + '/' \
-           + get_params_path(config)
+           + get_params_path(config) + '/' \
+           + get_random_path(config) + '/'
 
     if not os.path.exists(path):
         os.makedirs(path)
@@ -44,17 +44,17 @@ def get_run_path(config):
 def get_details_path(config):
     details = config.details
     path = 'details_' \
-           + str(details.step_metrics.value) + '_' \
-           + str(details.num_periods_obser.value) + '_' \
-           + str(details.num_periods_trans.value)
+           + str(details.step_metrics) + '_' \
+           + str(details.num_periods_obser) + '_' \
+           + str(details.num_periods_trans)
     return path
 
 
 def get_random_path(config):
     random = config.random
     path = 'random_' \
-           + str(random.seed.value) + '_' \
-           + str(random.num_seeds.value)
+           + str(random.seed) + '_' \
+           + str(random.num_seeds)
     return path
 
 
@@ -69,7 +69,7 @@ def get_params_path(config):
     path = get_dict_path('size', params.size) \
            + get_dict_path('dissipation', params.dissipation) \
            + get_dict_path('driving', params.driving) \
-           + get_dict_path('init_cond', params.init_cond) \
-           + get_dict_path('model', params.model)
+           + get_dict_path('model', params.model) \
+           + get_dict_path('init_cond', params.init_cond)
     return path
 
