@@ -15,7 +15,7 @@ run = Run(quantum_system=QuantumSystem.photonic,
 
 details = Details(step_metrics=16,
                   num_periods_trans=1000,
-                  num_periods_obser=10000)
+                  num_periods_obser=1000000)
 if run.propagation is Propagation.runge_kutta_4:
     details.step_metrics = 10000
 
@@ -87,4 +87,4 @@ for curr_config in configs:
 
     if not flag_file:
         create_file(curr_config)
-        os.system('sbatch run_unn.sh ' + path)
+        os.system('sbatch submit/run_unn.sh ' + path)

@@ -12,10 +12,10 @@ def get_root_path():
     elif host_name == 'DESKTOP-K9VO2TI':
         root_path = 'E:/YandexDisk/Work/os_d/data'
     elif host_name == 'DESKTOP-4BEQ7MS':
-        root_path = 'D:/Aaron/Bio/mlmg/data'
+        root_path = 'D:/Aaron/Bio/os_d/data'
     elif host_name == 'master' or host_name[0:4] == 'node':
         user = getpass.getuser()
-        root_path = '/common/home/' + user + '/Work/mlmg/data'
+        root_path = '/common/home/' + user + '/Work/os_d/data'
     return root_path
 
 

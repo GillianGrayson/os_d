@@ -11,12 +11,12 @@ def get_space(config):
     if config.run.quantum_system is QuantumSystem.photonic:
         x_start = 0.025
         x_shift = 0.025
-        x_num = 1
+        x_num = 50
         xs = np.linspace(x_start, x_start + (x_num - 1) * x_shift, x_num)
 
         y_start = 0.025
         y_shift = 0.025
-        y_num = 1
+        y_num = 50
         ys = np.linspace(y_start, y_start + (y_num - 1) * y_shift, y_num)
 
         for x in xs:
