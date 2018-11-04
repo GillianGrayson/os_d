@@ -4,7 +4,7 @@ from config.run import *
 from config.details import *
 from config.random import *
 from config.params import *
-from experiments.times_between_jumps import *
+from space.times_between_jumps import *
 from infrastructure.path import *
 from infrastructure.save import *
 import os
@@ -73,11 +73,12 @@ auxiliary = {'is_debug': 0,
 
 config = Config(run, details, random, params, auxiliary)
 
-[xs, ys, configs] = get_space(config)
+space = TBJ()
+space.xy_space(config)
 
-for curr_config in configs:
+for curr_config in space.configs:
     path = get_data_path(curr_config)
-    suffix = 'rnd(' + str(curr_config.random.seed) + '_' + str(curr_config.random.num_seeds) + ').txt'
+    suffix = get_file_suffix(curr_config) + '.txt'
 
     flag_file = False
     for fn in os.listdir(path):
