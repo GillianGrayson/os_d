@@ -5,6 +5,7 @@ import numpy as np
 from infrastructure.path import *
 import math
 from itertools import combinations
+import statsmodels.api as sm
 
 
 class FitPlane(Generator):
@@ -62,14 +63,61 @@ class FitPlane(Generator):
 
 
 def power_law_regression(x, y, x_min, x_max):
-
-    xx = x
-    y0 = y
     ids = [id for id in range(0, len(x)) if y[id] > 0 and x_min < x[id] and x[id] < x_max]
     x = list(np.array(x)[ids])
     y = list(np.array(y)[ids])
 
-    cnt = len(x)
+    count = len(x)
 
-    logx = np.log(x)
-    logy = np.log(y)
+    log_x = np.log(x)
+    log_y = np.log(y)
+
+    exog = sm.add_constant(log_x)
+    results = sm.OLS(log_y, exog).fit()
+
+    R2 = results.rsquared
+    intercept = results.params[0]
+    slope = results.params[1]
+
+    log_y_fit = [(curr_x * slope + intercept) for curr_x in log_x]
+    y_fit = [pow(10.0, curr_y) for curr_y in log_y_fit]
+
+    return [slope, R2, count, y_fit]
+
+
+def find_power_law_range(x, y):
+    i_max = 0
+    j_max = 0
+    ids = [id for id in range(0, len(y)) if y[id] > 0]
+
+    x = list(np.array(x)[ids])
+    y = list(np.array(y)[ids])
+
+    target_len = 1.0
+    R2_max = 0.0
+
+    for i in range(0, len(x)):
+        for j in range(i, len(x)):
+            [slope, R2, count, y_fit] = power_law_regression(x, y, x[i], x[j])
+
+            if count < 10:
+                continue
+
+            curr_len = np.log10(x[j]) - np.log10(x[i])
+
+            if R2 > 0.98 and curr_len > 1.0:
+                curr_len += 120.0 * (R2 - 0.98)
+                if abs(target_len - curr_len) <= 0.01:
+                    if R2 > R2_max:
+                        target_len = curr_len
+                        R2_max = R2
+                        i_max = x[i]
+                        j_max = x[j]
+
+                elif target_len + 1 < curr_len:
+                    target_len = curr_len
+                    R2_max = R2
+                    i_max = x[i]
+                    j_max = x[j]
+
+    return [i_max, j_max]
