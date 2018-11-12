@@ -2,8 +2,6 @@
 
 void LpnExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
-	int a = 1;
-
 	ConfigParam * cp = ad->cp;
 
 	int num_trajectories = cp->num_trajectories;
