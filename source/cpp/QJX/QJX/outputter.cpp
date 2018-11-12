@@ -30,8 +30,8 @@ void DimerOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int prec
 
 	string ext = extension();
 
-	//string suffix = qj + params.str() + ext;
-	string suffix = qj + ext;
+	string suffix = qj + params.str() + ext;
+	//string suffix = qj + ext;
 
 	cp->fn_suffix = suffix;
 }
@@ -63,9 +63,8 @@ void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 
 	string ext = extension();
 
-	//string suffix = qj + params.str() + ext;
-
-	string suffix = qj + ext;
+	string suffix = qj + params.str() + ext;
+	//string suffix = qj + ext;
 
 	cp->fn_suffix = suffix;
 }
