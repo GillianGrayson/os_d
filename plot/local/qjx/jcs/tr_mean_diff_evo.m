@@ -1,7 +1,5 @@
 clear all;
 
-tr_id = 2;
-
 seed = 1;
 num_seeds = 1000000;
 
@@ -23,12 +21,12 @@ start_state = 0;
 
 T = drv_T_1 + drv_T_2;
 
-
 cd_dump_deep = 1;
 cd_num_sub_steps = 100;
 
-is_mean = 1;
+num_tr = 7;
 
+is_mean = 1;
 
 data_path = '../../../../source/cpp/QJX/QJX';
 
@@ -73,43 +71,29 @@ end
 
 dump_periods = dump_periods / T;
 
-adr = zeros(N, num_dumps);
-
-fn = sprintf('%s/adr_%d_%s.txt', data_path, tr_id, suffix);
-adr_data = importdata(fn);
-
-for dump_id = 1:num_dumps
-    for i = 1:N
-        adr(i, dump_id) = adr_data((dump_id-1)*N + i);
-    end
-    
-    curr_data = adr(:, dump_id);
-    curr_max = max(curr_data);
-    
-    adr(:, dump_id) = curr_data / curr_max;
-end
-
 states = linspace(1, N, N) / N;
 
-fig = figure;
-hLine = imagesc(dump_periods, states, adr);
-set(gca, 'FontSize', 30);
-xlabel('$t/T$', 'Interpreter', 'latex');
-xlim([dump_periods(1) dump_periods(end)])
-set(gca, 'FontSize', 30);
-ylabel('$n$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, '$\rho_{n,n}$', 'FontSize', 33, 'interpreter','latex');
-set(gca,'YDir','normal');
-hold all;
+fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
+mean_evo_data = importdata(fn);
 
-if(is_mean == 1)
-    fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
-    mean_evo_data = importdata(fn);
-    mean_evo = mean_evo_data(:, tr_id + 1);
-    hLine = plot(dump_periods, mean_evo / N);
+mean_evo_base = mean_evo_data(:, 1);
+
+
+fig = figure;
+for tr_id = 1:num_tr
+    mean_evo_var = mean_evo_data(:, tr_id + 1);
+
+    mean_evo_diff = abs(mean_evo_base - mean_evo_var);
+
+    hLine = plot(dump_periods, mean_evo_diff / N);
+    legend(hLine, sprintf('tr=%d', tr_id))
+    set(gca, 'FontSize', 30);
+    xlabel('$t/T$', 'Interpreter', 'latex');
+    xlim([dump_periods(1) dump_periods(end)])
+    set(gca, 'FontSize', 30);
+    ylabel('$|\Delta|$', 'Interpreter', 'latex');
+    hold all;
+    
 end
 
 propertyeditor(fig)

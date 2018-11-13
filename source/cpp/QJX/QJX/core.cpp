@@ -1056,9 +1056,66 @@ void JCSCoreBehaviour::ex_period_obs_deep(AllData * ad, int tr_id, int th_id, in
 
 void JCSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 {
-	stringstream msg;
-	msg << "Error: need to add functionality" << endl;
-	Error(msg.str());
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+
+	int num_trajectories = cp->num_trajectories;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
+
+	int dump_point_id = 0;
+	int global_point_id = 0;
+
+	int step_id = 0;
+
+	CoreBehavior * tmp = new JCSCoreBehaviour;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			step_id = part_id * num_sub_steps_per_part + sub_step_id;
+
+			global_point_id = period_id * num_sub_steps + dump_point_id;
+			dump_point_id++;
+			int dump_id = global_point_id + 1;
+
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * md->T;
+
+			one_sub_period_deep(ad, 0, part_id, 0);
+			calc_chars_std(ad, 0);
+			calc_chars_lpn(ad, 0);
+			evo_chars_std(ad, 0, dump_id);
+			evo_chars_lpn(ad, 0, dump_id);
+
+#pragma omp parallel for
+			for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+			{
+				int thread_id = omp_get_thread_num();
+				one_sub_period_deep(ad, tr_id, part_id, thread_id);
+				calc_chars_std(ad, tr_id);
+				lambda_lpn(ad, tmp, tr_id);
+				evo_chars_std(ad, tr_id, dump_id);
+				evo_chars_lpn(ad, tr_id, dump_id);
+			}
+
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				if (dump_evo_sep == 1)
+				{
+					dump_adr_single(ad, tr_id, true);
+				}
+			}
+		}
+	}
+
+	delete tmp;
 }
 
 void JCSCoreBehaviour::ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const
