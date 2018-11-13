@@ -1,9 +1,9 @@
-lpn_type 1
+lpn_type 0
 lpn_eps_deep 10 
 lpn_eps_high 0
 lpn_eps_low -4
-lpn_delta_s_high 0.01 
-lpn_delta_s_low 0.001 
+lpn_delta_s_high 0.001 
+lpn_delta_s_low 0.0001 
 lpn_delta_f_high 0.1 
 lpn_delta_f_low 1e-10 
 dump_obs 1 
@@ -24,8 +24,8 @@ dimer_drv_phase 0
 dimer_prm_E 1 
 dimer_prm_U 0.15
 dimer_prm_J 1 
-jcs_drv_part_1 0.049 
-jcs_drv_part_2 0.05 
+jcs_drv_part_1 1.96 
+jcs_drv_part_2 2.00 
 jcs_drv_ampl 4.0 
 jcs_prm_alpha 5 
 start_type 0 
@@ -33,5 +33,5 @@ start_state 0
 cd_dim 1 
 cd_eps 1e-08 
 deep_num_steps 100
-jump 1
+jump 2
 jumps_counts 0
