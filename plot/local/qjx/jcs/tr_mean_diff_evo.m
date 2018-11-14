@@ -12,7 +12,7 @@ T_part = 2;
 
 drv_T_1 = 0.98 * T_part;
 drv_T_2 = 1.00 * T_part;
-drv_A = 4.0;
+drv_A = 2.0;
 
 prm_alpha = 5.0;
 
@@ -25,6 +25,8 @@ cd_dump_deep = 1;
 cd_num_sub_steps = 100;
 
 num_tr = 7;
+
+lim = 0.3;
 
 is_mean = 1;
 
@@ -74,18 +76,18 @@ dump_periods = dump_periods / T;
 states = linspace(1, N, N) / N;
 
 fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
-mean_evo_data = importdata(fn);
+mean_evo_data = importdata(fn) / N;
 
 mean_evo_base = mean_evo_data(:, 1);
 
 
 fig = figure;
-for tr_id = 1:num_tr
-    mean_evo_var = mean_evo_data(:, tr_id + 1);
+for tr_id = 2:num_tr
+    mean_evo_var = mean_evo_data(:, tr_id);
 
     mean_evo_diff = abs(mean_evo_base - mean_evo_var);
 
-    hLine = plot(dump_periods, mean_evo_diff / N);
+    hLine = plot(dump_periods, mean_evo_diff);
     legend(hLine, sprintf('tr=%d', tr_id))
     set(gca, 'FontSize', 30);
     xlabel('$t/T$', 'Interpreter', 'latex');
@@ -95,6 +97,9 @@ for tr_id = 1:num_tr
     hold all;
     
 end
+
+hLine = plot([min(dump_periods) max(dump_periods)], [lim lim]);
+hold all;
 
 propertyeditor(fig)
 

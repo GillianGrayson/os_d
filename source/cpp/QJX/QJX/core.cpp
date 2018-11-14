@@ -1385,7 +1385,7 @@ double JCSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 	{
 		double base = ed->mean_lpn[0];
 		double var = ed->mean_lpn[tr_id];
-		delta_s = fabs(var - base);
+		delta_s = fabs(var - base) / double(sys_size);
 	}
 	else
 	{
@@ -1419,7 +1419,7 @@ double JCSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 	{
 		double base = ed->mean[0];
 		double var = ed->mean[tr_id];
-		delta_f = fabs(var - base);
+		delta_f = fabs(var - base) / double(sys_size);
 	}
 	else
 	{

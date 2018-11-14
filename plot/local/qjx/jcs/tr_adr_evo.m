@@ -1,6 +1,6 @@
 clear all;
 
-tr_id = 2;
+tr_id = 4;
 
 seed = 1;
 num_seeds = 1000000;
@@ -14,7 +14,7 @@ T_part = 2;
 
 drv_T_1 = 0.98 * T_part;
 drv_T_2 = 1.00 * T_part;
-drv_A = 4.0;
+drv_A = 2.0;
 
 prm_alpha = 5.0;
 
@@ -106,7 +106,7 @@ set(gca,'YDir','normal');
 hold all;
 
 if(is_mean == 1)
-    fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
+    fn = sprintf('%s/mean_lpn_evo_%s.txt', data_path, suffix);
     mean_evo_data = importdata(fn);
     mean_evo = mean_evo_data(:, tr_id + 1);
     hLine = plot(dump_periods, mean_evo / N);
