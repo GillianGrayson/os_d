@@ -1,6 +1,6 @@
 clear all;
 
-tr_id = 5;
+tr_id = 3;
 
 seed = 1;
 num_seeds = 1000000;
@@ -14,7 +14,7 @@ T_part = 0.05;
 
 drv_T_1 = 0.98 * T_part;
 drv_T_2 = 1.00 * T_part;
-drv_A = 4.0;
+drv_A = 0.05;
 
 prm_alpha = 5.0;
 
@@ -23,7 +23,7 @@ start_state = 0;
 
 T = drv_T_1 + drv_T_2;
 
-cd_dump_deep = 0;
+cd_dump_deep = 1;
 cd_num_sub_steps = 10;
 
 data_path = '../../../../source/cpp/QJX/QJX';
@@ -46,14 +46,29 @@ fn = sprintf('%s/periods_%s.txt', data_path, suffix);
 dump_periods = importdata(fn) - 2;
 num_dumps = size(dump_periods, 1);
 
+
 if(cd_dump_deep == 1)
     num_periods = (num_dumps - 1) / (2 * cd_num_sub_steps);
-    dump_shift = 1 / (2 * cd_num_sub_steps);
-    dump_periods(1) = 0;
-    for dump_id = 2:num_dumps
-        dump_periods(dump_id) = dump_shift * (dump_id - 1);
+    dump_shift_1 = drv_T_1 / cd_num_sub_steps;
+    dump_shift_2 = drv_T_2 / cd_num_sub_steps;
+    curr_id = 1;
+    dump_periods(curr_id) = 0;
+    for period_id = 1:num_periods
+      
+        for dump_id = 1:cd_num_sub_steps
+            dump_periods(curr_id + 1) = dump_periods(curr_id) + dump_shift_1;
+            curr_id = curr_id + 1;
+        end
+        
+        for dump_id = 1:cd_num_sub_steps
+            dump_periods(curr_id + 1) = dump_periods(curr_id) + dump_shift_2;
+            curr_id = curr_id + 1;
+        end
+
     end
 end
+
+dump_periods = dump_periods / T;
 
 
 fn = sprintf('%s/lambda_evo_%s.txt', data_path, suffix);
