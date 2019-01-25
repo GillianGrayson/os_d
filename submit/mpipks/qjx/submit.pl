@@ -26,9 +26,9 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 		{	
 			for($curr_U = 0.02; $curr_U <= 0.020000001; $curr_U += 0.02)
 			{
-				for($curr_jcs_drv_ampl = 0.025; $curr_jcs_drv_ampl <= 4.05000001; $curr_jcs_drv_ampl += 0.025)
+				for($curr_jcs_drv_ampl = 0.025000000; $curr_jcs_drv_ampl <= 5.00000001; $curr_jcs_drv_ampl += 0.025)
 				{
-					for($curr_jcs_T = 0.02500; $curr_jcs_T <= 1.050000001; $curr_jcs_T += 0.025)
+					for($curr_jcs_T = 1.00000000; $curr_jcs_T <= 1.0000000001; $curr_jcs_T += 0.025)
 					{
 						print "curr_U = $curr_U\n";
 						print "curr_cd_eps = $curr_cd_eps\n";
@@ -38,7 +38,7 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						print "curr_jcs_T = $curr_jcs_T\n";
 						
 						$sys_id = 1;
-						$task_id = 1;
+						$task_id = 0;
 						$prop_id = 0;
 						$is_debug = 0;
 						$is_pp = 0;
@@ -47,9 +47,9 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						$seed = 0;
 						$mns = 1000000;
 						$num_threads = 1;
-						$num_trajectories = 10;
-						$num_tp_periods = 1337;
-						$num_obs_periods = 10000;
+						$num_trajectories = 100;
+						$num_tp_periods = 1001;
+						$num_obs_periods = 1001;
 						$ex_deep = 16;
 						$rk_ns = 10000;
 						
@@ -88,8 +88,8 @@ for($curr_cd_eps_id = 0; $curr_cd_eps_id < $eps_num; $curr_cd_eps_id += 1)
 						$cd_dim = $curr_cd_dim;
 						$cd_eps = $curr_cd_eps;
 						$deep_num_steps = 10000;
-						$jump = 2;
-						$jumps_counts = 1000;
+						$jump = 0;
+						$jumps_counts = 0;
 						
 						$diss_gamma_str = sprintf("%.4f", $diss_gamma);
 						$diss_phase_str = sprintf("%.4f", $diss_phase);
