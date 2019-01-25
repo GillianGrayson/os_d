@@ -12,18 +12,20 @@ task_id = 0;
 prop_id = 0; 
 seed = 0; 
 mns = 1000000;
-num_trajectories = 2;
-num_tp_periods = 1000;
-num_obs_periods = 1000; 
+num_trajectories = 100;
+num_tp_periods = 1001;
+num_obs_periods = 1001; 
 ex_deep = 16;
 rk_ns = 10000;
+ 
+T = 1.0;
  
 N = 200; 
 diss_type = 0; 
 diss_gamma = 0.1; 
 diss_phase = 0; 
-jcs_drv_part_1 = 0.98; 
-jcs_drv_part_2 = 1;
+jcs_drv_part_1 = 0.98 * T; 
+jcs_drv_part_2 = 1.0 * T;
 jcs_drv_ampl = 0.1; 
 jcs_prm_alpha = 5; 
 start_type = 0; 
@@ -31,7 +33,7 @@ start_state = 0;
 
 sys_size = N;
 
-num_runs = 10;
+num_runs = 1;
 
 ampl_begin = 0.025;
 ampl_step = 0.025;
@@ -39,7 +41,7 @@ ampl_num = 200;
 ampls = zeros(ampl_num, 1);
 
 lambdas = zeros(ampl_num, 1);
-dump_id = 1001;
+dump_id = 2;
 
 
 for ampl_id = 1:ampl_num
@@ -96,11 +98,13 @@ for ampl_id = 1:ampl_num
 		path = sprintf('%s/lambda_evo_%s.txt', path_to_folder, suffix);
 		data = importdata(path);
 		
-		lambda_avg_curr = lambda_avg_curr + data(dump_id, 2);
-       
+		for tr_id = 2:num_trajectories
+			lambda_avg_curr = lambda_avg_curr + data(dump_id, tr_id);
+		end
+
 	end
 	
-	lambda_avg_curr = lambda_avg_curr / num_runs;
+	lambda_avg_curr = lambda_avg_curr / (num_runs * (num_trajectories - 1));
 	lambdas(ampl_id) = lambda_avg_curr;
     
 end
