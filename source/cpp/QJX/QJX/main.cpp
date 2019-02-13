@@ -19,7 +19,7 @@ int main()
 	ExpNewDelBehavior * ndb_exp = nullptr;
 	ExperimentBehavior * eb = nullptr;
 	PropagateBehavior * pb = nullptr;
-	CoreBehavior * cb;
+	CoreBehavior * cb = nullptr;
 
 	if (rp->sys_id == DIMER_SYS_ID)
 	{

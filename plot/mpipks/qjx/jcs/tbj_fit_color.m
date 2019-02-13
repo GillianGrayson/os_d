@@ -31,14 +31,14 @@ start_state = 0;
 
 num_runs = 1;
 
-ampl_begin = 0.05;
-ampl_step = 0.05;
-ampl_num = 100;
+ampl_begin = 0.025;
+ampl_step = 0.025;
+ampl_num = 200;
 ampls = linspace(ampl_begin, ampl_num * ampl_step, ampl_num);
 
-T_begin = 0.05;
-T_step = 0.05;
-T_num = 100;
+T_begin = 3.3;
+T_step = 0.025;
+T_num = 200;
 Ts = linspace(T_begin, T_num * T_step, T_num);
 
 bin_begin = 1e-10;

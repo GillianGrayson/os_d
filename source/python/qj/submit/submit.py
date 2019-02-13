@@ -4,7 +4,7 @@ from config.run import *
 from config.details import *
 from config.random import *
 from config.params import *
-from experiments.times_between_jumps import *
+from space.times_between_jumps import *
 from infrastructure.path import *
 from infrastructure.save import *
 import os
@@ -15,7 +15,7 @@ run = Run(quantum_system=QuantumSystem.photonic,
 
 details = Details(step_metrics=16,
                   num_periods_trans=1000,
-                  num_periods_obser=10000)
+                  num_periods_obser=1000000)
 if run.propagation is Propagation.runge_kutta_4:
     details.step_metrics = 10000
 
@@ -32,11 +32,13 @@ params_driving = {'jcs_drv_part_1': 0.98,
 params_init_cond = {'start_type': 0,
                     'start_state': 0}
 params_model = {'jcs_prm_alpha': 5.0}
-if run.quantum_system is QuantumSystem.photonic:
+if run.quantum_system is QuantumSystem.dimer:
+    params_driving.clear()
     params_driving = {'dimer_drv_type': 0,
                       'dimer_drv_ampl': 1.50,
                       'dimer_drv_freq': 1.0,
                       'dimer_drv_phase': 0.0}
+    params_model.clear()
     params_model = {'dimer_prm_E': 1.0,
                     'dimer_prm_U': 0.5,
                     'dimer_prm_J': 1.0}
@@ -71,15 +73,19 @@ auxiliary = {'is_debug': 0,
 
 config = Config(run, details, random, params, auxiliary)
 
-[xs, ys, configs] = get_space(config)
+space = TBJ()
+space.xy_space(config)
 
-for curr_config in configs:
+for curr_config in space.configs:
     path = get_data_path(curr_config)
-    suffix = 'rnd(' + str(curr_config.random.seed) + '_' + str(curr_config.random.num_seeds) + ').txt'
+    suffix = get_file_suffix(curr_config) + '.txt'
+
+    flag_file = False
     for fn in os.listdir(path):
         if fn.endswith(suffix):
-
-            create_file(curr_config)
-            os.system('sbatch run_unn.sh ' + path)
-
+            flag_file = True
             break
+
+    if not flag_file:
+        create_file(curr_config)
+        os.system('sbatch submit/run_unn.sh ' + path)

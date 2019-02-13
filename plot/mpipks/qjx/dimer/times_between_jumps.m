@@ -27,7 +27,7 @@ dimer_drv_ampl = 1.5;
 dimer_drv_freq = 1; 
 dimer_drv_phase = 0; 
 dimer_prm_E = 1;
-dimer_prm_U = 0.6;
+dimer_prm_U = 0.02;
 dimer_prm_J = 1; 
 start_type = 0;
 start_state = 0;
@@ -41,7 +41,7 @@ ampl = 5.0;
 bin_begin = 1e-10;
 num_decades = 15;
 bin_end = bin_begin * 10.^num_decades;
-num_bin_per_decade = 5;
+num_bin_per_decade = 10;
 
 num_bins = num_bin_per_decade * num_decades;
 
@@ -165,16 +165,94 @@ suffix = sprintf('main(%d_%d_%d)_nt(%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_
             dimer_prm_J, ...
             start_type, ...
             start_state);
+			
+[x_min, x_max] = find_range(bin_centers, curr_pdf)
+[alpha, coef, R2, yy, R2_, cnt] = powerlaw_regression(bin_centers, curr_pdf, x_min, x_max)
+left = find(bin_centers==x_min)
+right = find(bin_centers==x_max)
+
+decade = log10(x_max) - log10(x_min)    
+alpha = abs(alpha)
 
 fig = figure;
 hLine = plot(bin_centers, curr_pdf);
+hold all;
+hLine = plot(bin_centers(left - 1:right + 1), yy(left - 1:right + 1));
 set(gca, 'FontSize', 30);
-xlabel('$f_0$', 'Interpreter', 'latex');
+xlabel('$\Delta t$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$\Delta t$', 'Interpreter', 'latex');
+ylabel('$PDF$', 'Interpreter', 'latex');
 set(gca,'XScale','log');
 set(gca,'YScale','log');
 
 savefig(sprintf('%s/times_between_jumps_%s.fig', home_figures_path, suffix));
 
 close(fig);
+
+
+function [alpha, coef, R2, yy, R2_, cnt] = powerlaw_regression(x, y, mn, mx)
+    if nargin < 3
+        mn = min(x);
+    end
+    if nargin < 4
+        mx = max(x);
+    end
+    xx = x;
+    y0 = y;
+    ids = (y > 0) & (mn < x) & (x < mx);
+    x = x(ids);
+    y = y(ids);
+    
+    cnt = size(x);
+    
+    logx = log(x);
+    logy = log(y);
+    X = [ones(length(logx),1) logx];
+    c = X \ logy;
+    logyy = X * c;
+    S1 = sum((logy - logyy).^2);
+    S2 = sum((logy - mean(logy)).^2);
+    R2 = 1 - S1 / S2;
+    b = c(1);
+    a = c(2);
+    coef = exp(b);
+    alpha = a;
+    yy = coef * xx .^ alpha;
+    R2_ = 1 - sum((y0 - yy).^2) / sum((y0 - mean(y0)).^2);
+	
+end
+
+function [i_max, j_max] = find_range(x, y)
+    i_max = 1; j_max = 1;
+    ids = y > 0;
+    x = x(ids);
+    y = y(ids);
+    len = 0.1;
+    R2_max = 0;
+    for i = 1:size(x)
+        for j = i:size(x)
+            [~, ~, R2_pow, ~, ~, cnt] = powerlaw_regression(x, y, x(i), x(j));
+            if cnt < 10
+                continue;
+            end
+            curlen = log10(x(j)) - log10(x(i));
+            if R2_pow > 0.98 &&  curlen > 0.1
+                 curlen = curlen + 120 * (R2_pow - 0.98);
+                if abs(len - curlen) <= 0.01
+                    if R2_pow > R2_max
+                        len = curlen;
+                        R2_max = R2_pow;
+                        i_max = x(i);
+                        j_max = x(j);
+                    end
+                elseif len + 1 < curlen
+                    len = curlen;
+                    R2_max = R2_pow;
+                    i_max = x(i);
+                    j_max = x(j);
+                end
+            end
+        end
+    end 
+end
+

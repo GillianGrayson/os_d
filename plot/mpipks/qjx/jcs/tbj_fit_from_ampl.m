@@ -12,19 +12,21 @@ task_id = 1;
 prop_id = 0;
 seed = 0;
 mns = 1000000;
-num_trajectories = 100;
+num_trajectories = 10;
 num_tp_periods = 1337;
 num_obs_periods = 10000;
 ex_deep = 16;
 rk_ns = 10000;
 
+T = 2.0;
+jcs_drv_ampl = 0.1;
+
 N = 200;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0;
-jcs_drv_part_1 = 1.96;
-jcs_drv_part_2 = 2;
-jcs_drv_ampl = 0.1;
+jcs_drv_part_1 = 0.98 * T;
+jcs_drv_part_2 = 1 * T;
 jcs_prm_alpha = 5;
 start_type = 0;
 start_state = 0;
@@ -221,7 +223,7 @@ function [i_max, j_max] = find_range(x, y)
     ids = y > 0;
     x = x(ids);
     y = y(ids);
-    len = 1.3;
+    len = 1.0;
     R2_max = 0;
     for i = 1:size(x)
         for j = i:size(x)
@@ -230,7 +232,7 @@ function [i_max, j_max] = find_range(x, y)
                 continue;
             end
             curlen = log10(x(j)) - log10(x(i));
-            if R2_pow > 0.98 &&  curlen > 1.3
+            if R2_pow > 0.98 &&  curlen > 1.0
                  curlen = curlen + 120 * (R2_pow - 0.98);
                 if abs(len - curlen) <= 0.01
                     if R2_pow > R2_max

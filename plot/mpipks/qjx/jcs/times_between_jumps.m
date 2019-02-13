@@ -18,13 +18,15 @@ num_obs_periods = 10000;
 ex_deep = 16;
 rk_ns = 10000;
 
+T = 4.8;
+jcs_drv_ampl = 4.8;
+
 N = 200;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0;
-jcs_drv_part_1 = 0.98 * 4.8;
-jcs_drv_part_2 = 1.0 * 4.8;
-jcs_drv_ampl = 4.8;
+jcs_drv_part_1 = 0.98 * T;
+jcs_drv_part_2 = 1.0 * T;
 jcs_prm_alpha = 5;
 start_type = 0;
 start_state = 0;
@@ -37,7 +39,7 @@ num_runs = 1;
 bin_begin = 1e-10;
 num_decades = 15;
 bin_end = bin_begin * 10.^num_decades;
-num_bin_per_decade = 5;
+num_bin_per_decade = 10;
 
 num_bins = num_bin_per_decade * num_decades;
 
@@ -155,9 +157,16 @@ suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.
     jcs_prm_alpha, ...
     start_type, ...
     start_state)
+	
+[x_min, x_max] = find_range(bin_centers, curr_pdf)
+[alpha, coef, R2, yy, R2_, cnt] = powerlaw_regression(bin_centers, curr_pdf, x_min, x_max)
+left = find(bin_centers==x_min)
+right = find(bin_centers==x_max)
 
 fig = figure;
 hLine = plot(bin_centers, curr_pdf);
+hold all;
+hLine = plot(bin_centers(left - 1:right + 1), yy(left - 1:right + 1));
 set(gca, 'FontSize', 30);
 xlabel('$f_0$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
