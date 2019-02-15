@@ -2,13 +2,17 @@ clear all;
 
 path = '../../../../data/jcs';
 
-
-
 task = 1;
 N = 200;
-drv_ampl_start = 0.05;
-drv_ampl_shift = 0.05;
-drv_ampl_num = 100;
+
+drv_ampl_start = 0.1;
+drv_ampl_shift = 0.1;
+drv_ampl_num = 1;
+
+T_start = 0.1;
+T_shift = 0.1;
+T_num = 1;
+
 
 dt = 1;
 dp = 0;
@@ -24,11 +28,13 @@ num_last_skips = floor(N/3);
 
 ampls = zeros(drv_ampl_num, 1);
 ratio_avg = zeros(drv_ampl_num, 1);
+
 for ampl_id = 1:drv_ampl_num
+    
     ampl = drv_ampl_start + (ampl_id - 1) * drv_ampl_shift
     ampls(ampl_id) = ampl;
     
-    fn = sprintf('%s/main_%d/N_%d/prm_%0.4f_%0.4f/diss_%d_%0.4f_%0.4f_%0.4f/evals.txt', ...
+    fn = sprintf('%s/main_%d/N_%d/prm_%0.4f_%0.4f_%0.4f_%0.4f/diss_%d_%0.4f_%0.4f_%0.4f/evals.txt', ...
         path, ...
         task, ...
         N, ...

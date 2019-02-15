@@ -1,4 +1,4 @@
-task 2
+task 0
 debug 0
 issmtx 1
 ipp 1
@@ -9,11 +9,11 @@ dt 1
 dp 0
 g 0.1
 g_add 0.1
-drv_ampl 1.3
+drv_ampl 1.0
 prm_alpha 5.0
 num_steps_t_0 1000
 num_steps_t_1 1000
-num_periods_trans 100
+num_periods_trans 1000
 num_periods_obser 1
 t_0 0.98
 t_1 1.00
