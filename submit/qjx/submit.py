@@ -42,8 +42,8 @@ for eps_id in range(0, eps_num):
                 print('jcs_ampl: ' + str(jcs_ampl))
 
                 sys_id = 0
-                task_id = 0
-                prop_id = 0
+                task_id = 1
+                prop_id = 1
                 is_debug = 0
                 is_pp = 1
                 init_fn = ''
@@ -51,9 +51,9 @@ for eps_id in range(0, eps_num):
                 seed = 0
                 mns = 1000000
                 num_threads = 32
-                num_trajectories = 100
-                num_tp_periods = 1000
-                num_obs_periods = 300
+                num_trajectories = 96
+                num_tp_periods = 100
+                num_obs_periods = 100
                 ex_deep = 16
                 rk_ns = 10000
 
@@ -65,21 +65,21 @@ for eps_id in range(0, eps_num):
                 lpn_delta_f_high = 1.0e-2
                 lpn_delta_f_low = 1.0e-10
                 dump_obs = 1
-                dump_adr_sep = 0
-                dump_adr_avg = 0
-                dump_evo_sep = 1
+                dump_adr_sep = 1
+                dump_adr_avg = 1
+                dump_evo_sep = 0
                 dump_evo_avg = 0
                 dump_type = 0
-                dump_num = 300
-                N = 500
+                dump_num = 1
+                N = 100
                 diss_type = 0
                 diss_gamma = 0.1
                 diss_phase = 0.0
-                dimer_drv_type = 0
-                dimer_drv_ampl = 1.5
+                dimer_drv_type = 1
+                dimer_drv_ampl = 3.4
                 dimer_drv_freq = 1.0
                 dimer_drv_phase = 0.0
-                dimer_prm_E = 1.0
+                dimer_prm_E = 0.0
                 dimer_prm_U = dimer_U
                 dimer_prm_J = 1.0
                 jcs_drv_part_1 = 0.98
@@ -93,6 +93,7 @@ for eps_id in range(0, eps_num):
                 deep_num_steps = 128
                 deep_dump = 1
                 jump = 0
+                jumps_counts = 0
 
                 diss_gamma_str = str(format(diss_gamma, '0.4f'))
                 diss_phase_str = str(format(diss_phase, '0.4f'))
@@ -198,7 +199,8 @@ for eps_id in range(0, eps_num):
                     file_params.write('cd_eps '             + str(cd_eps) + '\n')
                     file_params.write('deep_num_steps '     + str(deep_num_steps) + '\n')
                     file_params.write('deep_dump '          + str(deep_dump) + '\n')
-                    file_params.write('jump '               + str(jump))
+                    file_params.write('jump '               + str(jump) + '\n')
+                    file_params.write('jumps_counts '       + str(jumps_counts))
 
                     file_params.close()
 

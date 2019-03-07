@@ -11,13 +11,13 @@ drv_ampl = 3.4;
 drv_freq = 1.0;
 drv_phase = 0.0;
 prm_E = 0.0;
-prm_U = 0.15;
+prm_U = 0.01;
 prm_J = 1.0;
 start_type = 0;
 start_state = 0;
 eps = 1.0e-8;
 
-tr_id = 1;
+tr_id = 2;
 
 data_path = '../../../../source/cpp/QJX/QJX';
 

@@ -1,24 +1,22 @@
 clear all;
 
-sys_id = 0;
-task_id = 0;
-prop_id = 0;
 
 seed = 1;
 mns = 1000000;
-N = 200;
+N = 100;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0.0;
-drv_type = 0;
-drv_ampl = 1.5;
+drv_type = 1;
+drv_ampl = 3.4;
 drv_freq = 1.0;
 drv_phase = 0.0;
-prm_E = 1.0;
-prm_U = 0.14;
+prm_E = 0.0;
+prm_U = 0.01;
 prm_J = 1.0;
 start_type = 0;
 start_state = 0;
+
 
 T = 2 * pi / drv_freq;
 
@@ -33,10 +31,7 @@ is_mean = 1;
 
 data_path = '../../../../source/cpp/QJX/QJX';
 
-suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
-    sys_id, ...
-    task_id, ...
-    prop_id, ...
+suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
     seed, ...
     mns, ...
     N, ...
@@ -70,7 +65,7 @@ adr = zeros(size_sys, num_dumps);
 
 states = linspace(1, size_sys, size_sys) / size_sys;
 
-fn = sprintf('%s/mean_lpn_evo_%s.txt', data_path, suffix);
+fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
 mean_evo_data = importdata(fn);
 mean_evo = mean_evo_data(:, tr_id + 1);
 
