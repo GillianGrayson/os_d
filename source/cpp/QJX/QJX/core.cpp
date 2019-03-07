@@ -312,7 +312,6 @@ void DimerCoreBehaviour::rk_period_trp_deep(AllData * ad, int tr_id, int th_id, 
 
 	int num_branches = md->num_ham_qj;
 	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
-	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
 	int step_id = 0;
 
@@ -322,10 +321,9 @@ void DimerCoreBehaviour::rk_period_trp_deep(AllData * ad, int tr_id, int th_id, 
 		{
 			step_id = part_id * num_sub_steps_per_part + sub_step_id;
 
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
 			for (int in_step_id = 0; in_step_id < cp->rk_ns; in_step_id++)
 			{
-				ed->times_all[tr_id] = time + double(in_step_id) * ed->rk_step;
+				ed->times_all[tr_id] = double(period_id) * md->T + double(step_id * cp->rk_ns + in_step_id) * ed->rk_step;
 				rk_step_dimer(ad, tr_id, th_id, ed->rk_step);
 			}
 		}
@@ -359,10 +357,9 @@ void DimerCoreBehaviour::rk_period_obs_deep(AllData * ad, int tr_id, int th_id, 
 
 			dump_point_id++;
 
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
 			for (int in_step_id = 0; in_step_id < cp->rk_ns; in_step_id++)
 			{
-				ed->times_all[tr_id] = time + double(in_step_id) * ed->rk_step;
+				ed->times_all[tr_id] = double(period_id) * md->T + double(step_id * cp->rk_ns + in_step_id) * ed->rk_step;
 				rk_step_dimer(ad, tr_id, th_id, ed->rk_step);
 			}
 
@@ -472,10 +469,9 @@ void DimerCoreBehaviour::rk_period_obs_deep_cd(AllData * ad, int tr_id, int th_i
 				}
 			}
 
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
 			for (int in_step_id = 0; in_step_id < cp->rk_ns; in_step_id++)
 			{
-				ed->times_all[tr_id] = time + double(in_step_id) * ed->rk_step;
+				ed->times_all[tr_id] = double(period_id) * md->T + double(step_id * cp->rk_ns + in_step_id) * ed->rk_step;
 				rk_step_dimer(ad, tr_id, th_id, ed->rk_step);
 			}
 
@@ -507,14 +503,12 @@ void DimerCoreBehaviour::rk_period_obs_deep_sigma(AllData * ad, int tr_id, int t
 		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
 		{
 			step_id = part_id * num_sub_steps_per_part + sub_step_id;
-			global_point_id = period_id * num_sub_steps + dump_point_id;
 
 			dump_point_id++;
 
-			double time = double(period_id) * md->T + double(step_id) * md->T / double(num_sub_steps);
 			for (int in_step_id = 0; in_step_id < cp->rk_ns; in_step_id++)
 			{
-				ed->times_all[tr_id] = time + double(in_step_id) * ed->rk_step;
+				ed->times_all[tr_id] = double(period_id) * md->T + double(step_id * cp->rk_ns + in_step_id) * ed->rk_step;
 				rk_step_dimer(ad, tr_id, th_id, ed->rk_step);
 			}
 
