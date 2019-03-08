@@ -127,3 +127,16 @@ h = colorbar;
 set(gca, 'FontSize', 30);
 title(h, '\rho_{n,n}');
 set(gca,'YDir','normal');
+
+target_U_id = 2;
+target_U = Us(target_U_id)
+target_rho = rho(:, target_U_id);
+
+fig = figure;
+hLine = plot(states, target_rho);
+set(gca, 'FontSize', 30);
+xlabel('$n$', 'Interpreter', 'latex');
+set(gca, 'FontSize', 30);
+ylabel('$PDF$', 'Interpreter', 'latex');
+set(gca, 'FontSize', 30);
+
