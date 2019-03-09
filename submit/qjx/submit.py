@@ -41,7 +41,7 @@ for eps_id in range(0, eps_num):
                 print('jcs_ampl: ' + str(jcs_ampl))
 
                 sys_id = 0
-                task_id = 4
+                task_id = 1
                 prop_id = 1
                 is_debug = 0
                 is_pp = 1
@@ -51,10 +51,10 @@ for eps_id in range(0, eps_num):
                 mns = 1000000
                 num_threads = 32
                 num_trajectories = 32
-                num_tp_periods = 100
-                num_obs_periods = 100
+                num_tp_periods = 1000
+                num_obs_periods = 10000
                 ex_deep = 16
-                rk_ns = 10
+                rk_ns = 10000
 
                 lpn_type = 0
                 lpn_eps_deep = 10
@@ -66,12 +66,12 @@ for eps_id in range(0, eps_num):
                 lpn_delta_f_low = 1.0e-10
                 dump_obs = 1
                 dump_adr_sep = 0
-                dump_adr_avg = 0
+                dump_adr_avg = 1
                 dump_evo_sep = 1
                 dump_evo_avg = 0
                 dump_type = 0
-                dump_num = 1
-                N = 100
+                dump_num = 10000
+                N = 200
                 diss_type = 0
                 diss_gamma = 0.1
                 diss_phase = 0.0

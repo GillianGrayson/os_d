@@ -6,11 +6,11 @@ import numpy as np
 
 type = FSType.unn
 
-drv_ampl_start = 4.7
+drv_ampl_start = 4.0
 drv_ampl_shift = 0.1
 drv_ampl_num = 1
 
-T_start = 4.7
+T_start = 0.1
 T_shift = 0.1
 T_num = 1
 
