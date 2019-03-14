@@ -4,7 +4,7 @@ import os.path
 
 type = FSType.cluster
 
-num_runs = 1
+num_runs = 20
 
 eps_start = 1.0e-8
 eps_shift = 0.1
@@ -13,9 +13,9 @@ eps_num = 1
 dim_start = 1
 dim_num = 1
 
-dimer_U_start = 0.005
-dimer_U_shift = 0.005
-dimer_U_num = 150
+dimer_U_start = 0.1125
+dimer_U_shift = 0.01
+dimer_U_num = 1
 
 jcs_ampl_start = 0.01
 jcs_ampl_shift = 0.01
@@ -52,7 +52,7 @@ for eps_id in range(0, eps_num):
                 num_threads = 32
                 num_trajectories = 32
                 num_tp_periods = 1000
-                num_obs_periods = 10000
+                num_obs_periods = 1000
                 ex_deep = 16
                 rk_ns = 10000
 
@@ -71,12 +71,12 @@ for eps_id in range(0, eps_num):
                 dump_evo_avg = 0
                 dump_type = 0
                 dump_num = 10000
-                N = 200
+                N = 500
                 diss_type = 0
                 diss_gamma = 0.1
                 diss_phase = 0.0
                 dimer_drv_type = 1
-                dimer_drv_ampl = 3.4
+                dimer_drv_ampl = 4.2
                 dimer_drv_freq = 1.0
                 dimer_drv_phase = 0.0
                 dimer_prm_E = 0.0
@@ -113,13 +113,18 @@ for eps_id in range(0, eps_num):
                 finish_seed = num_runs * num_trajectories
                 step_seed = num_trajectories
 
+                print('start_seed: ' + str(start_seed))
+                print('finish_seed: ' + str(finish_seed))
+                print('step_seed: ' + str(step_seed))
+
                 local_path = ''
                 file_suffix = ''
                 if sys_id == 0:
 
                     local_path = \
                         '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
-                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
+                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
+                            num_obs_periods) + \
                         '/N_' + str(N) + \
                         '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
                         '/drv_' + str(
@@ -131,14 +136,16 @@ for eps_id in range(0, eps_num):
 
                     local_path = \
                         '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
-                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
+                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
+                            num_obs_periods) + \
                         '/N_' + str(N) + \
                         '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
                         '/drv_' + jcs_drv_part_1_str + '_' + jcs_drv_part_2_str + '_' + jcs_drv_ampl_str + \
                         '/prm_' + jcs_prm_alpha_str + \
                         '/start_' + str(start_type) + '_' + str(start_state)
 
-                for ss in range(start_seed, step_seed, finish_seed):
+                for ss in range(start_seed, finish_seed, step_seed):
+                    print("ss = " + str(ss))
                     fn_path = get_dir(local_path, ss, type)
                     pathlib.Path(fn_path).mkdir(parents=True, exist_ok=True)
 
@@ -208,7 +215,6 @@ for eps_id in range(0, eps_num):
                     if sys_id == 0:
 
                         fn_suffix = \
-                            'config(' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + ')_' + \
                             'rnd(' + str(ss) + '_' + str(mns) + ')_' + \
                             'N(' + str(N) + ')_' + \
                             'diss(' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + ')_' + \
@@ -220,7 +226,6 @@ for eps_id in range(0, eps_num):
                     elif sys_id == 1:
 
                         fn_suffix = \
-                            'config(' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + ')_' + \
                             'rnd(' + str(ss) + '_' + str(mns) + ')_' + \
                             'N(' + str(N) + ')_' + \
                             'diss(' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + ')_' + \
@@ -235,12 +240,5 @@ for eps_id in range(0, eps_num):
                         fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
 
                     if not os.path.isfile(fn_test):
+                        print("hi")
                         os.system('sbatch run_unn.sh ' + fn_path)
-
-
-
-
-
-
-
-
