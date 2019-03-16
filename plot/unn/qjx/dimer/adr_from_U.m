@@ -7,18 +7,18 @@ task_id = 1;
 prop_id = 1;
 seed = 0;
 mns = 1000000;
-num_trajectories = 96;
-num_tp_periods = 100;
-num_obs_periods = 100;
+num_trajectories = 32;
+num_tp_periods = 1000;
+num_obs_periods = 10000;
 ex_deep = 16;
 rk_ns = 10000;
 
-N = 100;
+N = 200;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0;
 dimer_drv_type = 1; 
-dimer_drv_ampl = 3.4; 
+dimer_drv_ampl = 4.2; 
 dimer_drv_freq = 1; 
 dimer_drv_phase = 0; 
 dimer_prm_E = 0;
@@ -31,9 +31,9 @@ sys_size = N + 1;
 
 num_runs = 1;
 
-U_begin = 0.005;
-U_step = 0.005;
-U_num = 150;
+U_begin = 0.01;
+U_step = 0.01;
+U_num = 100;
 
 Us = zeros(U_num, 1);
 states = linspace(1, sys_size, sys_size);

@@ -18,7 +18,7 @@ diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0;
 dimer_drv_type = 1;
-dimer_drv_ampl = 3.4;
+dimer_drv_ampl = 4.2;
 dimer_drv_freq = 1;
 dimer_drv_phase = 0;
 dimer_prm_E = 0;
@@ -31,9 +31,9 @@ sys_size = N + 1;
 
 num_runs = 1;
 
-U_begin = 0.005;
-U_step = 0.005;
-U_num = 140;
+U_begin = 0.01;
+U_step = 0.01;
+U_num = 100;
 
 Us = zeros(U_num, 1);
 states = linspace(1, sys_size, sys_size);
@@ -146,3 +146,22 @@ h = colorbar;
 set(gca, 'FontSize', 30);
 title(h, '\rho_{n,n}');
 set(gca,'YDir','normal');
+
+fn = sprintf('rhonn_from_U_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_var)_start(%d_%d)', ...
+            N, ...
+            diss_type, ...
+            diss_gamma, ...
+            diss_phase, ...
+            dimer_drv_type, ...
+            dimer_drv_ampl, ...
+            dimer_drv_freq, ...
+            dimer_drv_phase, ...
+            dimer_prm_E, ...
+            dimer_prm_J);
+
+h=gcf;
+savefig(h, sprintf('%s.fig', fn))
+set(h,'PaperOrientation','landscape'); 
+set(h,'PaperUnits','normalized'); 
+set(h,'PaperPosition', [0 0 1 1]); 
+print(gcf, '-dpdf', sprintf('%s.pdf', fn));
