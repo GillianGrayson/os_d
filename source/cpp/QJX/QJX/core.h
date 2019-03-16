@@ -141,3 +141,7 @@ void rk_step_dimer(AllData * ad, int tr_id, int th_id, double step);
 void rk_step_jcs(AllData * ad, int tr_id, int th_id, double step);
 
 void calc_ci_double(AllData * ad, int tr_id);
+
+void dump_phi(AllData * ad);
+
+void dump_phi_evo(AllData * ad, bool append);

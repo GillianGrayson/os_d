@@ -189,6 +189,8 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 
 	int jumps_counts_lim = int(cp->params.find("jumps_counts")->second);
 
+	dump_phi_evo(ad, false);
+
 	int begin_period_id = 0;
 	int end_period_id = 0;
 	bool all_traj_finished = false;
@@ -236,6 +238,8 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 			}
 		}
 
+		dump_phi_evo(ad, true);
+
 		if (dump_evo_avg == 1)
 		{
 			dump_adr_avg(ad, true);
@@ -248,6 +252,9 @@ void StdExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 	}
 
 	cb->dump_std(ad);
+
+	dump_phi(ad);
+	dump_phi_evo(ad, true);
 
 	if (dump_evo_sep == 1)
 	{

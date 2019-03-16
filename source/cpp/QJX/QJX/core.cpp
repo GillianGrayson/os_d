@@ -2192,3 +2192,51 @@ void calc_ci_double(AllData * ad, int tr_id)
 
 	delete[] curr_diff;
 }
+
+void dump_phi(AllData * ad)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+	MainData * md = ad->md;
+
+	int dump_phi = int(cp->params.find("dump_phi")->second);
+
+	if (dump_phi == 1)
+	{
+		string fn;
+
+		int sys_size = md->sys_size;
+		int num_trajectories = cp->num_trajectories;
+
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			fn = rp->path + "phi_" + to_string(tr_id) + cp->fn_suffix;
+			save_complex_data(fn, &(ed->phi_all[tr_id * sys_size]), sys_size, 16, false);
+		}
+	}
+}
+
+void dump_phi_evo(AllData * ad, bool append)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+	MainData * md = ad->md;
+
+	int dump_phi_evo = int(cp->params.find("dump_phi_evo")->second);
+
+	if (dump_phi_evo == 1)
+	{
+		string fn;
+
+		int sys_size = md->sys_size;
+		int num_trajectories = cp->num_trajectories;
+
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			fn = rp->path + "phi_evo_" + to_string(tr_id) + cp->fn_suffix;
+			save_complex_data(fn, &(ed->phi_all[tr_id * sys_size]), sys_size, 16, append);
+		}
+	}
+}
