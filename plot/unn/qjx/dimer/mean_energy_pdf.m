@@ -2,6 +2,9 @@ clear all;
 
 eps = 1.0e-8;
 
+
+num_runs = 1;
+
 adaptive_axes = 0;
 
 data_path = '../../../../data/cluster/unn/qjx';
@@ -13,7 +16,7 @@ seed = 0;
 mns = 1000000;
 num_trajectories = 32;
 num_tp_periods = 1000;
-num_obs_periods = 1000;
+num_obs_periods = 10000;
 ex_deep = 16;
 rk_ns = 10000;
 
@@ -35,7 +38,6 @@ sys_size = N + 1;
 
 tr_id = 1;
 
-num_runs = 20;
 mean_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
 energy_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
 
@@ -96,7 +98,7 @@ for run_id = 1:num_runs
 
 end
 
-num_bins_x = 400;
+num_bins_x = sys_size;
 num_bins_y = 400;
 z_data = zeros(num_bins_x, num_bins_y);
 

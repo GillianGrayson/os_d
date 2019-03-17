@@ -1,24 +1,20 @@
 clear all;
 
-drt = 0;
-N = 101;
+drt = 1;
+N = 501;
 E = 0;
-J = 1;
+J = -1;
 
-U_start = 0.005;
-U_shift = 0.005;
-U_num = 200;
+U = 0.1125;
 
 g = 0.1;
-A = -1.5;
+A = -3.4;
 omega = 1;
 seed = 1;
 
-np = 1000;
+np = 100;
 
-data_path = '../../../../data/cluster/unn';
-
-U = 0.9;
+data_path = '../../../../data/cluster/unn/fb';
 
 states = linspace(1, N, N)';
 
@@ -59,4 +55,16 @@ h.Label.Interpreter = 'latex';
 title(h, '$|\rho_{n,m}|$', 'FontSize', 33, 'Interpreter', 'latex');
 set(gca,'YDir','normal');
 hold all;
+
+fig = figure;
+propertyeditor(fig);
+
+diag_mtx = diag(mtx);
+
+hLine = plot(states, diag_mtx);
+set(gca, 'FontSize', 30);
+xlabel('$n$', 'Interpreter', 'latex');
+set(gca, 'FontSize', 30);
+ylabel('$\rho_{n,n}$', 'Interpreter', 'latex');
+set(gca, 'FontSize', 30);
 

@@ -1,22 +1,22 @@
 clear all;
 
-drt = 0;
-N = 101;
+drt = 1;
+N = 501;
 E = 0;
-J = 1;
+J = -1;
 
 U_start = 0.005;
 U_shift = 0.005;
-U_num = 200;
+U_num = 150;
 
 g = 0.1;
-A = -1.5;
+A = -3.4;
 omega = 1;
 seed = 1;
 
-np = 1000;
+np = 100;
 
-data_path = '../../../../data/cluster/unn';
+data_path = '../../../../data/cluster/unn/fb/';
 
 Us = zeros(U_num, 1);
 Ns = linspace(0, 1, N);
@@ -45,7 +45,6 @@ for U_id = 1:U_num
     abs_rho_diag_curr = importdata(fn);
     
     abs_rho_diag(U_id, :) = abs_rho_diag_curr / max(abs_rho_diag_curr);
-    abs_rho_diag(U_id, :) = abs_rho_diag_curr;
     
 end
 

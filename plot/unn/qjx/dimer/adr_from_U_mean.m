@@ -38,7 +38,7 @@ U_num = 100;
 Us = zeros(U_num, 1);
 states = linspace(1, sys_size, sys_size);
 
-num_bins_x = 200;
+num_bins_x = N+1;
 x_min = 0;
 x_max = N;
 x_shift = (x_max - x_min) / num_bins_x;
