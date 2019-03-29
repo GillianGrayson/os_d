@@ -3,7 +3,7 @@ clear all;
 eps = 1.0e-8;
 
 
-num_runs = 1;
+num_runs = 100;
 
 adaptive_axes = 0;
 
@@ -15,12 +15,12 @@ prop_id = 1;
 seed = 0;
 mns = 1000000;
 num_trajectories = 32;
-num_tp_periods = 1000;
-num_obs_periods = 10000;
+num_tp_periods = 100;
+num_obs_periods = 100;
 ex_deep = 16;
-rk_ns = 10000;
+rk_ns = 50000;
 
-N = 100;
+N = 250;
 diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0;
@@ -43,7 +43,7 @@ energy_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
 
 for run_id = 1:num_runs
     
-    ss = 0 + (run_id - 1) * num_trajectories;
+    ss = 0 + (run_id - 1) * num_trajectories
 
     path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/N_%d/diss_%d_%0.4f_%0.4f/drv_%d_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
         data_path, ...
