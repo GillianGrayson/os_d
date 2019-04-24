@@ -19,12 +19,13 @@
 
 #define DIMER_SYS_ID 0
 #define JCS_SYS_ID 1
+#define PS_SYS_ID 2
 
-#define LPN_TASK_ID 0 
-#define STD_TASK_ID 1 
-#define CD_TASK_ID 2 
+#define LPN_TASK_ID 0
+#define STD_TASK_ID 1
+#define CD_TASK_ID 2
 #define SIGMA_TASK_ID 3
-#define STD_DEEP_TASK_ID 4 
+#define STD_DEEP_TASK_ID 4
 #define LPN_DEEP_TASK_ID 5
 #define LPN_ALL_TASK_ID 6
 
