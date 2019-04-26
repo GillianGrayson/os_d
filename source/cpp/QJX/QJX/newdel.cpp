@@ -72,6 +72,45 @@ void JCSNewDelBehaviour::init_sizes(AllData * ad) const
 	md->T = T;
 }
 
+void PSNewDelBehaviour::init_sizes(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	cout << "max_num_threads: " << omp_get_max_threads() << endl;
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_before_init: " << omp_get_num_threads() << endl;
+		}
+	}
+	int num_threads = rp->num_threads;
+	cout << "num_threads_target: " << num_threads << endl;
+	omp_set_num_threads(num_threads);
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_after_init: " << omp_get_num_threads() << endl;
+		}
+	}
+
+	int num_spins = int(cp->params.find("ps_num_spins")->second);
+	int ps_num_photons_states = int(cp->params.find("ps_num_photons_states")->second);
+	// real number of photons is ps_num_photons = ps_num_photons_states - 1
+
+	double T = double(cp->params.find("ps_prm_alpha")->second);
+
+	md->sys_size = std::round(std::pow(2, num_spins)) * (ps_num_photons_states);
+	md->num_diss = 1 + num_spins;
+	md->num_ham_qj = 2;
+	md->T = T;
+}
+
 void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 {
 	ConfigParam * cp = ad->cp;
@@ -149,7 +188,7 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 			mult_tmp_1[index] = 0.0;
 			mult_tmp_2[index] = 0.0;
-			mult_tmp_2[index] = 0.0;
+			mult_tmp_3[index] = 0.0;
 
 			md->hamiltonian[index] = 0.0;
 			md->hamiltonian_drv[index] = 0.0;
@@ -188,6 +227,190 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	delete[] mult_tmp_1;
 	delete[] mult_tmp_2;
 	delete[] mult_tmp_3;
+}
+
+void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	double alpha = double(cp->params.find("ps_prm_alpha")->second);
+	double g = double(cp->params.find("ps_prm_g")->second);
+	double d = double(cp->params.find("ps_prm_d")->second);
+
+	int sys_size = md->sys_size;
+
+	int num_spins = int(cp->params.find("ps_num_spins")->second);
+	int s_num_states = std::round(std::pow(2, num_spins));
+	int p_num_states = int(cp->params.find("ps_num_photons_states")->second);
+
+	Eigen::MatrixXd p_a_std = Eigen::MatrixXd::Zero(p_num_states, p_num_states);
+	Eigen::MatrixXd p_a_dag = Eigen::MatrixXd::Zero(p_num_states, p_num_states);
+
+	Eigen::MatrixXd p_hamiltonian = Eigen::MatrixXd::Zero(p_num_states, p_num_states);
+	Eigen::MatrixXd p_hamiltonian_drv = Eigen::MatrixXd::Zero(p_num_states, p_num_states);
+
+	MKL_Complex16* p_special = new MKL_Complex16[p_num_states * p_num_states];
+	
+
+	for (int st_id_1 = 0; st_id_1 < p_num_states; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < p_num_states; st_id_2++)
+		{
+			int index = st_id_1 * p_num_states + st_id_2;
+
+			p_special[index].real = 0.0;
+			p_special[index].imag = 0.0;
+		}
+	}
+
+	for (int st_id = 0; st_id < p_num_states - 1; st_id++)
+	{
+		int index_std = st_id * p_num_states + (st_id + 1);
+		int index_dag = (st_id + 1) * p_num_states + st_id;
+		p_a_std_raw[index_std] = sqrt(double(st_id + 1));
+		p_a_dag_raw[index_dag] = sqrt(double(st_id + 1));
+	}
+
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, p_num_states, p_num_states, p_num_states, 1.0, p_a_dag_raw, p_num_states, p_a_dag_raw, p_num_states, 0.0, p_mult_tmp_1, p_num_states);
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, p_num_states, p_num_states, p_num_states, 1.0, p_mult_tmp_1, p_num_states, p_a_std_raw, p_num_states, 0.0, p_mult_tmp_2, p_num_states);
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, p_num_states, p_num_states, p_num_states, 1.0, p_mult_tmp_2, p_num_states, p_a_std_raw, p_num_states, 0.0, p_mult_tmp_3, p_num_states);
+
+	for (int st_id_1 = 0; st_id_1 < p_num_states; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < p_num_states; st_id_2++)
+		{
+			int index = st_id_1 * p_num_states + st_id_2;
+
+			p_hamiltonian_raw[index] = 0.5 / pow(alpha, 3) * p_mult_tmp_3[index];
+			p_hamiltonian_drv_raw[index] = (p_a_dag_raw[index] - p_a_std_raw[index]);
+
+			p_special[index].real = p_a_std_raw[index];
+			p_special[index].imag = 0.0;
+		}
+	}
+
+
+	Eigen::Matrix2d sigma_z;
+	sigma_z(0, 0) = 1.0;
+	sigma_z(0, 1) = 0.0;
+	sigma_z(1, 0) = 0.0;
+	sigma_z(1, 1) = -1.0;
+
+	Eigen::Matrix2d sigma_minus;
+	sigma_minus(0, 0) = 0.0;
+	sigma_minus(0, 1) = 0.0;
+	sigma_minus(1, 0) = 1.0;
+	sigma_minus(1, 1) = 0.0;
+
+	Eigen::Matrix2d sigma_plus;
+	sigma_plus(0, 0) = 0.0;
+	sigma_plus(0, 1) = 1.0;
+	sigma_plus(1, 0) = 0.0;
+	sigma_plus(1, 1) = 0.0;
+
+	Eigen::Matrix2d sigma_0;
+	sigma_0(0, 0) = 1.0;
+	sigma_0(0, 1) = 0.0;
+	sigma_0(1, 0) = 0.0;
+	sigma_0(1, 1) = 1.0;
+
+	std::vector<Eigen::MatrixXd> s_sigmas_z;
+	std::vector<Eigen::MatrixXd> s_sigmas_minus;
+	std::vector<Eigen::MatrixXd> s_sigmas_plus;
+	for (int s_id = 0; s_id < num_spins; s_id++)
+	{
+		Eigen::MatrixXd s_sigma_z(2, 2);
+		Eigen::MatrixXd s_sigma_plus(2, 2);
+		Eigen::MatrixXd s_sigma_minus(2, 2);
+		if (s_id == 0)
+		{
+			s_sigma_z(0, 0) = 1.0;
+			s_sigma_z(0, 1) = 0.0;
+			s_sigma_z(1, 0) = 0.0;
+			s_sigma_z(1, 1) = -1.0;
+
+			sigma_minus(0, 0) = 0.0;
+			sigma_minus(0, 1) = 1.0;
+			sigma_minus(1, 0) = 0.0;
+			sigma_minus(1, 1) = 0.0;
+
+			sigma_plus(0, 0) = 0.0;
+			sigma_plus(0, 1) = 0.0;
+			sigma_plus(1, 0) = 1.0;
+			sigma_plus(1, 1) = 0.0;
+		}
+		else
+		{
+			s_sigma_z(0, 0) = 1.0;
+			s_sigma_z(0, 1) = 0.0;
+			s_sigma_z(1, 0) = 0.0;
+			s_sigma_z(1, 1) = 1.0;
+
+			s_sigma_minus(0, 0) = 1.0;
+			s_sigma_minus(0, 1) = 0.0;
+			s_sigma_minus(1, 0) = 0.0;
+			s_sigma_minus(1, 1) = 1.0;
+
+			s_sigma_plus(0, 0) = 1.0;
+			s_sigma_plus(0, 1) = 0.0;
+			s_sigma_plus(1, 0) = 0.0;
+			s_sigma_plus(1, 1) = 1.0;
+		}
+
+		for (int it_id = 1; it_id < num_spins; it_id++)
+		{
+			if (it_id == s_id)
+			{
+				s_sigma_z = Eigen::kroneckerProduct(s_sigma_z, sigma_z).eval();
+				s_sigma_minus = Eigen::kroneckerProduct(s_sigma_minus, sigma_minus).eval();
+				s_sigma_plus = Eigen::kroneckerProduct(s_sigma_plus, sigma_plus).eval();
+			}
+			else
+			{
+				s_sigma_z = Eigen::kroneckerProduct(s_sigma_z, sigma_0).eval();
+				s_sigma_minus = Eigen::kroneckerProduct(s_sigma_minus, sigma_0).eval();
+				s_sigma_plus = Eigen::kroneckerProduct(s_sigma_plus, sigma_0).eval();
+			}
+		}
+
+		s_sigmas_z.push_back(s_sigma_z);
+		s_sigmas_minus.push_back(s_sigma_minus);
+		s_sigmas_plus.push_back(s_sigma_plus);
+	}
+
+	Eigen::MatrixXd s_J_z = s_sigmas_z[0];
+	Eigen::MatrixXd s_J_minus = s_sigmas_minus[0];
+	Eigen::MatrixXd s_J_plus = s_sigmas_plus[0];
+	for (int s_id = 1; s_id < num_spins; s_id++)
+	{
+		s_J_z += s_sigmas_z[s_id];
+		s_J_minus += s_sigmas_minus[s_id];
+		s_J_plus += s_sigmas_plus[s_id];
+	}
+
+	Eigen::MatrixXd s_identity = Eigen::MatrixXd::Identity(s_num_states, s_num_states);
+	Eigen::MatrixXd p_identity = Eigen::MatrixXd::Identity(p_num_states, p_num_states);
+
+
+	Eigen::MatrixXd
+
+
+
+	md->hamiltonian = new double[md->sys_size * md->sys_size];
+	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
+	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
+
+
+
+
+	delete[] p_a_std_raw;
+	delete[] p_a_dag_raw;
+
+	delete[] p_mult_tmp_1;
+	delete[] p_mult_tmp_2;
+	delete[] p_mult_tmp_3;
 }
 
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
