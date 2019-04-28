@@ -20,6 +20,12 @@ public:
 	virtual void suffix_param(RunParam * rp, ConfigParam * cp, int precision) const;
 };
 
+class PSOutputBehavior : public OutputBehavior
+{
+public:
+	virtual void suffix_param(RunParam * rp, ConfigParam * cp, int precision) const;
+};
+
 string suffix_qj(RunParam * rp, ConfigParam * cp, int precision);
 
 string extension();

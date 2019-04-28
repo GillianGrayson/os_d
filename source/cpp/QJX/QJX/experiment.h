@@ -81,9 +81,11 @@ double get_m2(double * adr, int sys_size, double mean);
 
 double get_energy(AllData * ad, int tr_id);
 
-MKL_Complex16 get_spec(AllData * ad, int tr_id);
+MKL_Complex16 get_spec_jcs(AllData * ad, int tr_id);
+MKL_Complex16 get_spec_ps(AllData * ad, int tr_id);
 
-MKL_Complex16 get_num_photons(AllData * ad, int tr_id);
+MKL_Complex16 get_num_photons_jcs(AllData * ad, int tr_id);
+MKL_Complex16 get_num_photons_ps(AllData * ad, int tr_id);
 
 void resresh_times(AllData * ad, int tr_id);
 

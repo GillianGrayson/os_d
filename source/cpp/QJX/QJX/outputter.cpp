@@ -69,6 +69,46 @@ void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 	cp->fn_suffix = suffix;
 }
 
+
+void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
+{
+	string qj = suffix_qj(rp, cp, precision);
+
+	stringstream params;
+
+	params << "_s(" << int(cp->params.find("ps_num_spins")->second) << ")";
+	params << "_nps(" << int(cp->params.find("ps_num_photons_states")->second) << ")";
+
+	double ps_prm_alpha = double(cp->params.find("ps_prm_alpha")->second);
+	double ps_diss_k = 1.0 / (4.0 * ps_prm_alpha);
+
+
+	params << "_diss("
+		<< setprecision(precision) << fixed << ps_diss_k << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("ps_diss_w")->second) << ")";
+
+	params << "_drv("
+		<< setprecision(precision) << fixed << double(cp->params.find("ps_drv_part_1")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("ps_drv_part_2")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("ps_drv_ampl")->second) << ")";
+
+	params << "_prm("
+		<< setprecision(precision) << fixed << double(cp->params.find("ps_prm_alpha")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("ps_prm_d")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("ps_prm_g")->second) << ")";
+
+	params << "_start("
+		<< int(cp->params.find("start_type")->second) << "_"
+		<< int(cp->params.find("start_state")->second) << ")";
+
+	string ext = extension();
+
+	string suffix = qj + params.str() + ext;
+	//string suffix = qj + ext;
+
+	cp->fn_suffix = suffix;
+}
+
 string suffix_qj(RunParam * rp, ConfigParam * cp, int precision)
 {
 	stringstream suffix;

@@ -35,6 +35,13 @@ int main()
 		ndb = new JCSNewDelBehaviour();
 		cb = new JCSCoreBehaviour();
 	}
+	else if (rp->sys_id == PS_SYS_ID)
+	{
+		db = new PSDebugBehaviour();
+		ob = new PSOutputBehavior();
+		ndb = new PSNewDelBehaviour();
+		cb = new PSCoreBehaviour();
+	}
 	else
 	{
 		stringstream msg;
