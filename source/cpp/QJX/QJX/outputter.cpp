@@ -84,6 +84,7 @@ void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precisi
 
 
 	params << "_diss("
+		<< int(cp->params.find("diss_type")->second) << "_"
 		<< setprecision(precision) << fixed << ps_diss_k << "_"
 		<< setprecision(precision) << fixed << double(cp->params.find("ps_diss_w")->second) << ")";
 

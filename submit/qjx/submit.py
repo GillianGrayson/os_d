@@ -33,6 +33,7 @@ for eps_id in range(0, eps_num):
             dimer_U = dimer_U_start + dimer_U_id * dimer_U_shift
 
             for jcs_ampl_id in range(0, jcs_ampl_num):
+
                 jcs_ampl = jcs_ampl_start + jcs_ampl_id * jcs_ampl_shift
 
                 print('eps: ' + str(eps))
@@ -40,9 +41,9 @@ for eps_id in range(0, eps_num):
                 print('dimer_U: ' + str(dimer_U))
                 print('jcs_ampl: ' + str(jcs_ampl))
 
-                sys_id = 0
+                sys_id = 2
                 task_id = 1
-                prop_id = 1
+                prop_id = 0
                 is_debug = 0
                 is_pp = 1
                 init_fn = ''
@@ -65,13 +66,15 @@ for eps_id in range(0, eps_num):
                 lpn_delta_f_high = 1.0e-2
                 lpn_delta_f_low = 1.0e-10
                 dump_obs = 1
+                dump_phi = 0
+                dump_phi_evo = 0
                 dump_adr_sep = 0
-                dump_adr_avg = 1
+                dump_adr_avg = 0
                 dump_evo_sep = 1
                 dump_evo_avg = 0
                 dump_type = 0
                 dump_num = 10000
-                N = 500
+                N = 200
                 diss_type = 0
                 diss_gamma = 0.1
                 diss_phase = 0.0
@@ -86,6 +89,15 @@ for eps_id in range(0, eps_num):
                 jcs_drv_part_2 = 1.0
                 jcs_drv_ampl = jcs_ampl
                 jcs_prm_alpha = 5.0
+                ps_num_spins = 1
+                ps_num_photons_states = 200
+                ps_drv_part_1 = 0.98
+                ps_drv_part_2 = 1.00
+                ps_drv_ampl = 3.2
+                ps_prm_alpha = 5
+                ps_prm_d = 0.0
+                ps_prm_g = 0.0
+                ps_diss_w = 0.0
                 start_type = 0
                 start_state = 0
                 cd_dim = dim
@@ -108,6 +120,14 @@ for eps_id in range(0, eps_num):
                 jcs_drv_part_2_str = str(format(jcs_drv_part_2, '0.4f'))
                 jcs_drv_ampl_str = str(format(jcs_drv_ampl, '0.4f'))
                 jcs_prm_alpha_str = str(format(jcs_prm_alpha, '0.4f'))
+
+                ps_drv_part_1_str = str(format(ps_drv_part_1, '0.4f'))
+                ps_drv_part_2_str = str(format(ps_drv_part_2, '0.4f'))
+                ps_drv_ampl_str = str(format(ps_drv_ampl, '0.4f'))
+                ps_prm_alpha_str = str(format(ps_prm_alpha, '0.4f'))
+                ps_prm_d_str = str(format(ps_prm_d, '0.4f'))
+                ps_prm_g_str = str(format(ps_prm_g, '0.4f'))
+                ps_diss_w_str = str(format(ps_diss_w, '0.4f'))
 
                 start_seed = 0
                 finish_seed = num_runs * num_trajectories
@@ -142,6 +162,18 @@ for eps_id in range(0, eps_num):
                         '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
                         '/drv_' + jcs_drv_part_1_str + '_' + jcs_drv_part_2_str + '_' + jcs_drv_ampl_str + \
                         '/prm_' + jcs_prm_alpha_str + \
+                        '/start_' + str(start_type) + '_' + str(start_state)
+
+                elif sys_id == 2:
+
+                    local_path = \
+                        '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
+                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
+                            num_obs_periods) + \
+                        '/N_' + str(ps_num_spins) + '_' + str(ps_num_photons_states) + \
+                        '/diss_' + str(diss_type) + '_' + ps_diss_w_str + \
+                        '/drv_' + ps_drv_part_1_str + '_' + ps_drv_part_2_str + '_' + ps_drv_ampl_str + \
+                        '/prm_' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + \
                         '/start_' + str(start_type) + '_' + str(start_state)
 
                 for ss in range(start_seed, finish_seed, step_seed):
@@ -180,6 +212,8 @@ for eps_id in range(0, eps_num):
                     file_params.write('lpn_delta_f_high ' + str(lpn_delta_f_high) + '\n')
                     file_params.write('lpn_delta_f_low ' + str(lpn_delta_f_low) + '\n')
                     file_params.write('dump_obs ' + str(dump_obs) + '\n')
+                    file_params.write('dump_phi ' + str(dump_phi) + '\n')
+                    file_params.write('dump_phi_evo ' + str(dump_phi_evo) + '\n')
                     file_params.write('dump_adr_sep ' + str(dump_adr_sep) + '\n')
                     file_params.write('dump_adr_avg ' + str(dump_adr_avg) + '\n')
                     file_params.write('dump_evo_sep ' + str(dump_evo_sep) + '\n')
@@ -201,6 +235,15 @@ for eps_id in range(0, eps_num):
                     file_params.write('jcs_drv_part_2 ' + str(jcs_drv_part_2) + '\n')
                     file_params.write('jcs_drv_ampl ' + str(jcs_drv_ampl) + '\n')
                     file_params.write('jcs_prm_alpha ' + str(jcs_prm_alpha) + '\n')
+                    file_params.write('ps_num_spins ' + str(ps_num_spins) + '\n')
+                    file_params.write('ps_num_photons_states ' + str(ps_num_photons_states) + '\n')
+                    file_params.write('ps_drv_part_1 ' + str(ps_drv_part_1) + '\n')
+                    file_params.write('ps_drv_part_2 ' + str(ps_drv_part_2) + '\n')
+                    file_params.write('ps_drv_ampl ' + str(ps_drv_ampl) + '\n')
+                    file_params.write('ps_prm_alpha ' + str(ps_prm_alpha) + '\n')
+                    file_params.write('ps_prm_d ' + str(ps_prm_d) + '\n')
+                    file_params.write('ps_prm_g ' + str(ps_prm_g) + '\n')
+                    file_params.write('ps_diss_w ' + str(ps_diss_w) + '\n')
                     file_params.write('start_type ' + str(start_type) + '\n')
                     file_params.write('start_state ' + str(start_state) + '\n')
                     file_params.write('cd_dim ' + str(cd_dim) + '\n')
@@ -224,6 +267,16 @@ for eps_id in range(0, eps_num):
                             'start(' + str(start_type) + '_' + str(start_state) + ')'
 
                     elif sys_id == 1:
+
+                        fn_suffix = \
+                            'rnd(' + str(ss) + '_' + str(mns) + ')_' + \
+                            'N(' + str(N) + ')_' + \
+                            'diss(' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + ')_' + \
+                            'drv(' + jcs_drv_part_1_str + '_' + jcs_drv_part_2_str + '_' + jcs_drv_ampl_str + ')_' + \
+                            'prm(' + jcs_prm_alpha_str + ')_' + \
+                            'start(' + str(start_type) + '_' + str(start_state) + ')'
+
+                    elif sys_id == 2:
 
                         fn_suffix = \
                             'rnd(' + str(ss) + '_' + str(mns) + ')_' + \
