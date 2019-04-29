@@ -106,8 +106,17 @@ void PSNewDelBehaviour::init_sizes(AllData * ad) const
 	double T = double(cp->params.find("ps_prm_alpha")->second);
 
 	md->sys_size = ps_num_photons_states * std::round(std::pow(2, num_spins));
-	//md->num_diss = 1 + num_spins;
-	md->num_diss = 1;
+
+	int diss_type = int(cp->params.find("diss_type")->second);
+	if (diss_type == 0)
+	{
+		md->num_diss = 1;
+	}
+	else if(diss_type == 1)
+	{
+		md->num_diss = 1 + num_spins;
+	}
+	
 	md->num_ham_qj = 2;
 	md->T = T;
 }
@@ -541,6 +550,13 @@ void PSNewDelBehaviour::init_dissipators(AllData * ad) const
 			md->dissipators[0][index].real = dissipator_cav(st_id_1, st_id_2);
 			md->dissipators[0][index].imag = 0.0;
 		}
+	}
+
+	int diss_type = int(cp->params.find("diss_type")->second);
+
+	if (diss_type == 1)
+	{
+		
 	}
 }
 
