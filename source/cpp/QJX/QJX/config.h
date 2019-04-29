@@ -16,6 +16,8 @@
 
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
+#include <unsupported/Eigen/KroneckerProduct>
+
 
 #define DIMER_SYS_ID 0
 #define JCS_SYS_ID 1
