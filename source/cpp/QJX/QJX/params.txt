@@ -31,7 +31,7 @@ jcs_drv_part_2 1.00
 jcs_drv_ampl 3.2
 jcs_prm_alpha 5
 ps_num_spins 1
-ps_num_photons_states 100
+ps_num_photons_states 200
 ps_drv_part_1 0.98 
 ps_drv_part_2 1.00 
 ps_drv_ampl 3.2

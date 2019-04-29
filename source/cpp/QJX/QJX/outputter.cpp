@@ -79,13 +79,8 @@ void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precisi
 	params << "_s(" << int(cp->params.find("ps_num_spins")->second) << ")";
 	params << "_nps(" << int(cp->params.find("ps_num_photons_states")->second) << ")";
 
-	double ps_prm_alpha = double(cp->params.find("ps_prm_alpha")->second);
-	double ps_diss_k = 1.0 / (4.0 * ps_prm_alpha);
-
-
 	params << "_diss("
 		<< int(cp->params.find("diss_type")->second) << "_"
-		<< setprecision(precision) << fixed << ps_diss_k << "_"
 		<< setprecision(precision) << fixed << double(cp->params.find("ps_diss_w")->second) << ")";
 
 	params << "_drv("

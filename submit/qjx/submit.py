@@ -280,16 +280,19 @@ for eps_id in range(0, eps_num):
 
                         fn_suffix = \
                             'rnd(' + str(ss) + '_' + str(mns) + ')_' + \
-                            'N(' + str(N) + ')_' + \
-                            'diss(' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + ')_' + \
-                            'drv(' + jcs_drv_part_1_str + '_' + jcs_drv_part_2_str + '_' + jcs_drv_ampl_str + ')_' + \
-                            'prm(' + jcs_prm_alpha_str + ')_' + \
+                            's(' + str(ps_num_spins) + ')_' + \
+                            'nps(' + str(ps_num_photons_states) + ')_' + \
+                            'diss(' + str(diss_type) + '_' + ps_diss_w_str + ')_' + \
+                            'drv(' + ps_drv_part_1_str + '_' + ps_drv_part_2_str + '_' + ps_drv_ampl_str + ')_' + \
+                            'prm(' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + ')_' + \
                             'start(' + str(start_type) + '_' + str(start_state) + ')'
 
                     fn_test = ''
                     if sys_id == 0:
                         fn_test = fn_path + '/mean_' + fn_suffix + '.txt'
                     elif sys_id == 1:
+                        fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
+                    elif sys_id == 2:
                         fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
 
                     if not os.path.isfile(fn_test):
