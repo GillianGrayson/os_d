@@ -556,7 +556,61 @@ void PSNewDelBehaviour::init_dissipators(AllData * ad) const
 
 	if (diss_type == 1)
 	{
-		
+		Eigen::Matrix2d sigma_minus;
+		sigma_minus(0, 0) = 0.0;
+		sigma_minus(0, 1) = 0.0;
+		sigma_minus(1, 0) = 1.0;
+		sigma_minus(1, 1) = 0.0;
+
+		Eigen::Matrix2d sigma_0;
+		sigma_0(0, 0) = 1.0;
+		sigma_0(0, 1) = 0.0;
+		sigma_0(1, 0) = 0.0;
+		sigma_0(1, 1) = 1.0;
+
+		for (int s_id = 0; s_id < num_spins; s_id++)
+		{
+			Eigen::MatrixXd s_sigma_minus(2, 2);
+			if (s_id == 0)
+			{
+				sigma_minus(0, 0) = 0.0;
+				sigma_minus(0, 1) = 1.0;
+				sigma_minus(1, 0) = 0.0;
+				sigma_minus(1, 1) = 0.0;
+			}
+			else
+			{
+				s_sigma_minus(0, 0) = 1.0;
+				s_sigma_minus(0, 1) = 0.0;
+				s_sigma_minus(1, 0) = 0.0;
+				s_sigma_minus(1, 1) = 1.0;
+			}
+
+			for (int it_id = 1; it_id < num_spins; it_id++)
+			{
+				if (it_id == s_id)
+				{
+					s_sigma_minus = Eigen::kroneckerProduct(s_sigma_minus, sigma_minus).eval();
+				}
+				else
+				{
+					s_sigma_minus = Eigen::kroneckerProduct(s_sigma_minus, sigma_0).eval();
+				}
+			}
+
+			Eigen::MatrixXd s_sigma_minus_kron = Eigen::kroneckerProduct(s_sigma_minus, p_identity);
+
+			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+			{
+				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+				{
+					int index = st_id_1 * md->sys_size + st_id_2;
+
+					md->dissipators[s_id + 1][index].real = s_sigma_minus_kron(st_id_1, st_id_2);
+					md->dissipators[s_id + 1][index].imag = 0.0;
+				}
+			}
+		}
 	}
 }
 
@@ -779,7 +833,10 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 
 	double diss_gamma_cav = 1.0 / (4.0 * ps_prm_alpha);
 
+	double ps_diss_w = double(cp->params.find("ps_diss_w")->second);
+
 	MKL_Complex16 diss_gamma_cav_cmplx = {diss_gamma_cav, 0.0};
+	MKL_Complex16 diss_gamma_s = { ps_diss_w, 0.0 };
 	MKL_Complex16 zero_cmplx = {0.0, 0.0};
 
 	md->hamiltonians_qj = new MKL_Complex16*[md->num_ham_qj];
@@ -789,6 +846,7 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 	}
 
 	MKL_Complex16 * diss_part_cav = new MKL_Complex16[md->sys_size * md->sys_size];
+	MKL_Complex16 * diss_part_s = new MKL_Complex16[md->sys_size * md->sys_size];
 	MKL_Complex16 * hamitlonian_part = new MKL_Complex16[md->sys_size * md->sys_size];
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -834,6 +892,42 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			int index = st_id_1 * md->sys_size + st_id_2;
 			hamitlonian_part[index].real += 0.5 * diss_part_cav[index].imag;
 			hamitlonian_part[index].imag -= 0.5 * diss_part_cav[index].real;
+		}
+	}
+
+	int diss_type = int(cp->params.find("diss_type")->second);
+	int num_spins = int(cp->params.find("ps_num_spins")->second);
+
+	if (diss_type == 1)
+	{
+		for (int s_id = 0; s_id < num_spins; s_id++)
+		{
+			cblas_zgemm(
+				CblasRowMajor,
+				CblasConjTrans,
+				CblasNoTrans,
+				md->sys_size,
+				md->sys_size,
+				md->sys_size,
+				&diss_gamma_s,
+				md->dissipators[s_id + 1],
+				md->sys_size,
+				md->dissipators[s_id + 1],
+				md->sys_size,
+				&zero_cmplx,
+				diss_part_s,
+				md->sys_size
+			);
+
+			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+			{
+				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+				{
+					int index = st_id_1 * md->sys_size + st_id_2;
+					hamitlonian_part[index].real += 0.5 * diss_part_s[index].imag;
+					hamitlonian_part[index].imag -= 0.5 * diss_part_s[index].real;
+				}
+			}
 		}
 	}
 
