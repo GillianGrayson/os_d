@@ -1,5 +1,5 @@
-sys_id 2
-task_id 1
+sys_id 0
+task_id 5
 prop_id 0 
 is_debug 0 
 is_pp 1 
@@ -11,5 +11,5 @@ num_threads 4
 num_trajectories 8
 num_tp_periods 1000
 num_obs_periods 1000
-ex_deep 16 
+ex_deep 10 
 rk_ns 10000

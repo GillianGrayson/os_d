@@ -15,6 +15,7 @@ public:
 	virtual void ex_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
 	virtual void ex_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
 	virtual void ex_period_obs_deep_lpn(AllData * ad, int period_id) const = 0;
+	virtual void ex_period_obs_deep_lpn_per_period(AllData * ad, int period_id, int num_periods) const = 0;
 	virtual void ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
 	virtual void ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const = 0;
 
@@ -57,6 +58,7 @@ public:
 	virtual void ex_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep_lpn(AllData * ad, int period_id) const;
+	virtual void ex_period_obs_deep_lpn_per_period(AllData* ad, int period_id, int num_periods) const;
 	virtual void ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const;
 
@@ -99,6 +101,7 @@ public:
 	virtual void ex_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep_lpn(AllData * ad, int period_id) const;
+	virtual void ex_period_obs_deep_lpn_per_period(AllData* ad, int period_id, int num_periods) const;
 	virtual void ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const;
 
@@ -141,6 +144,7 @@ public:
 	virtual void ex_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep_lpn(AllData * ad, int period_id) const;
+	virtual void ex_period_obs_deep_lpn_per_period(AllData* ad, int period_id, int num_periods) const;
 	virtual void ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const;
 	virtual void ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const;
 

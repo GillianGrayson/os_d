@@ -447,6 +447,16 @@ void init_obs_lpn(AllData * ad)
 	ed->lambda_now = new double[num_trajectories];
 	ed->lambda = new double[num_trajectories];
 
+	ed->num_renorms = new int[num_trajectories];
+
+	int save_lambdas = int(ad->cp->params.find("save_lambdas")->second);
+	if (save_lambdas > 0)
+	{
+		ed->lambdas = new vector<double>[num_trajectories];
+		ed->deltas_s = new vector<double>[num_trajectories];
+		ed->deltas_f = new vector<double>[num_trajectories];
+	}
+
 	ed->mean_lpn = new double[num_trajectories];
 	ed->energy_lpn = new double[num_trajectories];
 	ed->spec_lpn = new MKL_Complex16[num_trajectories];
@@ -462,6 +472,8 @@ void init_obs_lpn(AllData * ad)
 		ed->delta_s[tr_id] = 0.0;
 		ed->lambda_now[tr_id] = 0.0;
 		ed->lambda[tr_id] = 0.0;
+
+		ed->num_renorms[tr_id] = 0;
 
 		ed->mean_lpn[tr_id] = 0.0;
 		ed->energy_lpn[tr_id] = 0.0;
@@ -625,6 +637,22 @@ void free_obs_lpn(AllData * ad)
 	delete[] ed->mean_lpn;
 	delete[] ed->energy_lpn;
 	delete[] ed->spec_lpn;
+
+	delete[] ed->num_renorms;
+	int num_trajectories = ad->cp->num_trajectories;
+	int save_lambdas = int(ad->cp->params.find("save_lambdas")->second);
+	if (save_lambdas > 0)
+	{
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			ed->lambdas[tr_id].clear();
+			ed->deltas_s[tr_id].clear();
+			ed->deltas_f[tr_id].clear();
+		}
+		delete[] ed->lambdas;
+		delete[] ed->deltas_s;
+		delete[] ed->deltas_f;
+	}
 
 	delete[] ed->lambda_evo;
 	delete[] ed->mean_lpn_evo;

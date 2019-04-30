@@ -79,6 +79,11 @@ int main()
 		ndb_exp = new LpnDeepNewDelBehaviour();
 		eb = new LpnDeepExperimentBehaviour();
 	}
+	else if (rp->task_id == LPN_DEEP_TASK_ID_PER_1T)
+	{
+		ndb_exp = new LpnDeepNewDelBehaviour();
+		eb = new LpnDeepPer1TExperimentBehaviour();
+	}
 	else if (rp->task_id == LPN_ALL_TASK_ID)
 	{
 		ndb_exp = new LpnNewDelBehaviour();

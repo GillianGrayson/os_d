@@ -99,6 +99,11 @@ struct ExpData
 	double * mean_lpn_evo;
 	double * energy_lpn_evo;
 	MKL_Complex16 * spec_lpn_evo;
+
+	int * num_renorms;
+	vector<double>* lambdas;
+	vector<double>* deltas_s;
+	vector<double>* deltas_f;
 	// ======================================
 
 	// ===== Corr dimension observables =====

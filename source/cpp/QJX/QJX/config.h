@@ -31,6 +31,10 @@
 #define LPN_DEEP_TASK_ID 5
 #define LPN_ALL_TASK_ID 6
 
+#define LPN_DEEP_TASK_ID_PER_1T 10
+#define LPN_DEEP_TASK_ID_PER_10T 11
+#define LPN_DEEP_TASK_ID_PER_JUMP 12
+
 #define QJ_PROP_TYPE 0
 #define RK_PROP_TYPE 1
 

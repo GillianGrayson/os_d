@@ -23,7 +23,7 @@ start_state = 0;
 T = 2 * pi / drv_freq;
 
 cd_dump_deep = 1;
-cd_num_sub_steps = 10;
+cd_num_sub_steps = 100;
 
 size_sys = N + 1;
 
@@ -33,10 +33,7 @@ is_mean = 1;
 
 data_path = '../../../../source/cpp/QJX/QJX';
 
-suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
-    sys_id, ...
-    task_id, ...
-    prop_id, ...
+suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
     seed, ...
     mns, ...
     N, ...
@@ -101,5 +98,9 @@ for tr_id = 1:num_tr
 end
 
 propertyeditor(fig)
+
+fn = sprintf('%s/num_renorms_%s.txt', data_path, suffix);
+num_renorms_data = importdata(fn);
+num_renorms = sum(num_renorms_data(2:num_tr+1)) / num_tr
 
 

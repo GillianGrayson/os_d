@@ -54,6 +54,13 @@ public:
 	virtual void obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
+class LpnDeepPer1TExperimentBehaviour : public ExperimentBehavior
+{
+public:
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+};
+
 class LpnAllExperimentBehaviour : public ExperimentBehavior
 {
 public:
@@ -142,6 +149,8 @@ void only_orth(AllData * ad, CoreBehavior *cb, MKL_Complex16 * phi_var_all);
 void gs_orth_evo(AllData * ad, CoreBehavior *cb, MKL_Complex16 *phi_var_all);
 
 void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id);
+
+void lambda_lpn_per_periods(AllData * ad, CoreBehavior *cb, int tr_id, int num_steps_T, int curr_step, int num_periods);
 
 void lambda_lpn_all(AllData * ad, CoreBehavior *cb);
 
