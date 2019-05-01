@@ -767,6 +767,8 @@ void LpnDeepPer1TExperimentBehaviour::obser_process(AllData * ad, PropagateBehav
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
+	int num_lambdas_periods = int(cp->params.find("num_lambdas_periods")->second);
+
 	int begin_period_id = 0;
 	int end_period_id = 0;
 	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
@@ -781,7 +783,7 @@ void LpnDeepPer1TExperimentBehaviour::obser_process(AllData * ad, PropagateBehav
 
 		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
 		{
-			pb->one_period_obs_deep_lpn_per_period(ad, cb, period_id, 1);
+			pb->one_period_obs_deep_lpn_per_period(ad, cb, period_id, num_lambdas_periods);
 		}
 
 		if (dump_evo_avg == 1)

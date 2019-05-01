@@ -23,7 +23,7 @@ start_state = 0;
 T = 2 * pi / drv_freq;
 
 cd_dump_deep = 1;
-cd_num_sub_steps = 128;
+cd_num_sub_steps = 100;
 
 size_sys = N + 1;
 
