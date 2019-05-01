@@ -69,12 +69,12 @@ fig = figure;
 for tr_id = 1:num_tr
 
     evo_curr = evo_data(:, tr_id + 1);
-
     hLine = plot(dump_periods, evo_curr);
-    legend(hLine, sprintf('tr=%d', tr_id))
     set(gca, 'FontSize', 30);
     xlabel('$t/T$', 'Interpreter', 'latex');
-    xlim([dump_periods(1) dump_periods(end)])
+    xlim([1 dump_periods(end)])
+    ylim([-1 1])
+    set(gca, 'XScale', 'log')
     set(gca, 'FontSize', 30);
     ylabel('$\lambda$', 'Interpreter', 'latex');
     hold all;

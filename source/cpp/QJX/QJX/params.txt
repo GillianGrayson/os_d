@@ -3,8 +3,8 @@ lpn_eps_deep 100
 lpn_eps_error 1.0e-10 
 lpn_eps_high 10
 lpn_eps_low -10
-lpn_delta_s 0.0001 
-lpn_delta_f_high 0.01 
+lpn_delta_s 0.00001 
+lpn_delta_f_high 0.1 
 lpn_delta_f_low 1e-10
 save_lambdas 1
 num_lambdas_periods 4
