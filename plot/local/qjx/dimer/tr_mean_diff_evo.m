@@ -32,7 +32,7 @@ num_tr = 1;
 is_mean = 1;
 
 data_path = '../../../../source/cpp/QJX/QJX';
-data_path = 'C:/Users/user/Desktop/New folder/U(0.05)/T1_ds(1e-6)'
+%data_path = 'C:/Users/user/Desktop/New folder/U(0.05)/T1_ds(1e-6)'
 
 suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
     seed, ...
