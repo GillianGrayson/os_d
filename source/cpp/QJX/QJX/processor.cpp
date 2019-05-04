@@ -50,14 +50,19 @@ void Processor::set_core_behaviour(CoreBehavior* cb)
 void Processor::process()
 {
 	ndb->init_sizes(ad);
+	cout << "init_sizes" << endl;
 	ndb->init_hamiltonians(ad);
+	cout << "init_hamiltonians" << endl;
 	ndb->init_dissipators(ad);
+	cout << "init_dissipators" << endl;
 	ndb->init_hamiltonians_qj(ad);
+	cout << "init_hamiltonians_qj" << endl;
 
 	ob->suffix_param(ad->rp, ad->cp, 4);
 	db->save(ad);
 
 	ndb_exp->init_data(ad, pb, cb);
+	cout << "init_data" << endl;
 
 	eb->trans_process(ad, pb, cb);
 	eb->obser_process(ad, pb, cb);
