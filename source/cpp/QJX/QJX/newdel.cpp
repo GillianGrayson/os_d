@@ -270,17 +270,17 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	Eigen::MatrixXd p_hamiltonian_drv = p_a_dag - p_a_std;
 	Eigen::MatrixXd p_special = p_a_std;
 
-	//if (rp->is_debug)
-	//{
-	//	string file_name = "p_hamiltonian.txt";
-	//	const Eigen::IOFormat common_fmt(Eigen::FullPrecision, 0, "", "\n", "", "", "", "");
-	//	std::ofstream f1(file_name.c_str());
-	//	f1 << p_hamiltonian.format(common_fmt);
+	if (rp->is_debug)
+	{
+		string file_name = "p_hamiltonian.txt";
+		const Eigen::IOFormat common_fmt(Eigen::FullPrecision, 0, "", "\n", "", "", "", "");
+		std::ofstream f1(file_name.c_str());
+		f1 << p_hamiltonian.format(common_fmt);
 
-	//	file_name = "p_hamiltonian_drv.txt";
-	//	std::ofstream f2(file_name.c_str());
-	//	f2 << p_hamiltonian_drv.format(common_fmt);
-	//}
+		file_name = "p_hamiltonian_drv.txt";
+		std::ofstream f2(file_name.c_str());
+		f2 << p_hamiltonian_drv.format(common_fmt);
+	}
 
 	Eigen::Matrix2d sigma_z;
 	sigma_z(0, 0) = 1.0;
@@ -322,13 +322,13 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 			s_sigma_z(1, 1) = -1.0;
 
 			s_sigma_minus(0, 0) = 0.0;
-			s_sigma_minus(0, 1) = 1.0;
-			s_sigma_minus(1, 0) = 0.0;
+			s_sigma_minus(0, 1) = 0.0;
+			s_sigma_minus(1, 0) = 1.0;
 			s_sigma_minus(1, 1) = 0.0;
 
 			s_sigma_plus(0, 0) = 0.0;
-			s_sigma_plus(0, 1) = 0.0;
-			s_sigma_plus(1, 0) = 1.0;
+			s_sigma_plus(0, 1) = 1.0;
+			s_sigma_plus(1, 0) = 0.0;
 			s_sigma_plus(1, 1) = 0.0;
 		}
 		else
@@ -574,8 +574,8 @@ void PSNewDelBehaviour::init_dissipators(AllData * ad) const
 			if (s_id == 0)
 			{
 				s_sigma_minus(0, 0) = 0.0;
-				s_sigma_minus(0, 1) = 1.0;
-				s_sigma_minus(1, 0) = 0.0;
+				s_sigma_minus(0, 1) = 0.0;
+				s_sigma_minus(1, 0) = 1.0;
 				s_sigma_minus(1, 1) = 0.0;
 			}
 			else

@@ -1,6 +1,6 @@
 clear all;
 
-seed = 1;
+seed = 224;
 mns = 1000000;
 num_trajectories = 1;
 
@@ -29,53 +29,19 @@ start_state = 0;
 
 %matrix_name = "hamiltonian";
 %matrix_name = "hamiltonian_drv";
-%matrix_name = "dissipator_0";
+matrix_name = "dissipator_1";
 %matrix_name = "hamiltonians_qj_0";
-matrix_name = "hamiltonians_qj_1";
+%matrix_name = "hamiltonians_qj_1";
 
 num_bins = 201;
 
 path = "../../../../source/cpp/QJX/QJX";
 
-suffix = sprintf("rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)", ...
-    seed, ...
-    mns, ...
-    N, ...
-    diss_type, ...
-    diss_gamma, ...
-    diss_phase, ...
-    jcs_drv_part_1, ...
-    jcs_drv_part_2, ...
-    jcs_drv_ampl, ...
-    jcs_prm_alpha, ...
-    start_type, ...
-    start_state);
-
-fn = sprintf('%s/%s_%s.txt', path, matrix_name, suffix);
-data = importdata(fn);
-
-jcs_mtx = zeros(N);
-for i = 1:N
-    for j = 1:N
-        index = (i-1) * N + j;
-        if size(data, 2) == 1
-            jcs_mtx(i, j) = data(index);
-        else
-            jcs_mtx(i, j) = complex(data(index, 1), data(index, 2));
-        end
-    end
-end
-
-sigma_0 = eye(ps_num_spins_states);
-
-jcs_mtx_kron = kron(sigma_0, jcs_mtx);
-
-suffix = sprintf("rnd(%d_%d)_s(%d)_nps(%d)_diss(%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
+suffix = sprintf("rnd(%d_%d)_s(%d)_nps(%d)_diss(1_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
     seed, ...
     mns, ...
     ps_num_spins, ...
     ps_num_photons_states, ...
-    ps_diss_w, ...
     ps_diss_w, ...
     ps_drv_part_1, ...
     ps_drv_part_2, ...
@@ -102,7 +68,12 @@ for i = 1:ps_N
     end
 end
 
-diff = max(max(abs(jcs_mtx_kron - ps_mtx)))
+sigma_minus = [0 0; 1 0];
+sigma_0 = eye(ps_num_photons_states);
+
+res = kron(sigma_minus, sigma_0);
+
+diff = max(max(abs(res - ps_mtx)))
 
 
 
