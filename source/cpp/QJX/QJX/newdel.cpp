@@ -312,8 +312,8 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	for (int s_id = 0; s_id < num_spins; s_id++)
 	{
 		Eigen::MatrixXd s_sigma_z(2, 2);
-		Eigen::MatrixXd s_sigma_plus(2, 2);
 		Eigen::MatrixXd s_sigma_minus(2, 2);
+		Eigen::MatrixXd s_sigma_plus(2, 2);
 		if (s_id == 0)
 		{
 			s_sigma_z(0, 0) = 1.0;
@@ -321,15 +321,15 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 			s_sigma_z(1, 0) = 0.0;
 			s_sigma_z(1, 1) = -1.0;
 
-			sigma_minus(0, 0) = 0.0;
-			sigma_minus(0, 1) = 1.0;
-			sigma_minus(1, 0) = 0.0;
-			sigma_minus(1, 1) = 0.0;
+			s_sigma_minus(0, 0) = 0.0;
+			s_sigma_minus(0, 1) = 1.0;
+			s_sigma_minus(1, 0) = 0.0;
+			s_sigma_minus(1, 1) = 0.0;
 
-			sigma_plus(0, 0) = 0.0;
-			sigma_plus(0, 1) = 0.0;
-			sigma_plus(1, 0) = 1.0;
-			sigma_plus(1, 1) = 0.0;
+			s_sigma_plus(0, 0) = 0.0;
+			s_sigma_plus(0, 1) = 0.0;
+			s_sigma_plus(1, 0) = 1.0;
+			s_sigma_plus(1, 1) = 0.0;
 		}
 		else
 		{
@@ -573,10 +573,10 @@ void PSNewDelBehaviour::init_dissipators(AllData * ad) const
 			Eigen::MatrixXd s_sigma_minus(2, 2);
 			if (s_id == 0)
 			{
-				sigma_minus(0, 0) = 0.0;
-				sigma_minus(0, 1) = 1.0;
-				sigma_minus(1, 0) = 0.0;
-				sigma_minus(1, 1) = 0.0;
+				s_sigma_minus(0, 0) = 0.0;
+				s_sigma_minus(0, 1) = 1.0;
+				s_sigma_minus(1, 0) = 0.0;
+				s_sigma_minus(1, 1) = 0.0;
 			}
 			else
 			{
@@ -857,6 +857,9 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			diss_part_cav[index].real = 0.0;
 			diss_part_cav[index].imag = 0.0;
 
+			diss_part_s[index].real = 0.0;
+			diss_part_s[index].imag = 0.0;
+
 			hamitlonian_part[index].real = md->hamiltonian[index];
 			hamitlonian_part[index].imag = 0.0;
 
@@ -964,6 +967,7 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 	}
 
 	delete[] diss_part_cav;
+	delete[] diss_part_s;
 	delete[] hamitlonian_part;
 }
 

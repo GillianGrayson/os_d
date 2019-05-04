@@ -41,6 +41,17 @@ void init_split_branches(Split * branch, int branch_id, AllData * ad)
 			}
 		}
 
+		if (rp->is_debug)
+		{
+			stringstream params;
+			params << "matrix_eigen_branch_id(" << branch_id << ")_i(" << i << ").txt";
+
+			string file_name = params.str();
+			const Eigen::IOFormat common_fmt(Eigen::FullPrecision, 0, "", "\n", "", "", "", "");
+			std::ofstream f1(file_name.c_str());
+			f1 << ham_qj_eigen.format(common_fmt);
+		}
+
 		Eigen::MatrixXcd matrix_eigen = ham_qj_eigen.exp();
 		cout << "exp() branch_id: " << branch_id << " i:" << i << endl;
 
