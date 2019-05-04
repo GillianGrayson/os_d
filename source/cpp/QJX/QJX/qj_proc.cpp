@@ -42,6 +42,7 @@ void init_split_branches(Split * branch, int branch_id, AllData * ad)
 		}
 
 		Eigen::MatrixXcd matrix_eigen = ham_qj_eigen.exp();
+		cout << "exp() branch_id: " << branch_id << " i:" << i << endl;
 
 		node->matrix = new MKL_Complex16[mtx_syze];
 		for (int st_id_1 = 0; st_id_1 < sys_size; st_id_1++)

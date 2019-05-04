@@ -33,6 +33,7 @@ void StdNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBeh
 	int num_trajectories = cp->num_trajectories;
 
 	pb->init_prop_data(ad, cb);
+	cout << "init_prop_data" << endl;
 	init_streams(ad);
 	copy_streams(ad);
 	leap_frog_all_streams(ad);

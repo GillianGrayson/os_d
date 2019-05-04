@@ -1750,6 +1750,7 @@ void PSCoreBehaviour::init_splits(AllData * ad) const
 	int num_total = num_threads * num_branches;
 
 	md->structure = init_split_structure_ps(ad);
+	cout << "init_split_structure_ps" << endl;
 	md->splits = new Split[num_total];
 
 	for (int b_id = 0; b_id < num_branches; b_id++)
