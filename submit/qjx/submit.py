@@ -17,7 +17,7 @@ dimer_U_start = 0.1125
 dimer_U_shift = 0.01
 dimer_U_num = 1
 
-jcs_ampl_start = 0.01
+jcs_ampl_start = 3.20
 jcs_ampl_shift = 0.01
 jcs_ampl_num = 1
 
@@ -58,13 +58,15 @@ for eps_id in range(0, eps_num):
                 rk_ns = 10000
 
                 lpn_type = 0
-                lpn_eps_deep = 10
-                lpn_eps_high = 0
-                lpn_eps_low = -4
-                lpn_delta_s_high = 1.0e-3
-                lpn_delta_s_low = 1.0e-4
-                lpn_delta_f_high = 1.0e-2
-                lpn_delta_f_low = 1.0e-10
+                lpn_eps_deep = 100
+                lpn_eps_error = 1.0e-10
+                lpn_eps_high = 10
+                lpn_eps_low = -10
+                lpn_delta_s = 1.0e-5
+                lpn_delta_f_high = 1.0e-1
+                lpn_delta_f_low = 1.0e-12
+                save_lambdas = 0
+                num_lambdas_periods = 2
                 dump_obs = 1
                 dump_phi = 0
                 dump_phi_evo = 0
@@ -73,7 +75,7 @@ for eps_id in range(0, eps_num):
                 dump_evo_sep = 1
                 dump_evo_avg = 0
                 dump_type = 0
-                dump_num = 10000
+                dump_num = 1000
                 N = 200
                 diss_type = 0
                 diss_gamma = 0.1
@@ -205,12 +207,14 @@ for eps_id in range(0, eps_num):
 
                     file_params.write('lpn_type ' + str(lpn_type) + '\n')
                     file_params.write('lpn_eps_deep ' + str(lpn_eps_deep) + '\n')
+                    file_params.write('lpn_eps_error ' + str(lpn_eps_error) + '\n')
                     file_params.write('lpn_eps_high ' + str(lpn_eps_high) + '\n')
                     file_params.write('lpn_eps_low ' + str(lpn_eps_low) + '\n')
-                    file_params.write('lpn_delta_s_high ' + str(lpn_delta_s_high) + '\n')
-                    file_params.write('lpn_delta_s_low ' + str(lpn_delta_s_low) + '\n')
+                    file_params.write('lpn_delta_s ' + str(lpn_delta_s) + '\n')
                     file_params.write('lpn_delta_f_high ' + str(lpn_delta_f_high) + '\n')
                     file_params.write('lpn_delta_f_low ' + str(lpn_delta_f_low) + '\n')
+                    file_params.write('save_lambdas ' + str(save_lambdas) + '\n')
+                    file_params.write('num_lambdas_periods ' + str(num_lambdas_periods) + '\n')
                     file_params.write('dump_obs ' + str(dump_obs) + '\n')
                     file_params.write('dump_phi ' + str(dump_phi) + '\n')
                     file_params.write('dump_phi_evo ' + str(dump_phi_evo) + '\n')
