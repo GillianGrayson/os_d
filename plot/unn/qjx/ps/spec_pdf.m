@@ -9,7 +9,7 @@ seed = 1;
 mns = 1000000;
 num_trajectories = 32;
 num_tp_periods = 1000;
-num_obs_periods = 2000;
+num_obs_periods = 1000;
 ex_deep = 16;
 rk_ns = 10000;
 
@@ -24,8 +24,8 @@ ps_drv_part_1 = 0.98;
 ps_drv_part_2 = 1.00; 
 ps_drv_ampl = 3.2;
 ps_prm_alpha = 5;
-ps_prm_d = 1.0;
-ps_prm_g = 1.0;
+ps_prm_d = 1.;
+ps_prm_g = 1.;
 
 
 start_type = 0;

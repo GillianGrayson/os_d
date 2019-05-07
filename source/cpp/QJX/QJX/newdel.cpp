@@ -282,25 +282,25 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		f2 << p_hamiltonian_drv.format(common_fmt);
 	}
 
-	Eigen::Matrix2d sigma_z;
+	Eigen::Matrix2d sigma_z(2, 2);
 	sigma_z(0, 0) = 1.0;
 	sigma_z(0, 1) = 0.0;
 	sigma_z(1, 0) = 0.0;
 	sigma_z(1, 1) = -1.0;
 
-	Eigen::Matrix2d sigma_minus;
+	Eigen::Matrix2d sigma_minus(2, 2);
 	sigma_minus(0, 0) = 0.0;
 	sigma_minus(0, 1) = 0.0;
 	sigma_minus(1, 0) = 1.0;
 	sigma_minus(1, 1) = 0.0;
 
-	Eigen::Matrix2d sigma_plus;
+	Eigen::Matrix2d sigma_plus(2, 2);
 	sigma_plus(0, 0) = 0.0;
 	sigma_plus(0, 1) = 1.0;
 	sigma_plus(1, 0) = 0.0;
 	sigma_plus(1, 1) = 0.0;
 
-	Eigen::Matrix2d sigma_0;
+	Eigen::Matrix2d sigma_0(2, 2);
 	sigma_0(0, 0) = 1.0;
 	sigma_0(0, 1) = 0.0;
 	sigma_0(1, 0) = 0.0;
@@ -378,6 +378,21 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		s_J_z += s_sigmas_z[s_id];
 		s_J_minus += s_sigmas_minus[s_id];
 		s_J_plus += s_sigmas_plus[s_id];
+	}
+	if (rp->is_debug)
+	{
+		string file_name = "s_J_z.txt";
+		const Eigen::IOFormat common_fmt(Eigen::FullPrecision, 0, "", "\n", "", "", "", "");
+		std::ofstream f1(file_name.c_str());
+		f1 << s_J_z.format(common_fmt);
+
+		file_name = "s_J_minus.txt";
+		std::ofstream f2(file_name.c_str());
+		f2 << s_J_minus.format(common_fmt);
+
+		file_name = "s_J_plus.txt";
+		std::ofstream f3(file_name.c_str());
+		f3 << s_J_plus.format(common_fmt);
 	}
 	Eigen::MatrixXd s_hamiltonian = d * 0.5 * s_J_z;
 
@@ -556,13 +571,13 @@ void PSNewDelBehaviour::init_dissipators(AllData * ad) const
 
 	if (diss_type == 1)
 	{
-		Eigen::Matrix2d sigma_minus;
+		Eigen::Matrix2d sigma_minus(2, 2);
 		sigma_minus(0, 0) = 0.0;
 		sigma_minus(0, 1) = 0.0;
 		sigma_minus(1, 0) = 1.0;
 		sigma_minus(1, 1) = 0.0;
 
-		Eigen::Matrix2d sigma_0;
+		Eigen::Matrix2d sigma_0(2, 2);
 		sigma_0(0, 0) = 1.0;
 		sigma_0(0, 1) = 0.0;
 		sigma_0(1, 0) = 0.0;
