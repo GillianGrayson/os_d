@@ -15,9 +15,9 @@ ps_drv_part_1 = 0.98;
 ps_drv_part_2 = 1.00; 
 ps_drv_ampl = 3.2;
 ps_prm_alpha = 5;
-ps_prm_d = 0.2500;
-ps_prm_g = 0.2500;
-ps_diss_w = 0.05;
+ps_prm_d = 0.00;
+ps_prm_g = 0.00;
+ps_diss_w = 0.00;
 
 start_type = 0;
 start_state = 0;

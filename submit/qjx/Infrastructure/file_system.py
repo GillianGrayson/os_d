@@ -3,13 +3,16 @@ from enum import Enum
 class FSType(Enum):
     local = 0
     cluster = 1
+    mpipks_sd = 2
 
 def get_root(type):
 
     root = ''
-    if type is FSType.cluster:
+    if type == FSType.cluster:
         root = '/common/home/yusipov_i/Work/os_d/data/qjx'
-    elif type is FSType.local:
+    elif type == FSType.mpipks_sd:
+        root = '/data/biophys/denysov/yusipov/os_d/data/qjx'
+    elif type == FSType.local:
         root = 'E:/Work/os_d/data/qjx'
 
     return root

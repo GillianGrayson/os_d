@@ -21,13 +21,13 @@ jcs_ampl_start = 3.20
 jcs_ampl_shift = 0.01
 jcs_ampl_num = 1
 
-d_start = 0.1
+d_start = 0.0
 d_shift = 0.1
-d_num = 10
+d_num = 1
 
-g_start = 0.1
+g_start = 0.0
 g_shift = 0.1
-g_num = 10
+g_num = 1
 
 for eps_id in range(0, eps_num):
 
@@ -56,7 +56,7 @@ for eps_id in range(0, eps_num):
                         print('g: ' + str(g))
 
                         sys_id = 2
-                        task_id = 1
+                        task_id = 0
                         prop_id = 0
                         is_debug = 0
                         is_pp = 1
@@ -64,10 +64,10 @@ for eps_id in range(0, eps_num):
                         path = ''
                         seed = 0
                         mns = 1000000
-                        num_threads = 32
-                        num_trajectories = 32
-                        num_tp_periods = 1000
-                        num_obs_periods = 1000
+                        num_threads = 1
+                        num_trajectories = 10
+                        num_tp_periods = 100
+                        num_obs_periods = 100
                         ex_deep = 16
                         rk_ns = 10000
 
@@ -76,7 +76,7 @@ for eps_id in range(0, eps_num):
                         lpn_eps_error = 1.0e-10
                         lpn_eps_high = 10
                         lpn_eps_low = -10
-                        lpn_delta_s = 1.0e-5
+                        lpn_delta_s = 0.001
                         lpn_delta_f_high = 1.0e-1
                         lpn_delta_f_low = 1.0e-12
                         save_lambdas = 0
@@ -89,9 +89,9 @@ for eps_id in range(0, eps_num):
                         dump_evo_sep = 1
                         dump_evo_avg = 0
                         dump_type = 0
-                        dump_num = 1000
+                        dump_num = 100
                         N = 200
-                        diss_type = 0
+                        diss_type = 1
                         diss_gamma = 0.1
                         diss_phase = 0.0
                         dimer_drv_type = 1
@@ -109,11 +109,11 @@ for eps_id in range(0, eps_num):
                         ps_num_photons_states = 200
                         ps_drv_part_1 = 0.98
                         ps_drv_part_2 = 1.00
-                        ps_drv_ampl = 3.2
+                        ps_drv_ampl = jcs_ampl
                         ps_prm_alpha = 5
                         ps_prm_d = d
                         ps_prm_g = g
-                        ps_diss_w = 0.0
+                        ps_diss_w = 0.05
                         start_type = 0
                         start_state = 0
                         cd_dim = dim
@@ -314,5 +314,7 @@ for eps_id in range(0, eps_num):
                                 fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
 
                             if not os.path.isfile(fn_test):
-                                print("hi")
-                                os.system('sbatch run_unn.sh ' + fn_path)
+                                if type == FSType.cluster:
+                                    os.system('sbatch run_unn.sh ' + fn_path)
+                                elif type == FSType.mpipks_sd:
+                                    os.system('qsub run_mpipks_sd.sh ' + fn_path)
