@@ -3,12 +3,12 @@ clear all;
 sys_id = 1;
 task_id = 1;
 prop_id = 0;
-seed = 1;
+seed = 0;
 mns = 1000000;
-num_trajectories = 8;
+num_trajectories = 10;
 
 N = 200;
-diss_type = 0;
+diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
 jcs_drv_part_1 = 0.98;
@@ -49,10 +49,14 @@ global_size = size(all_re, 1);
 
 min_re = min(all_re);
 max_re = max(all_re);
+min_re = -3;
+max_re = 3;
 shift_re = (max_re - min_re) / num_bins;
 
 min_im = min(all_im);
 max_im = max(all_im);
+min_im = -3;
+max_im = 3;
 shift_im = (max_im - min_im) / num_bins;
 
 int_re = zeros(num_bins, 1);
