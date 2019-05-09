@@ -2404,6 +2404,22 @@ void PSCoreBehaviour::dump_lpn(AllData * ad) const
 
 		fn = rp->path + "mean_lpn" + cp->fn_suffix;
 		save_double_data(fn, mean, num_trajectories, 16, false);
+
+		int save_lambdas = int(ad->cp->params.find("save_lambdas")->second);
+		if (save_lambdas > 0)
+		{
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				fn = rp->path + "delta_f_by_delta_s_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->lambdas[tr_id], 16, false);
+
+				fn = rp->path + "deltas_s_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->deltas_s[tr_id], 16, false);
+
+				fn = rp->path + "deltas_f_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->deltas_f[tr_id], 16, false);
+			}
+		}
 	}
 }
 

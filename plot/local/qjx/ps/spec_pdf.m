@@ -1,11 +1,8 @@
 clear all;
 
-sys_id = 2;
-task_id = 1;
-prop_id = 0;
 seed = 0;
 mns = 1000000;
-num_trajectories = 10;
+num_trajectories = 1;
 
 diss_type = 1;
 ps_num_spins = 1;
@@ -15,9 +12,9 @@ ps_drv_part_1 = 0.98;
 ps_drv_part_2 = 1.00; 
 ps_drv_ampl = 3.2;
 ps_prm_alpha = 5;
-ps_prm_d = 0.00;
-ps_prm_g = 0.00;
-ps_diss_w = 0.00;
+ps_prm_d = 1.0;
+ps_prm_g = 1.0;
+ps_diss_w = 0.05;
 
 start_type = 0;
 start_state = 0;
@@ -45,8 +42,8 @@ suffix = sprintf("rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)
 fn = sprintf('%s/spec_evo_%s.txt', path, suffix);
 data = importdata(fn);
 
-all_re = data(:, 1);
-all_im = data(:, 2);
+all_re = data(:, 3);
+all_im = data(:, 4);
 for tr_id = 1:num_trajectories-1
     all_re = vertcat(all_re, data(:, 1 + 2*tr_id));
     all_im = vertcat(all_im, data(:, 2 + 2*tr_id));

@@ -2,9 +2,9 @@ import pathlib
 from Infrastructure.file_system import *
 import os.path
 
-type = FSType.cluster
+type = FSType.mpipks_sd
 
-num_runs = 20
+num_runs = 10
 
 eps_start = 1.0e-8
 eps_shift = 0.1
@@ -17,13 +17,13 @@ dimer_U_start = 0.1125
 dimer_U_shift = 0.01
 dimer_U_num = 1
 
-jcs_ampl_start = 3.20
-jcs_ampl_shift = 0.01
+jcs_ampl_start = 3.2
+jcs_ampl_shift = 0.05
 jcs_ampl_num = 1
 
-d_start = 0.0
-d_shift = 0.1
-d_num = 1
+d_start = 0.01
+d_shift = 0.01
+d_num = 100
 
 g_start = 0.0
 g_shift = 0.1
@@ -46,7 +46,9 @@ for eps_id in range(0, eps_num):
                     d = d_start + d_id * d_shift
 
                     for g_id in range(0, g_num):
-                        g = g_start + g_id * g_shift
+                        #g = g_start + g_id * g_shift
+
+                        g = d
 
                         print('eps: ' + str(eps))
                         print('dim: ' + str(dim))
@@ -65,7 +67,7 @@ for eps_id in range(0, eps_num):
                         seed = 0
                         mns = 1000000
                         num_threads = 1
-                        num_trajectories = 10
+                        num_trajectories = 100
                         num_tp_periods = 100
                         num_obs_periods = 100
                         ex_deep = 16
@@ -86,7 +88,7 @@ for eps_id in range(0, eps_num):
                         dump_phi_evo = 0
                         dump_adr_sep = 0
                         dump_adr_avg = 0
-                        dump_evo_sep = 1
+                        dump_evo_sep = 0
                         dump_evo_avg = 0
                         dump_type = 0
                         dump_num = 100
