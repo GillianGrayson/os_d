@@ -32,6 +32,9 @@ void PSDebugBehaviour::save(AllData * ad) const
 	{
 		string fn = rp->path + "spec_mtx" + cp->fn_suffix;
 		save_complex_data(fn, md->special, md->sys_size * md->sys_size, 16, 0);
+
+		fn = rp->path + "spec_2_mtx" + cp->fn_suffix;
+		save_complex_data(fn, md->special_2, md->sys_size * md->sys_size, 16, 0);
 	}
 }
 

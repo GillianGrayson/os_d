@@ -186,6 +186,7 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	md->hamiltonian = new double[md->sys_size * md->sys_size];
 	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -228,6 +229,9 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 			md->special[index].real = a_std[index];
 			md->special[index].imag = 0.0;
+
+			md->special_2[index].real = a_std[index];
+			md->special_2[index].imag = 0.0;
 		}
 	}
 
@@ -379,6 +383,11 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		s_J_minus += s_sigmas_minus[s_id];
 		s_J_plus += s_sigmas_plus[s_id];
 	}
+
+	s_J_z *= 0.5;
+	s_J_minus *= 0.5;
+	s_J_plus *= 0.5;
+
 	if (rp->is_debug)
 	{
 		string file_name = "s_J_z.txt";
@@ -394,6 +403,7 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		std::ofstream f3(file_name.c_str());
 		f3 << s_J_plus.format(common_fmt);
 	}
+
 	Eigen::MatrixXd s_hamiltonian = d * 0.5 * s_J_z;
 
 	Eigen::MatrixXd p_hamiltonian_kron = Eigen::kroneckerProduct(s_identity, p_hamiltonian);
@@ -403,16 +413,19 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	Eigen::MatrixXd p_hamiltonian_drv_kron = Eigen::kroneckerProduct(s_identity, p_hamiltonian_drv);
 
 	Eigen::MatrixXd a_dag_J_minus = Eigen::kroneckerProduct(s_identity, p_a_dag) * Eigen::kroneckerProduct(s_J_minus, p_identity);
-	Eigen::MatrixXd J_plus_a_std = Eigen::kroneckerProduct(s_J_plus, p_identity) * Eigen::kroneckerProduct(s_identity, p_a_dag);
-	Eigen::MatrixXd s_p_hamiltonian = g * 0.5 * (a_dag_J_minus - J_plus_a_std);
+	Eigen::MatrixXd J_plus_a_std = Eigen::kroneckerProduct(s_J_plus, p_identity) * Eigen::kroneckerProduct(s_identity, p_a_std);
+	Eigen::MatrixXd s_p_hamiltonian = g * 0.5 * (a_dag_J_minus + J_plus_a_std);
 
 	Eigen::MatrixXd hamiltonian = s_hamiltonian_kron + s_p_hamiltonian + p_hamiltonian_kron;
 	Eigen::MatrixXd hamiltonian_drv = p_hamiltonian_drv_kron;
 	Eigen::MatrixXd special = Eigen::kroneckerProduct(s_identity, p_special);
 
+	Eigen::MatrixXd special_2 = Eigen::kroneckerProduct(s_J_z, p_identity);
+
 	md->hamiltonian = new double[md->sys_size * md->sys_size];
 	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -426,6 +439,9 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 			md->special[index].real = special(st_id_1, st_id_2);
 			md->special[index].imag = 0.0;
+
+			md->special_2[index].real = special_2(st_id_1, st_id_2);
+			md->special_2[index].imag = 0.0;
 		}
 	}
 }
@@ -1001,6 +1017,7 @@ void JCSNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	delete[] md->hamiltonian;
 	delete[] md->hamiltonian_drv;
 	delete[] md->special;
+	delete[] md->special_2;
 }
 
 void PSNewDelBehaviour::free_hamiltonians(AllData * ad) const
@@ -1010,6 +1027,7 @@ void PSNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	delete[] md->hamiltonian;
 	delete[] md->hamiltonian_drv;
 	delete[] md->special;
+	delete[] md->special_2;
 }
 
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const

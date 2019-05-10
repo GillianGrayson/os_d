@@ -970,6 +970,12 @@ int is_norm_crossed(MKL_Complex16 * phi, double * eta, int sys_size)
 		norm += phi[st_id].real * phi[st_id].real + phi[st_id].imag * phi[st_id].imag;
 	}
 
+	if (norm > 1.0)
+	{
+		cout << "norm more than 1" << endl;
+		throw std::invalid_argument("received negative value");
+	}
+
 	if (norm > *(eta))
 	{
 		return 0;
@@ -1269,6 +1275,51 @@ MKL_Complex16 get_spec_ps(AllData * ad, int tr_id)
 
 	result.real /= alpha;
 	result.imag /= alpha;
+
+	delete[] mult_tmp;
+	delete[] phi_normed;
+	delete[] phi_normed_conj;
+
+	return result;
+}
+
+MKL_Complex16 get_spec_2_ps(AllData * ad, int tr_id)
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double alpha = double(cp->params.find("ps_prm_alpha")->second);
+
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	MKL_Complex16 * phi_normed = new MKL_Complex16[sys_size];
+	MKL_Complex16 * phi_normed_conj = new MKL_Complex16[sys_size];
+	double norm = sqrt(norm_square(phi, sys_size));
+	MKL_Complex16 * mult_tmp = new MKL_Complex16[sys_size];
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		mult_tmp[st_id].real = 0.0;
+		mult_tmp[st_id].imag = 0.0;
+
+		phi_normed[st_id].real = phi[st_id].real / norm;
+		phi_normed[st_id].imag = phi[st_id].imag / norm;
+
+		phi_normed_conj[st_id].real = phi_normed[st_id].real;
+		phi_normed_conj[st_id].imag = -phi_normed[st_id].imag;
+	}
+
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->special_2, sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
+
+	MKL_Complex16 result = { 0.0, 0.0 };
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		result.real += (phi_normed_conj[st_id].real * mult_tmp[st_id].real - phi_normed_conj[st_id].imag * mult_tmp[st_id].imag);
+		result.imag += (phi_normed_conj[st_id].imag * mult_tmp[st_id].real + phi_normed_conj[st_id].real * mult_tmp[st_id].imag);
+	}
 
 	delete[] mult_tmp;
 	delete[] phi_normed;
@@ -1606,14 +1657,6 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 
 		if (fabs(delta_s - lpn_delta_s) < lpn_eps_error)
 		{
-			if (rp->is_pp == 1)
-			{
-				cout << "lpn: " << tr_id + 1 << endl;
-				cout << "curr_lpn_eps: " << log10(curr_lpn_eps) << endl;
-				cout << "lpn_deep: " << curr_eps_deep << endl;
-				cout << "delta_s: " << delta_s << endl;
-				cout << endl;
-			}
 			break;
 		}
 
@@ -1632,6 +1675,15 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id)
 			curr_eps_deep++;
 			curr_lpn_eps = pow(10.0, (curr_eps_low + curr_eps_high) * 0.5);
 		}
+	}
+
+	if (rp->is_pp == 1)
+	{
+		cout << "lpn: " << tr_id + 1 << endl;
+		cout << "curr_lpn_eps: " << log10(curr_lpn_eps) << endl;
+		cout << "lpn_deep: " << curr_eps_deep << endl;
+		cout << "delta_s: " << cb->calc_delta_s(ad, tr_id) << endl;
+		cout << endl;
 	}
 
 	delete[] phi_var_double;

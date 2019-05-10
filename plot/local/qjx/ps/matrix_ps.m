@@ -29,17 +29,22 @@ s_eye = eye(ps_num_spins_states);
 p_eye = eye(ps_num_photons_states);
 
 a_std_p = zeros(ps_num_photons_states);
-for n = 1 : (N-1)
-    a(n, n+1) = sqrt(n);
+for n = 1 : (ps_num_photons_states-1)
+    a_std_p(n, n+1) = sqrt(n);
 end
 a_dag_p = a_std_p';
 
 diss{1} = kron(s_eye, a_std_p);
 
+J_minus = sigma_minus * 0.5;
+J_plus = sigma_plus * 0.5;
+
 H_1_p = 1 / (2 * ps_prm_alpha^3) * a_dag_p * a_dag_p * a_std_p * a_std_p;
 H_1 = kron(s_eye, H_1_p);
 
-H
+H2 = kron(s_eye, a_dag_p) * kron(J_minus, p_eye) + kron(J_plus, p_eye) * kron(s_eye, a_std_p);
+
+
 
 A1=sqrt(n_sr+1)*a;
 A2=sqrt(n_sr)*a_;

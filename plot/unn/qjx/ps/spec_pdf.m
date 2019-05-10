@@ -24,8 +24,8 @@ ps_drv_part_1 = 0.98;
 ps_drv_part_2 = 1.00; 
 ps_drv_ampl = 3.2;
 ps_prm_alpha = 5;
-ps_prm_d = 1.;
-ps_prm_g = 1.;
+ps_prm_d = 0.1;
+ps_prm_g = 0.1;
 
 
 start_type = 0;
