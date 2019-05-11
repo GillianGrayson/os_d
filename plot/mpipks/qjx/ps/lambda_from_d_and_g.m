@@ -10,7 +10,7 @@ task_id = 0;
 prop_id = 0; 
 seed = 0; 
 mns = 1000000;
-num_trajectories = 100;
+num_trajectories = 2;
 num_tp_periods = 100;
 num_obs_periods = 100; 
 ex_deep = 16;
@@ -23,7 +23,7 @@ ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 200;
 ps_drv_part_1 = 0.98;
 ps_drv_part_2 = 1.00;
-ps_drv_ampl = 3.2;
+ps_drv_ampl = 2.5;
 ps_prm_alpha = 5;
 ps_prm_d = 0.;
 ps_prm_g = 0.;
@@ -32,12 +32,12 @@ start_state = 0;
 
 num_runs = 10;
 
-num_points = 101;
+num_points = 6;
 lambdas = zeros(num_points, 1);
 params = zeros(num_points, 1);
 for param_id = 1:num_points
     
-    ps_prm_d = 0.00 + (param_id - 1) * 0.01
+    ps_prm_d = 0.0 + (param_id - 1) * 2.0
     params(param_id) = ps_prm_d;
 	ps_prm_g = ps_prm_d;
     

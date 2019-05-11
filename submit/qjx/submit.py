@@ -4,7 +4,7 @@ import os.path
 
 type = FSType.mpipks_sd
 
-num_runs = 10
+num_runs = 100
 
 eps_start = 1.0e-8
 eps_shift = 0.1
@@ -17,13 +17,13 @@ dimer_U_start = 0.1125
 dimer_U_shift = 0.01
 dimer_U_num = 1
 
-jcs_ampl_start = 3.2
+jcs_ampl_start = 1.75
 jcs_ampl_shift = 0.05
 jcs_ampl_num = 1
 
 d_start = 0.00
-d_shift = 0.01
-d_num = 101
+d_shift = 0.20
+d_num = 5
 
 g_start = 0.0
 g_shift = 0.1
@@ -67,9 +67,9 @@ for eps_id in range(0, eps_num):
                         seed = 0
                         mns = 1000000
                         num_threads = 1
-                        num_trajectories = 10
+                        num_trajectories = 1
                         num_tp_periods = 100
-                        num_obs_periods = 100
+                        num_obs_periods = 10000
                         ex_deep = 16
                         rk_ns = 10000
 
@@ -91,7 +91,7 @@ for eps_id in range(0, eps_num):
                         dump_evo_sep = 1
                         dump_evo_avg = 0
                         dump_type = 0
-                        dump_num = 100
+                        dump_num = 1
                         N = 200
                         diss_type = 1
                         diss_gamma = 0.1
@@ -121,8 +121,8 @@ for eps_id in range(0, eps_num):
                         cd_dim = dim
                         cd_eps = eps
                         deep_num_steps = 1000
-                        jump = 0
-                        jumps_counts = 0
+                        jump = 1
+                        jumps_counts = 1000
 
                         diss_gamma_str = str(format(diss_gamma, '0.4f'))
                         diss_phase_str = str(format(diss_phase, '0.4f'))

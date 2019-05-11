@@ -3,7 +3,8 @@
 
 # --- Mandatory qsub arguments
 # Hardware requirements.
-#$ -l h_rss=2000M,h_fsize=2000M,h_cpu=24:00:00,hw=x86_64
+#$ -l h_rss=1000M,h_fsize=100M,h_cpu=4:00:00,hw=x86_64
+#$ -o /home/denysov/yusipov/os_d/submit/qjx
 
 # --- Optional qsub arguments
 # Change working directory - your job will be run from the directory
