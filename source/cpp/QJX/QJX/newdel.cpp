@@ -106,6 +106,7 @@ void PSNewDelBehaviour::init_sizes(AllData * ad) const
 	double T = double(cp->params.find("ps_prm_alpha")->second);
 
 	md->sys_size = ps_num_photons_states * std::round(std::pow(2, num_spins));
+	cout << "sys_size: " << md->sys_size << endl;
 
 	int diss_type = int(cp->params.find("diss_type")->second);
 	if (diss_type == 0)

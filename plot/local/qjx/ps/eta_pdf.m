@@ -1,19 +1,19 @@
 clear all;
 
-seed = 0;
+seed = 10;
 mns = 1000000;
 num_trajectories = 10;
 
 diss_type = 1;
-ps_num_spins = 1;
+ps_num_spins = 2;
 ps_num_spins_states = 2^ps_num_spins;
-ps_num_photons_states = 200;
+ps_num_photons_states = 100;
 ps_drv_part_1 = 0.98; 
 ps_drv_part_2 = 1.00; 
 ps_drv_ampl = 3.2;
 ps_prm_alpha = 5;
-ps_prm_d = 1.5;
-ps_prm_g = 1.5;
+ps_prm_d = 10;
+ps_prm_g = 10;
 ps_diss_w = 0.05;
 
 start_type = 0;
