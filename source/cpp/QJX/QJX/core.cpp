@@ -930,6 +930,9 @@ void DimerCoreBehaviour::dump_std_evo(AllData * ad) const
 				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
 				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
 
+				fn = rp->path + "diss_types_" + to_string(tr_id) + cp->fn_suffix;
+				save_int_vector(fn, ed->diss_types[tr_id], false);
+
 				if (jump > 1)
 				{
 					fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
@@ -1686,6 +1689,9 @@ void JCSCoreBehaviour::dump_std_evo(AllData * ad) const
 			{
 				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
 				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
+
+				fn = rp->path + "diss_types_" + to_string(tr_id) + cp->fn_suffix;
+				save_int_vector(fn, ed->diss_types[tr_id], false);
 
 				if (jump > 1)
 				{
@@ -2485,6 +2491,9 @@ void PSCoreBehaviour::dump_std_evo(AllData * ad) const
 			{
 				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
 				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
+
+				fn = rp->path + "diss_types_" + to_string(tr_id) + cp->fn_suffix;
+				save_int_vector(fn, ed->diss_types[tr_id], false);
 
 				if (jump > 1)
 				{

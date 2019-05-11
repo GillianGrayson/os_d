@@ -194,6 +194,8 @@ void rk_recovery(AllData * ad, int tr_id, int th_id)
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
+	int jump = int(ad->cp->params.find("jump")->second);
+
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
 	MKL_Complex16 ONE = { 1.0, 0.0 };
 
@@ -286,6 +288,11 @@ void rk_recovery(AllData * ad, int tr_id, int th_id)
 	{
 		phi[st_id].real = res[st_id].real / sqrt(gnorms[index] / 1.0);
 		phi[st_id].imag = res[st_id].imag / sqrt(gnorms[index] / 1.0);
+	}
+
+	if (jump > 0 && ed->is_obs == 1)
+	{
+		ed->diss_types[tr_id].push_back(index);
 	}
 
 	delete[] res;

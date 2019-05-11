@@ -284,6 +284,7 @@ void init_basic_data(AllData * ad)
 	if (jump > 0)
 	{
 		ed->jump_times = new vector<double>[num_trajectories];
+		ed->diss_types = new vector<int>[num_trajectories];
 		ed->jump_norms = new vector<double>[num_trajectories];
 		ed->jump_etas = new vector<double>[num_trajectories];
 	}
@@ -603,10 +604,12 @@ void free_basic_data(AllData * ad)
 		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 		{
 			ed->jump_times[tr_id].clear();
+			ed->diss_types[tr_id].clear();
 			ed->jump_norms[tr_id].clear();
 			ed->jump_etas[tr_id].clear();
 		}
 		delete[] ed->jump_times;
+		delete[] ed->diss_types;
 		delete[] ed->jump_norms;
 		delete[] ed->jump_etas;
 	}

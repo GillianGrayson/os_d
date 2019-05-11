@@ -19,6 +19,8 @@ void save_2d_double_data(string file_name, double * data, int num_rows, int num_
 
 void save_double_vector(string file_name, vector<double> vec, int precision, bool append);
 
+void save_int_vector(string file_name, vector<int> vec, bool append);
+
 void save_2d_inv_double_data(string file_name, double * data, int num_rows, int num_cols, int precision, bool append);
 
 void save_2d_inv_complex_data(string file_name, MKL_Complex16 * data, int num_rows, int num_cols, int precision, bool append);

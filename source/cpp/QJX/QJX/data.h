@@ -44,6 +44,7 @@ struct ExpData
 	int is_obs;
 
 	vector<double> * jump_times;				// Times of jumps
+	vector<int> * diss_types;
 	vector<double> * jump_norms;				// Norms before jumps
 	vector<double> * jump_etas;					// Etas
 
