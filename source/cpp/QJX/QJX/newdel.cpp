@@ -188,6 +188,7 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special_3 = new MKL_Complex16[md->sys_size * md->sys_size];
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -233,6 +234,9 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 			md->special_2[index].real = a_std[index];
 			md->special_2[index].imag = 0.0;
+
+			md->special_3[index].real = a_std[index];
+			md->special_3[index].imag = 0.0;
 		}
 	}
 
@@ -422,11 +426,13 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	Eigen::MatrixXd special = Eigen::kroneckerProduct(s_identity, p_special);
 
 	Eigen::MatrixXd special_2 = Eigen::kroneckerProduct(s_J_z, p_identity);
+	Eigen::MatrixXd special_3 = Eigen::kroneckerProduct(s_J_plus, p_identity);
 
 	md->hamiltonian = new double[md->sys_size * md->sys_size];
 	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special_3 = new MKL_Complex16[md->sys_size * md->sys_size];
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -443,6 +449,9 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 			md->special_2[index].real = special_2(st_id_1, st_id_2);
 			md->special_2[index].imag = 0.0;
+
+			md->special_3[index].real = special_3(st_id_1, st_id_2);
+			md->special_3[index].imag = 0.0;
 		}
 	}
 }
@@ -1019,6 +1028,7 @@ void JCSNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	delete[] md->hamiltonian_drv;
 	delete[] md->special;
 	delete[] md->special_2;
+	delete[] md->special_3;
 }
 
 void PSNewDelBehaviour::free_hamiltonians(AllData * ad) const
@@ -1029,6 +1039,7 @@ void PSNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	delete[] md->hamiltonian_drv;
 	delete[] md->special;
 	delete[] md->special_2;
+	delete[] md->special_3;
 }
 
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const

@@ -387,6 +387,7 @@ void init_obs_std(AllData * ad)
 	ed->energy			= new double[num_trajectories];
 	ed->spec			= new MKL_Complex16[num_trajectories];
 	ed->spec_2 = new MKL_Complex16[num_trajectories];
+	ed->spec_3 = new MKL_Complex16[num_trajectories];
 
 	ed->norm_evo		= new double[num_trajectories * dump_num_total];
 	ed->mean_evo		= new double[num_trajectories * dump_num_total];
@@ -395,6 +396,7 @@ void init_obs_std(AllData * ad)
 	ed->energy_evo		= new double[num_trajectories * dump_num_total];
 	ed->spec_evo		= new MKL_Complex16[num_trajectories * dump_num_total];
 	ed->spec_2_evo = new MKL_Complex16[num_trajectories * dump_num_total];
+	ed->spec_3_evo = new MKL_Complex16[num_trajectories * dump_num_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
@@ -409,6 +411,8 @@ void init_obs_std(AllData * ad)
 		ed->spec[tr_id].imag	= 0.0;
 		ed->spec_2[tr_id].real = 0.0;
 		ed->spec_2[tr_id].imag = 0.0;
+		ed->spec_3[tr_id].real = 0.0;
+		ed->spec_3[tr_id].imag = 0.0;
 
 		for (int dump_id = 0; dump_id < dump_num_total; dump_id++)
 		{
@@ -421,6 +425,8 @@ void init_obs_std(AllData * ad)
 			ed->spec_evo[tr_id * dump_num_total + dump_id].imag		= 0.0;
 			ed->spec_2_evo[tr_id * dump_num_total + dump_id].real = 0.0;
 			ed->spec_2_evo[tr_id * dump_num_total + dump_id].imag = 0.0;
+			ed->spec_3_evo[tr_id * dump_num_total + dump_id].real = 0.0;
+			ed->spec_3_evo[tr_id * dump_num_total + dump_id].imag = 0.0;
 		}
 	}
 
@@ -469,6 +475,7 @@ void init_obs_lpn(AllData * ad)
 	ed->energy_lpn = new double[num_trajectories];
 	ed->spec_lpn = new MKL_Complex16[num_trajectories];
 	ed->spec_2_lpn = new MKL_Complex16[num_trajectories];
+	ed->spec_3_lpn = new MKL_Complex16[num_trajectories];
 
 	ed->lambda_evo = new double[num_trajectories * dump_num_total];
 
@@ -476,6 +483,7 @@ void init_obs_lpn(AllData * ad)
 	ed->energy_lpn_evo = new double[num_trajectories * dump_num_total];
 	ed->spec_lpn_evo = new MKL_Complex16[num_trajectories * dump_num_total];
 	ed->spec_2_lpn_evo = new MKL_Complex16[num_trajectories * dump_num_total];
+	ed->spec_3_lpn_evo = new MKL_Complex16[num_trajectories * dump_num_total];
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
@@ -491,6 +499,8 @@ void init_obs_lpn(AllData * ad)
 		ed->spec_lpn[tr_id].imag = 0.0;
 		ed->spec_2_lpn[tr_id].real = 0.0;
 		ed->spec_2_lpn[tr_id].imag = 0.0;
+		ed->spec_3_lpn[tr_id].real = 0.0;
+		ed->spec_3_lpn[tr_id].imag = 0.0;
 
 		for (int dump_id = 0; dump_id < dump_num_total; dump_id++)
 		{
@@ -502,6 +512,8 @@ void init_obs_lpn(AllData * ad)
 			ed->spec_lpn_evo[tr_id * dump_num_total + dump_id].imag = 0.0;
 			ed->spec_2_lpn_evo[tr_id * dump_num_total + dump_id].real = 0.0;
 			ed->spec_2_lpn_evo[tr_id * dump_num_total + dump_id].imag = 0.0;
+			ed->spec_3_lpn_evo[tr_id * dump_num_total + dump_id].real = 0.0;
+			ed->spec_3_lpn_evo[tr_id * dump_num_total + dump_id].imag = 0.0;
 		}	
 	}
 }
@@ -634,6 +646,7 @@ void free_obs_std(AllData * ad)
 	delete[] ed->energy;
 	delete[] ed->spec;
 	delete[] ed->spec_2;
+	delete[] ed->spec_3;
 
 	delete[] ed->norm_evo;
 	delete[] ed->mean_evo;
@@ -642,6 +655,7 @@ void free_obs_std(AllData * ad)
 	delete[] ed->energy_evo;
 	delete[] ed->spec_evo;
 	delete[] ed->spec_2_evo;
+	delete[] ed->spec_3_evo;
 }
 
 void free_obs_lpn(AllData * ad)
@@ -656,6 +670,7 @@ void free_obs_lpn(AllData * ad)
 	delete[] ed->energy_lpn;
 	delete[] ed->spec_lpn;
 	delete[] ed->spec_2_lpn;
+	delete[] ed->spec_3_lpn;
 
 	delete[] ed->num_renorms;
 	int num_trajectories = ad->cp->num_trajectories;
@@ -678,6 +693,7 @@ void free_obs_lpn(AllData * ad)
 	delete[] ed->energy_lpn_evo;
 	delete[] ed->spec_lpn_evo;
 	delete[] ed->spec_2_lpn_evo;
+	delete[] ed->spec_3_lpn_evo;
 }
 
 void free_obs_cd(AllData * ad)

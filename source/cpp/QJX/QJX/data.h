@@ -23,6 +23,7 @@ struct MainData
 
 	MKL_Complex16 * special;			// Matrix for special observable
 	MKL_Complex16 * special_2;			// Matrix for special observable
+	MKL_Complex16 * special_3;			// Matrix for special observable
 
 	Split * structure;					// Split structure
 	Split * splits;						// Splits
@@ -77,6 +78,7 @@ struct ExpData
 	double * m2;
 	MKL_Complex16 * spec;
 	MKL_Complex16 * spec_2;
+	MKL_Complex16 * spec_3;
 
 	double * norm_evo;
 	double * mean_evo;
@@ -84,6 +86,7 @@ struct ExpData
 	double * m2_evo;
 	MKL_Complex16 * spec_evo;
 	MKL_Complex16 * spec_2_evo;
+	MKL_Complex16 * spec_3_evo;
 	// ======================================
 
 	// ======== Lyapunov observables ========
@@ -98,6 +101,7 @@ struct ExpData
 	double * energy_lpn;
 	MKL_Complex16 * spec_lpn;
 	MKL_Complex16 * spec_2_lpn;
+	MKL_Complex16 * spec_3_lpn;
 
 	double * energy_evo;
 	double * lambda_evo;
@@ -105,6 +109,7 @@ struct ExpData
 	double * energy_lpn_evo;
 	MKL_Complex16 * spec_lpn_evo;
 	MKL_Complex16 * spec_2_lpn_evo;
+	MKL_Complex16 * spec_3_lpn_evo;
 
 	int * num_renorms;
 	vector<double>* lambdas;
