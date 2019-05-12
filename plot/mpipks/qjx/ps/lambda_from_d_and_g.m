@@ -12,7 +12,7 @@ seed = 0;
 mns = 1000000;
 num_trajectories = 2;
 num_tp_periods = 100;
-num_obs_periods = 100; 
+num_obs_periods = 1000; 
 ex_deep = 16;
 rk_ns = 10000;
 
@@ -23,7 +23,7 @@ ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 200;
 ps_drv_part_1 = 0.98;
 ps_drv_part_2 = 1.00;
-ps_drv_ampl = 2.5;
+ps_drv_ampl = 0.05;
 ps_prm_alpha = 5;
 ps_prm_d = 0.;
 ps_prm_g = 0.;
@@ -32,12 +32,12 @@ start_state = 0;
 
 num_runs = 10;
 
-num_points = 6;
+num_points = 101;
 lambdas = zeros(num_points, 1);
 params = zeros(num_points, 1);
 for param_id = 1:num_points
     
-    ps_prm_d = 0.0 + (param_id - 1) * 2.0
+    ps_prm_d = 0.0 + (param_id - 1) * 0.1
     params(param_id) = ps_prm_d;
 	ps_prm_g = ps_prm_d;
     
@@ -98,12 +98,12 @@ end
 fig = figure;
 hLine = plot(params, lambdas);
 set(gca, 'FontSize', 30);
-xlabel('$A$', 'Interpreter', 'latex');
+xlabel('$d=g$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$\lambda$', 'Interpreter', 'latex');
 hold all;
 
-suffix = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_var_var)", ...
+suffix_save = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_var_var)", ...
 	ps_num_spins, ...
 	ps_num_photons_states, ...
 	diss_type, ...
@@ -113,4 +113,10 @@ suffix = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_
 	ps_drv_ampl, ...
 	ps_prm_alpha);
 
-savefig(sprintf('%s/lambda_from_d_and_g_%s.fig', home_figures_path, suffix));
+savefig(sprintf('%s/lambda_from_d_and_g_%s.fig', home_figures_path, suffix_save));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/lambda_from_d_and_g_%s.pdf', home_figures_path, suffix_save));

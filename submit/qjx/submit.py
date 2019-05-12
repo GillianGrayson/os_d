@@ -4,7 +4,7 @@ import os.path
 
 type = FSType.mpipks_sd
 
-num_runs = 100
+num_runs = 10
 
 eps_start = 1.0e-8
 eps_shift = 0.1
@@ -21,9 +21,9 @@ jcs_ampl_start = 1.75
 jcs_ampl_shift = 0.05
 jcs_ampl_num = 1
 
-d_start = 0.00
-d_shift = 0.20
-d_num = 5
+d_start = 0.0
+d_shift = 0.1
+d_num = 101
 
 g_start = 0.0
 g_shift = 0.1
@@ -58,7 +58,7 @@ for eps_id in range(0, eps_num):
                         print('g: ' + str(g))
 
                         sys_id = 2
-                        task_id = 1
+                        task_id = 0
                         prop_id = 0
                         is_debug = 0
                         is_pp = 1
@@ -67,9 +67,9 @@ for eps_id in range(0, eps_num):
                         seed = 0
                         mns = 1000000
                         num_threads = 1
-                        num_trajectories = 1
+                        num_trajectories = 2
                         num_tp_periods = 100
-                        num_obs_periods = 10000
+                        num_obs_periods = 1000
                         ex_deep = 16
                         rk_ns = 10000
 
@@ -121,8 +121,8 @@ for eps_id in range(0, eps_num):
                         cd_dim = dim
                         cd_eps = eps
                         deep_num_steps = 1000
-                        jump = 1
-                        jumps_counts = 1000
+                        jump = 0
+                        jumps_counts = 0
 
                         diss_gamma_str = str(format(diss_gamma, '0.4f'))
                         diss_phase_str = str(format(diss_phase, '0.4f'))
@@ -319,4 +319,4 @@ for eps_id in range(0, eps_num):
                                 if type == FSType.cluster:
                                     os.system('sbatch run_unn.sh ' + fn_path)
                                 elif type == FSType.mpipks_sd:
-                                    os.system('qsub run_mpipks_sd.sh ' + fn_path)
+                                    os.system('sbatch run_mpipks_sd_sbatch.sh ' + fn_path)

@@ -1,8 +1,9 @@
 clear all;
 
 home_figures_path = '/home/denysov/yusipov/os_d/figures';
-
 data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
+
+diss = 0;
 
 sys_id = 2;
 task_id = 1;
@@ -11,7 +12,7 @@ seed = 0;
 mns = 1000000;
 num_trajectories = 1;
 num_tp_periods = 100;
-num_obs_periods = 10000;
+num_obs_periods = 20000;
 ex_deep = 16;
 rk_ns = 10000;
 
@@ -95,7 +96,15 @@ for run_id = 1:num_runs
         
         path = sprintf('%s/jump_times_%d_%s.txt', path_to_folder, trajectory_id - 1, suffix);
         data = importdata(path);
-        curr_diff = diff(data);
+		path = sprintf('%s/diss_types_%d_%s.txt', path_to_folder, trajectory_id - 1, suffix);
+        diss_types = importdata(path);
+		if diss ~= -1
+			indexes = find(diss_types ~= diss);
+			num_diss_before = size(data, 1)
+			data(indexes) = [];
+			num_diss_after = size(data, 1)
+		end
+		curr_diff = diff(data);
         curr_size = size(curr_diff, 1);
         
         for jump_diff_id = 1:curr_size
@@ -150,7 +159,8 @@ ylabel('$PDF$', 'Interpreter', 'latex');
 set(gca,'XScale','log');
 set(gca,'YScale','log');
 
-suffix_save = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)", ...
+suffix_save = sprintf("diss(%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)", ...
+	diss, ...
     ps_num_spins, ...
     ps_num_photons_states, ...
     diss_type, ...
