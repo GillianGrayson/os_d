@@ -17,7 +17,7 @@ dimer_U_start = 0.1125
 dimer_U_shift = 0.01
 dimer_U_num = 1
 
-jcs_ampl_start = 1.75
+jcs_ampl_start = 2.5
 jcs_ampl_shift = 0.05
 jcs_ampl_num = 1
 
@@ -58,7 +58,7 @@ for eps_id in range(0, eps_num):
                         print('g: ' + str(g))
 
                         sys_id = 2
-                        task_id = 0
+                        task_id = 1
                         prop_id = 0
                         is_debug = 0
                         is_pp = 1
@@ -67,7 +67,7 @@ for eps_id in range(0, eps_num):
                         seed = 0
                         mns = 1000000
                         num_threads = 1
-                        num_trajectories = 2
+                        num_trajectories = 1
                         num_tp_periods = 100
                         num_obs_periods = 1000
                         ex_deep = 16
@@ -91,7 +91,7 @@ for eps_id in range(0, eps_num):
                         dump_evo_sep = 1
                         dump_evo_avg = 0
                         dump_type = 0
-                        dump_num = 1
+                        dump_num = 1000
                         N = 200
                         diss_type = 1
                         diss_gamma = 0.1
