@@ -154,9 +154,9 @@ void LpnMultExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 	}
 
 #pragma omp parallel for
-	for (int tr_id = num_trajectories / 2; tr_id < num_trajectories; tr_id++)
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
-		if (tr_id > 0)
+		if (tr_id >= num_trajectories / 2)
 		{
 			copy_trajectory_lpn(ad, tr_id, tr_id - num_trajectories / 2);
 			var_trajectory_lpn(ad, cb, tr_id, tr_id - num_trajectories / 2);
@@ -165,7 +165,14 @@ void LpnMultExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 		resresh_times(ad, tr_id);
 
 		cb->calc_chars_std_start(ad, tr_id);
-		cb->calc_chars_lpn_start(ad, tr_id, tr_id - num_trajectories / 2);
+		if (tr_id >= num_trajectories / 2)
+		{
+			cb->calc_chars_lpn_start(ad, tr_id, tr_id - num_trajectories / 2);
+		}
+		else
+		{
+			cb->calc_chars_lpn_start(ad, tr_id, tr_id);
+		}
 
 		cb->evo_chars_std(ad, tr_id, 0);
 		cb->evo_chars_lpn(ad, tr_id, 0);
@@ -1714,7 +1721,7 @@ void copy_trajectory_lpn(AllData * ad, int tr_id, int base_tr_id)
 
 	VSLStreamStatePtr * streams = ed->streams;
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
-	MKL_Complex16 * phi_original = &(ed->phi_all[base_tr_id]);
+	MKL_Complex16 * phi_original = &(ed->phi_all[base_tr_id * sys_size]);
 	double * etas = ed->etas_all;
 
 	vslCopyStream(&streams[tr_id], streams[base_tr_id]);
@@ -1738,7 +1745,7 @@ void copy_stream_lpn(AllData * ad, int tr_id, int base_tr_id)
 
 	vslCopyStream(&streams[tr_id], streams[base_tr_id]);
 
-	etas[tr_id] = etas[0];
+	etas[tr_id] = etas[base_tr_id];
 }
 
 void copy_trajectory_data(AllData * ad, int tr_id, int base_tr_id)
@@ -1753,7 +1760,7 @@ void copy_trajectory_data(AllData * ad, int tr_id, int base_tr_id)
 
 	double * etas = ed->etas_all;
 
-	etas[tr_id] = etas[0];
+	etas[tr_id] = etas[base_tr_id];
 
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
@@ -1786,7 +1793,7 @@ void var_trajectory_lpn(AllData * ad, CoreBehavior *cb, int tr_id, int base_tr_i
 	double lpn_delta_s = double(cp->params.find("lpn_delta_s")->second);
 
 	VSLStreamStatePtr * streams_var = ed->streams_var;
-	MKL_Complex16 * phi_original = &(ed->phi_all[0]);
+	MKL_Complex16 * phi_original = &(ed->phi_all[base_tr_id * sys_size]);
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 
 	MKL_Complex16 * phi_copy = new MKL_Complex16[sys_size];

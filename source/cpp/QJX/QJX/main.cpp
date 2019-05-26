@@ -62,7 +62,7 @@ int main()
 	else if (rp->task_id == LPN_MULT_TASK_ID)
 	{
 		ndb_exp = new LpnMultNewDelBehaviour();
-		eb = new StdExperimentBehaviour();
+		eb = new LpnMultExperimentBehaviour();
 	}
 	else if (rp->task_id == CD_TASK_ID)
 	{
