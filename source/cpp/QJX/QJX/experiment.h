@@ -19,6 +19,13 @@ public:
 	virtual void obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
+class LpnMultExperimentBehaviour: public ExperimentBehavior
+{
+public:
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+};
+
 class StdExperimentBehaviour : public ExperimentBehavior
 {
 public:
@@ -98,13 +105,13 @@ MKL_Complex16 get_num_photons_ps(AllData * ad, int tr_id);
 
 void resresh_times(AllData * ad, int tr_id);
 
-void copy_trajectory_lpn(AllData * ad, int tr_id);
+void copy_trajectory_lpn(AllData * ad, int tr_id, int base_tr_id);
 
-void copy_stream_lpn(AllData * ad, int tr_id);
+void copy_stream_lpn(AllData * ad, int tr_id, int base_tr_id);
 
-void copy_trajectory_data(AllData * ad, int tr_id);
+void copy_trajectory_data(AllData * ad, int tr_id, int base_tr_id);
 
-void var_trajectory_lpn(AllData * ad, CoreBehavior * cb, int tr_id);
+void var_trajectory_lpn(AllData * ad, CoreBehavior * cb, int tr_id, int base_tr_id);
 
 void var_first(
 	MKL_Complex16 * phi_var,
@@ -150,9 +157,9 @@ void only_orth(AllData * ad, CoreBehavior *cb, MKL_Complex16 * phi_var_all);
 
 void gs_orth_evo(AllData * ad, CoreBehavior *cb, MKL_Complex16 *phi_var_all);
 
-void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id);
+void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id, int base_tr_id);
 
-void lambda_lpn_per_periods(AllData * ad, CoreBehavior *cb, int tr_id, int num_steps_T, int curr_step, int num_periods);
+void lambda_lpn_per_periods(AllData * ad, CoreBehavior *cb, int tr_id, int base_tr_id, int num_steps_T, int curr_step, int num_periods);
 
 void lambda_lpn_all(AllData * ad, CoreBehavior *cb);
 
