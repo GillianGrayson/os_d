@@ -187,7 +187,7 @@ void DimerCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) con
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
-			calc_chars_lpn(ad, 0);
+			calc_chars_lpn(ad, 0, 0);
 			evo_chars_std(ad, 0, dump_id);
 			evo_chars_lpn(ad, 0, dump_id);
 
@@ -197,7 +197,7 @@ void DimerCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) con
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn(ad, tmp, tr_id);
+				lambda_lpn(ad, tmp, tr_id, 0);
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -251,7 +251,7 @@ void DimerCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, i
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
-			calc_chars_lpn(ad, 0);
+			calc_chars_lpn(ad, 0, 0);
 			evo_chars_std(ad, 0, dump_id);
 			evo_chars_lpn(ad, 0, dump_id);
 
@@ -261,7 +261,7 @@ void DimerCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, i
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn_per_periods(ad, tmp, tr_id, num_sub_steps, global_point_id, num_periods);
+				lambda_lpn_per_periods(ad, tmp, tr_id, 0, num_sub_steps, global_point_id, num_periods);
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -639,7 +639,7 @@ void DimerCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	ed->energy[tr_id] = energy;
 }
 
-void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
+void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -662,7 +662,7 @@ void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 	double mean_lpn = ed->mean[tr_id];
 	double energy_lpn = ed->energy[tr_id];
 
-	double delta_s = this->calc_delta_f(ad, tr_id); // Important! Here we use calc_delta_f not calc_delta_s
+	double delta_s = this->calc_delta_f(ad, tr_id, base_tr_id); // Important! Here we use calc_delta_f not calc_delta_s
 
 	ed->lambda[tr_id] = lambda;
 	ed->lambda_now[tr_id] = lambda_now;
@@ -671,7 +671,7 @@ void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 	ed->delta_s[tr_id] = delta_s;
 }
 
-void DimerCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id) const
+void DimerCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -728,7 +728,7 @@ void DimerCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) con
 	ed->energy_lpn_evo[index] = ed->energy_lpn[tr_id];
 }
 
-double DimerCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
+double DimerCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -741,11 +741,11 @@ double DimerCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 	double delta_s = 0.0;
 	if (lpn_type == 0)
 	{
-		delta_s = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[0]) / double(sys_size);
+		delta_s = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[base_tr_id]) / double(sys_size);
 	}
 	else if (lpn_type == 1)
 	{
-		delta_s = fabs(ed->energy_lpn[tr_id] - ed->energy_lpn[0]) / ed->max_energy;
+		delta_s = fabs(ed->energy_lpn[tr_id] - ed->energy_lpn[base_tr_id]) / ed->max_energy;
 	}
 	else
 	{
@@ -757,7 +757,7 @@ double DimerCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 	return delta_s;
 }
 
-double DimerCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
+double DimerCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -770,11 +770,11 @@ double DimerCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 	double delta_f = 0.0;
 	if (lpn_type == 0)
 	{
-		delta_f = fabs(ed->mean[tr_id] - ed->mean[0]) / double(sys_size);
+		delta_f = fabs(ed->mean[tr_id] - ed->mean[base_tr_id]) / double(sys_size);
 	}
 	else if (lpn_type == 1)
 	{
-		delta_f = fabs(ed->energy[tr_id] - ed->energy[0]) / ed->max_energy;
+		delta_f = fabs(ed->energy[tr_id] - ed->energy[base_tr_id]) / ed->max_energy;
 	}
 	else
 	{
@@ -1180,7 +1180,7 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
-			calc_chars_lpn(ad, 0);
+			calc_chars_lpn(ad, 0, 0);
 			evo_chars_std(ad, 0, dump_id);
 			evo_chars_lpn(ad, 0, dump_id);
 
@@ -1190,7 +1190,7 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn(ad, tmp, tr_id);
+				lambda_lpn(ad, tmp, tr_id,0);
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -1244,7 +1244,7 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
-			calc_chars_lpn(ad, 0);
+			calc_chars_lpn(ad, 0, 0);
 			evo_chars_std(ad, 0, dump_id);
 			evo_chars_lpn(ad, 0, dump_id);
 
@@ -1254,7 +1254,7 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn_per_periods(ad, tmp, tr_id, num_sub_steps, global_point_id, num_periods);
+				lambda_lpn_per_periods(ad, tmp, tr_id, 0, num_sub_steps, global_point_id, num_periods);
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -1452,7 +1452,7 @@ void JCSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	ed->mean[tr_id] = num_photons.real;
 }
 
-void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
+void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -1465,7 +1465,7 @@ void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 	MKL_Complex16 spec_lpn = ed->spec[tr_id];
 	double mean_lpn = ed->mean[tr_id];
 
-	double delta_s = this->calc_delta_f(ad, tr_id); // Important! Here we use calc_delta_f not calc_delta_s
+	double delta_s = this->calc_delta_f(ad, tr_id, base_tr_id); // Important! Here we use calc_delta_f not calc_delta_s
 
 	ed->lambda[tr_id] = lambda;
 	ed->lambda_now[tr_id] = lambda_now;
@@ -1475,7 +1475,7 @@ void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 	ed->mean_lpn[tr_id] = mean_lpn;
 }
 
-void JCSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id) const
+void JCSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -1518,7 +1518,7 @@ void JCSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
 	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
 }
 
-double JCSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
+double JCSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -1531,14 +1531,14 @@ double JCSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 	double delta_s = 0.0;
 	if (lpn_type == 0)
 	{
-		MKL_Complex16 base = ed->spec_lpn[0];
+		MKL_Complex16 base = ed->spec_lpn[base_tr_id];
 		MKL_Complex16 var = ed->spec_lpn[tr_id];
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_s = sqrt(tmp);
 	}
 	else if (lpn_type == 1)
 	{
-		double base = ed->mean_lpn[0];
+		double base = ed->mean_lpn[base_tr_id];
 		double var = ed->mean_lpn[tr_id];
 		delta_s = fabs(var - base) / double(sys_size);
 	}
@@ -1552,7 +1552,7 @@ double JCSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 	return delta_s;
 }
 
-double JCSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
+double JCSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -1565,14 +1565,14 @@ double JCSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 	double delta_f = 0.0;
 	if (lpn_type == 0)
 	{
-		MKL_Complex16 base = ed->spec[0];
+		MKL_Complex16 base = ed->spec[base_tr_id];
 		MKL_Complex16 var = ed->spec[tr_id];
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_f = sqrt(tmp);
 	}
 	else if (lpn_type == 1)
 	{
-		double base = ed->mean[0];
+		double base = ed->mean[base_tr_id];
 		double var = ed->mean[tr_id];
 		delta_f = fabs(var - base) / double(sys_size);
 	}
@@ -1940,7 +1940,7 @@ void PSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
-			calc_chars_lpn(ad, 0);
+			calc_chars_lpn(ad, 0, 0);
 			evo_chars_std(ad, 0, dump_id);
 			evo_chars_lpn(ad, 0, dump_id);
 
@@ -1950,7 +1950,7 @@ void PSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn(ad, tmp, tr_id);
+				lambda_lpn(ad, tmp, tr_id, 0);
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -2004,7 +2004,7 @@ void PSCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int 
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
-			calc_chars_lpn(ad, 0);
+			calc_chars_lpn(ad, 0, 0);
 			evo_chars_std(ad, 0, dump_id);
 			evo_chars_lpn(ad, 0, dump_id);
 
@@ -2014,7 +2014,7 @@ void PSCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int 
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn_per_periods(ad, tmp, tr_id, num_sub_steps, global_point_id, num_periods);
+				lambda_lpn_per_periods(ad, tmp, tr_id, 0, num_sub_steps, global_point_id, num_periods);
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -2220,7 +2220,7 @@ void PSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	ed->mean[tr_id] = num_photons.real;
 }
 
-void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
+void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -2235,7 +2235,7 @@ void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 	MKL_Complex16 spec_3_lpn = ed->spec_3[tr_id];
 	double mean_lpn = ed->mean[tr_id];
 
-	double delta_s = this->calc_delta_f(ad, tr_id); // Important! Here we use calc_delta_f not calc_delta_s
+	double delta_s = this->calc_delta_f(ad, tr_id, base_tr_id); // Important! Here we use calc_delta_f not calc_delta_s
 
 	ed->lambda[tr_id] = lambda;
 	ed->lambda_now[tr_id] = lambda_now;
@@ -2247,7 +2247,7 @@ void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id) const
 	ed->mean_lpn[tr_id] = mean_lpn;
 }
 
-void PSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id) const
+void PSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -2298,7 +2298,7 @@ void PSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
 	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
 }
 
-double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
+double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -2311,14 +2311,14 @@ double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 	double delta_s = 0.0;
 	if (lpn_type == 0)
 	{
-		MKL_Complex16 base = ed->spec_lpn[0];
+		MKL_Complex16 base = ed->spec_lpn[base_tr_id];
 		MKL_Complex16 var = ed->spec_lpn[tr_id];
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_s = sqrt(tmp);
 	}
 	else if (lpn_type == 1)
 	{
-		double base = ed->mean_lpn[0];
+		double base = ed->mean_lpn[base_tr_id];
 		double var = ed->mean_lpn[tr_id];
 		delta_s = fabs(var - base) / double(sys_size);
 	}
@@ -2332,7 +2332,7 @@ double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id) const
 	return delta_s;
 }
 
-double PSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
+double PSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -2345,14 +2345,14 @@ double PSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id) const
 	double delta_f = 0.0;
 	if (lpn_type == 0)
 	{
-		MKL_Complex16 base = ed->spec[0];
+		MKL_Complex16 base = ed->spec[base_tr_id];
 		MKL_Complex16 var = ed->spec[tr_id];
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_f = sqrt(tmp);
 	}
 	else if (lpn_type == 1)
 	{
-		double base = ed->mean[0];
+		double base = ed->mean[base_tr_id];
 		double var = ed->mean[tr_id];
 		delta_f = fabs(var - base) / double(sys_size);
 	}

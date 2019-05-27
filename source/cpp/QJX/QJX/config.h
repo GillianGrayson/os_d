@@ -23,6 +23,7 @@
 #define JCS_SYS_ID 1
 #define PS_SYS_ID 2
 
+#define LPN_MULT_TASK_ID 7
 #define LPN_TASK_ID 0
 #define STD_TASK_ID 1
 #define CD_TASK_ID 2

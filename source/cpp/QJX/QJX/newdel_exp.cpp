@@ -26,6 +26,40 @@ void LpnNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb, CoreBeh
 	free_obs_lpn(ad);
 }
 
+void LpnMultNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
+{
+	int num_trajectories = ad->cp->num_trajectories;
+
+	pb->init_prop_data(ad, cb);
+	init_streams(ad);
+	copy_half_streams(ad);
+	for (int tr_id = 0; tr_id < num_trajectories / 2; tr_id++)
+	{
+		leap_frog_single_stream(ad, tr_id);
+	}
+	init_streams_var(ad);
+	init_basic_data(ad);
+	init_dump_periods(ad);
+	init_obs_std(ad);
+	init_obs_lpn(ad);
+
+	for (int tr_id = 0; tr_id < num_trajectories / 2; tr_id++)
+	{
+		init_start_state(ad, tr_id);
+	}
+}
+
+void LpnMultNewDelBehaviour::free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
+{
+	pb->free_prop_data(ad, cb);
+	free_streams(ad);
+	free_streams_var(ad);
+	free_basic_data(ad);
+	free_dump_priods(ad);
+	free_obs_std(ad);
+	free_obs_lpn(ad);
+}
+
 void StdNewDelBehaviour::init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	ConfigParam * cp = ad->cp;
@@ -221,6 +255,21 @@ void copy_streams(AllData * ad)
 	int mns = cp->mns;
 
 	for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+	{
+		vslCopyStream(&(ed->streams)[tr_id], (ed->streams)[0]);
+	}
+}
+
+void copy_half_streams(AllData * ad)
+{
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int seed = cp->seed;
+	int mns = cp->mns;
+
+	for (int tr_id = 1; tr_id < num_trajectories / 2; tr_id++)
 	{
 		vslCopyStream(&(ed->streams)[tr_id], (ed->streams)[0]);
 	}
