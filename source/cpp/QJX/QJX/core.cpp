@@ -696,6 +696,13 @@ void DimerCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id)
 	ed->energy_lpn[tr_id] = energy_lpn;
 }
 
+double DimerCoreBehaviour::calc_T(AllData * ad) const
+{
+	MainData * md = ad->md;
+	double T = md->T;
+	return T;
+}
+
 void DimerCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
 {
 	ConfigParam * cp = ad->cp;
@@ -1151,6 +1158,12 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
+	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
+	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);
+	double T_1 = jcs_drv_part_1 * md->T;
+	double T_2 = jcs_drv_part_2 * md->T;
+	double T = T_1 + T_2;
+
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_trajectories = cp->num_trajectories;
@@ -1176,7 +1189,7 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 			dump_point_id++;
 			int dump_id = global_point_id + 1;
 
-			ed->curr_time = double(dump_id) / double(num_sub_steps) * md->T;
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * T;
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
@@ -1215,6 +1228,12 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
+	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
+	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);
+	double T_1 = jcs_drv_part_1 * md->T;
+	double T_2 = jcs_drv_part_2 * md->T;
+	double T = T_1 + T_2;
+
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_trajectories = cp->num_trajectories;
@@ -1240,7 +1259,7 @@ void JCSCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int
 			dump_point_id++;
 			int dump_id = global_point_id + 1;
 
-			ed->curr_time = double(dump_id) / double(num_sub_steps) * md->T;
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * T;
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
@@ -1488,6 +1507,20 @@ void JCSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) c
 
 	ed->spec_lpn[tr_id] = spec_lpn;
 	ed->mean_lpn[tr_id] = mean_lpn;
+}
+
+double JCSCoreBehaviour::calc_T(AllData * ad) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
+	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);
+	double T_1 = jcs_drv_part_1 * md->T;
+	double T_2 = jcs_drv_part_2 * md->T;
+	double T = T_1 + T_2;
+
+	return T;
 }
 
 void JCSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
@@ -1911,6 +1944,12 @@ void PSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
+	double ps_drv_part_1 = double(cp->params.find("ps_drv_part_1")->second);
+	double ps_drv_part_2 = double(cp->params.find("ps_drv_part_2")->second);
+	double T_1 = ps_drv_part_1 * md->T;
+	double T_2 = ps_drv_part_2 * md->T;
+	double T = T_1 + T_2;
+
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_trajectories = cp->num_trajectories;
@@ -1936,7 +1975,7 @@ void PSCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
 			dump_point_id++;
 			int dump_id = global_point_id + 1;
 
-			ed->curr_time = double(dump_id) / double(num_sub_steps) * md->T;
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * T;
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
@@ -1975,6 +2014,12 @@ void PSCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int 
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
+	double ps_drv_part_1 = double(cp->params.find("ps_drv_part_1")->second);
+	double ps_drv_part_2 = double(cp->params.find("ps_drv_part_2")->second);
+	double T_1 = ps_drv_part_1 * md->T;
+	double T_2 = ps_drv_part_2 * md->T;
+	double T = T_1 + T_2;
+
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_trajectories = cp->num_trajectories;
@@ -2000,7 +2045,7 @@ void PSCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int 
 			dump_point_id++;
 			int dump_id = global_point_id + 1;
 
-			ed->curr_time = double(dump_id) / double(num_sub_steps) * md->T;
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * T;
 
 			one_sub_period_deep(ad, 0, part_id, 0);
 			calc_chars_std(ad, 0);
@@ -2264,6 +2309,20 @@ void PSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) co
 	ed->spec_2_lpn[tr_id] = spec_2_lpn;
 	ed->spec_3_lpn[tr_id] = spec_3_lpn;
 	ed->mean_lpn[tr_id] = mean_lpn;
+}
+
+double PSCoreBehaviour::calc_T(AllData * ad) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	double ps_drv_part_1 = double(cp->params.find("ps_drv_part_1")->second);
+	double ps_drv_part_2 = double(cp->params.find("ps_drv_part_2")->second);
+	double T_1 = ps_drv_part_1 * md->T;
+	double T_2 = ps_drv_part_2 * md->T;
+	double T = T_1 + T_2;
+
+	return T;
 }
 
 void PSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const

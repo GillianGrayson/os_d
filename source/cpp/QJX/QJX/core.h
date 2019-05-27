@@ -31,6 +31,8 @@ public:
 	virtual void calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const = 0;
 	virtual void calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const = 0;
 
+	virtual double calc_T(AllData * ad) const = 0;
+
 	virtual void evo_chars_std(AllData * ad, int tr_id, int dump_id) const = 0;
 	virtual void evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const = 0;
 
@@ -73,6 +75,8 @@ public:
 	virtual void calc_chars_std(AllData * ad, int tr_id) const;
 	virtual void calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const;
 	virtual void calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const;
+
+	virtual double calc_T(AllData * ad) const;
 
 	virtual void evo_chars_std(AllData * ad, int tr_id, int dump_id) const;
 	virtual void evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const;
@@ -117,6 +121,8 @@ public:
 	virtual void calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const;
 	virtual void calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const;
 
+	virtual double calc_T(AllData * ad) const;
+
 	virtual void evo_chars_std(AllData * ad, int tr_id, int dump_id) const;
 	virtual void evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const;
 
@@ -159,6 +165,8 @@ public:
 	virtual void calc_chars_std(AllData * ad, int tr_id) const;
 	virtual void calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const;
 	virtual void calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const;
+
+	virtual double calc_T(AllData * ad) const;
 
 	virtual void evo_chars_std(AllData * ad, int tr_id, int dump_id) const;
 	virtual void evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const;

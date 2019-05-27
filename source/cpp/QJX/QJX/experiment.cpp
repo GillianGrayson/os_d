@@ -89,7 +89,7 @@ void LpnExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb,
 
 			cb->calc_chars_lpn(ad, 0, 0);
 
-			ed->curr_time = (period_id + 1) * md->T;
+			ed->curr_time = (period_id + 1) * cb->calc_T(ad);
 
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -235,7 +235,7 @@ void LpnMultExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 				cb->calc_chars_lpn(ad, tr_id, tr_id);
 			}
 
-			ed->curr_time = (period_id + 1) * md->T;
+			ed->curr_time = (period_id + 1) * cb->calc_T(ad);
 
 #pragma omp parallel for
 			for (int tr_id = num_trajectories / 2; tr_id < num_trajectories; tr_id++)
@@ -1053,7 +1053,7 @@ void LpnAllExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * 
 
 			cb->calc_chars_lpn(ad, 0, 0);
 
-			ed->curr_time = (period_id + 1) * md->T;
+			ed->curr_time = (period_id + 1) * cb->calc_T(ad);
 
 			lambda_lpn_all(ad, cb);
 		}
