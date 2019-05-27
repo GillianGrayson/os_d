@@ -66,7 +66,8 @@ void JCSNewDelBehaviour::init_sizes(AllData * ad) const
 	int N = int(cp->params.find("N")->second);
 	double jcs_drv_part_1 = double(cp->params.find("jcs_drv_part_1")->second);
 	double jcs_drv_part_2 = double(cp->params.find("jcs_drv_part_2")->second);
-	double T = double(cp->params.find("jcs_prm_alpha")->second) * (jcs_drv_part_1 + jcs_drv_part_2);
+	//double T = double(cp->params.find("jcs_prm_alpha")->second) * (jcs_drv_part_1 + jcs_drv_part_2);
+	double T = double(cp->params.find("jcs_prm_alpha")->second);
 
 	md->sys_size = N;
 	md->num_diss = 1;
@@ -107,7 +108,8 @@ void PSNewDelBehaviour::init_sizes(AllData * ad) const
 
 	double ps_drv_part_1 = double(cp->params.find("ps_drv_part_1")->second);
 	double ps_drv_part_2 = double(cp->params.find("ps_drv_part_2")->second);
-	double T = double(cp->params.find("ps_prm_alpha")->second) * (ps_drv_part_1 + ps_drv_part_2);
+	//double T = double(cp->params.find("ps_prm_alpha")->second) * (ps_drv_part_1 + ps_drv_part_2);
+	double T = double(cp->params.find("ps_prm_alpha")->second);
 
 	md->sys_size = ps_num_photons_states * std::round(std::pow(2, num_spins));
 	cout << "sys_size: " << md->sys_size << endl;
