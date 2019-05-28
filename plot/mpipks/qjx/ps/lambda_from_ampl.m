@@ -10,34 +10,38 @@ task_id = 7;
 prop_id = 0; 
 seed = 0; 
 mns = 1000000;
-num_trajectories = 50;
+num_trajectories = 20;
 num_tp_periods = 100;
 num_obs_periods = 100; 
 ex_deep = 16;
 rk_ns = 10000;
+
+T = 1;
 
 diss_type = 1;
 ps_diss_w = 0.05;
 ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 200;
-ps_drv_part_1 = 0.98;
-ps_drv_part_2 = 1.00;
+ps_drv_part_1 = 0.98 * T;
+ps_drv_part_2 = 1.00 * T;
 ps_prm_alpha = 5;
-ps_prm_d = 0.;
-ps_prm_g = 0.;
+ps_prm_d = 4.0;
+ps_prm_g = 4.0;
 start_type = 0;
 start_state = 0;
 
 num_runs = 1;
 
-num_points = 100;
-lambdas = zeros(num_points, 1);
-params = zeros(num_points, 1);
-for param_id = 1:num_points
+ampl_begin = 0.05;
+ampl_step = 0.05;
+ampl_num = 100;
+ampls = linspace(ampl_begin, ampl_begin + (ampl_num - 1) * ampl_step, ampl_num);
+
+lambdas = zeros(ampl_num, 1);
+for ampl_id = 1:ampl_num
     
-    ps_drv_ampl = 0.05 + (param_id - 1) * 0.05
-    params(param_id) = ps_drv_ampl;
+    ampl = ampl_begin + (ampl_id - 1) * ampl_step
     
     for run_id = 1:num_runs
         
@@ -58,7 +62,7 @@ for param_id = 1:num_points
             ps_diss_w, ...
             ps_drv_part_1, ...
             ps_drv_part_2, ...
-            ps_drv_ampl, ...
+            ampl, ...
             ps_prm_alpha, ...
             ps_prm_d, ...
             ps_prm_g, ...
@@ -75,7 +79,7 @@ for param_id = 1:num_points
             ps_diss_w, ...
             ps_drv_part_1, ...
             ps_drv_part_2, ...
-            ps_drv_ampl, ...
+            ampl, ...
             ps_prm_alpha, ...
             ps_prm_d, ...
             ps_prm_g, ...
@@ -85,16 +89,15 @@ for param_id = 1:num_points
         path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
         data = importdata(path);
         
-        lambdas(param_id) = lambdas(param_id) + mean(data(num_trajectories / 2 + 1:end));
+        lambdas(ampl_id) = lambdas(ampl_id) + mean(data(num_trajectories / 2 + 1:end));
     end
     
-    lambdas(param_id) = lambdas(param_id) / num_runs;
-    
+    lambdas(ampl_id) = lambdas(ampl_id) / num_runs;
     
 end
 
 fig = figure;
-hLine = plot(params, lambdas);
+hLine = plot(ampls, lambdas);
 set(gca, 'FontSize', 30);
 xlabel('$A$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
