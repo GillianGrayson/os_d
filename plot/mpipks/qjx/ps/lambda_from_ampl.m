@@ -6,11 +6,11 @@ data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
 
 
 sys_id = 2; 
-task_id = 0; 
+task_id = 7; 
 prop_id = 0; 
 seed = 0; 
 mns = 1000000;
-num_trajectories = 100;
+num_trajectories = 50;
 num_tp_periods = 100;
 num_obs_periods = 100; 
 ex_deep = 16;
@@ -23,14 +23,13 @@ ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 200;
 ps_drv_part_1 = 0.98;
 ps_drv_part_2 = 1.00;
-ps_drv_ampl = 3.2;
 ps_prm_alpha = 5;
 ps_prm_d = 0.;
 ps_prm_g = 0.;
 start_type = 0;
 start_state = 0;
 
-num_runs = 10;
+num_runs = 1;
 
 num_points = 100;
 lambdas = zeros(num_points, 1);
@@ -86,7 +85,7 @@ for param_id = 1:num_points
         path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
         data = importdata(path);
         
-        lambdas(param_id) = lambdas(param_id) + mean(data(2:end));
+        lambdas(param_id) = lambdas(param_id) + mean(data(num_trajectories / 2 + 1:end));
     end
     
     lambdas(param_id) = lambdas(param_id) / num_runs;

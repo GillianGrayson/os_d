@@ -1,56 +1,47 @@
 clear all;
 
-home_figures_path = '/home/yusipov/Work/os_d/figures';
+home_figures_path = '/home/denysov/yusipov/os_d/figures';
 
-data_path = '/data/biophys/yusipov/os_d';
-prefix = 'qjx_results';
+data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
 
-data_path = sprintf('%s/%s', data_path, prefix);
 
 sys_id = 1; 
-task_id = 0; 
+task_id = 7; 
 prop_id = 0; 
 seed = 0; 
 mns = 1000000;
-num_trajectories = 100;
-num_tp_periods = 1001;
-num_obs_periods = 1001; 
+num_trajectories = 50;
+num_tp_periods = 100;
+num_obs_periods = 100; 
 ex_deep = 16;
 rk_ns = 10000;
  
 T = 1.0;
  
 N = 200; 
-diss_type = 0; 
+diss_type = 1; 
 diss_gamma = 0.1; 
 diss_phase = 0; 
 jcs_drv_part_1 = 0.98 * T; 
 jcs_drv_part_2 = 1.0 * T;
-jcs_drv_ampl = 0.1; 
 jcs_prm_alpha = 5; 
 start_type = 0; 
 start_state = 0; 
 
-sys_size = N;
 
 num_runs = 1;
 
-ampl_begin = 0.025;
-ampl_step = 0.025;
-ampl_num = 200;
+ampl_begin = 0.05;
+ampl_step = 0.05;
+ampl_num = 100;
 ampls = zeros(ampl_num, 1);
-
 lambdas = zeros(ampl_num, 1);
-dump_id = 2;
-
 
 for ampl_id = 1:ampl_num
 	
 	ampl_id = ampl_id
 	ampl = ampl_begin + ampl_step * (ampl_id - 1);
 	ampls(ampl_id) = ampl;
-
-	lambda_avg_curr = 0;
 	
 	for run_id = 1:num_runs
         
@@ -77,10 +68,7 @@ for ampl_id = 1:ampl_num
             start_state, ...
             ss);
         
-        suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)', ...
-            sys_id, ...
-			task_id, ...
-			prop_id, ...
+        suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)', ...
 			ss, ...
             mns, ...
             N, ...
@@ -95,30 +83,24 @@ for ampl_id = 1:ampl_num
             start_state);
        
       
-		path = sprintf('%s/lambda_evo_%s.txt', path_to_folder, suffix);
+		path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
 		data = importdata(path);
 		
-		for tr_id = 2:num_trajectories
-			lambda_avg_curr = lambda_avg_curr + data(dump_id, tr_id);
-		end
+		lambdas(ampl_id) = lambdas(ampl_id) + mean(data(num_trajectories / 2 + 1:end));
 
 	end
 	
-	lambda_avg_curr = lambda_avg_curr / (num_runs * (num_trajectories - 1));
-	lambdas(ampl_id) = lambda_avg_curr;
+	lambdas(ampl_id) = lambdas(ampl_id) / num_runs;
     
 end
 
-suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)', ...
+suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)', ...
             sys_id, ...
 			task_id, ...
 			prop_id, ...
 			ss, ...
             mns, ...
             N, ...
-            diss_type, ...
-            diss_gamma, ...
-            diss_phase, ...
 			jcs_drv_part_1, ...
             jcs_drv_part_2, ...
             jcs_prm_alpha, ...
@@ -128,7 +110,7 @@ suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.
 fig = figure;
 hLine = plot(ampls, lambdas);
 set(gca, 'FontSize', 30);
-xlabel('$f_0$', 'Interpreter', 'latex');
+xlabel('$A$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$\lambda$', 'Interpreter', 'latex');
 
