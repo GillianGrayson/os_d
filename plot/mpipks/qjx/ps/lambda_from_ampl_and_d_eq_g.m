@@ -38,7 +38,7 @@ ampls = linspace(ampl_begin, ampl_begin + (ampl_num - 1) * ampl_step, ampl_num);
 
 dg_begin = 0.0;
 dg_step = 0.1;
-dg_num = 50;
+dg_num = 100;
 dgs = linspace(dg_begin, dg_begin + (dg_num - 1) * dg_step, dg_num);
 
 lambdas = zeros(ampl_num, dg_num);

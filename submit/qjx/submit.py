@@ -23,7 +23,7 @@ ampl_num = 100
 
 d_start = 0.0
 d_shift = 0.1
-d_num = 60
+d_num = 100
 
 g_start = 0.0
 g_shift = 0.1
