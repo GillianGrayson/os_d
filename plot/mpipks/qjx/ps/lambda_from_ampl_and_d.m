@@ -4,7 +4,6 @@ home_figures_path = '/home/denysov/yusipov/os_d/figures';
 
 data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
 
-
 sys_id = 2;
 task_id = 7;
 prop_id = 0;
@@ -16,7 +15,8 @@ num_obs_periods = 100;
 ex_deep = 16;
 rk_ns = 10000;
 
-T = 2;
+T = 1;
+g = 1;
 
 diss_type = 1;
 ps_diss_w = 0.05;
@@ -36,16 +36,16 @@ ampl_step = 0.05;
 ampl_num = 100;
 ampls = linspace(ampl_begin, ampl_begin + (ampl_num - 1) * ampl_step, ampl_num);
 
-dg_begin = 0.0;
-dg_step = 0.1;
-dg_num = 100;
-dgs = linspace(dg_begin, dg_begin + (dg_num - 1) * dg_step, dg_num);
+d_begin = 0.0;
+d_step = 0.1;
+d_num = 100;
+ds = linspace(d_begin, d_begin + (d_num - 1) * d_step, d_num);
 
-lambdas = zeros(ampl_num, dg_num);
+lambdas = zeros(ampl_num, d_num);
 
-for dg_id = 1:dg_num
+for d_id = 1:d_num
     
-    dg = dg_begin + (dg_id - 1) * dg_step
+    d = d_begin + (d_id - 1) * d_step
     
     for ampl_id = 1:ampl_num
         
@@ -72,8 +72,8 @@ for dg_id = 1:dg_num
                 ps_drv_part_2, ...
                 ampl, ...
                 ps_prm_alpha, ...
-                dg, ...
-                dg, ...
+                d, ...
+                g, ...
                 start_type, ...
                 start_state, ...
                 ss);
@@ -89,15 +89,15 @@ for dg_id = 1:dg_num
                 ps_drv_part_2, ...
                 ampl, ...
                 ps_prm_alpha, ...
-                dg, ...
-                dg, ...
+                d, ...
+                g, ...
                 start_type, ...
                 start_state);
             
             path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
             data = importdata(path);
             
-            lambdas(ampl_id, dg_id) = lambdas(ampl_id, dg_id) + mean(data(num_trajectories / 2 + 1:end));
+            lambdas(ampl_id, d_id) = lambdas(ampl_id, d_id) + mean(data(num_trajectories / 2 + 1:end));
         end
     end  
 end
@@ -105,24 +105,25 @@ end
 lambdas = lambdas / num_runs;
 
 fig = figure;
-hLine = imagesc(ampls, dgs, lambdas');
+hLine = imagesc(ampls, ds, lambdas');
 set(gca, 'FontSize', 30);
 xlabel('$A$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$d=g$', 'Interpreter', 'latex');
+ylabel('$d$', 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);
 title(h, '\lambda');
 set(gca,'YDir','normal');
 
-suffix = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_var)_prm(%0.4f_var_var)", ...
+suffix = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_var)_prm(%0.4f_var_%0.4f)", ...
     ps_num_spins, ...
     ps_num_photons_states, ...
     diss_type, ...
     ps_diss_w, ...
     ps_drv_part_1, ...
     ps_drv_part_2, ...
-    ps_prm_alpha);
+    ps_prm_alpha, ...
+    g);
 
-savefig(sprintf('%s/lambda_from_ampl_and_d_eq_g_%s.fig', home_figures_path, suffix));
+savefig(sprintf('%s/lambda_from_ampl_and_d_%s.fig', home_figures_path, suffix));
