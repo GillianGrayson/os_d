@@ -1,8 +1,8 @@
 clear all;
 
-tr_id = 3;
+tr_id = 5;
 
-seed = 1;
+seed = 10;
 num_seeds = 1000000;
 
 N = 200;
@@ -10,11 +10,11 @@ diss_type = 0;
 diss_gamma = 0.1;
 diss_phase = 0.0;
 
-T_part = 0.05;
+T_part = 2.00;
 
-drv_T_1 = 0.98 * T_part;
+drv_T_1 = 1.00 * T_part;
 drv_T_2 = 1.00 * T_part;
-drv_A = 0.05;
+drv_A = 4.0;
 
 prm_alpha = 5.0;
 
@@ -24,7 +24,7 @@ start_state = 0;
 T = drv_T_1 + drv_T_2;
 
 cd_dump_deep = 1;
-cd_num_sub_steps = 10;
+cd_num_sub_steps = 20;
 
 data_path = '../../../../source/cpp/QJX/QJX';
 
