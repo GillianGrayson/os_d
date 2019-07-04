@@ -10,20 +10,22 @@ task_id = 1;
 prop_id = 0; 
 seed = 0; 
 mns = 1000000;
-num_trajectories = 1;
+num_trajectories = 10;
 num_tp_periods = 100;
-num_obs_periods = 1000; 
+num_obs_periods = 100; 
 ex_deep = 16;
 rk_ns = 10000;
+
+T = 1.0;
 
 diss_type = 1;
 ps_diss_w = 0.05;
 ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 200;
-ps_drv_part_1 = 0.98;
-ps_drv_part_2 = 1.00;
-ps_drv_ampl = 2.5;
+ps_drv_part_1 = 1.00 * T;
+ps_drv_part_2 = 1.00 * T;
+ps_drv_ampl = 0.25;
 ps_prm_alpha = 5;
 start_type = 0;
 start_state = 0;
@@ -32,7 +34,7 @@ num_runs = 10;
 
 num_bins = 200;
 
-num_points = 101;
+num_points = 100;
 params = zeros(num_points, 1);
 theta_re = zeros(num_points, num_bins);
 theta_im = zeros(num_points, num_bins);

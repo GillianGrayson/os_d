@@ -16,14 +16,14 @@ num_obs_periods = 100;
 ex_deep = 16;
 rk_ns = 10000;
 
-T = 2;
+T = 1;
 
 diss_type = 1;
 ps_diss_w = 0.05;
 ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 200;
-ps_drv_part_1 = 0.98 * T;
+ps_drv_part_1 = 1.00 * T;
 ps_drv_part_2 = 1.00 * T;
 ps_prm_alpha = 5;
 start_type = 0;

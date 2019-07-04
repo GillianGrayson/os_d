@@ -4,7 +4,7 @@ import os.path
 
 type = FSType.mpipks_sd
 
-num_runs = 1
+num_runs = 10
 
 eps_start = 1.0e-8
 eps_shift = 0.1
@@ -17,21 +17,21 @@ dimer_U_start = 0.01
 dimer_U_shift = 0.01
 dimer_U_num = 1
 
-ampl_start = 0.05
+ampl_start = 1.75
 ampl_shift = 0.05
-ampl_num = 100
+ampl_num = 1
 
 d_start = 0.0
 d_shift = 0.1
-d_num = 1
+d_num = 100
 
-g_start = 0.0
+g_start = 1.0
 g_shift = 0.1
 g_num = 1
 
-T_start = 0.05
+T_start = 1.0
 T_shift = 0.05
-T_num = 100
+T_num = 1
 
 for eps_id in range(0, eps_num):
 
@@ -53,9 +53,9 @@ for eps_id in range(0, eps_num):
                         d = d_start + d_id * d_shift
 
                         for g_id in range(0, g_num):
-                            g = g_start + g_id * g_shift
+                            #g = g_start + g_id * g_shift
 
-                            #g = d
+                            g = d
 
                             print('eps: ' + str(eps))
                             print('dim: ' + str(dim))
@@ -65,7 +65,7 @@ for eps_id in range(0, eps_num):
                             print('g: ' + str(g))
 
                             sys_id = 2
-                            task_id = 7
+                            task_id = 1
                             prop_id = 0
                             is_debug = 0
                             is_pp = 1
@@ -74,7 +74,7 @@ for eps_id in range(0, eps_num):
                             seed = 0
                             mns = 1000000
                             num_threads = 1
-                            num_trajectories = 20
+                            num_trajectories = 10
                             num_tp_periods = 100
                             num_obs_periods = 100
                             ex_deep = 16
@@ -95,10 +95,10 @@ for eps_id in range(0, eps_num):
                             dump_phi_evo = 0
                             dump_adr_sep = 0
                             dump_adr_avg = 0
-                            dump_evo_sep = 0
+                            dump_evo_sep = 1
                             dump_evo_avg = 0
                             dump_type = 0
-                            dump_num = 1
+                            dump_num = 100
                             N = 200
                             diss_type = 1
                             diss_gamma = 0.1
@@ -113,13 +113,13 @@ for eps_id in range(0, eps_num):
                             jcs_drv_part_1 = 1.00 * T
                             jcs_drv_part_2 = 1.00 * T
                             jcs_drv_ampl = ampl
-                            jcs_prm_alpha = 1.0
+                            jcs_prm_alpha = 5.0
                             ps_num_spins = 1
                             ps_num_photons_states = 200
                             ps_drv_part_1 = 1.00 * T
                             ps_drv_part_2 = 1.00 * T
                             ps_drv_ampl = ampl
-                            ps_prm_alpha = 5
+                            ps_prm_alpha = 5.0
                             ps_prm_d = d
                             ps_prm_g = g
                             ps_diss_w = 0.05
