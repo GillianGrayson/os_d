@@ -98,7 +98,7 @@ void set_param(RunParam * rp, ConfigParam * cp, string str, string val)
 	}
 }
 
-void init_params(RunParam *rp, ConfigParam *cp, char * fn_config, char * fn_param)
+void init_params(RunParam *rp, ConfigParam *cp, const char * fn_config, const char * fn_param)
 {
 	string line;
 	ifstream config_file(fn_config);

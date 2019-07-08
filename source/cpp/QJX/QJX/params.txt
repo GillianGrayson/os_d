@@ -16,7 +16,7 @@ dump_adr_avg 0
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
-dump_num 100
+dump_num 10
 N 200
 diss_type 0
 diss_gamma 0.1
