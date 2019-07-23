@@ -17,19 +17,19 @@ dimer_U_start = 0.01
 dimer_U_shift = 0.01
 dimer_U_num = 1
 
-ampl_start = 1.75
+ampl_start = 0.4
 ampl_shift = 0.05
 ampl_num = 1
 
-d_start = 0.0
+d_start = 1.0
 d_shift = 0.1
-d_num = 100
+d_num = 1
 
-g_start = 1.0
+g_start = 0.0
 g_shift = 0.1
-g_num = 1
+g_num = 100
 
-T_start = 1.0
+T_start = 2.0
 T_shift = 0.05
 T_num = 1
 
@@ -53,9 +53,9 @@ for eps_id in range(0, eps_num):
                         d = d_start + d_id * d_shift
 
                         for g_id in range(0, g_num):
-                            #g = g_start + g_id * g_shift
+                            g = g_start + g_id * g_shift
 
-                            g = d
+                            #g = d
 
                             print('eps: ' + str(eps))
                             print('dim: ' + str(dim))

@@ -25,7 +25,7 @@ ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 200;
 ps_drv_part_1 = 1.00 * T;
 ps_drv_part_2 = 1.00 * T;
-ps_drv_ampl = 0.25;
+ps_drv_ampl = 1.75;
 ps_prm_alpha = 5;
 start_type = 0;
 start_state = 0;
@@ -267,10 +267,10 @@ suffix_save = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%
 	ps_drv_ampl, ...
 	ps_prm_alpha);
 
-savefig(sprintf('%s/observables_from_d_and_g_%s.fig', home_figures_path, suffix_save));
+savefig(sprintf('%s/observables_from_d_eq_g_%s.fig', home_figures_path, suffix_save));
 
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('%s/observables_from_d_and_g_%s.pdf', home_figures_path, suffix_save));
+print(gcf, '-dpdf', sprintf('%s/observables_from_d_eq_g_%s.pdf', home_figures_path, suffix_save));

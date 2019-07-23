@@ -15,16 +15,17 @@ num_obs_periods = 100;
 ex_deep = 16;
 rk_ns = 10000;
 
-d = 0;
-g = 0;
+is_trans = 1;
+d = 1;
+T = 2;
 
 diss_type = 1;
 ps_diss_w = 0.05;
 ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 200;
-drv_part_1 = 1.0;
-drv_part_2 = 1.0;
+ps_drv_part_1 = 1.00 * T;
+ps_drv_part_2 = 1.00 * T;
 ps_prm_alpha = 5;
 start_type = 0;
 start_state = 0;
@@ -36,19 +37,16 @@ ampl_step = 0.05;
 ampl_num = 100;
 ampls = linspace(ampl_begin, ampl_begin + (ampl_num - 1) * ampl_step, ampl_num);
 
-T_begin = 0.05;
-T_step = 0.05;
-T_num = 100;
-Ts = linspace(T_begin * (drv_part_1 + drv_part_2) * ps_prm_alpha, (T_begin + (T_num - 1) * T_step) * (drv_part_1 + drv_part_2) * ps_prm_alpha, T_num);
+g_begin = 0.0;
+g_step = 0.1;
+g_num = 100;
+gs = linspace(g_begin, g_begin + (g_num - 1) * g_step, g_num);
 
-lambdas = zeros(ampl_num, T_num);
+lambdas = zeros(ampl_num, g_num);
 
-for T_id = 1:T_num
+for g_id = 1:g_num
     
-    T = T_begin + (T_id - 1) * T_step
-    
-    ps_drv_part_1 = drv_part_1 * T;
-    ps_drv_part_2 = drv_part_2 * T;
+    g = g_begin + (g_id - 1) * g_step
     
     for ampl_id = 1:ampl_num
         
@@ -100,34 +98,55 @@ for T_id = 1:T_num
             path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
             data = importdata(path);
             
-            lambdas(ampl_id, T_id) = lambdas(ampl_id, T_id) + mean(data(num_trajectories / 2 + 1:end));
+            lambdas(ampl_id, g_id) = lambdas(ampl_id, g_id) + mean(data(num_trajectories / 2 + 1:end));
         end
     end  
 end
 
 lambdas = lambdas / num_runs;
 
-fig = figure;
-hLine = imagesc(ampls, Ts, lambdas');
-set(gca, 'FontSize', 30);
-xlabel('$A$', 'Interpreter', 'latex');
-set(gca, 'FontSize', 30);
-ylabel('$T$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, '\lambda');
-set(gca,'YDir','normal');
+if is_trans == 1
+	fig = figure;
+	hLine = imagesc(gs, ampls, lambdas);
+	set(gca, 'FontSize', 30);
+	xlabel('$g$', 'Interpreter', 'latex');
+	set(gca, 'FontSize', 30);
+	ylabel('$A$', 'Interpreter', 'latex');
+	colormap hot;
+	h = colorbar;
+	set(gca, 'FontSize', 30);
+	title(h, '\lambda');
+	set(gca,'YDir','normal');
+else
+	fig = figure;
+	hLine = imagesc(ampls, gs, lambdas');
+	set(gca, 'FontSize', 30);
+	xlabel('$A$', 'Interpreter', 'latex');
+	set(gca, 'FontSize', 30);
+	ylabel('$g$', 'Interpreter', 'latex');
+	colormap hot;
+	h = colorbar;
+	set(gca, 'FontSize', 30);
+	title(h, '\lambda');
+	set(gca,'YDir','normal');
+end
 
-suffix = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_var)_prm(%0.4f_%0.4f_%0.4f)", ...
+suffix = sprintf("trans(%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_var)_prm(%0.4f_%0.4f_var)", ...
+	is_trans, ...
     ps_num_spins, ...
     ps_num_photons_states, ...
     diss_type, ...
     ps_diss_w, ...
-    drv_part_1, ...
-    drv_part_2, ...
+    ps_drv_part_1, ...
+    ps_drv_part_2, ...
     ps_prm_alpha, ...
-    d, ...
-    g);
+    d);
 
-savefig(sprintf('%s/lambda_from_ampl_and_T_%s.fig', home_figures_path, suffix));
+savefig(sprintf('%s/lambda_from_ampl_and_g_%s.fig', home_figures_path, suffix));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/lambda_from_ampl_and_g_%s.pdf', home_figures_path, suffix));
+

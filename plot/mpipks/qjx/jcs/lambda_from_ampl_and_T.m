@@ -16,11 +16,11 @@ num_obs_periods = 100;
 ex_deep = 16;
 rk_ns = 10000;
 
-N = 200;
+N = 50;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0;
-jcs_drv_part_1 = 0.98;
+jcs_drv_part_1 = 1.0;
 jcs_drv_part_2 = 1.0;
 jcs_prm_alpha = 5;
 start_type = 0;
