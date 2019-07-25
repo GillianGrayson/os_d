@@ -6,7 +6,7 @@ type = FSType.mpipks_sd
 
 num_runs = 10
 
-medium = 0
+medium = 1
 
 dimer_U_start = 0.05
 dimer_U_shift = 0.0025
