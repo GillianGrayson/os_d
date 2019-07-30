@@ -12,7 +12,7 @@ rk_ns = 10000;
 num_tp_periods = 100;
 num_obs_periods = 100;
 
-N = 100;
+N = 250;
 
 diss_type = 0;
 diss_gamma = 0.1;
@@ -24,7 +24,6 @@ dimer_drv_freq = 1.0;
 dimer_drv_phase = 0.0;
 
 dimer_prm_E = 0.0;
-dimer_prm_U = 0.05;
 dimer_prm_J = 1.0;
 
 start_type = 0;
@@ -37,34 +36,32 @@ num_trajectories = 10;
 num_runs = 10;
 
 sys_size = N + 1;
-
-phase_diff_min = -1;
-phase_diff_max = 1;
-phase_diff_num = 100;
-phase_diff_shift = (phase_diff_max - phase_diff_min) / phase_diff_num;
-phase_diff_bins = linspace(phase_diff_min + 0.5 * phase_diff_shift, phase_diff_max - 0.5 * phase_diff_shift, phase_diff_num);
-
+num_bins_x = sys_size;
 
 U_begin = 0.05;
 U_step = 0.0025;
 U_num = 101;
-Us = zeros(U_num, 1);
 
-phase_diff = zeros(U_num, phase_diff_num);
+Us = zeros(U_num, 1);
+states = linspace(1, sys_size, sys_size);
+
+diameters = zeros(U_num, 1);
+
+pks_lim = 1e-3;
 
 for U_id = 1:U_num
-	
-	U_id = U_id;
-	U = U_begin + U_step * (U_id - 1)
-	Us(U_id) = U;
-
+    
+    U_id = U_id;
+    U = U_begin + U_step * (U_id - 1)
+    Us(U_id) = U;
+    
     mean_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
     energy_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
-
+    
     for run_id = 1:num_runs
-
+        
         ss = (run_id - 1) * num_trajectories;
-
+        
         path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/N_%d/diss_%d_%0.4f_%0.4f/drv_%d_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
             data_path, ...
             sys_id, ...
@@ -88,7 +85,7 @@ for U_id = 1:U_num
             start_type, ...
             start_state, ...
             ss);
-
+        
         suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
             ss, ...
             mns, ...
@@ -105,88 +102,81 @@ for U_id = 1:U_num
             dimer_prm_J, ...
             start_type, ...
             start_state);
-
+        
         fn = sprintf('%s/mean_evo_%s.txt', path_to_folder, suffix);
         mean_evo_curr = importdata(fn);
         mean_evo(:, ss + 1: ss + num_trajectories) = mean_evo_curr;
-
+        
         fn = sprintf('%s/energy_evo_%s.txt', path_to_folder, suffix);
         energy_evo_curr = importdata(fn);
         energy_evo(:, ss + 1: ss + num_trajectories) = energy_evo_curr;
     end
-
-    mean_x = mean(mean_evo(:));
-    mean_y = mean(energy_evo(:));
-
+    
+    energy_max = max(energy_evo(:));
+    energy_min = min(energy_evo(:));
+    energy_shift = energy_max - energy_min;
+    energy_begin = (energy_min + energy_max) / 2.0 - energy_shift * 0.25;
+    energy_end = (energy_min + energy_max) / 2.0 + energy_shift * 0.25;
+    
+    z_data = zeros(num_bins_x, 1);
+    
+    x_min = min(min(mean_evo)) - 1e-4;
+    x_max = max(max(mean_evo)) + 1e-4;
+    x_shift = (x_max - x_min) / num_bins_x;
+    x_bins = linspace(x_min + 0.5 * x_shift, x_max - 0.5 * x_shift, num_bins_x);
+    
     total_num_trajectories = num_trajectories * num_runs;
-
-    phase_evo = zeros(num_obs_periods + 1, total_num_trajectories);
-
+    
     for tr_id = 1:total_num_trajectories
-
+        
         xs = mean_evo(:, tr_id);
         ys = energy_evo(:, tr_id);
-
+        
         for p_id = 1 : size(xs, 1)
-            x = xs(p_id) - mean_x;
-            y = ys(p_id) - mean_y;
-
-            if x > 0 && y >= 0
-                phase_evo(p_id, tr_id) = atan(y/x);
-            elseif x > 0 && y < 0
-                phase_evo(p_id, tr_id) = atan(y/x) + 2 * pi;
-            elseif x < 0
-                phase_evo(p_id, tr_id) = atan(y/x) + pi;
+            x = xs(p_id);
+            y = ys(p_id);
+            
+            if y > energy_begin && y < energy_end
+                x_id = floor((x - x_min) / (x_max - x_min + eps) * num_bins_x) + 1;
+                z_data(x_id) = z_data(x_id) + 1;
             end
         end
     end
     
-    phase_difference = zeros(num_obs_periods, total_num_trajectories);
+    z_data = smooth(z_data, floor(N * 0.1));
+    z_data = smooth(z_data, floor(N * 0.1));
+	z_data = smooth(z_data, floor(N * 0.1));
+	z_data = smooth(z_data, floor(N * 0.1));
     
-    for tr_id = 1:total_num_trajectories
-        for p_id = 1:num_obs_periods
-            phase_difference(p_id, tr_id) = (phase_evo(p_id + 1, tr_id) - phase_evo(p_id, tr_id)) / (2 * pi);
+    [pks, locs] = findpeaks(z_data);
+    num_peaks = size(pks, 1);
+    
+    del_ids = [];
+    for i = 1:size(pks, 1)
+        if pks(i) < pks_lim
+            del_ids = vertcat(del_ids, i);
         end
     end
-
-    x_pdf = zeros(phase_diff_num, 1);
-
-    for tr_id = 1:total_num_trajectories
-
-        xs = phase_difference(:, tr_id);
-
-        for p_id = 1 : size(xs, 1)
-            x = xs(p_id);
-            x_id = floor((x - phase_diff_min) / (phase_diff_max - phase_diff_min + eps) * phase_diff_num) + 1;
-            x_pdf(x_id) = x_pdf(x_id) + 1;
-        end
-    end
-
-    x_pdf = x_pdf / (num_obs_periods * total_num_trajectories * phase_diff_shift);
-
-    norm = sum(x_pdf) * phase_diff_shift;
-    norm_diff = 1.0 - norm
+    pks(del_ids) = [];
+    locs(del_ids) = [];
     
-    phase_diff(U_id, :) = x_pdf;
-
+    if size(pks, 1) == 1 
+        diameters(U_id) = 0;
+    else
+        diameters(U_id) = abs(locs(end) - locs(1));
+    end
+    
 end
 
-for U_id = 1:U_num
-    curr_max = max(phase_diff(U_id, :));
-    phase_diff(U_id, :) = phase_diff(U_id, :) / curr_max;
-end
+
 
 fig = figure;
-hLine = imagesc(Us, phase_diff_bins, phase_diff');
+hLine = plot(Us, diameters);
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('phase diff', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, '');
-set(gca,'YDir','normal');
+ylabel('$D$', 'Interpreter', 'latex');
+xlim([Us(1) Us(end)])
 
 suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_var_%0.4f)_start(%d_%d)', ...
         N, ...
@@ -202,11 +192,11 @@ suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(
         start_type, ...
         start_state);
 
-savefig(sprintf('%s/phase_diff_from_U_%s.fig', home_figures_path, suffix_save));
+savefig(sprintf('%s/diameters_mean_slice_from_U_%s.fig', home_figures_path, suffix_save));
 
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('%s/phase_diff_from_U_%s.pdf', home_figures_path, suffix_save));
+print(gcf, '-dpdf', sprintf('%s/diameters_mean_slice_from_U_%s.pdf', home_figures_path, suffix_save));
 

@@ -4,13 +4,13 @@ import os.path
 
 type = FSType.mpipks_sd
 
-num_runs = 10
+num_runs = 100
 
 medium = 1
 
-dimer_U_start = 0.05
+dimer_U_start = 0.115
 dimer_U_shift = 0.0025
-dimer_U_num = 101
+dimer_U_num = 50
 
 ampl_start = 3.4
 ampl_shift = 0.05
@@ -39,11 +39,11 @@ for dimer_U_id in range(0, dimer_U_num):
         seed = 0
         mns = 1000000
         num_threads = 1
-        num_trajectories = 10
-        num_tp_periods = 100
+        num_trajectories = 1
+        num_tp_periods = 101
         num_obs_periods = 100
         ex_deep = 16
-        rk_ns = 10000
+        rk_ns = 100000
 
         lpn_type = 0
         lpn_eps_deep = 100
@@ -64,7 +64,7 @@ for dimer_U_id in range(0, dimer_U_num):
         dump_evo_avg = 1
         dump_type = 0
         dump_num = 100
-        N = 250
+        N = 500
         diss_type = 0
         diss_gamma = 0.1
         diss_phase = 0.0

@@ -12,7 +12,7 @@ rk_ns = 10000;
 num_tp_periods = 100;
 num_obs_periods = 100;
 
-N = 100;
+N = 250;
 
 diss_type = 0;
 diss_gamma = 0.1;
@@ -24,7 +24,7 @@ dimer_drv_freq = 1.0;
 dimer_drv_phase = 0.0;
 
 dimer_prm_E = 0.0;
-dimer_prm_U = 0.15;
+dimer_prm_U = 0.115;
 dimer_prm_J = 1.0;
 
 start_type = 0;

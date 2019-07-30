@@ -12,7 +12,7 @@ rk_ns = 10000;
 num_tp_periods = 100;
 num_obs_periods = 100;
 
-N = 100;
+N = 500;
 
 diss_type = 0;
 diss_gamma = 0.1;

@@ -38,10 +38,14 @@ num_runs = 10;
 
 sys_size = N + 1;
 
-num_bins_x = 100;
+adaptive_axes = 0;
+num_bins_x = sys_size;
+num_bins_y = sys_size;
 
 mean_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
 energy_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
+
+num_target_trajectories = 1;
 
 for run_id = 1:num_runs
     
@@ -97,67 +101,51 @@ for run_id = 1:num_runs
     energy_evo(:, ss + 1: ss + num_trajectories) = energy_evo_curr;
 end
 
-mean_x = mean(mean_evo(:));
-mean_y = mean(energy_evo(:));
+mean_x = mean(mean_evo(:))
+mean_y = mean(energy_evo(:))
 
-total_num_trajectories = num_trajectories * num_runs;
-
-phase_evo = zeros(num_obs_periods + 1, total_num_trajectories);
-
-for tr_id = 1:total_num_trajectories
+fig = figure;
+for tr_id = 1:num_target_trajectories
     
     xs = mean_evo(:, tr_id);
     ys = energy_evo(:, tr_id);
     
-    for p_id = 1 : size(xs, 1)
-        x = xs(p_id) - mean_x;
-        y = ys(p_id) - mean_y;
+    for p_id = 1 : size(xs, 1) - 1
+        x1 = xs(p_id) - mean_x;
+        x2 = xs(p_id + 1) - mean_x;
+        y1 = ys(p_id) - mean_y;
+        y2 = ys(p_id + 1) - mean_y;
         
-        if x > 0 && y >= 0
-            phase_evo(p_id, tr_id) = atan(y/x);
-        elseif x > 0 && y < 0
-            phase_evo(p_id, tr_id) = atan(y/x) + 2 * pi;
-        elseif x < 0
-            phase_evo(p_id, tr_id) = atan(y/x) + pi;
+        if x1 > 0 && y1 >= 0
+            phase_1 = atan(y1/x1);
+        elseif x1 > 0 && y1 < 0
+            phase_1 = atan(y1/x1) + 2 * pi;
+        elseif x1 < 0
+            phase_1 = atan(y1/x1) + pi;
         end
+		phase_1 = phase_1 / (2 * pi);
+        
+        if x2 > 0 && y2 >= 0
+            phase_2 = atan(y2/x2);
+        elseif x2 > 0 && y2 < 0
+            phase_2 = atan(y2/x2) + 2 * pi;
+        elseif x2 < 0
+            phase_2 = atan(y2/x2) + pi;
+        end
+		phase_2 = phase_2 / (2 * pi);
+        
+        h_line = plot([x1 x2], [y1 y2]);
+        legend(h_line, sprintf('%0.4f %0.4f', phase_1, phase_2));
+        hold all;
     end
 end
 
-phase_difference = zeros(num_obs_periods, total_num_trajectories);
-for tr_id = 1:total_num_trajectories
-    phase_difference(:, tr_id) = diff(phase_evo(:, tr_id)) / (2 * pi);
-end
 
-x_min = min(phase_difference(:)) - 1e-3;
-x_max = max(phase_difference(:)) + 1e-3;
-x_shift = (x_max - x_min) / num_bins_x;
-x_bins = linspace(x_min + 0.5 * x_shift, x_max - 0.5 * x_shift, num_bins_x);
-
-x_pdf = zeros(num_bins_x, 1);
-
-for tr_id = 1:total_num_trajectories
-    
-    xs = phase_difference(:, tr_id);
-    
-    for p_id = 1 : size(xs, 1)
-        x = xs(p_id);
-        x_id = floor((x - x_min) / (x_max - x_min + eps) * num_bins_x) + 1;
-        x_pdf(x_id) = x_pdf(x_id) + 1;
-    end
-end
-  
-x_pdf = x_pdf / (num_obs_periods * total_num_trajectories * x_shift);
-
-norm = sum(x_pdf) * x_shift;
-norm_diff = 1.0 - norm
-
-fig = figure;
-hLine = plot(x_bins, x_pdf);
 set(gca, 'FontSize', 30);
-xlabel('phase diff', 'Interpreter', 'latex');
-xlim([x_bins(1) x_bins(end)])
+xlabel('$n$', 'Interpreter', 'latex')
 set(gca, 'FontSize', 30);
-ylabel('$PDF$', 'Interpreter', 'latex');
+ylabel('$e$', 'Interpreter', 'latex');
+hold all;
 
 suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
         N, ...
@@ -174,11 +162,10 @@ suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(
         start_type, ...
         start_state);
 
-savefig(sprintf('%s/phase_diff_pdf_%s.fig', home_figures_path, suffix_save));
+savefig(sprintf('%s/mean_energy_trajectories_%s.fig', home_figures_path, suffix_save));
 
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('%s/phase_diff_pdf_%s.pdf', home_figures_path, suffix_save));
-
+print(gcf, '-dpdf', sprintf('%s/mean_energy_trajectories_%s.pdf', home_figures_path, suffix_save));

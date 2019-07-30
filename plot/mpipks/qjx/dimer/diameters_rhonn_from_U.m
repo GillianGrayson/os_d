@@ -12,7 +12,7 @@ rk_ns = 10000;
 num_tp_periods = 100;
 num_obs_periods = 100;
 
-N = 100;
+N = 500;
 
 diss_type = 0;
 diss_gamma = 0.1;
@@ -134,9 +134,9 @@ for U_id = 1:U_num
     locs(del_ids) = [];
     
     if size(pks, 1) == 1 
-        diameters(U_id) = 0
+        diameters(U_id) = 0;
     else
-        diameters(U_id) = abs(locs(end) - locs(1))
+        diameters(U_id) = abs(locs(end) - locs(1)) / N;
     end
     
 end

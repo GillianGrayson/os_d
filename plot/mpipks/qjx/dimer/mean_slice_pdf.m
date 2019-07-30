@@ -24,7 +24,7 @@ dimer_drv_freq = 1.0;
 dimer_drv_phase = 0.0;
 
 dimer_prm_E = 0.0;
-dimer_prm_U = 0.25;
+dimer_prm_U = 0.1;
 dimer_prm_J = 1.0;
 
 start_type = 0;
@@ -38,7 +38,8 @@ num_runs = 10;
 
 sys_size = N + 1;
 
-num_bins_x = 100;
+adaptive_axes = 0;
+num_bins_x = sys_size;
 
 mean_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
 energy_evo = zeros(num_obs_periods + 1, num_trajectories * num_runs);
@@ -97,12 +98,20 @@ for run_id = 1:num_runs
     energy_evo(:, ss + 1: ss + num_trajectories) = energy_evo_curr;
 end
 
-mean_x = mean(mean_evo(:));
-mean_y = mean(energy_evo(:));
+energy_max = max(energy_evo(:));
+energy_min = min(energy_evo(:));
+energy_shift = energy_max - energy_min
+energy_begin = (energy_min + energy_max) / 2.0 - energy_shift * 0.1
+energy_end = (energy_min + energy_max) / 2.0 + energy_shift * 0.1
+
+z_data = zeros(num_bins_x, 1);
+
+x_min = min(min(mean_evo)) - 1e-4;
+x_max = max(max(mean_evo)) + 1e-4;
+x_shift = (x_max - x_min) / num_bins_x;
+x_bins = linspace(x_min + 0.5 * x_shift, x_max - 0.5 * x_shift, num_bins_x);
 
 total_num_trajectories = num_trajectories * num_runs;
-
-phase_evo = zeros(num_obs_periods + 1, total_num_trajectories);
 
 for tr_id = 1:total_num_trajectories
     
@@ -110,54 +119,31 @@ for tr_id = 1:total_num_trajectories
     ys = energy_evo(:, tr_id);
     
     for p_id = 1 : size(xs, 1)
-        x = xs(p_id) - mean_x;
-        y = ys(p_id) - mean_y;
+        x = xs(p_id);
+        y = ys(p_id);
         
-        if x > 0 && y >= 0
-            phase_evo(p_id, tr_id) = atan(y/x);
-        elseif x > 0 && y < 0
-            phase_evo(p_id, tr_id) = atan(y/x) + 2 * pi;
-        elseif x < 0
-            phase_evo(p_id, tr_id) = atan(y/x) + pi;
+        if y > energy_begin && y < energy_end
+            x_id = floor((x - x_min) / (x_max - x_min + eps) * num_bins_x) + 1;
+            z_data(x_id) = z_data(x_id) + 1; 
         end
     end
 end
 
-phase_difference = zeros(num_obs_periods, total_num_trajectories);
-for tr_id = 1:total_num_trajectories
-    phase_difference(:, tr_id) = diff(phase_evo(:, tr_id)) / (2 * pi);
-end
+z_data = smooth(z_data, floor(N * 0.1));
+z_data = smooth(z_data, floor(N * 0.1));
+z_data = smooth(z_data, floor(N * 0.1));
 
-x_min = min(phase_difference(:)) - 1e-3;
-x_max = max(phase_difference(:)) + 1e-3;
-x_shift = (x_max - x_min) / num_bins_x;
-x_bins = linspace(x_min + 0.5 * x_shift, x_max - 0.5 * x_shift, num_bins_x);
-
-x_pdf = zeros(num_bins_x, 1);
-
-for tr_id = 1:total_num_trajectories
-    
-    xs = phase_difference(:, tr_id);
-    
-    for p_id = 1 : size(xs, 1)
-        x = xs(p_id);
-        x_id = floor((x - x_min) / (x_max - x_min + eps) * num_bins_x) + 1;
-        x_pdf(x_id) = x_pdf(x_id) + 1;
-    end
-end
-  
-x_pdf = x_pdf / (num_obs_periods * total_num_trajectories * x_shift);
-
-norm = sum(x_pdf) * x_shift;
-norm_diff = 1.0 - norm
+number_of_hits = sum(z_data)
+z_data = z_data / (number_of_hits * x_shift);
+norm = sum(z_data) *  x_shift
 
 fig = figure;
-hLine = plot(x_bins, x_pdf);
+hLine = plot(x_bins, z_data);
 set(gca, 'FontSize', 30);
-xlabel('phase diff', 'Interpreter', 'latex');
-xlim([x_bins(1) x_bins(end)])
+xlabel('$n$', 'Interpreter', 'latex')
 set(gca, 'FontSize', 30);
 ylabel('$PDF$', 'Interpreter', 'latex');
+hold all;
 
 suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
         N, ...
@@ -174,11 +160,11 @@ suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(
         start_type, ...
         start_state);
 
-savefig(sprintf('%s/phase_diff_pdf_%s.fig', home_figures_path, suffix_save));
+savefig(sprintf('%s/mean_slice_pdf_%s.fig', home_figures_path, suffix_save));
 
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('%s/phase_diff_pdf_%s.pdf', home_figures_path, suffix_save));
+print(gcf, '-dpdf', sprintf('%s/mean_slice_pdf_%s.pdf', home_figures_path, suffix_save));
 
