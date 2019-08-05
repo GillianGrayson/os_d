@@ -12,7 +12,7 @@ rk_ns = 10000;
 num_tp_periods = 100;
 num_obs_periods = 100;
 
-N = 100;
+N = 250;
 
 diss_type = 0;
 diss_gamma = 0.1;
@@ -38,7 +38,7 @@ num_runs = 10;
 
 sys_size = N + 1;
 
-phase_diff_min = -1;
+phase_diff_min = 0;
 phase_diff_max = 1;
 phase_diff_num = 100;
 phase_diff_shift = (phase_diff_max - phase_diff_min) / phase_diff_num;
@@ -50,7 +50,7 @@ U_step = 0.0025;
 U_num = 101;
 Us = zeros(U_num, 1);
 
-phase_diff = zeros(U_num, phase_diff_num);
+phase_diff = zeros(U_num, 1);
 
 for U_id = 1:U_num
 	
@@ -114,9 +114,23 @@ for U_id = 1:U_num
         energy_evo_curr = importdata(fn);
         energy_evo(:, ss + 1: ss + num_trajectories) = energy_evo_curr;
     end
-
-    mean_x = mean(mean_evo(:));
-    mean_y = mean(energy_evo(:));
+	
+	
+	min_x = min(mean_evo(:));
+	max_x = max(mean_evo(:));
+	mean_evo = (mean_evo - min_x) / (max_x - min_x) * 2 - 1;
+	mean_x = mean(mean_evo(:))
+	mean_evo = mean_evo - mean_x;
+	min_x = min(mean_evo(:))
+	max_x = max(mean_evo(:))
+		
+	min_y = min(energy_evo(:));
+	max_y = max(energy_evo(:));
+	energy_evo = (energy_evo - min_y) / (max_y - min_y) * 2 - 1;
+	mean_y = mean(energy_evo(:))
+	energy_evo = energy_evo - mean_y;
+	min_y = min(energy_evo(:))
+	max_y = max(energy_evo(:))
 
     total_num_trajectories = num_trajectories * num_runs;
 
@@ -128,8 +142,8 @@ for U_id = 1:U_num
         ys = energy_evo(:, tr_id);
 
         for p_id = 1 : size(xs, 1)
-            x = xs(p_id) - mean_x;
-            y = ys(p_id) - mean_y;
+            x = xs(p_id);
+            y = ys(p_id);
 
             if x > 0 && y >= 0
                 phase_evo(p_id, tr_id) = atan(y/x);
@@ -143,50 +157,25 @@ for U_id = 1:U_num
     
     phase_difference = zeros(num_obs_periods, total_num_trajectories);
     
-    for tr_id = 1:total_num_trajectories
-        for p_id = 1:num_obs_periods
+    for tr_id = 1 : total_num_trajectories
+        for p_id = 1 : num_obs_periods
             phase_difference(p_id, tr_id) = (phase_evo(p_id + 1, tr_id) - phase_evo(p_id, tr_id)) / (2 * pi);
+            if phase_difference(p_id, tr_id) < 0
+                phase_difference(p_id, tr_id) = 1 + phase_difference(p_id, tr_id);
+            end
         end
     end
-
-    x_pdf = zeros(phase_diff_num, 1);
-
-    for tr_id = 1:total_num_trajectories
-
-        xs = phase_difference(:, tr_id);
-
-        for p_id = 1 : size(xs, 1)
-            x = xs(p_id);
-            x_id = floor((x - phase_diff_min) / (phase_diff_max - phase_diff_min + eps) * phase_diff_num) + 1;
-            x_pdf(x_id) = x_pdf(x_id) + 1;
-        end
-    end
-
-    x_pdf = x_pdf / (num_obs_periods * total_num_trajectories * phase_diff_shift);
-
-    norm = sum(x_pdf) * phase_diff_shift;
-    norm_diff = 1.0 - norm
     
-    phase_diff(U_id, :) = x_pdf;
+    phase_diff(U_id) = mean(phase_difference(:));
 
-end
-
-for U_id = 1:U_num
-    curr_max = max(phase_diff(U_id, :));
-    phase_diff(U_id, :) = phase_diff(U_id, :) / curr_max;
 end
 
 fig = figure;
-hLine = imagesc(Us, phase_diff_bins, phase_diff');
+hLine = plot(Us, phase_diff);
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('phase diff', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
-set(gca, 'FontSize', 30);
-title(h, '');
-set(gca,'YDir','normal');
+ylabel('mean rotation number', 'Interpreter', 'latex');
 
 suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_var_%0.4f)_start(%d_%d)', ...
         N, ...
@@ -202,11 +191,11 @@ suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(
         start_type, ...
         start_state);
 
-savefig(sprintf('%s/phase_diff_from_U_%s.fig', home_figures_path, suffix_save));
+savefig(sprintf('%s/mean_rotation_number_from_U_%s.fig', home_figures_path, suffix_save));
 
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('%s/phase_diff_from_U_%s.pdf', home_figures_path, suffix_save));
+print(gcf, '-dpdf', sprintf('%s/mean_rotation_number_from_U_%s.pdf', home_figures_path, suffix_save));
 

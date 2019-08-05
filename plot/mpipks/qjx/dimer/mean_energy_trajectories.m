@@ -12,7 +12,7 @@ rk_ns = 10000;
 num_tp_periods = 100;
 num_obs_periods = 100;
 
-N = 100;
+N = 250;
 
 diss_type = 0;
 diss_gamma = 0.1;
@@ -24,7 +24,7 @@ dimer_drv_freq = 1.0;
 dimer_drv_phase = 0.0;
 
 dimer_prm_E = 0.0;
-dimer_prm_U = 0.25;
+dimer_prm_U = 0.15;
 dimer_prm_J = 1.0;
 
 start_type = 0;
@@ -101,8 +101,23 @@ for run_id = 1:num_runs
     energy_evo(:, ss + 1: ss + num_trajectories) = energy_evo_curr;
 end
 
+min_x = min(mean_evo(:));
+max_x = max(mean_evo(:));
+mean_evo = (mean_evo - min_x) / (max_x - min_x) * 2 - 1;
 mean_x = mean(mean_evo(:))
+mean_evo = mean_evo - mean_x;
+min_x = min(mean_evo(:))
+max_x = max(mean_evo(:))
+	
+min_y = min(energy_evo(:));
+max_y = max(energy_evo(:));
+energy_evo = (energy_evo - min_y) / (max_y - min_y) * 2 - 1;
 mean_y = mean(energy_evo(:))
+energy_evo = energy_evo - mean_y;
+min_y = min(energy_evo(:))
+max_y = max(energy_evo(:))
+
+phase_diff = zeros(num_obs_periods, num_target_trajectories);
 
 fig = figure;
 for tr_id = 1:num_target_trajectories
@@ -111,10 +126,10 @@ for tr_id = 1:num_target_trajectories
     ys = energy_evo(:, tr_id);
     
     for p_id = 1 : size(xs, 1) - 1
-        x1 = xs(p_id) - mean_x;
-        x2 = xs(p_id + 1) - mean_x;
-        y1 = ys(p_id) - mean_y;
-        y2 = ys(p_id + 1) - mean_y;
+        x1 = xs(p_id);
+        x2 = xs(p_id + 1);
+        y1 = ys(p_id);
+        y2 = ys(p_id + 1);
         
         if x1 > 0 && y1 >= 0
             phase_1 = atan(y1/x1);
@@ -134,12 +149,26 @@ for tr_id = 1:num_target_trajectories
         end
 		phase_2 = phase_2 / (2 * pi);
         
+		phase_diff_tmp = phase_2 - phase_1;
+		if phase_diff_tmp < 0
+			phase_diff_tmp = phase_diff_tmp + 1;
+		end
+		
+        phase_diff(p_id, tr_id) = phase_diff_tmp;
+        
         h_line = plot([x1 x2], [y1 y2]);
-        legend(h_line, sprintf('%0.4f %0.4f', phase_1, phase_2));
+		
+        legend(h_line, sprintf('%0.4f %0.4f %0.4f', phase_diff_tmp, phase_2, phase_1));
         hold all;
     end
 end
 
+hold all;
+plot([min_x, max_x], [0 0], 'k', 'LineWidth', 3);
+xlim([min_x, max_x])
+hold all;
+plot([0, 0], [min_y, max_y], 'k', 'LineWidth', 3);
+ylim([min_y, max_y])
 
 set(gca, 'FontSize', 30);
 xlabel('$n$', 'Interpreter', 'latex')
@@ -169,3 +198,44 @@ set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
 print(gcf, '-dpdf', sprintf('%s/mean_energy_trajectories_%s.pdf', home_figures_path, suffix_save));
+
+phase_diff_min = 0;
+phase_diff_max = 1;
+phase_diff_num = 100;
+phase_diff_shift = (phase_diff_max - phase_diff_min) / phase_diff_num;
+phase_diff_bins = linspace(phase_diff_min + 0.5 * phase_diff_shift, phase_diff_max - 0.5 * phase_diff_shift, phase_diff_num);
+x_pdf = zeros(phase_diff_num, 1);
+
+for tr_id = 1:num_target_trajectories
+    for p_id = 1 : size(xs, 1) - 1
+		x = phase_diff(p_id, tr_id);
+		x_id = floor((x - phase_diff_min) / (phase_diff_max - phase_diff_min + eps) * phase_diff_num) + 1;
+		x_pdf(x_id) = x_pdf(x_id) + 1;
+	end
+end
+
+x_pdf = x_pdf / (num_obs_periods * num_target_trajectories * phase_diff_shift);
+norm = sum(x_pdf) * phase_diff_shift;
+norm_diff = 1.0 - norm
+
+fig = figure;
+hLine = plot(phase_diff_bins, x_pdf);
+set(gca, 'FontSize', 30);
+xlabel('phase diff', 'Interpreter', 'latex');
+xlim([phase_diff_bins(1) phase_diff_bins(end)])
+set(gca, 'FontSize', 30);
+ylabel('$PDF$', 'Interpreter', 'latex');
+
+savefig(sprintf('%s/phase_diff_pdf_check_%s.fig', home_figures_path, suffix_save));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/phase_diff_pdf_check_%s.pdf', home_figures_path, suffix_save));
+
+dlmwrite(sprintf('%s/mean_trajectories_%s.txt', home_figures_path, suffix_save), mean_evo(:, 1:num_target_trajectories), 'delimiter', '\t')
+dlmwrite(sprintf('%s/energy_trajectories_%s.txt', home_figures_path, suffix_save), energy_evo(:, 1:num_target_trajectories), 'delimiter', '\t')
+dlmwrite(sprintf('%s/phase_diff_trajectories_%s.txt', home_figures_path, suffix_save), phase_diff, 'delimiter', '\t')
+
+

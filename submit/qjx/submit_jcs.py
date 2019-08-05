@@ -4,34 +4,30 @@ import os.path
 
 type = FSType.mpipks_sd
 
-num_runs = 100
+num_runs = 1
 
 medium = 1
 
-dimer_U_start = 0.05
-dimer_U_shift = 0.0025
-dimer_U_num = 101
-
-ampl_start = 3.4
+ampl_start = 0.05
 ampl_shift = 0.05
-ampl_num = 1
+ampl_num = 100
 
-for dimer_U_id in range(0, dimer_U_num):
-    dimer_U = dimer_U_start + dimer_U_id * dimer_U_shift
+T_start = 2.0
+T_shift = 0.05
+T_num = 1
 
-    for ampl_id in range(0, ampl_num):
-        ampl = ampl_start + ampl_id * ampl_shift
+for ampl_id in range(0, ampl_num):
+    ampl = ampl_start + ampl_id * ampl_shift
 
-        print('U: ' + str(dimer_U))
-        print('A: ' + str(ampl))
+    for T_id in range(0, T_num):
+        T = T_start + T_id * T_shift
 
-        T = 1.0
-        d = 0.0
-        g = 0.0
+        print('ampl: ' + str(ampl))
+        print('T: ' + str(T))
 
-        sys_id = 0
+        sys_id = 1
         task_id = 1
-        prop_id = 1
+        prop_id = 0
         is_debug = 0
         is_pp = 1
         init_fn = ''
@@ -39,11 +35,11 @@ for dimer_U_id in range(0, dimer_U_num):
         seed = 0
         mns = 1000000
         num_threads = 1
-        num_trajectories = 1
-        num_tp_periods = 101
-        num_obs_periods = 100
+        num_trajectories = 100
+        num_tp_periods = 1000
+        num_obs_periods = 10000
         ex_deep = 16
-        rk_ns = 100000
+        rk_ns = 10000
 
         lpn_type = 0
         lpn_eps_deep = 100
@@ -59,21 +55,21 @@ for dimer_U_id in range(0, dimer_U_num):
         dump_phi = 0
         dump_phi_evo = 0
         dump_adr_sep = 0
-        dump_adr_avg = 1
+        dump_adr_avg = 0
         dump_evo_sep = 1
-        dump_evo_avg = 1
+        dump_evo_avg = 0
         dump_type = 0
-        dump_num = 100
-        N = 500
+        dump_num = 1
+        N = 200
         diss_type = 0
         diss_gamma = 0.1
         diss_phase = 0.0
         dimer_drv_type = 1
-        dimer_drv_ampl = ampl
+        dimer_drv_ampl = 4.2
         dimer_drv_freq = 1.0
         dimer_drv_phase = 0.0
         dimer_prm_E = 0.0
-        dimer_prm_U = dimer_U
+        dimer_prm_U = 0.1125
         dimer_prm_J = 1.0
         jcs_drv_part_1 = 1.00 * T
         jcs_drv_part_2 = 1.00 * T
@@ -85,16 +81,16 @@ for dimer_U_id in range(0, dimer_U_num):
         ps_drv_part_2 = 1.00 * T
         ps_drv_ampl = ampl
         ps_prm_alpha = 5.0
-        ps_prm_d = d
-        ps_prm_g = g
+        ps_prm_d = 0.0
+        ps_prm_g = 0.0
         ps_diss_w = 0.05
         start_type = 0
         start_state = 0
         cd_dim = 1
-        cd_eps = 1.0e-8
+        cd_eps = 0.00000001
         deep_num_steps = 1000
-        jump = 0
-        jumps_counts = 0
+        jump = 2
+        jumps_counts = 1000
 
         diss_gamma_str = str(format(diss_gamma, '0.4f'))
         diss_phase_str = str(format(diss_phase, '0.4f'))
@@ -149,7 +145,7 @@ for dimer_U_id in range(0, dimer_U_num):
                 '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
                     num_obs_periods) + \
                 '/N_' + str(N) + \
-                '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
+                '/diss_' + str(diss_type) + \
                 '/drv_' + jcs_drv_part_1_str + '_' + jcs_drv_part_2_str + '_' + jcs_drv_ampl_str + \
                 '/prm_' + jcs_prm_alpha_str + \
                 '/start_' + str(start_type) + '_' + str(start_state)

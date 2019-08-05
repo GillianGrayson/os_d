@@ -10,9 +10,9 @@ prop_id = 1;
 ex_deep = 16;
 rk_ns = 10000;
 num_tp_periods = 100;
-num_obs_periods = 100;
+num_obs_periods = 100; 
 
-N = 500;
+N = 100;
 
 diss_type = 0;
 diss_gamma = 0.1;
@@ -120,6 +120,8 @@ for U_id = 1:U_num
     
     norm = sum(curr_rho_avg);
     norm_diff = 1.0 - norm
+	
+	curr_rho_avg = smooth(curr_rho_avg, floor(N * 0.1));
     
     [pks, locs] = findpeaks(curr_rho_avg);
     num_peaks = size(pks, 1);
