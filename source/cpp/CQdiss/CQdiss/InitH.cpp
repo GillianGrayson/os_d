@@ -196,7 +196,11 @@ void init_h_vector_opt(Model * m)
 	int N = m->N;
 	crsMatrix * h = m->h;
 
+	saveMatrix("H.txt", H);
+
 	to_F_basis(H, h);
+
+	saveMatrix("h_vec.txt", h);
 
 	delete H;
 }
@@ -266,6 +270,9 @@ void init_he_vector_opt(Model * m)
 	crsMatrix * he = m->he;
 
 	to_F_basis(H, he);
+
+	saveMatrix("He.txt", H);
+	saveMatrix("he_vec.txt", he);
 
 	delete H;
 }

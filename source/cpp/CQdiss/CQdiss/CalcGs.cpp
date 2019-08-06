@@ -9,4 +9,5 @@ void calcGs(Model *m)
   sum.im = 0.0;
   SparseMKLAdd(*(m->Qs),sum, *(m->Rs), *Gs);
   m->Gs = Gs;
+  saveMatrix("Gs.txt", Gs);
 }

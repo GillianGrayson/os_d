@@ -14,7 +14,6 @@ void calcKs(Model *m)
 
   crsMatrix * l_mat = m->l_mat;
 
-
   ulli cnt = fijk_coord_sym(m->l_mat, m->N + 1);
   printf("cntSubFijk %u\n", cnt);
   m->f_ijk = new Tensor_Coordinates;
@@ -52,64 +51,6 @@ void calcKs(Model *m)
     }
   }
 
-/////  printVectorVal(Ks, N_mat);
-/////
-/////  for(int i = 0; i < N_mat; i++)
-/////  {
-/////    Ks[i].re = 0.0;
-/////    Ks[i].im = 0.0;
-/////  }
-///////  printMatrixVal(As);
-/////  for(int i = 0; i < N_mat; i++)
-/////  {
-/////    AsT = As;
-/////    //AsT = new crsMatrix(*(As));
-/////    //Transpose(*(As), *AsT);
-/////    FsT = Fs[i];
-/////    FsT = new crsMatrix(*(Fs[i]));
-/////    Transpose(*(Fs[i]), *FsT, false);
-///////    printMatrixVal(FsT);
-/////    for(int j = 0; j < N_mat; j++)
-/////    {
-/////      int ii,jj, m1, m2;
-/////      ii = As->RowIndex[i];
-/////      m1 = As->RowIndex[i + 1];
-/////      jj = FsT->RowIndex[j];
-/////      m2 = FsT->RowIndex[j + 1];
-/////
-/////      while((ii < m1)&&(jj < m2))
-/////      {
-/////        if(AsT->Col[ii] < FsT->Col[jj])
-/////        {  
-/////          ii++;
-/////        } 
-/////        else
-/////        {
-/////          if(AsT->Col[ii] > FsT->Col[jj])
-/////          {
-/////            jj++;
-/////          } 
-/////          else
-/////          {
-/////            dcomplex as, fs;
-/////            as = AsT->Value[ii];
-/////            fs = FsT->Value[jj];
-/////            Ks[j].re += as.re * fs.re - as.im * fs.im;
-/////            Ks[j].im += as.re * fs.im + as.im * fs.re;
-/////
-/////            ii++;
-/////            jj++;
-/////          }
-/////        }
-/////      }
-/////
-/////    }
-/////    delete FsT;
-/////    //delete AsT;
-/////  }
-/////  
-/////  printVectorVal(Ks, N_mat);
-
   dcomplex val;
   for(int i = 0; i < N_mat; i++)
   {
@@ -119,4 +60,6 @@ void calcKs(Model *m)
     Ks[i].re = val.im;
     Ks[i].im = val.re;
   }
+
+  save_complex_vector("Ks.txt", Ks, N_mat);
 }

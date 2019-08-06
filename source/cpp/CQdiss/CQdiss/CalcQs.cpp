@@ -283,6 +283,8 @@ void calcQs(Model * m)
 
 //  printMatrixVal(QsCo);
   m->Qs = QsCo;
+
+  saveMatrix("QsCo.txt", QsCo);
 }
 
 
@@ -374,4 +376,6 @@ void calcQEs(Model * m)
 ////  printMatrixVal(QEs);
 
   m->QEs = QEsCo;
+
+  saveMatrix("QEsCo.txt", QEsCo);
 }

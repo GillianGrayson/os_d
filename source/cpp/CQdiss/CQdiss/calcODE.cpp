@@ -220,6 +220,8 @@ void initRhoODE(Model *m)
 	//  printVectorVal(RhoF, N_mat);
 
 	delete[] psi;
+
+	save_complex_vector("RhoF_init.txt", RhoF, N_mat);
 }
 
 void init_multiplicator(Model *m, int mult_id)

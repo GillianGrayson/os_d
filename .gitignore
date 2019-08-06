@@ -114,3 +114,11 @@ source/cpp/QJX/QJX/My Inspector Results - QJX/
 *.advixeexp
 
 source/cpp/QJX/QJX/My Advisor Results - QJX/
+
+source/cpp/CQdiss/CQdiss_fbasis/My Advisor Results - CQdiss_fbasis/
+
+*.db-shm
+
+*.db-wal
+
+source/cpp/CQdiss_os_jcs_opt/CQdiss_fbasis/My Advisor Results - CQdiss_fbasis/

@@ -98,6 +98,8 @@ void init_a1_a2_opt(Model * m)
 	delete a1_mat;
 	delete a2_mat;
 
+	saveMatrix("a1_i_a2_mat.txt", a1_i_a2_mat);
+
 	delete A1;
 	delete A2;
 }
