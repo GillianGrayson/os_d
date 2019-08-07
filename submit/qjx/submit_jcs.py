@@ -6,15 +6,15 @@ type = FSType.mpipks_sd
 
 num_runs = 1
 
-medium = 1
+medium = 0
 
 ampl_start = 0.05
 ampl_shift = 0.05
 ampl_num = 100
 
-T_start = 2.0
+T_start = 0.05
 T_shift = 0.05
-T_num = 1
+T_num = 100
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -35,8 +35,8 @@ for ampl_id in range(0, ampl_num):
         seed = 0
         mns = 1000000
         num_threads = 1
-        num_trajectories = 100
-        num_tp_periods = 1000
+        num_trajectories = 10
+        num_tp_periods = 100
         num_obs_periods = 10000
         ex_deep = 16
         rk_ns = 10000

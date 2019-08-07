@@ -115,3 +115,9 @@ set(gca, 'FontSize', 30);
 ylabel('$\lambda$', 'Interpreter', 'latex');
 
 savefig(sprintf('%s/lambda_from_ampl_%s.fig', home_figures_path, suffix));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/lambda_from_ampl_%s.pdf', home_figures_path, suffix));

@@ -16,7 +16,7 @@ num_obs_periods = 100;
 ex_deep = 16;
 rk_ns = 10000;
 
-N = 50;
+N = 200;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0;
@@ -123,5 +123,10 @@ set(gca, 'FontSize', 30);
 title(h, '\lambda');
 set(gca,'YDir','normal');
 
-
 savefig(sprintf('%s/lambda_from_ampl_and_T_%s.fig', home_figures_path, suffix));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/lambda_from_ampl_and_T_%s.pdf', home_figures_path, suffix));
