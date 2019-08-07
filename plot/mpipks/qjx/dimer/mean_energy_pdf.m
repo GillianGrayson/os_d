@@ -104,7 +104,7 @@ z_data = zeros(num_bins_x, num_bins_y);
 x_min = min(min(mean_evo)) - 1e-4;
 x_max = max(max(mean_evo)) + 1e-4;
 x_shift = (x_max - x_min) / num_bins_x;
-x_bins = linspace(x_min + 0.5 * x_shift, x_max - 0.5 * x_shift, num_bins_x);
+x_bins = linspace(x_min + 0.5 * x_shift, x_max - 0.5 * x_shift, num_bins_x) / N;
 
 
 y_min = min(min(energy_evo)) - 1e-4;
@@ -138,7 +138,7 @@ z_data = z_data / max(max(z_data));
 fig = figure;
 hLine = imagesc(x_bins, y_bins, z_data');
 set(gca, 'FontSize', 30);
-xlabel('$n$', 'Interpreter', 'latex')
+xlabel('$n/N$', 'Interpreter', 'latex')
 set(gca, 'FontSize', 30);
 ylabel('$e$', 'Interpreter', 'latex');
 colormap hot;
