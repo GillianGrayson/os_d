@@ -317,13 +317,6 @@ void calcODE_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData
 	characteristics_std(m, rp, cp, md, pd, dump_id);
 	dump_id++;
 
-	if (rp.issmtx == 1)
-	{
-		string fn = "rho_after_trans_again" + file_name_suffix(cp, 4);
-		cout << "Saving rho to file:" << endl << fn << endl << endl;
-		save_sparse_complex_mtx(fn, m->Rho, 16, false);
-	}
-
 	before(m);
 	for (int period = 0; period < cp.num_periods_obser; period++)
 	{
@@ -372,9 +365,6 @@ void calcODE_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData
 
 			after(m);
 			calcRho(m);
-			string fn = "rho_obser_" + to_string(period + 1) + file_name_suffix(cp, 4);
-			cout << "Saving rho to file:" << endl << fn << endl << endl;
-			save_sparse_complex_mtx(fn, m->Rho, 16, false);
 			characteristics_std(m, rp, cp, md, pd, dump_id);
 			before(m);
 			dump_id++;
