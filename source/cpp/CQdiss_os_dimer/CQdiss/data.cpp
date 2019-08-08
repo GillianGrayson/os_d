@@ -29,7 +29,25 @@ void f_basis_prop_std(RunParam &rp, ConfigParam &cp, MainData &md)
 	PropData pd;
 	init_prop_data_std(rp, cp, md, pd);
 
+	
+	if (rp.issmtx == 1)
+	{
+		calcRho(model);
+		fn = "rho_before_trans" + file_name_suffix(cp, 4);
+		cout << "Saving rho to file:" << endl << fn << endl << endl;
+		save_sparse_complex_mtx(fn, model->Rho, 16, false);
+	}
+
 	calcODE_trans(model, rp, cp, md, pd);
+
+	if (rp.issmtx == 1)
+	{
+		calcRho(model);
+		fn = "rho_after_trans" + file_name_suffix(cp, 4);
+		cout << "Saving rho to file:" << endl << fn << endl << endl;
+		save_sparse_complex_mtx(fn, model->Rho, 16, false);
+	}
+
 	calcODE_std(model, rp, cp, md, pd);
 
 	dump_prop_data_std(rp, cp, md, pd);
@@ -38,17 +56,10 @@ void f_basis_prop_std(RunParam &rp, ConfigParam &cp, MainData &md)
 
 	if (rp.issmtx == 1)
 	{
+		calcRho(model);
 		fn = "rho" + file_name_suffix(cp, 4);
 		cout << "Saving rho to file:" << endl << fn << endl << endl;
 		save_sparse_complex_mtx(fn, model->Rho, 16, false);
-	}
-
-	for (int i = 0; i < model->Rho->N; i++)
-	{
-		for (int k = model->Rho->RowIndex[i]; k < model->Rho->RowIndex[i + 1]; k++)
-		{
-			cout << i + 1 << " " << model->Rho->Col[k] + 1 << " " << model->Rho->Value[k].re << " " << model->Rho->Value[k].im << endl;
-		}
 	}
 
 	freeModel(model);

@@ -289,6 +289,17 @@ void calcODE_trans(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropDa
 
 		dcomplex diff_it = calcDiffIter(m);
 		printf("diff on %d is %0.16le %0.16le \n", period + 1, diff_it.re, diff_it.im);
+
+		if (rp.issmtx == 1)
+		{
+			after(m);
+			calcRho(m);
+			string fn = "rho_" + to_string(period + 1) + file_name_suffix(cp, 4);
+			cout << "Saving rho to file:" << endl << fn << endl << endl;
+			save_sparse_complex_mtx(fn, m->Rho, 16, false);
+			before(m);
+		}
+
 	}
 	after(m);
 }
