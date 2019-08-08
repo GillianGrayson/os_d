@@ -31,14 +31,6 @@ void f_basis_prop_std(RunParam &rp, ConfigParam &cp, MainData &md)
 
 	calcODE_trans(model, rp, cp, md, pd);
 
-	if (rp.issmtx == 1)
-	{
-		calcRho(model);
-		fn = "rho_after_trans" + file_name_suffix(cp, 4);
-		cout << "Saving rho to file:" << endl << fn << endl << endl;
-		save_sparse_complex_mtx(fn, model->Rho, 16, false);
-	}
-
 	calcODE_std(model, rp, cp, md, pd);
 
 	dump_prop_data_std(rp, cp, md, pd);
