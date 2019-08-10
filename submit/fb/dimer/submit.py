@@ -4,9 +4,9 @@ import os.path
 
 type = FSType.mpipks_sd
 
-U_start = 0.005
+U_start = 0.2
 U_shift = 0.005
-U_num = 150
+U_num = 1
 
 ampl_start = 3.4
 ampl_shift = 0.05
@@ -26,7 +26,7 @@ for U_id in range(0, U_num):
         debug = 0
         issmtx = 1
         ipp = 1
-        N = 25
+        N = 10
         diss_type = 0
         diss_gamma = 0.1
         diss_phase = 0.0
