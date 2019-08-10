@@ -15,7 +15,8 @@
 #include <math.h>
 
 #define TASK_ID_STD 0
-#define FLOQUET_ID_DEEP 1
+#define FLOQUET_ID_BASE 1
+#define FLOQUET_ID_F 2
 
 using namespace std;
 

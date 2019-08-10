@@ -23,13 +23,15 @@ void calcVectValue_real(
 
 void initRhoODE(Model *m, RunParam &rp, ConfigParam &cp, MainData &md);
 
-void initRhoODE_floquet(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, int state_id);
+void initRhoODE_floquet_base(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, int state_id);
+void initRhoODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, int state_id);
 
 dcomplex calcDiffIter(Model *m);
 
 void calcODE_trans(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
 void calcODE_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
-void calcODE_floquet(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void calcODE_floquet_base(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void calcODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
 
 void before(Model *m);
 void after(Model *m);

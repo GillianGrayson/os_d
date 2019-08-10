@@ -34,14 +34,17 @@ struct PropData
 };
 
 void f_basis_prop_std(RunParam &rp, ConfigParam &cp, MainData &md);
-void f_basis_prop_floquet(RunParam &rp, ConfigParam &cp, MainData &md);
+void f_basis_prop_floquet_base(RunParam &rp, ConfigParam &cp, MainData &md);
+void f_basis_prop_floquet_f(RunParam &rp, ConfigParam &cp, MainData &md);
 
 void init_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
-void init_prop_data_floquet(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void init_prop_data_floquet_base(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void init_prop_data_floquet_f(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
 
 void free_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
-void free_prop_data_floquet(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void free_prop_data_floquet_base(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void free_prop_data_floquet_f(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
 
 void dump_prop_data_std(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
-void dump_prop_data_floquet(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
-
+void dump_prop_data_floquet_base(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);
+void dump_prop_data_floquet_f(RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd);

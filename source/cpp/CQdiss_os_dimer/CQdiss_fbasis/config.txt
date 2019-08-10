@@ -1,8 +1,8 @@
-task 0
-debug 1
+task 2
+debug 0
 issmtx 1
 ipp 1
-N 100
+N 15
 diss_type 0
 diss_gamma 0.1
 diss_phase 0
@@ -11,7 +11,7 @@ drv_ampl 3.4
 drv_freq 1.0
 drv_phase 0.0
 prm_E 0.0
-prm_U 0.5
+prm_U 0.2
 prm_J 1.0
 num_steps 10000
 num_periods_trans 10

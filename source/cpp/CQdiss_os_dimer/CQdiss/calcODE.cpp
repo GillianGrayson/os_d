@@ -166,7 +166,7 @@ void initRhoODE(Model *m, RunParam &rp, ConfigParam &cp, MainData &md)
 	delete[] psi;
 }
 
-void initRhoODE_floquet(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, int state_id)
+void initRhoODE_floquet_base(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, int state_id)
 {
 	int N = m->N;
 	int N_mat = m->N_mat;
@@ -213,6 +213,21 @@ void initRhoODE_floquet(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, i
 	}
 
 	delete[] psi;
+}
+
+void initRhoODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, int state_id)
+{
+	int N_mat = m->N_mat;
+	dcomplex  * RhoF = m->RhoF;
+
+	for (int i = 0; i < N_mat; i++)
+	{
+		RhoF[i].re = 0.0;
+		RhoF[i].im = 0.0;
+	}
+
+	RhoF[state_id].re = 1.0;
+	RhoF[state_id].im = 0.0;
 }
 
 dcomplex calcDiffIter(Model *m)
@@ -372,12 +387,11 @@ void calcODE_std(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData
 	}
 	after(m);
 }
-void calcODE_floquet(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
+void calcODE_floquet_base(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
 {
 	int i;
 	int N_mat = m->N_mat;
 	double * RhoF = (double *)(m->RhoF);
-	double * prevRhoF = (double *)(m->prevRhoF);
 
 	double * k1 = pd.k1;
 	double * k2 = pd.k2;
@@ -396,7 +410,7 @@ void calcODE_floquet(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, Prop
 	{
 		cout << "floquet: " << fl_id << endl;
 
-		initRhoODE_floquet(m, rp, cp, md, fl_id);
+		initRhoODE_floquet_base(m, rp, cp, md, fl_id);
 		double time = 0;
 
 		before(m);
@@ -440,6 +454,70 @@ void calcODE_floquet(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, Prop
 				pd.floquet[index].real = m->Rho->Value[k].re;
 				pd.floquet[index].imag = m->Rho->Value[k].im;
 			}
+		}
+	}
+}
+
+void calcODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, PropData &pd)
+{
+	int i;
+	int N_mat = m->N_mat;
+	double * RhoF = (double *)(m->RhoF);
+
+	double * k1 = pd.k1;
+	double * k2 = pd.k2;
+	double * k3 = pd.k3;
+	double * k4 = pd.k4;
+	double * val = pd.val;
+	double * tmp = pd.tmp;
+	double * tmp_drv = pd.tmp_drv;
+
+	double step = md.step;
+
+	int size = md.size;
+	int size_xtd = size * size - 1;
+
+	for (int fl_id = 0; fl_id < size_xtd; fl_id++)
+	{
+		cout << "floquet: " << fl_id << endl;
+
+		initRhoODE_floquet_f(m, rp, cp, md, fl_id);
+		double time = 0;
+
+		before(m);
+		for (int step_id = 0; step_id < cp.num_steps; step_id++)
+		{
+			time = step_id * md.step;
+
+			calcVectValue_real(time, step, m, RhoF, k1, tmp, tmp_drv);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i] = RhoF[i] + k1[i] / 2.0;
+			}
+			calcVectValue_real(time + step / 2.0, step, m, val, k2, tmp, tmp_drv);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i] = RhoF[i] + k2[i] / 2.0;
+			}
+			calcVectValue_real(time + step / 2.0, step, m, val, k3, tmp, tmp_drv);
+			for (i = 0; i < N_mat; i++)
+			{
+				val[i] = RhoF[i] + k3[i];
+			}
+			calcVectValue_real(time + step, step, m, val, k4, tmp, tmp_drv);
+
+			for (i = 0; i < N_mat; i++)
+			{
+				RhoF[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) / 6.0;
+			}
+		}
+		after(m);
+
+		for (int i = 0; i < size_xtd; i++)
+		{
+			int index = i * size_xtd + fl_id;
+			pd.floquet[index].real = m->RhoF[i].re;
+			pd.floquet[index].imag = m->RhoF[i].im;
 		}
 	}
 }

@@ -22,9 +22,13 @@ int main(int argc, char ** argv)
 	{
 		f_basis_prop_std(rp, cp, md);
 	}
-	else if (rp.task == FLOQUET_ID_DEEP)
+	else if (rp.task == FLOQUET_ID_BASE)
 	{
-		f_basis_prop_floquet(rp, cp, md);
+		f_basis_prop_floquet_base(rp, cp, md);
+	}
+	else if (rp.task == FLOQUET_ID_F)
+	{
+		f_basis_prop_floquet_f(rp, cp, md);
 	}
 	else
 	{
