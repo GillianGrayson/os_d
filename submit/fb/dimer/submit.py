@@ -4,9 +4,9 @@ import os.path
 
 type = FSType.mpipks_sd
 
-U_start = 0.01
-U_shift = 0.01
-U_num = 1
+U_start = 0.005
+U_shift = 0.005
+U_num = 150
 
 ampl_start = 3.4
 ampl_shift = 0.05
@@ -22,11 +22,11 @@ for U_id in range(0, U_num):
         print('U: ' + str(U))
         print('A: ' + str(ampl))
 
-        task = 0
+        task = 2
         debug = 0
         issmtx = 1
         ipp = 1
-        N = 100
+        N = 25
         diss_type = 0
         diss_gamma = 0.1
         diss_phase = 0.0
@@ -39,7 +39,7 @@ for U_id in range(0, U_num):
         prm_J = 1.0
         num_steps = 10000
         num_periods_trans = 100
-        num_periods_obser = 1
+        num_periods_obser = 0
         seed = 1
         max_num_seeds = 1000000
         int_ist = 1
@@ -60,6 +60,7 @@ for U_id in range(0, U_num):
 
         local_path = \
             '/task_' + str(task) + \
+            '/int_' + str(num_steps) + '_' + str(num_periods_trans) + '_' + str(num_periods_obser) + \
             '/N_' + str(N) + \
             '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
             '/drv_' + str(drv_type) + '_' + drv_ampl_str + '_' + drv_freq_str + '_' + drv_phase_str + \
@@ -96,7 +97,10 @@ for U_id in range(0, U_num):
         file_config.write('int_dn ' + str(int_dn) + '\n')
         file_config.close()
 
-        fn_test = fn_path + '/rho.txt'
+        if task == 0:
+            fn_test = fn_path + '/rho.txt'
+        elif task == 1 or task == 2:
+            fn_test = fn_path + '/floquet_evals.txt'
 
         if not os.path.isfile(fn_test):
             if type == FSType.unn:

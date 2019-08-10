@@ -411,6 +411,7 @@ void calcODE_floquet_base(Model *m, RunParam &rp, ConfigParam &cp, MainData &md,
 		cout << "floquet: " << fl_id << endl;
 
 		initRhoODE_floquet_base(m, rp, cp, md, fl_id);
+
 		double time = 0;
 
 		before(m);
@@ -482,6 +483,13 @@ void calcODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, Pr
 		cout << "floquet: " << fl_id << endl;
 
 		initRhoODE_floquet_f(m, rp, cp, md, fl_id);
+
+		if (rp.debug == 1)
+		{
+			string fn = "init_rho_f_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			save_complex_data(fn, (MKL_Complex16 *)m->RhoF, m->N_mat, 16, false);
+		}
+
 		double time = 0;
 
 		before(m);
@@ -519,6 +527,12 @@ void calcODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, Pr
 			pd.floquet[index].real = m->RhoF[i].re;
 			pd.floquet[index].imag = m->RhoF[i].im;
 		}
+	}
+
+	if (rp.debug == 1)
+	{
+		string fn = "floquet_mtx" + file_name_suffix(cp, 4);
+		save_complex_data(fn, pd.floquet, size_xtd * size_xtd, 16, false);
 	}
 }
 
