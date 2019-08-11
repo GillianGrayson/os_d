@@ -521,6 +521,16 @@ void calcODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, Pr
 		}
 		after(m);
 
+		if (rp.debug == 1)
+		{
+			string fn = "after_rho_f_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			save_complex_data(fn, (MKL_Complex16 *)m->RhoF, m->N_mat, 16, false);
+
+			calcRho(m);
+			fn = "after_rho_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			save_sparse_complex_mtx(fn, m->Rho, 16, false);
+		}
+
 		for (int i = 0; i < size_xtd; i++)
 		{
 			int index = i * size_xtd + fl_id;
