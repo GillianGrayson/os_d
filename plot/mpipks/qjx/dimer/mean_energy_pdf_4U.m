@@ -8,11 +8,11 @@ task_id = 1;
 prop_id = 1;
 
 ex_deep = 16;
-rk_ns = 10000;
-num_tp_periods = 100;
+rk_ns = 100000;
+num_tp_periods = 101;
 num_obs_periods = 100;
 
-N = 250;
+N = 500;
 
 Us = [0.1; 0.1125; 0.125; 0.15];
 
@@ -34,13 +34,13 @@ start_state = 0;
 ss = 0;
 mns = 1000000;
 
-num_trajectories = 10;
-num_runs = 10;
+num_trajectories = 1;
+num_runs = 100;
 
 sys_size = N + 1;
 
-num_bins_x = sys_size;
-num_bins_y = sys_size;
+num_bins_x = 200;
+num_bins_y = 200;
 
 starts_x = [0.125; 0.5; 0.125; 0.5];
 shifts_x = [0.37; 0.37; 0.37; 0.37]; 

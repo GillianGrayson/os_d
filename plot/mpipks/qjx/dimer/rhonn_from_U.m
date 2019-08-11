@@ -9,10 +9,10 @@ prop_id = 1;
 
 ex_deep = 16;
 rk_ns = 10000;
-num_tp_periods = 100;
+num_tp_periods = 99;
 num_obs_periods = 100;
 
-N = 500;
+N = 100;
 
 diss_type = 0;
 diss_gamma = 0.1;
@@ -37,9 +37,9 @@ num_runs = 10;
 
 sys_size = N + 1;
 
-U_begin = 0.05;
-U_step = 0.0025;
-U_num = 101;
+U_begin = 0.01;
+U_step = 0.01;
+U_num = 100;
 
 Us = zeros(U_num, 1);
 states = linspace(1, sys_size, sys_size);

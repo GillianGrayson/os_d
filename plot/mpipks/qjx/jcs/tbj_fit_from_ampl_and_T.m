@@ -7,6 +7,8 @@ T = 1;
 num_trajectories = 10;
 num_runs = 1;
 
+min_decades = 2;
+
 sys_id = 1;
 task_id = 1;
 prop_id = 0;
@@ -145,7 +147,7 @@ for T_id = 1:T_num
         end
         norm_check = norm_check;
         
-        [x_min, x_max] = find_range(bin_centers, curr_pdf);
+        [x_min, x_max] = find_range(bin_centers, curr_pdf, min_decades);
         [alpha, coef, R2, yy, R2_, cnt] = powerlaw_regression(bin_centers, curr_pdf, x_min, x_max);
         
         curr_pdf = [];
@@ -171,8 +173,9 @@ for T_id = 1:T_num
     
 end
 
-suffix_save = sprintf('N(%d)_diss(%d)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)', ...
-    N, ...
+suffix_save = sprintf('decs(%0.4f)_N(%d)_diss(%d)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)', ...
+    min_decades, ...
+	N, ...
     diss_type, ...
     jcs_drv_part_1, ...
     jcs_drv_part_2, ...
@@ -256,12 +259,12 @@ R2_ = 1 - sum((y0 - yy).^2) / sum((y0 - mean(y0)).^2);
 
 end
 
-function [i_max, j_max] = find_range(x, y)
+function [i_max, j_max] = find_range(x, y, min_len)
 i_max = 1; j_max = 1;
 ids = y > 0;
 x = x(ids);
 y = y(ids);
-len = 1.0;
+len = min_len;
 R2_max = 0;
 for i = 1:size(x)
     for j = i:size(x)
@@ -270,7 +273,7 @@ for i = 1:size(x)
             continue;
         end
         curlen = log10(x(j)) - log10(x(i));
-        if R2_pow > 0.98 &&  curlen > 1.0
+        if R2_pow > 0.98 &&  curlen > min_len
             curlen = curlen + 120 * (R2_pow - 0.98);
             if abs(len - curlen) <= 0.01
                 if R2_pow > R2_max
