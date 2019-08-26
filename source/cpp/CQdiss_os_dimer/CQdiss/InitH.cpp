@@ -260,7 +260,9 @@ crsMatrix * create_H_base_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainD
 
 	double * h_diag1 = new double[N + 1];
 	double * h_diag2 = new double[N + 1];
+	double * h_diag_U = new double[N + 1];
 	double tr = 0.0;
+	double tr_u = 0.0;
 
 	for (i = 0; i < N + 1; i++)
 	{
@@ -269,13 +271,19 @@ crsMatrix * create_H_base_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainD
 
 	for (i = 0; i < N + 1; i++)
 	{
+		h_diag_U[i] = (h_diag1[i] * h_diag1[i] * U / N);
+		tr_u += h_diag_U[i];
+
 		h_diag2[i] = (h_diag1[i] * E + h_diag1[i] * h_diag1[i] * U / N);
 		tr += h_diag2[i];
 	}
+	tr_u /= (N + 1);
 	tr /= (N + 1);
+
 
 	for (i = 0; i < N + 1; i++)
 	{
+		h_diag_U[i] -= tr_u;
 		h_diag2[i] -= tr;
 	}
 
@@ -295,6 +303,7 @@ crsMatrix * create_H_base_matrix(Model * m, RunParam &rp, ConfigParam &cp, MainD
 
 	delete[] h_diag1;
 	delete[] h_diag2;
+	delete[] h_diag_U;
 
 	if (rp.debug == 1)
 	{

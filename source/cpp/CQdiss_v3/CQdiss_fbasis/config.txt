@@ -1,0 +1,11 @@
+N, 10
+J, -1.0 
+E0, 0.0 
+U, 0.5 
+g, 0.10000
+A0, -3.4
+w, 1
+hasDriving, 1
+CalcEig, 0
+N_T, 10
+NSTEP, 10000

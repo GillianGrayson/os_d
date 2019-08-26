@@ -1,9 +1,9 @@
 clear all;
 
-N = 201;
+N = 11;
 J = 1;
 
-for U = 0.1 : 0.01 : 0.1
+for U = 0.5 : 0.01 : 0.5
     
     U = U
     
@@ -17,8 +17,8 @@ for U = 0.1 : 0.01 : 0.1
     tau1 = pi;
     T = 2*pi;
     
-    E = 1.0;
-    amplitude = 1.5;
+    E = 0;
+    amplitude = 3.4;
     period = T;
     
     out_suffix = sprintf('E%0.4f_T%0.4f_A%0.4f_N%d_U%0.4f_J%0.4f_g%0.4f.bin', ...
@@ -48,6 +48,8 @@ for U = 0.1 : 0.01 : 0.1
     H2 = A2 - A1;
     
     %H=-J(b1'*b2+b2'*b1)+U/2*(n1(n1-1)+n2*(n2-1))(+-)e0*(n2-n1)
+    
+    HU = (A1*(A1-eye(N)) + A2*(A2-eye(N)));
     
     H1 = U*2*(A1*(A1-eye(N)) + A2*(A2-eye(N)));
     

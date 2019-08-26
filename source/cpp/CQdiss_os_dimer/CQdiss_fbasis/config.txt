@@ -1,5 +1,5 @@
-task 2
-debug 1
+task 0
+debug 0
 issmtx 1
 ipp 1
 N 10
@@ -14,7 +14,7 @@ prm_E 0.0
 prm_U 0.5
 prm_J 1.0
 num_steps 10000
-num_periods_trans 100
+num_periods_trans 10
 num_periods_obser 0
 seed 1
 max_num_seeds 1000000

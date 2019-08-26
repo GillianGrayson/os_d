@@ -57,6 +57,13 @@ void init_diss(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 
 	crsMatrix * A1 = createA1mat(N);
 	crsMatrix * A2 = createA2mat(N);
+	if (rp.debug == 1)
+	{
+		string fn = "A1" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, A1, 16, false);
+		fn = "A2" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, A2, 16, false);
+	}
 
 	int N_mat = m->N_mat;
 
@@ -65,6 +72,14 @@ void init_diss(Model * m, RunParam &rp, ConfigParam &cp, MainData &md)
 
 	to_F_basis(A1, a1_mat);
 	to_F_basis(A2, a2_mat);
+
+	if (rp.debug == 1)
+	{
+		string fn = "A1F" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, a1_mat, 16, false);
+		fn = "A2F" + file_name_suffix(cp, 4);
+		save_sparse_complex_mtx(fn, a2_mat, 16, false);
+	}
 
 	crsMatrix * a1_i_a2_mat = new crsMatrix(N_mat, a2_mat->NZ + a1_mat->NZ);
 	int k = 0;

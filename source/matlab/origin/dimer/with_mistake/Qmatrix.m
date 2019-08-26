@@ -1,6 +1,6 @@
 clear;
 
-N=20; % number of particles, system size = N+1
+N=10; % number of particles, system size = N+1
 show=0; % if = 1, generated matrices, coefficients, etc. are displayed
 imag1=sqrt(-1);
 

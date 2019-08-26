@@ -171,12 +171,12 @@ void initRhoODE_floquet_base(Model *m, RunParam &rp, ConfigParam &cp, MainData &
 	int N = m->N;
 	int N_mat = m->N_mat;
 	dcomplex  * RhoF = m->RhoF;
-	dcomplex * psi = new dcomplex[(N + 1)*(N + 1)];
+	dcomplex * psi = new dcomplex[(N + 1) * (N + 1)];
 	init_conditions_floquet(psi, rp, cp, md, state_id);
 
 	if (rp.debug == 1)
 	{
-		string fn = "rho_ini_floquet_" + std::to_string(state_id) + file_name_suffix(cp, 4);
+		string fn = "psi_init_" + std::to_string(state_id) + file_name_suffix(cp, 4);
 		save_complex_data(fn, (MKL_Complex16 *)psi, (N + 1) * (N + 1), 16, false);
 	}
 
@@ -412,6 +412,16 @@ void calcODE_floquet_base(Model *m, RunParam &rp, ConfigParam &cp, MainData &md,
 
 		initRhoODE_floquet_base(m, rp, cp, md, fl_id);
 
+		if (rp.debug == 1)
+		{
+			string fn = "rho_f_before_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			save_complex_data(fn, (MKL_Complex16 *)m->RhoF, m->N_mat, 16, false);
+
+			calcRho(m);
+			fn = "rho_before_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			save_sparse_complex_mtx(fn, m->Rho, 16, false);
+		}
+
 		double time = 0;
 
 		before(m);
@@ -443,6 +453,15 @@ void calcODE_floquet_base(Model *m, RunParam &rp, ConfigParam &cp, MainData &md,
 		}
 		after(m);
 		calcRho(m);
+
+		if (rp.debug == 1)
+		{
+			string fn = "rho_f_after_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			save_complex_data(fn, (MKL_Complex16 *)m->RhoF, m->N_mat, 16, false);
+
+			fn = "rho_after_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			save_sparse_complex_mtx(fn, m->Rho, 16, false);
+		}
 
 		for (int i = 0; i < size; i++)
 		{
@@ -486,8 +505,12 @@ void calcODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, Pr
 
 		if (rp.debug == 1)
 		{
-			string fn = "init_rho_f_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			string fn = "rho_f_before_" + to_string(fl_id) + file_name_suffix(cp, 4);
 			save_complex_data(fn, (MKL_Complex16 *)m->RhoF, m->N_mat, 16, false);
+
+			calcRho(m);
+			fn = "rho_before_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			save_sparse_complex_mtx(fn, m->Rho, 16, false);
 		}
 
 		double time = 0;
@@ -520,14 +543,14 @@ void calcODE_floquet_f(Model *m, RunParam &rp, ConfigParam &cp, MainData &md, Pr
 			}
 		}
 		after(m);
+		calcRho(m);
 
 		if (rp.debug == 1)
 		{
-			string fn = "after_rho_f_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			string fn = "rho_f_after_" + to_string(fl_id) + file_name_suffix(cp, 4);
 			save_complex_data(fn, (MKL_Complex16 *)m->RhoF, m->N_mat, 16, false);
 
-			calcRho(m);
-			fn = "after_rho_" + to_string(fl_id) + file_name_suffix(cp, 4);
+			fn = "rho_after_" + to_string(fl_id) + file_name_suffix(cp, 4);
 			save_sparse_complex_mtx(fn, m->Rho, 16, false);
 		}
 
