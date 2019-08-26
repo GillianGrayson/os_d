@@ -1,5 +1,5 @@
-task 0
-debug 0
+task 2
+debug 1
 issmtx 1
 ipp 1
 N 10
