@@ -41,6 +41,7 @@ ps_prm_alpha 5
 ps_prm_d 0.0
 ps_prm_g 0.0
 ps_diss_w 0.05
+mbl_prm_W 10.0
 start_type 0
 start_state 0
 cd_dim 1

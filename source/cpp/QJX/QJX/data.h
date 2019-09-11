@@ -9,6 +9,14 @@ struct MainData
 	int num_diss;						// Number of dissipators
 	int num_ham_qj;						// Number of qj hamiltonians
 
+	int mbl_Nc;
+	int mbl_Np;
+	int mbl_Ns;
+
+	int * mbl_adjacement;	// aux array for define adjacement states
+	int * mbl_x_to_id;		// aux array for id definition from binary representation
+	int * mbl_id_to_x;      // aux array for binary representation definition from id
+
 	double T;							// Period
 
 	double * hamiltonian;				// Hamiltonian

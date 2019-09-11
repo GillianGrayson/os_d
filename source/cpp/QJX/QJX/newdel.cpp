@@ -122,6 +122,96 @@ void PSNewDelBehaviour::init_sizes(AllData * ad) const
 	md->T = T;
 }
 
+void MBLNewDelBehaviour::init_sizes(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	cout << "max_num_threads: " << omp_get_max_threads() << endl;
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_before_init: " << omp_get_num_threads() << endl;
+		}
+	}
+	int num_threads = rp->num_threads;
+	cout << "num_threads_target: " << num_threads << endl;
+	omp_set_num_threads(num_threads);
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_after_init: " << omp_get_num_threads() << endl;
+		}
+	}
+
+	md->mbl_Nc = int(cp->params.find("N")->second); // Number of cells
+	if (md->mbl_Nc % 2 != 0)
+	{
+		stringstream msg;
+		msg << "Nc must divide by 2 without any remainder" << endl;
+		Error(msg.str());
+	}
+
+	md->mbl_Np = md->mbl_Nc / 2;
+	md->mbl_Ns = n_choose_k(md->mbl_Nc, md->mbl_Np);
+
+	int num_global_states = pow(2, md->mbl_Nc);
+
+	md->mbl_adjacement = new int[num_global_states];
+	md->mbl_x_to_id = new int[num_global_states];
+	md->mbl_id_to_x = new int[md->mbl_Ns];
+
+	int state_id = 0;
+	for (int global_state_id = 0; global_state_id < num_global_states; global_state_id++)
+	{
+		if ((bit_count(global_state_id) == 2) && (bit_count(global_state_id & (global_state_id << 1)) == 1))
+		{
+			md->mbl_adjacement[global_state_id] = 1;
+		}
+		else
+		{
+			md->mbl_adjacement[global_state_id] = 0;
+		}
+
+		if (bit_count(global_state_id) == md->mbl_Np)
+		{
+			md->mbl_x_to_id[global_state_id] = state_id + 1;
+			md->mbl_id_to_x[state_id] = global_state_id;
+			state_id++;
+		}
+		else
+		{
+			md->mbl_x_to_id[global_state_id] = 0;
+		}
+	}
+
+	if (md->mbl_Ns != state_id)
+	{
+		stringstream msg;
+		msg << "wrong num states calculation" << endl;
+		Error(msg.str());
+	}
+
+	md->sys_size = md->mbl_Ns;
+	int diss_type = int(cp->params.find("diss_type")->second);
+	if (diss_type == 0)
+	{
+		md->num_diss = md->mbl_Nc;
+	}
+	else if (diss_type == 1)
+	{
+		md->num_diss = md->mbl_Nc - 1;
+	}
+	
+	md->num_ham_qj = 1;
+	md->T = 1.0;
+}
+
 void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 {
 	ConfigParam * cp = ad->cp;
@@ -456,6 +546,99 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	}
 }
 
+void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	md->hamiltonian = new double[md->sys_size * md->sys_size];
+	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special_3 = new MKL_Complex16[md->sys_size * md->sys_size];
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonian[index] = 0.0;
+
+			md->special[index].real = 0.0;
+			md->special[index].imag = 0.0;
+
+			md->special_2[index].real = 0.0;
+			md->special_2[index].imag = 0.0;
+
+			md->special_3[index].real = 0.0;
+			md->special_3[index].imag = 0.0;
+		}
+	}
+
+	// ========= disorder data ==========
+	double mbl_prm_W = double(cp->params.find("mbl_prm_W")->second);
+
+	double* energies = new double[md->mbl_Nc];
+
+	VSLStreamStatePtr stream;
+	vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
+	vslLeapfrogStream(stream, cp->seed, cp->mns);
+	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, stream, md->mbl_Nc, energies, -1.0, 1.0);
+
+	string energies_fn = "energies" + cp->fn_suffix;
+	cout << "save energies to file:" << endl << energies_fn << endl << endl;
+	save_double_data(energies_fn, energies, md->mbl_Nc, 16, false);
+
+	for (int state_id = 0; state_id < md->mbl_Ns; state_id++)
+	{
+		vector<int> vb = convert_int_to_vector_of_bits(md->mbl_id_to_x[state_id], md->mbl_Nc);
+		double sum = 0.0;
+		for (int cell_id = 0; cell_id < md->mbl_Nc; cell_id++)
+		{
+			sum += double(vb[cell_id]) * energies[cell_id];
+		}
+		sum *= 1.0 * mbl_prm_W;
+
+		md->hamiltonian[state_id * md->mbl_Ns + state_id] += sum;
+	}
+
+	delete[] energies;
+	// =================================
+
+	// ============= interaction =============
+	double mbl_prm_U = double(cp->params.find("mbl_prm_U")->second);
+	for (int state_id = 0; state_id < md->mbl_Ns; state_id++)
+	{
+		md->hamiltonian[state_id * md->mbl_Ns + state_id] += mbl_prm_U * bit_count(md->mbl_id_to_x[state_id] & (md->mbl_id_to_x[state_id] << 1));
+	}
+	// =======================================
+
+	// ============ hopping ===============
+	double mbl_prm_J = double(cp->params.find("mbl_prm_J")->second);
+	for (int state_id_1 = 0; state_id_1 < md->mbl_Ns; state_id_1++)
+	{
+		for (int state_id_2 = 0; state_id_2 < md->mbl_Ns; state_id_2++)
+		{
+			md->hamiltonian[state_id_1 * md->mbl_Ns + state_id_2] -= mbl_prm_J * md->mbl_adjacement[md->mbl_id_to_x[state_id_1] ^ md->mbl_id_to_x[state_id_2]];
+		}
+	}
+	// ====================================
+
+	// ========== init special matrix ==========
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->special[index].real = md->hamiltonian[index];
+			md->special[index].imag = 0.0;
+		}
+	}
+	// =========================================
+}
+
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
 {
 	ConfigParam * cp = ad->cp;
@@ -649,6 +832,119 @@ void PSNewDelBehaviour::init_dissipators(AllData * ad) const
 
 					md->dissipators[s_id + 1][index].real = s_sigma_minus_kron(st_id_1, st_id_2);
 					md->dissipators[s_id + 1][index].imag = 0.0;
+				}
+			}
+		}
+	}
+}
+
+void MBLNewDelBehaviour::init_dissipators(AllData * ad) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	int sys_size = md->sys_size;
+
+	md->dissipators = new MKL_Complex16 *[md->num_diss];
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		md->dissipators[diss_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+			{
+				md->dissipators[diss_id][index].real = 0.0;
+				md->dissipators[diss_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	int diss_type = int(cp->params.find("diss_type")->second);
+	double diss_phase = double(cp->params.find("diss_phase")->second);
+
+	if (diss_type == 0)
+	{
+		for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+		{
+			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+			{
+				int index = st_id_1 * md->sys_size + st_id_1;
+				md->dissipators[diss_id][index].real = double(bit_at(md->mbl_id_to_x[st_id_1], diss_id));
+			}
+		}
+	}
+	else if (diss_type == 1)
+	{
+		for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+		{
+			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+			{
+				int index = st_id_1 * md->sys_size + st_id_1;
+				md->dissipators[diss_id][index].real = double(bit_at(md->mbl_id_to_x[st_id_1], diss_id)) - double(bit_at(md->mbl_id_to_x[st_id_1], diss_id + 1));
+			}
+
+			int tmp = 0;
+			for (int state_id_1 = 0; state_id_1 < md->mbl_Ns; state_id_1++)
+			{
+				int row_id = state_id_1;
+
+				tmp = bit_at(md->mbl_id_to_x[state_id_1], diss_id) - bit_at(md->mbl_id_to_x[state_id_1], diss_id + 1);
+
+				int col_id = 0;
+
+				if (tmp == 0)
+				{
+					col_id = state_id_1;
+				}
+				else
+				{
+					for (int state_id_2 = 0; state_id_2 < md->mbl_Ns; state_id_2++)
+					{
+						if (md->mbl_adjacement[md->mbl_id_to_x[state_id_1] ^ md->mbl_id_to_x[state_id_2]])
+						{
+							vector<int> adjacency_bits = convert_int_to_vector_of_bits(md->mbl_id_to_x[state_id_1] ^ md->mbl_id_to_x[state_id_2], md->mbl_Nc);
+							vector<int> hop;
+							for (int cell_id = 0; cell_id < md->mbl_Nc; cell_id++)
+							{
+								if (adjacency_bits[cell_id])
+								{
+									hop.push_back(cell_id);
+								}
+							}
+
+							for (int ad_cell_id = 0; ad_cell_id < hop.size(); ad_cell_id++)
+							{
+								hop[ad_cell_id] = (md->mbl_Nc - 1) - hop[ad_cell_id];
+							}
+
+							if (hop[1] == diss_id)
+							{
+								if (bit_at(md->mbl_id_to_x[state_id_1], diss_id))
+								{
+									col_id = state_id_2;
+									int index = row_id * md->sys_size + col_id;
+									md->dissipators[diss_id][index].real = sin(-diss_phase);
+									md->dissipators[diss_id][index].imag = -cos(-diss_phase);
+								}
+								else
+								{
+									col_id = state_id_2;
+									int index = row_id * md->sys_size + col_id;
+									md->dissipators[diss_id][index].real = -sin(diss_phase);
+									md->dissipators[diss_id][index].imag = cos(diss_phase);
+								}
+							}
+
+							adjacency_bits.clear();
+							hop.clear();
+						}
+					}
 				}
 			}
 		}
@@ -1012,6 +1308,99 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 	delete[] hamitlonian_part;
 }
 
+void MBLNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	double diss_gamma = double(cp->params.find("diss_gamma")->second);
+
+	MKL_Complex16 diss_gamma_cmplx = { diss_gamma, 0.0 };
+	MKL_Complex16 zero_cmplx = { 0.0, 0.0 };
+
+	md->hamiltonians_qj = new MKL_Complex16*[md->num_ham_qj];
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		md->hamiltonians_qj[qj_ham_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+
+	MKL_Complex16 * diss_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	MKL_Complex16 * hamitlonian_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			diss_part[index].real = 0.0;
+			diss_part[index].imag = 0.0;
+
+			hamitlonian_part[index].real = md->hamiltonian[index];
+			hamitlonian_part[index].imag = 0.0;
+
+			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+			{
+				md->hamiltonians_qj[qj_ham_id][index].real = 0.0;
+				md->hamiltonians_qj[qj_ham_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		cblas_zgemm(
+			CblasRowMajor,
+			CblasConjTrans,
+			CblasNoTrans,
+			md->sys_size,
+			md->sys_size,
+			md->sys_size,
+			&diss_gamma_cmplx,
+			md->dissipators[diss_id],
+			md->sys_size,
+			md->dissipators[diss_id],
+			md->sys_size,
+			&zero_cmplx,
+			diss_part,
+			md->sys_size
+		);
+
+		for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+		{
+			for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+			{
+				int index = st_id_1 * md->sys_size + st_id_2;
+				hamitlonian_part[index].real += 0.5 * diss_part[index].imag;
+				hamitlonian_part[index].imag -= 0.5 * diss_part[index].real;
+			}
+		}
+	}
+
+	md->non_drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->non_drv_part[index].real = hamitlonian_part[index].real;
+			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
+		}
+	}
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->hamiltonians_qj[0][index].real += hamitlonian_part[index].imag;
+			md->hamiltonians_qj[0][index].imag -= hamitlonian_part[index].real;
+		}
+	}
+
+	delete[] diss_part;
+	delete[] hamitlonian_part;
+}
+
 void DimerNewDelBehaviour::free_hamiltonians(AllData * ad) const
 {
 	MainData * md = ad->md;
@@ -1042,6 +1431,16 @@ void PSNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	delete[] md->special_3;
 }
 
+void MBLNewDelBehaviour::free_hamiltonians(AllData * ad) const
+{
+	MainData * md = ad->md;
+
+	delete[] md->hamiltonian;
+	delete[] md->special;
+	delete[] md->special_2;
+	delete[] md->special_3;
+}
+
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
 {
 	MainData * md = ad->md;
@@ -1065,6 +1464,17 @@ void JCSNewDelBehaviour::free_dissipators(AllData * ad) const
 }
 
 void PSNewDelBehaviour::free_dissipators(AllData * ad) const
+{
+	MainData * md = ad->md;
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		delete[] md->dissipators[diss_id];
+	}
+	delete[] md->dissipators;
+}
+
+void MBLNewDelBehaviour::free_dissipators(AllData * ad) const
 {
 	MainData * md = ad->md;
 
@@ -1109,6 +1519,19 @@ void PSNewDelBehaviour::free_hamiltonians_qj(AllData * ad) const
 
 	delete[] md->non_drv_part;
 	delete[] md->drv_part;
+
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		delete[] md->hamiltonians_qj[qj_ham_id];
+	}
+	delete[] md->hamiltonians_qj;
+}
+
+void MBLNewDelBehaviour::free_hamiltonians_qj(AllData * ad) const
+{
+	MainData * md = ad->md;
+
+	delete[] md->non_drv_part;
 
 	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
 	{

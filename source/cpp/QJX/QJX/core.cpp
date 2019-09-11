@@ -1771,13 +1771,6 @@ void JCSCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 
 
-
-
-
-
-
-
-
 void PSCoreBehaviour::init_splits(AllData * ad) const
 {
 	RunParam * rp = ad->rp;
@@ -2630,6 +2623,821 @@ void PSCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 
 
+void MBLCoreBehaviour::init_splits(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+	int num_threads = rp->num_threads;
+
+	int num_total = num_threads * num_branches;
+
+	md->structure = init_split_structure_mbl(ad);
+	cout << "init_split_structure_ps" << endl;
+	md->splits = new Split[num_total];
+
+	for (int b_id = 0; b_id < num_branches; b_id++)
+	{
+		for (int th_id = 0; th_id < num_threads; th_id++)
+		{
+			int index = b_id * num_threads + th_id;
+			copy_struct_not_member(&(md->structure)[b_id], &(md->splits)[index]);
+		}
+	}
+}
+
+void MBLCoreBehaviour::free_splits(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+	int num_threads = rp->num_threads;
+
+	for (int b_id = 0; b_id < num_branches; b_id++)
+	{
+		for (int th_id = 0; th_id < num_threads; th_id++)
+		{
+			int index = b_id * num_threads + th_id;
+			delete_split_struct_not_member(&(md->splits[index]));
+		}
+	}
+
+	delete(md->splits);
+	delete_split_struct(md->structure);
+}
+
+void MBLCoreBehaviour::init_splits_deep(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+	int num_threads = rp->num_threads;
+
+	int num_total = num_threads * num_branches;
+
+	md->structure = init_split_structure_mbl_deep(ad);
+	md->splits = new Split[num_total];
+
+	for (int b_id = 0; b_id < num_branches; b_id++)
+	{
+		for (int th_id = 0; th_id < num_threads; th_id++)
+		{
+			int index = b_id * num_threads + th_id;
+			copy_struct_not_member(&(md->structure)[b_id], &(md->splits)[index]);
+		}
+	}
+}
+
+void MBLCoreBehaviour::free_splits_deep(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+	int num_threads = rp->num_threads;
+
+	for (int b_id = 0; b_id < num_branches; b_id++)
+	{
+		for (int th_id = 0; th_id < num_threads; th_id++)
+		{
+			int index = b_id * num_threads + th_id;
+			delete_split_struct_not_member(&(md->splits[index]));
+		}
+	}
+
+	delete(md->splits);
+	delete_split_struct(md->structure);
+}
+
+void MBLCoreBehaviour::ex_period(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		one_sub_period_deep(ad, tr_id, part_id, th_id);
+	}
+}
+
+void MBLCoreBehaviour::ex_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps = int(cp->params.find("deep_num_steps")->second);
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps; sub_step_id++)
+		{
+			one_sub_period_deep(ad, tr_id, part_id, th_id);
+		}
+	}
+}
+
+void MBLCoreBehaviour::ex_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
+
+	int dump_point_id = 0;
+	int global_point_id = 0;
+
+	int step_id = 0;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			step_id = part_id * num_sub_steps_per_part + sub_step_id;
+
+			global_point_id = period_id * num_sub_steps + dump_point_id;
+			dump_point_id++;
+
+			one_sub_period_deep(ad, tr_id, part_id, th_id);
+			calc_chars_std(ad, tr_id);
+
+			int dump_id = global_point_id + 1;
+
+			evo_chars_std(ad, tr_id, dump_id);
+
+			if (dump_evo_sep == 1)
+			{
+				dump_adr_single(ad, tr_id, true);
+			}
+		}
+	}
+}
+
+void MBLCoreBehaviour::ex_period_obs_deep_lpn(AllData * ad, int period_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	double T = md->T;
+	
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+
+	int num_trajectories = cp->num_trajectories;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
+
+	int dump_point_id = 0;
+	int global_point_id = 0;
+
+	int step_id = 0;
+
+	CoreBehavior * tmp = new MBLCoreBehaviour;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			step_id = part_id * num_sub_steps_per_part + sub_step_id;
+
+			global_point_id = period_id * num_sub_steps + dump_point_id;
+			dump_point_id++;
+			int dump_id = global_point_id + 1;
+
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * T;
+
+			one_sub_period_deep(ad, 0, part_id, 0);
+			calc_chars_std(ad, 0);
+			calc_chars_lpn(ad, 0, 0);
+			evo_chars_std(ad, 0, dump_id);
+			evo_chars_lpn(ad, 0, dump_id);
+
+#pragma omp parallel for
+			for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+			{
+				int thread_id = omp_get_thread_num();
+				one_sub_period_deep(ad, tr_id, part_id, thread_id);
+				calc_chars_std(ad, tr_id);
+				lambda_lpn(ad, tmp, tr_id, 0);
+				evo_chars_std(ad, tr_id, dump_id);
+				evo_chars_lpn(ad, tr_id, dump_id);
+			}
+
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				if (dump_evo_sep == 1)
+				{
+					dump_adr_single(ad, tr_id, true);
+				}
+			}
+		}
+	}
+
+	delete tmp;
+}
+
+void MBLCoreBehaviour::ex_period_obs_deep_lpn_per_period(struct AllData* ad, int period_id, int num_periods) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	double T = md->T;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+
+	int num_trajectories = cp->num_trajectories;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
+
+	int dump_point_id = 0;
+	int global_point_id = 0;
+
+	int step_id = 0;
+
+	CoreBehavior * tmp = new MBLCoreBehaviour;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			step_id = part_id * num_sub_steps_per_part + sub_step_id;
+
+			global_point_id = period_id * num_sub_steps + dump_point_id;
+			dump_point_id++;
+			int dump_id = global_point_id + 1;
+
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * T;
+
+			one_sub_period_deep(ad, 0, part_id, 0);
+			calc_chars_std(ad, 0);
+			calc_chars_lpn(ad, 0, 0);
+			evo_chars_std(ad, 0, dump_id);
+			evo_chars_lpn(ad, 0, dump_id);
+
+#pragma omp parallel for
+			for (int tr_id = 1; tr_id < num_trajectories; tr_id++)
+			{
+				int thread_id = omp_get_thread_num();
+				one_sub_period_deep(ad, tr_id, part_id, thread_id);
+				calc_chars_std(ad, tr_id);
+				lambda_lpn_per_periods(ad, tmp, tr_id, 0, num_sub_steps, global_point_id, num_periods);
+				evo_chars_std(ad, tr_id, dump_id);
+				evo_chars_lpn(ad, tr_id, dump_id);
+			}
+
+#pragma omp parallel for
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				if (dump_evo_sep == 1)
+				{
+					dump_adr_single(ad, tr_id, true);
+				}
+			}
+		}
+	}
+
+	delete tmp;
+}
+
+void MBLCoreBehaviour::ex_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
+
+	int dump_point_id = 0;
+	int curr_point_id = 0;
+	int global_point_id = 0;
+
+	int step_id = 0;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		for (int sub_step_id = 0; sub_step_id < num_sub_steps_per_part; sub_step_id++)
+		{
+			step_id = part_id * num_sub_steps_per_part + sub_step_id;
+
+			global_point_id = period_id * num_sub_steps + dump_point_id;
+
+			dump_point_id++;
+
+			double observable = ed->spec[tr_id].real;
+
+			for (int cd_st_id = 0; cd_st_id < ed->cd_dim; cd_st_id++)
+			{
+				curr_point_id = global_point_id - cd_st_id;
+
+				if (curr_point_id >= 0 && curr_point_id < ed->cd_num_points)
+				{
+					ed->cd_rec_data[tr_id][curr_point_id][cd_st_id] = observable;
+				}
+			}
+
+			one_sub_period_deep(ad, tr_id, part_id, th_id);
+			calc_chars_std(ad, tr_id);
+		}
+	}
+}
+
+void MBLCoreBehaviour::ex_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void MBLCoreBehaviour::rk_period(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int num_branches = md->num_ham_qj;
+
+	double T = md->T;
+
+	for (int part_id = 0; part_id < num_branches; part_id++)
+	{
+		double time = double(period_id) * T;
+		
+		for (int in_step_id = 0; in_step_id < cp->rk_ns; in_step_id++)
+		{
+			ed->times_all[tr_id] = time + double(in_step_id) * ed->rk_step;
+			rk_step_ps(ad, tr_id, th_id, ed->rk_step);
+		}
+	}
+}
+
+void MBLCoreBehaviour::rk_period_trp_deep(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void MBLCoreBehaviour::rk_period_obs_deep(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void MBLCoreBehaviour::rk_period_obs_deep_lpn(AllData * ad, int period_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void MBLCoreBehaviour::rk_period_obs_deep_cd(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void MBLCoreBehaviour::rk_period_obs_deep_sigma(AllData * ad, int tr_id, int th_id, int period_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
+}
+
+void MBLCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
+{
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
+	}
+
+	MKL_Complex16 spec = get_spec_mbl(ad, tr_id);
+	ed->norm[tr_id] = norm;
+	ed->spec[tr_id] = spec;
+}
+
+void CoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
+{
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+
+	double norm = norm_square(phi, sys_size);
+
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
+	}
+
+	MKL_Complex16 spec = get_spec_ps(ad, tr_id);
+	MKL_Complex16 spec_2 = get_spec_2_ps(ad, tr_id);
+	MKL_Complex16 spec_3 = get_spec_3_ps(ad, tr_id);
+	MKL_Complex16 num_photons = get_num_photons_ps(ad, tr_id);
+
+	ed->norm[tr_id] = norm;
+	ed->spec[tr_id] = spec;
+	ed->spec_2[tr_id] = spec_2;
+	ed->spec_3[tr_id] = spec_3;
+	ed->mean[tr_id] = num_photons.real;
+}
+
+void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double lambda = 0.0;
+	double lambda_now = 0.0;
+	MKL_Complex16 spec_lpn = ed->spec[tr_id];
+	MKL_Complex16 spec_2_lpn = ed->spec_2[tr_id];
+	MKL_Complex16 spec_3_lpn = ed->spec_3[tr_id];
+	double mean_lpn = ed->mean[tr_id];
+
+	double delta_s = this->calc_delta_f(ad, tr_id, base_tr_id); // Important! Here we use calc_delta_f not calc_delta_s
+
+	ed->lambda[tr_id] = lambda;
+	ed->lambda_now[tr_id] = lambda_now;
+	ed->delta_s[tr_id] = delta_s;
+
+	ed->spec_lpn[tr_id] = spec_lpn;
+	ed->spec_2_lpn[tr_id] = spec_2_lpn;
+	ed->spec_3_lpn[tr_id] = spec_3_lpn;
+	ed->mean_lpn[tr_id] = mean_lpn;
+}
+
+void PSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	MKL_Complex16 spec_lpn = get_spec_ps(ad, tr_id);
+	MKL_Complex16 spec_2_lpn = get_spec_2_ps(ad, tr_id);
+	MKL_Complex16 spec_3_lpn = get_spec_3_ps(ad, tr_id);
+	double mean_lpn = get_num_photons_ps(ad, tr_id).real;
+
+	ed->spec_lpn[tr_id] = spec_lpn;
+	ed->spec_2_lpn[tr_id] = spec_2_lpn;
+	ed->spec_3_lpn[tr_id] = spec_3_lpn;
+	ed->mean_lpn[tr_id] = mean_lpn;
+}
+
+double PSCoreBehaviour::calc_T(AllData * ad) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	double ps_drv_part_1 = double(cp->params.find("ps_drv_part_1")->second);
+	double ps_drv_part_2 = double(cp->params.find("ps_drv_part_2")->second);
+	double T_1 = ps_drv_part_1 * md->T;
+	double T_2 = ps_drv_part_2 * md->T;
+	double T = T_1 + T_2;
+
+	return T;
+}
+
+void PSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
+{
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int dump_num_total = ed->dump_num_total;
+
+	int index = tr_id * dump_num_total + dump_id;
+
+	ed->norm_evo[index] = ed->norm[tr_id];
+	ed->spec_evo[index] = ed->spec[tr_id];
+	ed->spec_2_evo[index] = ed->spec_2[tr_id];
+	ed->spec_3_evo[index] = ed->spec_3[tr_id];
+	ed->mean_evo[index] = ed->mean[tr_id];
+}
+
+void PSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
+{
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int dump_num_total = ed->dump_num_total;
+
+	int index = tr_id * dump_num_total + dump_id;
+
+	ed->lambda_evo[index] = ed->lambda_now[tr_id];
+	ed->spec_lpn_evo[index] = ed->spec_lpn[tr_id];
+	ed->spec_2_lpn_evo[index] = ed->spec_2_lpn[tr_id];
+	ed->spec_3_lpn_evo[index] = ed->spec_3_lpn[tr_id];
+	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
+}
+
+double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int lpn_type = int(cp->params.find("lpn_type")->second);
+
+	double delta_s = 0.0;
+	if (lpn_type == 0)
+	{
+		MKL_Complex16 base = ed->spec_lpn[base_tr_id];
+		MKL_Complex16 var = ed->spec_lpn[tr_id];
+		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
+		delta_s = sqrt(tmp);
+	}
+	else if (lpn_type == 1)
+	{
+		double base = ed->mean_lpn[base_tr_id];
+		double var = ed->mean_lpn[tr_id];
+		delta_s = fabs(var - base) / double(sys_size);
+	}
+	else
+	{
+		stringstream msg;
+		msg << "Error: Wrong lpn_type: " << lpn_type << endl;
+		Error(msg.str());
+	}
+
+	return delta_s;
+}
+
+double PSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) const
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int lpn_type = int(cp->params.find("lpn_type")->second);
+
+	double delta_f = 0.0;
+	if (lpn_type == 0)
+	{
+		MKL_Complex16 base = ed->spec[base_tr_id];
+		MKL_Complex16 var = ed->spec[tr_id];
+		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
+		delta_f = sqrt(tmp);
+	}
+	else if (lpn_type == 1)
+	{
+		double base = ed->mean[base_tr_id];
+		double var = ed->mean[tr_id];
+		delta_f = fabs(var - base) / double(sys_size);
+	}
+	else
+	{
+		stringstream msg;
+		msg << "Error: Wrong lpn_type: " << lpn_type << endl;
+		Error(msg.str());
+	}
+
+	return delta_f;
+}
+
+void PSCoreBehaviour::calc_ci(AllData * ad, int tr_id) const
+{
+	calc_ci_double(ad, tr_id);
+}
+
+void PSCoreBehaviour::dump_std(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		int num_trajectories = cp->num_trajectories;
+
+		double * norm = ed->norm;
+		double * mean = ed->mean;
+		MKL_Complex16 * spec = ed->spec;
+		MKL_Complex16 * spec_2 = ed->spec_2;
+		MKL_Complex16 * spec_3 = ed->spec_3;
+
+		string fn;
+
+		fn = rp->path + "norm" + cp->fn_suffix;
+		save_double_data(fn, norm, num_trajectories, 16, false);
+
+		fn = rp->path + "spec" + cp->fn_suffix;
+		save_complex_data(fn, spec, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_2" + cp->fn_suffix;
+		save_complex_data(fn, spec_2, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_3" + cp->fn_suffix;
+		save_complex_data(fn, spec_3, num_trajectories, 16, false);
+
+		fn = rp->path + "mean" + cp->fn_suffix;
+		save_double_data(fn, mean, num_trajectories, 16, false);
+	}
+}
+
+void PSCoreBehaviour::dump_lpn(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		double * lambda = ed->lambda_now;
+		MKL_Complex16 * spec_lpn = ed->spec_lpn;
+		MKL_Complex16 * spec_2_lpn = ed->spec_2_lpn;
+		MKL_Complex16 * spec_3_lpn = ed->spec_3_lpn;
+		double * mean = ed->mean_lpn;
+
+		string fn;
+
+		fn = rp->path + "lambda" + cp->fn_suffix;
+		save_double_data(fn, lambda, num_trajectories, 16, false);
+
+		int* num_renorms = ed->num_renorms;
+		fn = rp->path + "num_renorms" + cp->fn_suffix;
+		save_int_data(fn, num_renorms, num_trajectories, false);
+
+		fn = rp->path + "spec_lpn" + cp->fn_suffix;
+		save_complex_data(fn, spec_lpn, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_2_lpn" + cp->fn_suffix;
+		save_complex_data(fn, spec_2_lpn, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_3_lpn" + cp->fn_suffix;
+		save_complex_data(fn, spec_3_lpn, num_trajectories, 16, false);
+
+		fn = rp->path + "mean_lpn" + cp->fn_suffix;
+		save_double_data(fn, mean, num_trajectories, 16, false);
+
+		int save_lambdas = int(ad->cp->params.find("save_lambdas")->second);
+		if (save_lambdas > 0)
+		{
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				fn = rp->path + "delta_f_by_delta_s_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->lambdas[tr_id], 16, false);
+
+				fn = rp->path + "deltas_s_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->deltas_s[tr_id], 16, false);
+
+				fn = rp->path + "deltas_f_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->deltas_f[tr_id], 16, false);
+			}
+		}
+	}
+}
+
+void PSCoreBehaviour::dump_std_evo(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int dump_num_total = ed->dump_num_total;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+	int jump = int(cp->params.find("jump")->second);
+
+	if (dump_obs == 1)
+	{
+		int * dump_periods = ed->dump_periods;
+
+		double * norm_evo = ed->norm_evo;
+		MKL_Complex16 * spec_evo = ed->spec_evo;
+		MKL_Complex16 * spec_2_evo = ed->spec_2_evo;
+		MKL_Complex16 * spec_3_evo = ed->spec_3_evo;
+		double * mean_evo = ed->mean_evo;
+
+		string fn;
+
+		fn = rp->path + "norm_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, norm_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "periods" + cp->fn_suffix;
+		save_int_data(fn, dump_periods, dump_num_total, false);
+
+		fn = rp->path + "spec_evo" + cp->fn_suffix;
+		save_2d_inv_complex_data(fn, spec_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_2_evo" + cp->fn_suffix;
+		save_2d_inv_complex_data(fn, spec_2_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_3_evo" + cp->fn_suffix;
+		save_2d_inv_complex_data(fn, spec_3_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "mean_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, mean_evo, dump_num_total, num_trajectories, 16, false);
+
+		if (jump > 0)
+		{
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+			{
+				fn = rp->path + "jump_times_" + to_string(tr_id) + cp->fn_suffix;
+				save_double_vector(fn, ed->jump_times[tr_id], 16, false);
+
+				fn = rp->path + "diss_types_" + to_string(tr_id) + cp->fn_suffix;
+				save_int_vector(fn, ed->diss_types[tr_id], false);
+
+				if (jump > 1)
+				{
+					fn = rp->path + "jump_norms_" + to_string(tr_id) + cp->fn_suffix;
+					save_double_vector(fn, ed->jump_norms[tr_id], 16, false);
+
+					fn = rp->path + "jump_etas_" + to_string(tr_id) + cp->fn_suffix;
+					save_double_vector(fn, ed->jump_etas[tr_id], 16, false);
+				}
+			}
+		}
+	}
+}
+
+void PSCoreBehaviour::dump_lpn_evo(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+
+	int num_trajectories = cp->num_trajectories;
+	int dump_num_total = ed->dump_num_total;
+
+	int dump_obs = int(cp->params.find("dump_obs")->second);
+
+	if (dump_obs == 1)
+	{
+		double * lambda_evo = ed->lambda_evo;
+		MKL_Complex16 * spec_lpn_evo = ed->spec_lpn_evo;
+		MKL_Complex16 * spec_2_lpn_evo = ed->spec_2_lpn_evo;
+		MKL_Complex16 * spec_3_lpn_evo = ed->spec_3_lpn_evo;
+		double * mean_lpn_evo = ed->mean_lpn_evo;
+
+		string fn;
+
+		fn = rp->path + "lambda_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, lambda_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_lpn_evo" + cp->fn_suffix;
+		save_2d_inv_complex_data(fn, spec_lpn_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_2_lpn_evo" + cp->fn_suffix;
+		save_2d_inv_complex_data(fn, spec_2_lpn_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "spec_3_lpn_evo" + cp->fn_suffix;
+		save_2d_inv_complex_data(fn, spec_3_lpn_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "mean_lpn_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, mean_lpn_evo, dump_num_total, num_trajectories, 16, false);
+	}
+}
+
+
+
+
+
 
 
 Split * init_split_structure_dimer(AllData * ad)
@@ -3031,6 +3839,118 @@ Split * init_split_structure_ps_deep(AllData * ad)
 	return head;
 }
 
+Split * init_split_structure_mbl(AllData * ad)
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	double T = md->T;
+
+	int sys_size = md->sys_size;
+	int num_branches = md->num_ham_qj;
+
+	Split * head = new Split[num_branches];
+
+	for (int br_id = 0; br_id < num_branches; br_id++)
+	{
+		Split * branch = &head[br_id];
+		branch->prev = 0;
+		branch->type = false;
+		branch->dt = T;
+		branch->counter = 2;
+		branch->N = sys_size;
+		branch->next = new Split[2];
+
+		for (unsigned int i = 0; i < 2; i++)
+		{
+			(branch->next)[i].prev = branch;
+			init_split_branches(&((branch->next)[i]), br_id, ad);
+		}
+
+		branch->steps = md->num_diss;
+
+		branch->matrix = new MKL_Complex16[branch->steps * sys_size * sys_size];
+		branch->g = new double[branch->steps];
+
+		for (int diss_id = 0; diss_id < branch->steps; diss_id++)
+		{
+			branch->g[diss_id] = 1.0;
+
+			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+			{
+				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+				{
+					int index_xtd = diss_id * (md->sys_size * md->sys_size) + st_id_1 * md->sys_size + st_id_2;
+					int index = st_id_1 * md->sys_size + st_id_2;
+
+					branch->matrix[index_xtd].real = md->dissipators[diss_id][index].real;
+					branch->matrix[index_xtd].imag = md->dissipators[diss_id][index].imag;
+				}
+			}
+		}
+	}
+
+	return head;
+}
+
+Split * init_split_structure_mbl_deep(AllData * ad)
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	int deep_num_steps = int(cp->params.find("deep_num_steps")->second);
+
+	double T = md->T / double(deep_num_steps);
+
+	int N = md->sys_size;
+	int num_branches = md->num_ham_qj;
+
+	Split * head = new Split[num_branches];
+
+	for (int br_id = 0; br_id < num_branches; br_id++)
+	{
+		Split * branch = &head[br_id];
+		branch->prev = 0;
+		branch->type = false;
+
+		branch->dt = T;
+
+		branch->counter = 2;
+		branch->N = N;
+		branch->next = new Split[2];
+
+		for (unsigned int i = 0; i < 2; i++)
+		{
+			(branch->next)[i].prev = branch;
+			init_split_branches(&((branch->next)[i]), br_id, ad);
+		}
+
+		branch->steps = md->num_diss;
+
+		branch->matrix = new MKL_Complex16[branch->steps * N * N];
+		branch->g = new double[branch->steps];
+
+		for (int diss_id = 0; diss_id < branch->steps; diss_id++)
+		{
+			branch->g[diss_id] = 1.0;
+
+			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+			{
+				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+				{
+					int index_xtd = diss_id * (md->sys_size * md->sys_size) + st_id_1 * md->sys_size + st_id_2;
+					int index = st_id_1 * md->sys_size + st_id_2;
+
+					branch->matrix[index_xtd].real = md->dissipators[diss_id][index].real;
+					branch->matrix[index_xtd].imag = md->dissipators[diss_id][index].imag;
+				}
+			}
+		}
+	}
+
+	return head;
+}
+
 
 void rk_right_part_dimer(AllData * ad, int sub_step, int tr_id, int th_id)
 {
@@ -3244,6 +4164,52 @@ void rk_right_part_ps(AllData * ad, int sub_step, int tr_id, int th_id)
 	}
 }
 
+void rk_right_part_mbl(AllData * ad, int sub_step, int tr_id, int th_id)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double T = md->T;
+
+	double time = ed->times_all[tr_id];
+
+	MKL_Complex16 * arg = ed->args[th_id];
+	MKL_Complex16 * non_drv_tmp = ed->non_drv_tmp[th_id];
+
+	MKL_Complex16 * k = ed->k1[th_id];
+	if (sub_step == 1)
+	{
+		k = ed->k1[th_id];
+	}
+	else if (sub_step == 2)
+	{
+		k = ed->k2[th_id];
+	}
+	else if (sub_step == 3)
+	{
+		k = ed->k3[th_id];
+	}
+	else if (sub_step == 4)
+	{
+		k = ed->k4[th_id];
+	}
+
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->non_drv_part, sys_size, arg, 1, &ZERO, non_drv_tmp, 1);
+
+	for (int st_id = 0; st_id < md->sys_size; st_id++)
+	{
+		k[st_id].real = +(ed->non_drv_tmp[th_id][st_id].imag);
+		k[st_id].imag = -(ed->non_drv_tmp[th_id][st_id].real);
+	}
+}
+
+
 void rk_int_dimer(AllData * ad, int tr_id, int th_id, double step)
 {
 	RunParam * rp = ad->rp;
@@ -3330,6 +4296,36 @@ void rk_int_ps(AllData * ad, int tr_id, int th_id, double step)
 
 	rk_final(ad, tr_id, th_id, step);
 }
+
+void rk_int_mbl(AllData * ad, int tr_id, int th_id, double step)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	set_init_args(ad, tr_id, th_id);
+
+	rk_right_part_mbl(ad, 1, tr_id, th_id);
+	arg_upd(ad, 1, tr_id, th_id);
+
+	ed->times_all[tr_id] += step * 0.5;
+
+	rk_right_part_mbl(ad, 2, tr_id, th_id);
+	arg_upd(ad, 2, tr_id, th_id);
+
+	rk_right_part_mbl(ad, 3, tr_id, th_id);
+	arg_upd(ad, 3, tr_id, th_id);
+
+	ed->times_all[tr_id] += step * 0.5;
+
+	rk_right_part_mbl(ad, 4, tr_id, th_id);
+
+	rk_final(ad, tr_id, th_id, step);
+}
+
 
 void rk_step_dimer(AllData * ad, int tr_id, int th_id, double step)
 {
@@ -3522,6 +4518,71 @@ void rk_step_ps(AllData * ad, int tr_id, int th_id, double step)
 		rk_step_ps(ad, tr_id, th_id, end_step);
 	}
 }
+
+void rk_step_mbl(AllData * ad, int tr_id, int th_id, double step)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int jump = int(cp->params.find("jump")->second);
+
+	VSLStreamStatePtr * stream = &(ed->streams[tr_id]);
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * eta = &(ed->etas_all[tr_id]);
+
+	double prev_norm = 0.0;
+	double curr_norm = 0.0;
+	double norm_diff = 0.0;
+	double begin_part = 0.0;
+	double end_part = 0.0;
+	double begin_step = 0.0;
+	double end_step = 0.0;
+
+	save_phi_prev(ad, tr_id, th_id);
+	prev_norm = norm_square(phi, sys_size);
+	rk_int_mbl(ad, tr_id, th_id, step);
+
+	if (is_norm_crossed(phi, eta, sys_size))
+	{
+		curr_norm = norm_square(phi, sys_size);
+		norm_diff = prev_norm - curr_norm;
+		begin_part = (prev_norm - *(eta)) / norm_diff;
+		end_part = 1.0 - begin_part;
+		begin_step = step * begin_part;
+		end_step = step * end_part;
+
+		restore_from_prev(ad, tr_id, th_id, step);
+
+		rk_int_dimer(ad, tr_id, th_id, begin_step);
+
+		if (jump > 0 && ed->is_obs == 1)
+		{
+			double jump_time = ed->times_all[tr_id];
+			double jump_norm = norm_square(phi, sys_size);
+			double jump_eta = *eta;
+
+			ed->jump_times[tr_id].push_back(jump_time);
+			ed->jump_norms[tr_id].push_back(jump_norm);
+			ed->jump_etas[tr_id].push_back(jump_eta);
+
+			ed->jumps_counts[tr_id]++;
+		}
+
+		rk_recovery(ad, tr_id, th_id);
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+		while (*eta == 0.0)
+		{
+			vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+		}
+
+		rk_step_dimer(ad, tr_id, th_id, end_step);
+	}
+}
+
 
 void calc_ci_double(AllData * ad, int tr_id)
 {
