@@ -3044,7 +3044,7 @@ void MBLCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
 	ed->spec[tr_id] = spec;
 }
 
-void CoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
+void MBLCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 {
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
@@ -3060,19 +3060,13 @@ void CoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
 	}
 
-	MKL_Complex16 spec = get_spec_ps(ad, tr_id);
-	MKL_Complex16 spec_2 = get_spec_2_ps(ad, tr_id);
-	MKL_Complex16 spec_3 = get_spec_3_ps(ad, tr_id);
-	MKL_Complex16 num_photons = get_num_photons_ps(ad, tr_id);
+	MKL_Complex16 spec = get_spec_mbl(ad, tr_id);
 
 	ed->norm[tr_id] = norm;
 	ed->spec[tr_id] = spec;
-	ed->spec_2[tr_id] = spec_2;
-	ed->spec_3[tr_id] = spec_3;
-	ed->mean[tr_id] = num_photons.real;
 }
 
-void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
+void MBLCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -3083,9 +3077,6 @@ void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_
 	double lambda = 0.0;
 	double lambda_now = 0.0;
 	MKL_Complex16 spec_lpn = ed->spec[tr_id];
-	MKL_Complex16 spec_2_lpn = ed->spec_2[tr_id];
-	MKL_Complex16 spec_3_lpn = ed->spec_3[tr_id];
-	double mean_lpn = ed->mean[tr_id];
 
 	double delta_s = this->calc_delta_f(ad, tr_id, base_tr_id); // Important! Here we use calc_delta_f not calc_delta_s
 
@@ -3094,12 +3085,9 @@ void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_
 	ed->delta_s[tr_id] = delta_s;
 
 	ed->spec_lpn[tr_id] = spec_lpn;
-	ed->spec_2_lpn[tr_id] = spec_2_lpn;
-	ed->spec_3_lpn[tr_id] = spec_3_lpn;
-	ed->mean_lpn[tr_id] = mean_lpn;
 }
 
-void PSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
+void MBLCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -3108,31 +3096,17 @@ void PSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) co
 	int sys_size = md->sys_size;
 
 	MKL_Complex16 spec_lpn = get_spec_ps(ad, tr_id);
-	MKL_Complex16 spec_2_lpn = get_spec_2_ps(ad, tr_id);
-	MKL_Complex16 spec_3_lpn = get_spec_3_ps(ad, tr_id);
-	double mean_lpn = get_num_photons_ps(ad, tr_id).real;
 
 	ed->spec_lpn[tr_id] = spec_lpn;
-	ed->spec_2_lpn[tr_id] = spec_2_lpn;
-	ed->spec_3_lpn[tr_id] = spec_3_lpn;
-	ed->mean_lpn[tr_id] = mean_lpn;
 }
 
-double PSCoreBehaviour::calc_T(AllData * ad) const
+double MBLCoreBehaviour::calc_T(AllData * ad) const
 {
-	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
-
-	double ps_drv_part_1 = double(cp->params.find("ps_drv_part_1")->second);
-	double ps_drv_part_2 = double(cp->params.find("ps_drv_part_2")->second);
-	double T_1 = ps_drv_part_1 * md->T;
-	double T_2 = ps_drv_part_2 * md->T;
-	double T = T_1 + T_2;
-
-	return T;
+	return md->T;
 }
 
-void PSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
+void MBLCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
 {
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
@@ -3143,12 +3117,9 @@ void PSCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
 
 	ed->norm_evo[index] = ed->norm[tr_id];
 	ed->spec_evo[index] = ed->spec[tr_id];
-	ed->spec_2_evo[index] = ed->spec_2[tr_id];
-	ed->spec_3_evo[index] = ed->spec_3[tr_id];
-	ed->mean_evo[index] = ed->mean[tr_id];
 }
 
-void PSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
+void MBLCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
 {
 	ConfigParam * cp = ad->cp;
 	ExpData * ed = ad->ed;
@@ -3159,12 +3130,9 @@ void PSCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
 
 	ed->lambda_evo[index] = ed->lambda_now[tr_id];
 	ed->spec_lpn_evo[index] = ed->spec_lpn[tr_id];
-	ed->spec_2_lpn_evo[index] = ed->spec_2_lpn[tr_id];
-	ed->spec_3_lpn_evo[index] = ed->spec_3_lpn[tr_id];
-	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
 }
 
-double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) const
+double MBLCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -3182,12 +3150,6 @@ double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) co
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_s = sqrt(tmp);
 	}
-	else if (lpn_type == 1)
-	{
-		double base = ed->mean_lpn[base_tr_id];
-		double var = ed->mean_lpn[tr_id];
-		delta_s = fabs(var - base) / double(sys_size);
-	}
 	else
 	{
 		stringstream msg;
@@ -3198,7 +3160,7 @@ double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) co
 	return delta_s;
 }
 
-double PSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) const
+double MBLCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) const
 {
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
@@ -3216,12 +3178,6 @@ double PSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) co
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_f = sqrt(tmp);
 	}
-	else if (lpn_type == 1)
-	{
-		double base = ed->mean[base_tr_id];
-		double var = ed->mean[tr_id];
-		delta_f = fabs(var - base) / double(sys_size);
-	}
 	else
 	{
 		stringstream msg;
@@ -3232,12 +3188,14 @@ double PSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) co
 	return delta_f;
 }
 
-void PSCoreBehaviour::calc_ci(AllData * ad, int tr_id) const
+void MBLCoreBehaviour::calc_ci(AllData * ad, int tr_id) const
 {
-	calc_ci_double(ad, tr_id);
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
 }
 
-void PSCoreBehaviour::dump_std(AllData * ad) const
+void MBLCoreBehaviour::dump_std(AllData * ad) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -3250,10 +3208,7 @@ void PSCoreBehaviour::dump_std(AllData * ad) const
 		int num_trajectories = cp->num_trajectories;
 
 		double * norm = ed->norm;
-		double * mean = ed->mean;
 		MKL_Complex16 * spec = ed->spec;
-		MKL_Complex16 * spec_2 = ed->spec_2;
-		MKL_Complex16 * spec_3 = ed->spec_3;
 
 		string fn;
 
@@ -3262,19 +3217,10 @@ void PSCoreBehaviour::dump_std(AllData * ad) const
 
 		fn = rp->path + "spec" + cp->fn_suffix;
 		save_complex_data(fn, spec, num_trajectories, 16, false);
-
-		fn = rp->path + "spec_2" + cp->fn_suffix;
-		save_complex_data(fn, spec_2, num_trajectories, 16, false);
-
-		fn = rp->path + "spec_3" + cp->fn_suffix;
-		save_complex_data(fn, spec_3, num_trajectories, 16, false);
-
-		fn = rp->path + "mean" + cp->fn_suffix;
-		save_double_data(fn, mean, num_trajectories, 16, false);
 	}
 }
 
-void PSCoreBehaviour::dump_lpn(AllData * ad) const
+void MBLCoreBehaviour::dump_lpn(AllData * ad) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -3288,9 +3234,6 @@ void PSCoreBehaviour::dump_lpn(AllData * ad) const
 	{
 		double * lambda = ed->lambda_now;
 		MKL_Complex16 * spec_lpn = ed->spec_lpn;
-		MKL_Complex16 * spec_2_lpn = ed->spec_2_lpn;
-		MKL_Complex16 * spec_3_lpn = ed->spec_3_lpn;
-		double * mean = ed->mean_lpn;
 
 		string fn;
 
@@ -3303,15 +3246,6 @@ void PSCoreBehaviour::dump_lpn(AllData * ad) const
 
 		fn = rp->path + "spec_lpn" + cp->fn_suffix;
 		save_complex_data(fn, spec_lpn, num_trajectories, 16, false);
-
-		fn = rp->path + "spec_2_lpn" + cp->fn_suffix;
-		save_complex_data(fn, spec_2_lpn, num_trajectories, 16, false);
-
-		fn = rp->path + "spec_3_lpn" + cp->fn_suffix;
-		save_complex_data(fn, spec_3_lpn, num_trajectories, 16, false);
-
-		fn = rp->path + "mean_lpn" + cp->fn_suffix;
-		save_double_data(fn, mean, num_trajectories, 16, false);
 
 		int save_lambdas = int(ad->cp->params.find("save_lambdas")->second);
 		if (save_lambdas > 0)
@@ -3331,7 +3265,7 @@ void PSCoreBehaviour::dump_lpn(AllData * ad) const
 	}
 }
 
-void PSCoreBehaviour::dump_std_evo(AllData * ad) const
+void MBLCoreBehaviour::dump_std_evo(AllData * ad) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -3349,9 +3283,6 @@ void PSCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		double * norm_evo = ed->norm_evo;
 		MKL_Complex16 * spec_evo = ed->spec_evo;
-		MKL_Complex16 * spec_2_evo = ed->spec_2_evo;
-		MKL_Complex16 * spec_3_evo = ed->spec_3_evo;
-		double * mean_evo = ed->mean_evo;
 
 		string fn;
 
@@ -3363,15 +3294,6 @@ void PSCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		fn = rp->path + "spec_evo" + cp->fn_suffix;
 		save_2d_inv_complex_data(fn, spec_evo, dump_num_total, num_trajectories, 16, false);
-
-		fn = rp->path + "spec_2_evo" + cp->fn_suffix;
-		save_2d_inv_complex_data(fn, spec_2_evo, dump_num_total, num_trajectories, 16, false);
-
-		fn = rp->path + "spec_3_evo" + cp->fn_suffix;
-		save_2d_inv_complex_data(fn, spec_3_evo, dump_num_total, num_trajectories, 16, false);
-
-		fn = rp->path + "mean_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, mean_evo, dump_num_total, num_trajectories, 16, false);
 
 		if (jump > 0)
 		{
@@ -3396,7 +3318,7 @@ void PSCoreBehaviour::dump_std_evo(AllData * ad) const
 	}
 }
 
-void PSCoreBehaviour::dump_lpn_evo(AllData * ad) const
+void MBLCoreBehaviour::dump_lpn_evo(AllData * ad) const
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -3411,9 +3333,6 @@ void PSCoreBehaviour::dump_lpn_evo(AllData * ad) const
 	{
 		double * lambda_evo = ed->lambda_evo;
 		MKL_Complex16 * spec_lpn_evo = ed->spec_lpn_evo;
-		MKL_Complex16 * spec_2_lpn_evo = ed->spec_2_lpn_evo;
-		MKL_Complex16 * spec_3_lpn_evo = ed->spec_3_lpn_evo;
-		double * mean_lpn_evo = ed->mean_lpn_evo;
 
 		string fn;
 
@@ -3422,15 +3341,6 @@ void PSCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 		fn = rp->path + "spec_lpn_evo" + cp->fn_suffix;
 		save_2d_inv_complex_data(fn, spec_lpn_evo, dump_num_total, num_trajectories, 16, false);
-
-		fn = rp->path + "spec_2_lpn_evo" + cp->fn_suffix;
-		save_2d_inv_complex_data(fn, spec_2_lpn_evo, dump_num_total, num_trajectories, 16, false);
-
-		fn = rp->path + "spec_3_lpn_evo" + cp->fn_suffix;
-		save_2d_inv_complex_data(fn, spec_3_lpn_evo, dump_num_total, num_trajectories, 16, false);
-
-		fn = rp->path + "mean_lpn_evo" + cp->fn_suffix;
-		save_2d_inv_double_data(fn, mean_lpn_evo, dump_num_total, num_trajectories, 16, false);
 	}
 }
 
