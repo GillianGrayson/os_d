@@ -105,6 +105,36 @@ void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precisi
 	cp->fn_suffix = suffix;
 }
 
+void MBLOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
+{
+	string qj = suffix_qj(rp, cp, precision);
+
+	stringstream params;
+
+	params << "_Nc(" << int(cp->params.find("mbl_Nc")->second) << ")";
+
+	params << "_diss("
+		<< int(cp->params.find("diss_type")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("diss_phase")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("diss_gamma")->second) << ")";
+
+	params << "_prm("
+		<< setprecision(precision) << fixed << double(cp->params.find("mbl_prm_W")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("mbl_prm_U")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("mbl_prm_J")->second) << ")";
+
+	params << "_start("
+		<< int(cp->params.find("start_type")->second) << "_"
+		<< int(cp->params.find("start_state")->second) << ")";
+
+
+	string ext = extension();
+
+	string suffix = qj + params.str() + ext;
+
+	cp->fn_suffix = suffix;
+}
+
 string suffix_qj(RunParam * rp, ConfigParam * cp, int precision)
 {
 	stringstream suffix;

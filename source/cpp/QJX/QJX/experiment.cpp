@@ -1554,7 +1554,7 @@ MKL_Complex16 get_spec_mbl(AllData * ad, int tr_id)
 
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
 	MKL_Complex16 ONE = { 1.0, 0.0 };
-	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->special_3, sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->special, sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
 
 	MKL_Complex16 result = { 0.0, 0.0 };
 	for (int st_id = 0; st_id < sys_size; st_id++)

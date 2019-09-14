@@ -149,7 +149,7 @@ void MBLNewDelBehaviour::init_sizes(AllData * ad) const
 		}
 	}
 
-	md->mbl_Nc = int(cp->params.find("N")->second); // Number of cells
+	md->mbl_Nc = int(cp->params.find("mbl_Nc")->second); // Number of cells
 	if (md->mbl_Nc % 2 != 0)
 	{
 		stringstream msg;
@@ -554,8 +554,6 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 	md->hamiltonian = new double[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
-	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
-	md->special_3 = new MKL_Complex16[md->sys_size * md->sys_size];
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -567,12 +565,6 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 			md->special[index].real = 0.0;
 			md->special[index].imag = 0.0;
-
-			md->special_2[index].real = 0.0;
-			md->special_2[index].imag = 0.0;
-
-			md->special_3[index].real = 0.0;
-			md->special_3[index].imag = 0.0;
 		}
 	}
 
@@ -929,15 +921,17 @@ void MBLNewDelBehaviour::init_dissipators(AllData * ad) const
 								{
 									col_id = state_id_2;
 									int index = row_id * md->sys_size + col_id;
-									md->dissipators[diss_id][index].real = sin(-diss_phase);
-									md->dissipators[diss_id][index].imag = -cos(-diss_phase);
+
+									md->dissipators[diss_id][index].real = -cos(-diss_phase);
+									md->dissipators[diss_id][index].imag = -sin(-diss_phase);
 								}
 								else
 								{
 									col_id = state_id_2;
 									int index = row_id * md->sys_size + col_id;
-									md->dissipators[diss_id][index].real = -sin(diss_phase);
-									md->dissipators[diss_id][index].imag = cos(diss_phase);
+
+									md->dissipators[diss_id][index].real = cos(diss_phase);
+									md->dissipators[diss_id][index].imag = sin(diss_phase);
 								}
 							}
 
@@ -1437,8 +1431,6 @@ void MBLNewDelBehaviour::free_hamiltonians(AllData * ad) const
 
 	delete[] md->hamiltonian;
 	delete[] md->special;
-	delete[] md->special_2;
-	delete[] md->special_3;
 }
 
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const

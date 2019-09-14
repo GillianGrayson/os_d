@@ -26,4 +26,10 @@ public:
 	virtual void save(AllData * ad) const;
 };
 
+class MBLDebugBehaviour : public DebugBehavior
+{
+public:
+	virtual void save(AllData * ad) const;
+};
+
 void save_hamiltonian_and_dissipation(AllData * ad);
