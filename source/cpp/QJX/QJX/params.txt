@@ -13,7 +13,7 @@ dump_phi 0
 dump_phi_evo 0
 dump_adr_sep 0
 dump_adr_avg 1
-dump_evo_sep 1
+dump_evo_sep 0
 dump_evo_avg 0
 dump_type 0
 dump_num 1000
