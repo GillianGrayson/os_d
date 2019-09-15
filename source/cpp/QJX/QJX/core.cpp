@@ -3095,7 +3095,7 @@ void MBLCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) c
 
 	int sys_size = md->sys_size;
 
-	MKL_Complex16 spec_lpn = get_spec_ps(ad, tr_id);
+	MKL_Complex16 spec_lpn = get_spec_mbl(ad, tr_id);
 
 	ed->spec_lpn[tr_id] = spec_lpn;
 }
