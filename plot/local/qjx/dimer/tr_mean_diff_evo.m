@@ -17,7 +17,7 @@ drv_freq = 1.0;
 drv_phase = 0.0;
 
 prm_E = 0.0;
-prm_U = 0.01;
+prm_U = 0.5;
 prm_J = 1.0;
 
 start_type = 0;
@@ -72,12 +72,17 @@ mean_evo_data = importdata(fn);
 
 fig = figure;
 
+maxes = zeros(num_plot_traj, 1);
+
 for tr_id = 1:num_plot_traj
     
     mean_evo_base = mean_evo_data(:, tr_id);
     mean_evo_var = mean_evo_data(:, tr_id + num_trajectories);
 
     mean_evo_diff = abs(mean_evo_base - mean_evo_var) / size_sys;
+    
+    pks = findpeaks(mean_evo_diff);
+    maxes(tr_id) = mean(pks);
     
     hLine = plot(dump_periods, mean_evo_diff);
     legend(hLine, sprintf('tr=%d', tr_id))
@@ -95,6 +100,7 @@ end
 fn = sprintf('%s/lambda_%s.txt', data_path, suffix);
 lambda_data = importdata(fn);
 mean_lambda = mean(lambda_data(num_trajectories + 1:end))
+mean_maxes = mean(maxes)
 
 propertyeditor(fig)
 
