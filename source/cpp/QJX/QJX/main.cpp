@@ -42,6 +42,13 @@ int main()
 		ndb = new PSNewDelBehaviour();
 		cb = new PSCoreBehaviour();
 	}
+	else if (rp->sys_id == MBL_SYS_ID)
+	{
+		db = new MBLDebugBehaviour();
+		ob = new MBLOutputBehavior();
+		ndb = new MBLNewDelBehaviour();
+		cb = new MBLCoreBehaviour();
+	}
 	else
 	{
 		stringstream msg;

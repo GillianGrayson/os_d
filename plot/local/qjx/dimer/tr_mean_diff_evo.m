@@ -1,38 +1,39 @@
 clear all;
 
-sys_id = 0;
-task_id = 5;
-prop_id = 0;
+clear all;
 
 seed = 1;
 mns = 1000000;
-N = 200;
-diss_type = 0;
+
+N = 100;
+
+diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
-drv_type = 0;
-drv_ampl = 1.5;
+
+drv_type = 1;
+drv_ampl = 3.4;
 drv_freq = 1.0;
 drv_phase = 0.0;
-prm_E = 1.0;
-prm_U = 0.05;
+
+prm_E = 0.0;
+prm_U = 0.5;
 prm_J = 1.0;
+
 start_type = 0;
-start_state = 0;
+start_state = 49;
 
 T = 2 * pi / drv_freq;
 
-cd_dump_deep = 1;
+cd_dump_deep = 0;
 cd_num_sub_steps = 100;
 
 size_sys = N + 1;
 
-num_tr = 1;
-
-is_mean = 1;
+num_trajectories = 5;
+num_plot_traj = 5;
 
 data_path = '../../../../source/cpp/QJX/QJX';
-%data_path = 'C:/Users/user/Desktop/New folder/U(0.05)/T1_ds(1e-6)'
 
 suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
     seed, ...
@@ -69,21 +70,20 @@ states = linspace(1, size_sys, size_sys) / size_sys;
 fn = sprintf('%s/mean_evo_%s.txt', data_path, suffix);
 mean_evo_data = importdata(fn);
 
-mean_evo_base = mean_evo_data(:, 1);
-
-
 fig = figure;
-for tr_id = 1:num_tr
-    mean_evo_var = mean_evo_data(:, tr_id + 1);
+
+maxes = zeros(num_plot_traj, 1);
+
+for tr_id = 1:num_plot_traj
+    
+    mean_evo_base = mean_evo_data(:, tr_id);
+    mean_evo_var = mean_evo_data(:, tr_id + num_trajectories);
 
     mean_evo_diff = abs(mean_evo_base - mean_evo_var) / size_sys;
     
-    dump_periods = dump_periods(1: 1 + cd_num_sub_steps * 200);
-    mean_evo_diff = mean_evo_diff(1: 1 + cd_num_sub_steps * 200);
+    pks = findpeaks(mean_evo_diff);
+    maxes(tr_id) = mean(pks);
     
-    full_periods_x = dump_periods(2:2 * cd_num_sub_steps:size(dump_periods, 1));
-    full_periods_y = mean_evo_diff(2:2 * cd_num_sub_steps:size(dump_periods, 1));
-
     hLine = plot(dump_periods, mean_evo_diff);
     legend(hLine, sprintf('tr=%d', tr_id))
     set(gca, 'FontSize', 30);
@@ -92,10 +92,15 @@ for tr_id = 1:num_tr
     set(gca, 'FontSize', 30);
     ylabel('$|\Delta|$', 'Interpreter', 'latex');
     hold all;
-    hLine = plot(full_periods_x, full_periods_y, 'o');
+    set(gca, 'YScale', 'log')
+    ylim([1e-12, 10]);
     
 end
 
-propertyeditor(fig)
+fn = sprintf('%s/lambda_%s.txt', data_path, suffix);
+lambda_data = importdata(fn);
+mean_lambda = mean(lambda_data(num_trajectories + 1:end))
+mean_maxes = mean(maxes)
 
+propertyeditor(fig)
 

@@ -49,6 +49,8 @@ void Processor::set_core_behaviour(CoreBehavior* cb)
 
 void Processor::process()
 {
+	ob->suffix_param(ad->rp, ad->cp, 4);
+
 	ndb->init_sizes(ad);
 	cout << "init_sizes" << endl;
 	ndb->init_hamiltonians(ad);
@@ -58,7 +60,6 @@ void Processor::process()
 	ndb->init_hamiltonians_qj(ad);
 	cout << "init_hamiltonians_qj" << endl;
 
-	ob->suffix_param(ad->rp, ad->cp, 4);
 	db->save(ad);
 
 	ndb_exp->init_data(ad, pb, cb);

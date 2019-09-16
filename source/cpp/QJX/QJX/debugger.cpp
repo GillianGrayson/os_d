@@ -41,6 +41,21 @@ void PSDebugBehaviour::save(AllData * ad) const
 	}
 }
 
+void MBLDebugBehaviour::save(AllData * ad) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	save_hamiltonian_and_dissipation(ad);
+
+	if (rp->is_debug)
+	{
+		string fn = rp->path + "spec_mtx" + cp->fn_suffix;
+		save_complex_data(fn, md->special, md->sys_size * md->sys_size, 16, 0);
+	}
+}
+
 void save_hamiltonian_and_dissipation(AllData * ad)
 {
 	RunParam * rp = ad->rp;
@@ -51,9 +66,6 @@ void save_hamiltonian_and_dissipation(AllData * ad)
 	{
 		string hamiltonian_fn = rp->path + "hamiltonian" + cp->fn_suffix;
 		save_double_data(hamiltonian_fn, md->hamiltonian, md->sys_size * md->sys_size, 16, 0);
-
-		string hamiltonian_drv_fn = rp->path + "hamiltonian_drv" + cp->fn_suffix;
-		save_double_data(hamiltonian_drv_fn, md->hamiltonian_drv, md->sys_size * md->sys_size, 16, 0);
 
 		for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
 		{

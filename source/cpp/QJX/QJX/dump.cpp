@@ -60,6 +60,43 @@ void dump_adr_avg(AllData * ad, bool append)
 	}
 }
 
+void dump_adr_avg_mult(AllData * ad, bool append, int begin_traj_id, int end_traj_id)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int dump_adr_avg = int(cp->params.find("dump_adr_avg")->second);
+
+	if (dump_adr_avg == 1)
+	{
+		int sys_size = md->sys_size;
+		int num_trajectories = end_traj_id - begin_traj_id;
+
+		double * adr_avg = new double[sys_size];
+
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			adr_avg[st_id] = 0.0;
+		}
+
+		for (int tr_id = begin_traj_id; tr_id < end_traj_id; tr_id++)
+		{
+			double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				adr_avg[st_id] += adr[st_id] / double(num_trajectories);
+			}
+		}
+
+		string fn = rp->path + "adr_avg" + cp->fn_suffix;
+		save_double_data(fn, adr_avg, sys_size, 16, append);
+
+		delete[] adr_avg;
+	}
+}
+
 void dump_cd(AllData * ad)
 {
 	RunParam * rp = ad->rp;

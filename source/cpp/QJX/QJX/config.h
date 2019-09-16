@@ -22,6 +22,7 @@
 #define DIMER_SYS_ID 0
 #define JCS_SYS_ID 1
 #define PS_SYS_ID 2
+#define MBL_SYS_ID 3
 
 #define LPN_MULT_TASK_ID 7
 #define LPN_TASK_ID 0

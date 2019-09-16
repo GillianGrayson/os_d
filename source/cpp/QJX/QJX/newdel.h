@@ -55,3 +55,16 @@ public:
 	virtual void free_dissipators(AllData * ad) const;
 	virtual void free_hamiltonians_qj(AllData * ad) const;
 };
+
+class MBLNewDelBehaviour : public NewDelBehavior
+{
+public:
+	virtual void init_sizes(AllData * ad) const;
+	virtual void init_hamiltonians(AllData * ad) const;
+	virtual void init_dissipators(AllData * ad) const;
+	virtual void init_hamiltonians_qj(AllData * ad) const;
+
+	virtual void free_hamiltonians(AllData * ad) const;
+	virtual void free_dissipators(AllData * ad) const;
+	virtual void free_hamiltonians_qj(AllData * ad) const;
+};
