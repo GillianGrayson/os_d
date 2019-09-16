@@ -2634,7 +2634,7 @@ void MBLCoreBehaviour::init_splits(AllData * ad) const
 	int num_total = num_threads * num_branches;
 
 	md->structure = init_split_structure_mbl(ad);
-	cout << "init_split_structure_ps" << endl;
+	cout << "init_split_structure_mbl" << endl;
 	md->splits = new Split[num_total];
 
 	for (int b_id = 0; b_id < num_branches; b_id++)
@@ -2983,7 +2983,7 @@ void MBLCoreBehaviour::rk_period(AllData * ad, int tr_id, int th_id, int period_
 		for (int in_step_id = 0; in_step_id < cp->rk_ns; in_step_id++)
 		{
 			ed->times_all[tr_id] = time + double(in_step_id) * ed->rk_step;
-			rk_step_ps(ad, tr_id, th_id, ed->rk_step);
+			rk_step_mbl(ad, tr_id, th_id, ed->rk_step);
 		}
 	}
 }
