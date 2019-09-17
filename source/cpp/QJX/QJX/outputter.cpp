@@ -28,10 +28,16 @@ void DimerOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int prec
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
 
-	string ext = extension();
+	string suffix = qj + params.str();
 
-	string suffix = qj + params.str() + ext;
-	//string suffix = qj + ext;
+	if (rp->task_id == LPN_MULT_TASK_ID)
+	{
+		string lpn = suffix_lpn(rp, cp);
+		suffix += lpn;
+	}
+
+	string ext = extension();
+	suffix += ext;
 
 	cp->fn_suffix = suffix;
 }
@@ -61,10 +67,16 @@ void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
 
-	string ext = extension();
+	string suffix = qj + params.str();
 
-	string suffix = qj + params.str() + ext;
-	//string suffix = qj + ext;
+	if (rp->task_id == LPN_MULT_TASK_ID)
+	{
+		string lpn = suffix_lpn(rp, cp);
+		suffix += lpn;
+	}
+
+	string ext = extension();
+	suffix += ext;
 
 	cp->fn_suffix = suffix;
 }
@@ -97,10 +109,16 @@ void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precisi
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
 
-	string ext = extension();
+	string suffix = qj + params.str();
 
-	string suffix = qj + params.str() + ext;
-	//string suffix = qj + ext;
+	if (rp->task_id == LPN_MULT_TASK_ID)
+	{
+		string lpn = suffix_lpn(rp, cp);
+		suffix += lpn;
+	}
+
+	string ext = extension();
+	suffix += ext;
 
 	cp->fn_suffix = suffix;
 }
@@ -127,10 +145,16 @@ void MBLOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
 
+	string suffix = qj + params.str();
+
+	if (rp->task_id == LPN_MULT_TASK_ID)
+	{
+		string lpn = suffix_lpn(rp, cp);
+		suffix += lpn;
+	}
 
 	string ext = extension();
-
-	string suffix = qj + params.str() + ext;
+	suffix += ext;
 
 	cp->fn_suffix = suffix;
 }
@@ -139,8 +163,18 @@ string suffix_qj(RunParam * rp, ConfigParam * cp, int precision)
 {
 	stringstream suffix;
 
-	//suffix << "_config(" << rp->sys_id << "_" << rp->task_id << "_" << rp->prop_id << ")";
 	suffix << "_rnd(" << cp->seed << "_" << cp->mns << ")";
+
+	return suffix.str();
+}
+
+string suffix_lpn(RunParam * rp, ConfigParam * cp)
+{
+	stringstream suffix;
+
+	suffix << "_lpn("
+		<< setprecision(1) << scientific << double(cp->params.find("lpn_delta_s")->second) << "_"
+		<< setprecision(1) << scientific << double(cp->params.find("lpn_delta_f_high")->second) << ")";
 
 	return suffix.str();
 }
