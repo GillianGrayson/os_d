@@ -30,7 +30,7 @@ for dimer_U_id in range(0, dimer_U_num):
         g = 0.0
 
         sys_id = 0
-        task_id = 1
+        task_id = 7
         prop_id = 1
         is_debug = 0
         is_pp = 1
@@ -39,8 +39,8 @@ for dimer_U_id in range(0, dimer_U_num):
         seed = 0
         mns = 1000000
         num_threads = 1
-        num_trajectories = 10
-        num_tp_periods = 99
+        num_trajectories = 20
+        num_tp_periods = 100
         num_obs_periods = 100
         ex_deep = 16
         rk_ns = 10000
@@ -50,8 +50,8 @@ for dimer_U_id in range(0, dimer_U_num):
         lpn_eps_error = 1.0e-10
         lpn_eps_high = 10
         lpn_eps_low = -10
-        lpn_delta_s = 0.001
-        lpn_delta_f_high = 1.0e-1
+        lpn_delta_s = 0.0001
+        lpn_delta_f_high = 0.9
         lpn_delta_f_low = 1.0e-12
         save_lambdas = 0
         num_lambdas_periods = 2
@@ -59,9 +59,9 @@ for dimer_U_id in range(0, dimer_U_num):
         dump_phi = 0
         dump_phi_evo = 0
         dump_adr_sep = 0
-        dump_adr_avg = 1
+        dump_adr_avg = 0
         dump_evo_sep = 1
-        dump_evo_avg = 1
+        dump_evo_avg = 0
         dump_type = 0
         dump_num = 100
         N = 100

@@ -43,14 +43,14 @@ U_step = 0.01;
 U_num = 100;
 
 Us = zeros(U_num, 1);
-lambdas = zeros(U_num, 1);
+mean_maxes = zeros(U_num, 1);
 
 for U_id = 1:U_num
     
     U = U_begin + U_step * (U_id - 1)
     Us(U_id) = U;
     
-    curr_lambdas = 0;
+    curr_mean_maxes = 0;
     
     for run_id = 1:num_runs
         
@@ -97,23 +97,38 @@ for U_id = 1:U_num
             start_type, ...
             start_state);
         
-        fn = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
-        lambda_data = importdata(fn);
-        curr_lambdas = curr_lambdas + mean(lambda_data(num_target_traj + 1 : end));
+        fn = sprintf('%s/mean_evo_%s.txt', path_to_folder, suffix);
+        mean_evo_data = importdata(fn);
+        
+        maxes = zeros(num_target_traj, 1);
+        
+        for tr_id = 1:num_target_traj
+            
+            mean_evo_base = mean_evo_data(:, tr_id);
+            mean_evo_var = mean_evo_data(:, tr_id + num_target_traj);
+            
+            mean_evo_diff = abs(mean_evo_base - mean_evo_var) / sys_size;
+            
+            pks = findpeaks(mean_evo_diff);
+            maxes(tr_id) = mean(pks);
+        end
+        
+        curr_mean_maxes = curr_mean_maxes + mean(maxes);
+        
     end
     
-    curr_lambdas = curr_lambdas / num_runs;
+    curr_mean_maxes = curr_mean_maxes / num_runs;
     
-    lambdas(U_id) = curr_lambdas;
+    mean_maxes(U_id) = curr_mean_maxes;
     
 end
 
 fig = figure;
-hLine = plot(Us, lambdas);
+hLine = plot(Us, mean_maxes);
 set(gca, 'FontSize', 30);
 xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$\lambda$', 'Interpreter', 'latex');
+ylabel('$mean maxes$', 'Interpreter', 'latex');
 xlim([Us(1) Us(end)])
 
 suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_var_%0.4f)_start(%d_%d)', ...
@@ -130,11 +145,11 @@ suffix_save = sprintf('N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(
     start_type, ...
     start_state);
 
-savefig(sprintf('%s/lambda_from_U_%s.fig', home_figures_path, suffix_save));
+savefig(sprintf('%s/mean_maxes_from_U_%s.fig', home_figures_path, suffix_save));
 
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('%s/lambda_from_U_%s.pdf', home_figures_path, suffix_save));
+print(gcf, '-dpdf', sprintf('%s/mean_maxes_from_U_%s.pdf', home_figures_path, suffix_save));
 
