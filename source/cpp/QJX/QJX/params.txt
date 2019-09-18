@@ -12,7 +12,7 @@ dump_obs 1
 dump_phi 0
 dump_phi_evo 0
 dump_adr_sep 0
-dump_adr_avg 0
+dump_adr_avg 1
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
@@ -42,7 +42,9 @@ ps_prm_d 0.0
 ps_prm_g 0.0
 ps_diss_w 0.05
 mbl_Nc 8
-mbl_prm_W 1.0
+mbl_seed 1
+mbl_mns 1000000
+mbl_prm_W 10.0
 mbl_prm_U 1.0
 mbl_prm_J 1.0
 start_type 0

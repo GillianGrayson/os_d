@@ -4467,7 +4467,7 @@ void rk_step_mbl(AllData * ad, int tr_id, int th_id, double step)
 
 		restore_from_prev(ad, tr_id, th_id, step);
 
-		rk_int_dimer(ad, tr_id, th_id, begin_step);
+		rk_int_mbl(ad, tr_id, th_id, begin_step);
 
 		if (jump > 0 && ed->is_obs == 1)
 		{
@@ -4489,7 +4489,7 @@ void rk_step_mbl(AllData * ad, int tr_id, int th_id, double step)
 			vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
 		}
 
-		rk_step_dimer(ad, tr_id, th_id, end_step);
+		rk_step_mbl(ad, tr_id, th_id, end_step);
 	}
 }
 

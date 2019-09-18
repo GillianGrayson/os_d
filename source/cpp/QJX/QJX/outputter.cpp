@@ -131,6 +131,10 @@ void MBLOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 
 	params << "_Nc(" << int(cp->params.find("mbl_Nc")->second) << ")";
 
+	params << "_rnd("
+		<< int(cp->params.find("mbl_seed")->second) << "_"
+		<< int(cp->params.find("mbl_mns")->second) << ")";
+
 	params << "_diss("
 		<< int(cp->params.find("diss_type")->second) << "_"
 		<< setprecision(precision) << fixed << double(cp->params.find("diss_phase")->second) << "_"

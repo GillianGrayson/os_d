@@ -570,12 +570,14 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 	// ========= disorder data ==========
 	double mbl_prm_W = double(cp->params.find("mbl_prm_W")->second);
+	int mbl_seed = double(cp->params.find("mbl_seed")->second);
+	int mbl_mns = double(cp->params.find("mbl_mns")->second);
 
 	double* energies = new double[md->mbl_Nc];
 
 	VSLStreamStatePtr stream;
 	vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
-	vslLeapfrogStream(stream, cp->seed, cp->mns);
+	vslLeapfrogStream(stream, mbl_seed, mbl_mns);
 	vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, stream, md->mbl_Nc, energies, -1.0, 1.0);
 
 	string energies_fn = "energies" + cp->fn_suffix;
