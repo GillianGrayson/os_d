@@ -1,6 +1,7 @@
 import pathlib
 from Infrastructure.file_system import *
 import os.path
+import numpy as np
 
 type = FSType.mpipks_sd
 
@@ -154,6 +155,9 @@ for eps_id in range(0, eps_num):
                             ps_prm_g_str = str(format(ps_prm_g, '0.4f'))
                             ps_diss_w_str = str(format(ps_diss_w, '0.4f'))
 
+                            lpn_delta_s_str = str(format(np.log10(lpn_delta_s), '0.4f'))
+                            lpn_delta_f_high_str = str(format(np.log10(lpn_delta_f_high), '0.4f'))
+
                             start_seed = 0
                             finish_seed = num_runs * num_trajectories
                             step_seed = num_trajectories
@@ -200,6 +204,9 @@ for eps_id in range(0, eps_num):
                                     '/drv_' + ps_drv_part_1_str + '_' + ps_drv_part_2_str + '_' + ps_drv_ampl_str + \
                                     '/prm_' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + \
                                     '/start_' + str(start_type) + '_' + str(start_state)
+
+                            if task_id == 7:
+                                local_path += '/lpn_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str
 
                             for ss in range(start_seed, finish_seed, step_seed):
                                 print("ss = " + str(ss))
@@ -313,6 +320,9 @@ for eps_id in range(0, eps_num):
                                         'drv(' + ps_drv_part_1_str + '_' + ps_drv_part_2_str + '_' + ps_drv_ampl_str + ')_' + \
                                         'prm(' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + ')_' + \
                                         'start(' + str(start_type) + '_' + str(start_state) + ')'
+
+                                if task_id == 7:
+                                    fn_suffix += '_lpn(' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + ')'
 
                                 fn_test = ''
                                 if sys_id == 0:
