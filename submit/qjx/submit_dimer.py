@@ -52,7 +52,7 @@ for dimer_U_id in range(0, dimer_U_num):
         lpn_eps_high = 10
         lpn_eps_low = -10
         lpn_delta_s = 0.00001
-        lpn_delta_f_high = 0.8
+        lpn_delta_f_high = 0.5
         lpn_delta_f_low = 1.0e-12
         save_lambdas = 0
         num_lambdas_periods = 2

@@ -42,8 +42,8 @@ U_begin = 0.01;
 U_step = 0.01;
 U_num = 100;
 
-delta_start = 1e-5;
-delta_fin = 0.6;
+delta_start = 1e-3;
+delta_fin = 0.5;
 
 Us = zeros(U_num, 1);
 lambdas = zeros(U_num, 1);
