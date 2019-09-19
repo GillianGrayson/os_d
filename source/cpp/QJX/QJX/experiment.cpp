@@ -273,7 +273,6 @@ void LpnMultExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 
 	if (dump_evo_avg == 0)
 	{
-		dump_adr_avg(ad, true);
 		dump_adr_avg_mult(ad, true, 0, num_trajectories / 2);
 	}
 }
