@@ -5,17 +5,17 @@ import numpy as np
 
 type = FSType.mpipks_sd
 
-num_runs = 10
+num_runs = 1
 
 medium = 0
 
 mbl_W_start = 0.2
 mbl_W_shift = 0.2
-mbl_W_num = 1
+mbl_W_num = 100
 
 mbl_seed_start = 1
 mbl_seed_shift = 1
-mbl_seed_num = 1
+mbl_seed_num = 5
 
 for mbl_W_id in range(0, mbl_W_num):
     mbl_W = mbl_W_start + mbl_W_id * mbl_W_shift
@@ -36,7 +36,7 @@ for mbl_W_id in range(0, mbl_W_num):
         seed = 0
         mns = 1000000
         num_threads = 1
-        num_trajectories = 20
+        num_trajectories = 1000
         num_tp_periods = 1000
         num_obs_periods = 1000
         ex_deep = 16
@@ -48,7 +48,7 @@ for mbl_W_id in range(0, mbl_W_num):
         lpn_eps_high = 10
         lpn_eps_low = -10
         lpn_delta_s = 0.00001
-        lpn_delta_f_high = 1000
+        lpn_delta_f_high = 0.01
         lpn_delta_f_low = 1.0e-12
         save_lambdas = 0
         num_lambdas_periods = 2
@@ -71,7 +71,7 @@ for mbl_W_id in range(0, mbl_W_num):
         mbl_prm_U = 1
         mbl_prm_J = 1
         start_type = 0
-        start_state = 0
+        start_state = 49
         cd_dim = 1
         cd_eps = 1.0e-8
         deep_num_steps = 1000
