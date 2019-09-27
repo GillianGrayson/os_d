@@ -1,35 +1,35 @@
 clear all;
 
-seed = 0;
+seed = 1;
 mns = 1000000;
 
 Nc = 8;
 
-W_seed = 1;
+W_seed = 10;
 W_mns = 1000000;
 
 diss_type = 1;
 diss_phase = 0.0;
 diss_gamma = 0.1;
 
-prm_W = 20;
+prm_W = 0.2;
 prm_U = 1.0;
 prm_J = 1.0;
 
 start_type = 0;
 start_state = 49;
 
-delta_lpn_s = 1e-5;
-delta_lpn_f = 0.1;
+delta_lpn_s = 1e-6;
+delta_lpn_f = 1e-3;
 
 deep_dump = 0;
 deep_num_steps = 100;
 
-num_plot_traj = 5;
+num_plot_traj = 50;
 
 fig = figure;
 
-num_trajectories = 5;
+num_trajectories = 50;
 
 
 data_path = '../../../../source/cpp/QJX/QJX';
