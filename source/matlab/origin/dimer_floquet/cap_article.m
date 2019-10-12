@@ -1,8 +1,8 @@
-clear;
+clear all;
 
 global N J E0 A0 w U g HE HU HJ A phi0 Ps Pd
 
-N=50; % number of particles, system size = N+1
+N=25; % number of particles, system size = N+1
 show=0; % if = 1, generated matrices, coefficients, etc. are displayed
 imag1=sqrt(-1);
 
@@ -14,9 +14,9 @@ A0=-3.4; %driving amplitude
 w=1; % driving frequency
 phi0=pi*0; % initial phase
 %U=0.7; % on-site interaction
-Uarray=[0.1, 0.1125, 0.125, 0.15];
+Uarray=[0.075:0.005:0.175];
 g=0.1/N; % gamma;
-eigvals=zeros(length(Uarray)*(N+1)^2,3);
+eigvals=zeros((N+1)^2, length(Uarray));
 
 N_it_pre=100; % number of transient periods
 N_it_post=100; % number of plotted periods
@@ -63,7 +63,7 @@ A=A1-sqrt(-1)*A2;
 
 kk=0;
 for U=Uarray
-    kk=kk+1;
+    kk=kk+1
     
     H=(E0*HE+U/N*HU+J*HJ);
     
@@ -98,63 +98,7 @@ for U=Uarray
     
     tic
     eigv=eig(RhoFloquet);
+    eigvals(:, kk) = eigv;
     toc
-    tic
-    [RhoF,S]=eigs(RhoFloquet,1,'lm');
-    toc
-    for i=1:N+1
-        Rho(:,i)=RhoF(1+(i-1)*(N+1):i*(N+1),1);
-    end
-    Rho=Rho/trace(Rho);
-    Purity=trace(Rho^2)
-    Negativity=0.5*(sum(sum(abs(Rho)))-trace(Rho))
-    
-    
-    figure;
-    plot(eigv,'og')
-    hold on
-    plot(cos([0:0.01:2*pi]),sin([0:0.01:2*pi]),'-')
-    
-    temp=sort(abs(eigv));
-    
-    
-    eigmax(kk)=temp(length(temp)-1);
-    eigmin(kk)=temp(1);
-    
-    eigvals(1+(kk-1)*(N+1)^2:kk*(N+1)^2,1)=U*ones((N+1)^2,1);
-    eigvals(1+(kk-1)*(N+1)^2:kk*(N+1)^2,2)=real(eigv);
-    eigvals(1+(kk-1)*(N+1)^2:kk*(N+1)^2,3)=imag(eigv);
-    delta=1-eigmax(kk)
     
 end
-
-
-figure;
-
-plot(Uarray,eigmin,'s-b')
-hold on
-plot(Uarray,eigmax,'s-r')
-
-%Rho2=Rho2/N_it_post;
-%RhoD=RhoD/N_it_post;
-%eVmax=eVmax/N_it_post;
-tic
-
-theta=linspace(0,pi,50);
-phi=linspace(0,2*pi,50);
-Hu=Husimi(theta,phi,Rho);
-
-toc
-
-figure;
-[theta_grid,phi_grid]=meshgrid(theta,phi);
-h=pcolor(theta_grid,phi_grid,real(Hu'));
-set(h,'EdgeColor','None')
-
-
-
-
-toc
-
-
-save eigvals.txt eigvals -ascii
