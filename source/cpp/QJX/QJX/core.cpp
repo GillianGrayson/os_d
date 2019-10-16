@@ -2370,6 +2370,20 @@ double PSCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) co
 	}
 	else if (lpn_type == 1)
 	{
+		MKL_Complex16 base = ed->spec_2_lpn[base_tr_id];
+		MKL_Complex16 var = ed->spec_2_lpn[tr_id];
+		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
+		delta_s = sqrt(tmp);
+	}
+	else if (lpn_type == 2)
+	{
+		MKL_Complex16 base = ed->spec_3_lpn[base_tr_id];
+		MKL_Complex16 var = ed->spec_3_lpn[tr_id];
+		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
+		delta_s = sqrt(tmp);
+	}
+	else if (lpn_type == 3)
+	{
 		double base = ed->mean_lpn[base_tr_id];
 		double var = ed->mean_lpn[tr_id];
 		delta_s = fabs(var - base) / double(sys_size);
@@ -2403,6 +2417,20 @@ double PSCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) co
 		delta_f = sqrt(tmp);
 	}
 	else if (lpn_type == 1)
+	{
+		MKL_Complex16 base = ed->spec_2[base_tr_id];
+		MKL_Complex16 var = ed->spec_2[tr_id];
+		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
+		delta_f = sqrt(tmp);
+	}
+	else if (lpn_type == 2)
+	{
+		MKL_Complex16 base = ed->spec_3[base_tr_id];
+		MKL_Complex16 var = ed->spec_3[tr_id];
+		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
+		delta_f = sqrt(tmp);
+	}
+	else if (lpn_type == 3)
 	{
 		double base = ed->mean[base_tr_id];
 		double var = ed->mean[tr_id];

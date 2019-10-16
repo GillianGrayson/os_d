@@ -176,7 +176,7 @@ string suffix_lpn(RunParam * rp, ConfigParam * cp)
 {
 	stringstream suffix;
 
-	suffix << "_lpn("
+	suffix << "_lpn(" << double(cp->params.find("lpn_type")->second) << "_"
 		<< setprecision(4) << fixed << log10(double(cp->params.find("lpn_delta_s")->second)) << "_"
 		<< setprecision(4) << fixed << log10(double(cp->params.find("lpn_delta_f_high")->second)) << ")";
 
