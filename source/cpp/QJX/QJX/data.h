@@ -32,6 +32,7 @@ struct MainData
 	MKL_Complex16 * special;			// Matrix for special observable
 	MKL_Complex16 * special_2;			// Matrix for special observable
 	MKL_Complex16 * special_3;			// Matrix for special observable
+	MKL_Complex16 * special_4;			// Matrix for special observable
 
 	Split * structure;					// Split structure
 	Split * splits;						// Splits

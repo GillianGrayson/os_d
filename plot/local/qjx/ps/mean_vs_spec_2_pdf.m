@@ -5,19 +5,19 @@ mns = 1000000;
 num_trajectories = 20;
 
 diss_type = 1;
-ps_num_spins = 2;
+ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
-ps_num_photons_states = 100;
+ps_num_photons_states = 200;
 ps_drv_part_1 = 1.00; 
 ps_drv_part_2 = 1.00; 
-ps_drv_ampl = 3.2;
+ps_drv_ampl = 1.75;
 ps_prm_alpha = 5;
 ps_prm_d = 10;
 ps_prm_g = 10;
 ps_diss_w = 0.05;
 
 start_type = 0;
-start_state = 0;
+start_state = 49;
 
 num_bins = 201;
 
@@ -39,28 +39,26 @@ suffix = sprintf("rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)
     start_type, ...
     start_state);
 
-fn = sprintf('%s/spec_evo_%s.txt', path, suffix);
-data = importdata(fn);
+fn = sprintf('%s/mean_evo_%s.txt', path, suffix);
+data_x = importdata(fn);
 
 fn = sprintf('%s/spec_2_evo_%s.txt', path, suffix);
-data_1 = importdata(fn);
+data_y = importdata(fn);
 
-all_re = data_1(:, 1);
-all_im = data(:, 1);
+all_re = data_x(:, 1);
+all_im = data_y(:, 1);
 for tr_id = 1:num_trajectories-1
-    all_re = vertcat(all_re, data_1(:, 1 + 2*tr_id));
-    all_im = vertcat(all_im, data(:, 1 + 2*tr_id));
+    all_re = vertcat(all_re, data_x(:, 1 + tr_id));
+    all_im = vertcat(all_im, data_y(:, 1 + 2*tr_id));
 end
 global_size = size(all_re, 1);
 
-min_re = min(all_re);
-max_re = max(all_re);
+min_re = 0;
+max_re = ps_num_photons_states;
 shift_re = (max_re - min_re) / num_bins;
 
-min_im = min(all_im);
-max_im = max(all_im);
-min_im = -3;
-max_im = 3;
+min_im = -0.5 * ps_num_spins;
+max_im = 0.5 * ps_num_spins;
 shift_im = (max_im - min_im) / num_bins;
 
 int_re = zeros(num_bins, 1);
@@ -88,9 +86,9 @@ norm = sum(sum(pdf)) * shift_re * shift_im
 fig = figure;
 hLine = imagesc(int_re, int_im, pdf');
 set(gca, 'FontSize', 30);
-xlabel('$\eta$', 'Interpreter', 'latex');
+xlabel('$n$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
-ylabel('$Re(\theta)$', 'Interpreter', 'latex');
+ylabel('$J_z = \frac{1}{2} \sum_{j=1}^{M} \sigma^z_j$', 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);

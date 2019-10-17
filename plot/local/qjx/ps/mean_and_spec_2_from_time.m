@@ -15,8 +15,8 @@ ps_drv_part_1 = 1.00;
 ps_drv_part_2 = 1.00; 
 ps_drv_ampl = 1.75;
 ps_prm_alpha = 5;
-ps_prm_d = 1.0;
-ps_prm_g = 1.0;
+ps_prm_d = 10;
+ps_prm_g = 10;
 ps_diss_w = 0.05;
 start_type = 0;
 start_state = 49;
@@ -70,38 +70,36 @@ if(cd_dump_deep == 1)
     dump_periods = dump_periods / T;
 end
 
+fn = sprintf('%s/spec_2_evo_%s.txt', path, suffix);
+evo_data = importdata(fn);
+spec_3_evo = evo_data(:, 2 * tr_id - 1);
 
-
-fn = sprintf('%s/spec_evo_%s.txt', path, suffix);
-spec_evo_data = importdata(fn);
-
-spec_evo = complex(spec_evo_data(:, 2 * tr_id - 1), spec_evo_data(:, 2 * tr_id));
-
+fn = sprintf('%s/mean_evo_%s.txt', path, suffix);
+evo_data = importdata(fn);
+mean_evo = evo_data(:, tr_id);
 
 fig = figure;
-
-hLine = plot(dump_periods, real(spec_evo));
+yyaxis left;
+hLine = plot(dump_periods, spec_3_evo, 'LineWidth', 2);
 legend(hLine, sprintf('tr=%d', tr_id))
 set(gca, 'FontSize', 30);
 xlabel('$t/T$', 'Interpreter', 'latex');
 xlim([dump_periods(1) dump_periods(end)])
 set(gca, 'FontSize', 30);
-ylabel('$Re(\theta)$', 'Interpreter', 'latex');
+ylabel('$J_z = \frac{1}{2} \sum_{j=1}^{M} \sigma^z_j$', 'Interpreter', 'latex');
 hold all;
 
-propertyeditor(fig)
-
-fig = figure;
-
-hLine = plot(dump_periods, imag(spec_evo));
+yyaxis right;
+hLine = plot(dump_periods, mean_evo, 'LineWidth', 2);
 legend(hLine, sprintf('tr=%d', tr_id))
 set(gca, 'FontSize', 30);
 xlabel('$t/T$', 'Interpreter', 'latex');
 xlim([dump_periods(1) dump_periods(end)])
 set(gca, 'FontSize', 30);
-ylabel('$Im(\theta)$', 'Interpreter', 'latex');
+ylabel('$n$', 'Interpreter', 'latex');
 hold all;
 
 propertyeditor(fig)
+
 
 

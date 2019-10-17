@@ -1669,7 +1669,6 @@ MKL_Complex16 get_num_photons_ps(AllData * ad, int tr_id)
 
 	int sys_size = md->sys_size;
 
-
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
 	MKL_Complex16 * phi_normed = new MKL_Complex16[sys_size];
 	MKL_Complex16 * phi_normed_conj = new MKL_Complex16[sys_size];
@@ -1688,50 +1687,9 @@ MKL_Complex16 get_num_photons_ps(AllData * ad, int tr_id)
 		phi_normed_conj[st_id].imag = -phi_normed[st_id].imag;
 	}
 
-	MKL_Complex16 * n_mtx = new MKL_Complex16[md->sys_size * md->sys_size];
-	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
-	{
-		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
-		{
-			int index = st_id_1 * md->sys_size + st_id_2;
-
-			n_mtx[index].real = 0.0;
-			n_mtx[index].imag = 0.0;
-		}
-	}
-
-	int num_spins = int(cp->params.find("ps_num_spins")->second);
-	int s_num_states = std::round(std::pow(2, num_spins));
-	int p_num_states = int(cp->params.find("ps_num_photons_states")->second);
-
-	Eigen::MatrixXd s_identity = Eigen::MatrixXd::Identity(s_num_states, s_num_states);
-	Eigen::MatrixXd p_identity = Eigen::MatrixXd::Identity(p_num_states, p_num_states);
-
-	Eigen::MatrixXd p_a_std = Eigen::MatrixXd::Zero(p_num_states, p_num_states);
-	Eigen::MatrixXd p_a_dag = Eigen::MatrixXd::Zero(p_num_states, p_num_states);
-	for (int st_id = 0; st_id < p_num_states - 1; st_id++)
-	{
-		p_a_std(st_id, st_id + 1) = sqrt(double(st_id + 1));
-		p_a_dag(st_id + 1, st_id) = sqrt(double(st_id + 1));
-	}
-
-	Eigen::MatrixXd p_n = p_a_dag * p_a_std;
-	Eigen::MatrixXd p_n_kron = Eigen::kroneckerProduct(s_identity, p_n);
-
-	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
-	{
-		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
-		{
-			int index = st_id_1 * md->sys_size + st_id_2;
-
-			n_mtx[index].real = p_n_kron(st_id_1, st_id_2);
-			n_mtx[index].imag = 0.0;
-		}
-	}
-
 	MKL_Complex16 ZERO = { 0.0, 0.0 };
 	MKL_Complex16 ONE = { 1.0, 0.0 };
-	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, n_mtx, sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->special_4, sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
 
 	MKL_Complex16 result = { 0.0, 0.0 };
 	for (int st_id = 0; st_id < sys_size; st_id++)
@@ -1743,8 +1701,6 @@ MKL_Complex16 get_num_photons_ps(AllData * ad, int tr_id)
 	delete[] mult_tmp;
 	delete[] phi_normed;
 	delete[] phi_normed_conj;
-
-	delete[] n_mtx;
 
 	return result;
 }

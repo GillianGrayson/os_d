@@ -368,6 +368,7 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	Eigen::MatrixXd p_hamiltonian = 0.5 / pow(alpha, 3) * p_a_dag * p_a_dag * p_a_std * p_a_std;
 	Eigen::MatrixXd p_hamiltonian_drv = p_a_dag - p_a_std;
 	Eigen::MatrixXd p_special = p_a_std;
+	Eigen::MatrixXd p_special_4 = p_a_dag * p_a_std;
 
 	if (rp->is_debug)
 	{
@@ -517,12 +518,14 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 	Eigen::MatrixXd special_2 = Eigen::kroneckerProduct(s_J_z, p_identity);
 	Eigen::MatrixXd special_3 = Eigen::kroneckerProduct(s_J_plus, p_identity);
+	Eigen::MatrixXd special_4 = Eigen::kroneckerProduct(s_identity, p_special_4);
 
 	md->hamiltonian = new double[md->sys_size * md->sys_size];
 	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special_3 = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special_4 = new MKL_Complex16[md->sys_size * md->sys_size];
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -542,6 +545,9 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 			md->special_3[index].real = special_3(st_id_1, st_id_2);
 			md->special_3[index].imag = 0.0;
+
+			md->special_4[index].real = special_4(st_id_1, st_id_2);
+			md->special_4[index].imag = 0.0;
 		}
 	}
 }
@@ -1425,6 +1431,7 @@ void PSNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	delete[] md->special;
 	delete[] md->special_2;
 	delete[] md->special_3;
+	delete[] md->special_4;
 }
 
 void MBLNewDelBehaviour::free_hamiltonians(AllData * ad) const
