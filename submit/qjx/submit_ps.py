@@ -5,19 +5,21 @@ import numpy as np
 
 type = FSType.mpipks_sd
 
+medium = 0
+
 num_runs = 1
 
-ampl_start = 0.05
+ampl_start = 0.4
 ampl_shift = 0.05
-ampl_num = 100
+ampl_num = 1
 
-d_start = 0.0
+d_start = 1.0
 d_shift = 0.1
 d_num = 1
 
 g_start = 0.0
 g_shift = 0.1
-g_num = 1
+g_num = 100
 
 T_start = 2.0
 T_shift = 0.05
@@ -35,14 +37,14 @@ for ampl_id in range(0, ampl_num):
             for g_id in range(0, g_num):
                 g = g_start + g_id * g_shift
 
-                g = d
+                #g = d
 
                 print('ampl: ' + str(ampl))
                 print('d: ' + str(d))
                 print('g: ' + str(g))
 
                 sys_id = 2
-                task_id = 1
+                task_id = 7
                 prop_id = 0
                 is_debug = 0
                 is_pp = 1
@@ -51,13 +53,13 @@ for ampl_id in range(0, ampl_num):
                 seed = 0
                 mns = 1000000
                 num_threads = 1
-                num_trajectories = 10
+                num_trajectories = 20
                 num_tp_periods = 100
                 num_obs_periods = 100
                 ex_deep = 16
                 rk_ns = 10000
 
-                lpn_type = 0
+                lpn_type = 3
                 lpn_eps_deep = 100
                 lpn_eps_error = 1.0e-10
                 lpn_eps_high = 10
@@ -72,7 +74,7 @@ for ampl_id in range(0, ampl_num):
                 dump_phi_evo = 0
                 dump_adr_sep = 0
                 dump_adr_avg = 0
-                dump_evo_sep = 1
+                dump_evo_sep = 0
                 dump_evo_avg = 0
                 dump_type = 0
                 dump_num = 100
@@ -128,7 +130,16 @@ for ampl_id in range(0, ampl_num):
                     '/start_' + str(start_type) + '_' + str(start_state)
 
                 if task_id == 7:
-                    local_path = '/lpn_' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + local_path
+                    local_path = \
+                        '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
+                        '/lpn_' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + \
+                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
+                            num_obs_periods) + \
+                        '/N_' + str(ps_num_spins) + '_' + str(ps_num_photons_states) + \
+                        '/diss_' + str(diss_type) + '_' + ps_diss_w_str + \
+                        '/drv_' + ps_drv_part_1_str + '_' + ps_drv_part_2_str + '_' + ps_drv_ampl_str + \
+                        '/prm_' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + \
+                        '/start_' + str(start_type) + '_' + str(start_state)
 
                 for ss in range(start_seed, finish_seed, step_seed):
                     print("ss = " + str(ss))
@@ -206,8 +217,9 @@ for ampl_id in range(0, ampl_num):
                         'prm(' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + ')_' + \
                         'start(' + str(start_type) + '_' + str(start_state) + ')'
 
+
                     if task_id == 7:
-                        fn_suffix += '_lpn(' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + ')'
+                        fn_suffix += '_lpn(' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + ')'
 
                     fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
 
@@ -215,4 +227,7 @@ for ampl_id in range(0, ampl_num):
                         if type == FSType.cluster:
                             os.system('sbatch run_unn.sh ' + fn_path)
                         elif type == FSType.mpipks_sd:
-                            os.system('sbatch run_mpipks_sd_sbatch.sh ' + fn_path)
+                            if medium == 0:
+                                os.system('sbatch run_mpipks_sd_sbatch.sh ' + fn_path)
+                            elif medium == 1:
+                                os.system('sbatch run_mpipks_sd_sbatch_medium.sh ' + fn_path)
