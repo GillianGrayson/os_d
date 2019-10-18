@@ -99,9 +99,9 @@ MKL_Complex16 get_spec_jcs(AllData * ad, int tr_id);
 MKL_Complex16 get_spec_ps(AllData * ad, int tr_id);
 MKL_Complex16 get_spec_2_ps(AllData * ad, int tr_id);
 MKL_Complex16 get_spec_3_ps(AllData * ad, int tr_id);
-MKL_Complex16 get_spec_4_ps(AllData * ad, int tr_id);
 
 MKL_Complex16 get_spec_mbl(AllData * ad, int tr_id);
+double get_imbalance_mbl(AllData * ad, double * adr);
 
 MKL_Complex16 get_num_photons_jcs(AllData * ad, int tr_id);
 MKL_Complex16 get_num_photons_ps(AllData * ad, int tr_id);

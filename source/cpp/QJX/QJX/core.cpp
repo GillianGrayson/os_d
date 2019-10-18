@@ -3068,8 +3068,11 @@ void MBLCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
 	}
 
 	MKL_Complex16 spec = get_spec_mbl(ad, tr_id);
+	double imbalance = get_imbalance_mbl(ad, adr);
+
 	ed->norm[tr_id] = norm;
 	ed->spec[tr_id] = spec;
+	ed->mean[tr_id] = imbalance;
 }
 
 void MBLCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
@@ -3089,9 +3092,11 @@ void MBLCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	}
 
 	MKL_Complex16 spec = get_spec_mbl(ad, tr_id);
+	double imbalance = get_imbalance_mbl(ad, adr);
 
 	ed->norm[tr_id] = norm;
 	ed->spec[tr_id] = spec;
+	ed->mean[tr_id] = imbalance;
 }
 
 void MBLCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
@@ -3100,11 +3105,11 @@ void MBLCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
 
-	int sys_size = md->sys_size;
 
 	double lambda = 0.0;
 	double lambda_now = 0.0;
 	MKL_Complex16 spec_lpn = ed->spec[tr_id];
+	double imbalance_lpn = ed->mean[tr_id];
 
 	double delta_s = this->calc_delta_f(ad, tr_id, base_tr_id); // Important! Here we use calc_delta_f not calc_delta_s
 
@@ -3113,6 +3118,7 @@ void MBLCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr
 	ed->delta_s[tr_id] = delta_s;
 
 	ed->spec_lpn[tr_id] = spec_lpn;
+	ed->mean_lpn[tr_id] = imbalance_lpn;
 }
 
 void MBLCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
@@ -3122,10 +3128,19 @@ void MBLCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) c
 	ExpData * ed = ad->ed;
 
 	int sys_size = md->sys_size;
+	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+	double * adr = &(ed->abs_diag_rho_all[tr_id * sys_size]);
+	double norm = norm_square(phi, sys_size);
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		adr[st_id] = mult_scalar_double(mult_scalar_complex(&phi[st_id], &phi[st_id], 1), 1.0 / norm).real;
+	}
 
 	MKL_Complex16 spec_lpn = get_spec_mbl(ad, tr_id);
+	double imbalance_lpn = get_imbalance_mbl(ad, adr);
 
 	ed->spec_lpn[tr_id] = spec_lpn;
+	ed->mean_lpn[tr_id] = imbalance_lpn;
 }
 
 double MBLCoreBehaviour::calc_T(AllData * ad) const
@@ -3145,6 +3160,7 @@ void MBLCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
 
 	ed->norm_evo[index] = ed->norm[tr_id];
 	ed->spec_evo[index] = ed->spec[tr_id];
+	ed->mean_evo[index] = ed->mean[tr_id];
 }
 
 void MBLCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
@@ -3158,6 +3174,7 @@ void MBLCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
 
 	ed->lambda_evo[index] = ed->lambda_now[tr_id];
 	ed->spec_lpn_evo[index] = ed->spec_lpn[tr_id];
+	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
 }
 
 double MBLCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) const
@@ -3177,6 +3194,10 @@ double MBLCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) c
 		MKL_Complex16 var = ed->spec_lpn[tr_id];
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_s = sqrt(tmp);
+	}
+	else if (lpn_type == 1)
+	{
+		delta_s = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[base_tr_id]);
 	}
 	else
 	{
@@ -3205,6 +3226,10 @@ double MBLCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) c
 		MKL_Complex16 var = ed->spec[tr_id];
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_f = sqrt(tmp);
+	}
+	else if (lpn_type == 1)
+	{
+		delta_f = fabs(ed->mean[tr_id] - ed->mean[base_tr_id]);
 	}
 	else
 	{
@@ -3237,6 +3262,7 @@ void MBLCoreBehaviour::dump_std(AllData * ad) const
 
 		double * norm = ed->norm;
 		MKL_Complex16 * spec = ed->spec;
+		double * imbalance = ed->mean;
 
 		string fn;
 
@@ -3245,6 +3271,9 @@ void MBLCoreBehaviour::dump_std(AllData * ad) const
 
 		fn = rp->path + "spec" + cp->fn_suffix;
 		save_complex_data(fn, spec, num_trajectories, 16, false);
+
+		fn = rp->path + "imbalance" + cp->fn_suffix;
+		save_double_data(fn, imbalance, num_trajectories, 16, false);
 	}
 }
 
@@ -3262,6 +3291,7 @@ void MBLCoreBehaviour::dump_lpn(AllData * ad) const
 	{
 		double * lambda = ed->lambda_now;
 		MKL_Complex16 * spec_lpn = ed->spec_lpn;
+		double * imbalance_lpn = ed->mean_lpn;
 
 		string fn;
 
@@ -3274,6 +3304,9 @@ void MBLCoreBehaviour::dump_lpn(AllData * ad) const
 
 		fn = rp->path + "spec_lpn" + cp->fn_suffix;
 		save_complex_data(fn, spec_lpn, num_trajectories, 16, false);
+
+		fn = rp->path + "imbalance_lpn" + cp->fn_suffix;
+		save_double_data(fn, imbalance_lpn, num_trajectories, 16, false);
 
 		int save_lambdas = int(ad->cp->params.find("save_lambdas")->second);
 		if (save_lambdas > 0)
@@ -3311,6 +3344,7 @@ void MBLCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		double * norm_evo = ed->norm_evo;
 		MKL_Complex16 * spec_evo = ed->spec_evo;
+		double * imbalance_evo = ed->mean_evo;
 
 		string fn;
 
@@ -3322,6 +3356,9 @@ void MBLCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		fn = rp->path + "spec_evo" + cp->fn_suffix;
 		save_2d_inv_complex_data(fn, spec_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "imbalance_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, imbalance_evo, dump_num_total, num_trajectories, 16, false);
 
 		if (jump > 0)
 		{
@@ -3361,6 +3398,7 @@ void MBLCoreBehaviour::dump_lpn_evo(AllData * ad) const
 	{
 		double * lambda_evo = ed->lambda_evo;
 		MKL_Complex16 * spec_lpn_evo = ed->spec_lpn_evo;
+		double * imbalance_lpn_evo = ed->mean_lpn_evo;
 
 		string fn;
 
@@ -3369,6 +3407,9 @@ void MBLCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 		fn = rp->path + "spec_lpn_evo" + cp->fn_suffix;
 		save_2d_inv_complex_data(fn, spec_lpn_evo, dump_num_total, num_trajectories, 16, false);
+
+		fn = rp->path + "imbalance_lpn_evo" + cp->fn_suffix;
+		save_2d_inv_double_data(fn, imbalance_lpn_evo, dump_num_total, num_trajectories, 16, false);
 	}
 }
 

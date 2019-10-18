@@ -1570,6 +1570,55 @@ MKL_Complex16 get_spec_mbl(AllData * ad, int tr_id)
 	return result;
 }
 
+double get_imbalance_mbl(AllData * ad, double * adr)
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double * n_part = new double[md->mbl_Nc];
+
+	for (int cell_id = 0; cell_id < md->mbl_Nc; cell_id++)
+	{
+		n_part[cell_id] = 0.0;
+	}
+
+	for (int state_id = 0; state_id < sys_size; state_id++)
+	{
+		vector<int> vb = convert_int_to_vector_of_bits(md->mbl_id_to_x[state_id], md->mbl_Nc);
+
+		for (int cell_id = 0; cell_id < md->mbl_Nc; cell_id++)
+		{
+			n_part[cell_id] += adr[state_id] * double(vb[cell_id]);
+		}
+	}
+
+	double sum_odd = 0.0;
+	double sum_even = 0.0;
+	double sum_all = 0.0;
+
+	for (int cell_id = 0; cell_id < md->mbl_Nc; cell_id++)
+	{
+		if (cell_id % 2 == 0)
+		{
+			sum_odd += n_part[cell_id];
+		}
+		else
+		{
+			sum_even += n_part[cell_id];
+		}
+	}
+	sum_all = sum_even + sum_odd;
+
+	double imbalance = (sum_odd - sum_even) / sum_all;
+
+	delete[] n_part;
+
+	return imbalance;
+}
+
 
 MKL_Complex16 get_num_photons_jcs(AllData * ad, int tr_id)
 {
