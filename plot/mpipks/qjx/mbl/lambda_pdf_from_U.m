@@ -23,15 +23,15 @@ diss_type = 1;
 diss_phase = 0.0;
 diss_gamma = 0.1;
 
-U = 1;
+W = 20;
 J = 1;
 
 start_type = 0;
 start_state = 49;
 
-lpn_type = 1;
-lpn_delta_f = 0.0001;
-lpn_delta_s = 0.0000001;
+lpn_type = 0;
+lpn_delta_f = 0.001;
+lpn_delta_s = 0.000001;
 
 ss = 0;
 mns = 1000000;
@@ -46,18 +46,18 @@ lambda_num_bins = 200;
 lambda_shift = (lambda_max - lambda_min) / lambda_num_bins;
 lambda_bins = linspace(lambda_min + 0.5 * lambda_shift, lambda_max - 0.5 * lambda_shift, lambda_num_bins);
 
-W_begin = 0.2;
-W_step = 0.2;
-W_num = 100;
-Ws = zeros(W_num, 1);
+U_begin = 0.1;
+U_step = 0.1;
+U_num = 100;
+Us = zeros(U_num, 1);
 
-lambdas_2d_pdf = zeros(W_num, lambda_num_bins);
-lambdas = zeros(W_num, 1);
+lambdas_2d_pdf = zeros(U_num, lambda_num_bins);
+lambdas = zeros(U_num, 1);
 
-for W_id = 1:W_num
+for U_id = 1:U_num
     
-    W = W_begin + W_step * (W_id - 1)
-    Ws(W_id) = W;
+    U = U_begin + U_step * (U_id - 1)
+    Us(U_id) = U;
     
     lambdas_pdf = zeros(lambda_num_bins, 1);
 	avg_lambdas = 0;
@@ -138,24 +138,24 @@ for W_id = 1:W_num
     lambdas_pdf = lambdas_pdf / (sum_lambda_pdf * lambda_shift);
     norm = sum(lambdas_pdf) * lambda_shift;
     norm_diff = 1.0 - norm
-    lambdas_2d_pdf(W_id, :) = lambdas_pdf;  
+    lambdas_2d_pdf(U_id, :) = lambdas_pdf;  
 	
-	lambdas(W_id) = avg_lambdas;
+	lambdas(U_id) = avg_lambdas;
 end
 
-for W_id = 1:W_num
-    curr_max = max(lambdas_2d_pdf(W_id, :));
-    lambdas_2d_pdf(W_id, :) = lambdas_2d_pdf(W_id, :) / curr_max;
+for U_id = 1:U_num
+    curr_max = max(lambdas_2d_pdf(U_id, :));
+    lambdas_2d_pdf(U_id, :) = lambdas_2d_pdf(U_id, :) / curr_max;
 end
 
-suffix_save =  sprintf('Nc(%d)_rnd(%d_%d)_diss(%d_%0.4f_%0.4f)_prm(var_%0.4f_%0.4f)_start(%d_%d)_lpn(%d_%0.4f_%0.4f)', ...
+suffix_save =  sprintf('Nc(%d)_rnd(%d_%d)_diss(%d_%0.4f_%0.4f)_prm(%0.4f_var_%0.4f)_start(%d_%d)_lpn(%d_%0.4f_%0.4f)', ...
     Nc, ...
     W_seed, ...
     W_mns, ...
     diss_type, ...
     diss_phase, ...
     diss_gamma, ...
-    U, ...
+    W, ...
     J, ...
     start_type, ...
     start_state, ...
@@ -165,9 +165,9 @@ suffix_save =  sprintf('Nc(%d)_rnd(%d_%d)_diss(%d_%0.4f_%0.4f)_prm(var_%0.4f_%0.
 
 
 fig = figure;
-hLine = imagesc(Ws, lambda_bins, lambdas_2d_pdf');
+hLine = imagesc(Us, lambda_bins, lambdas_2d_pdf');
 set(gca, 'FontSize', 30);
-xlabel('$W$', 'Interpreter', 'latex');
+xlabel('$U$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$\lambda$', 'Interpreter', 'latex');
 colormap hot;
@@ -176,14 +176,14 @@ set(gca, 'FontSize', 30);
 title(h, '');
 set(gca,'YDir','normal');
 hold all;
-hLine = plot(Ws, lambdas);
+hLine = plot(Us, lambdas);
 
-savefig(sprintf('%s/lambda_pdf_from_W_%s.fig', home_figures_path, suffix_save));
+savefig(sprintf('%s/lambda_pdf_from_U_%s.fig', home_figures_path, suffix_save));
 
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('%s/lambda_pdf_from_W_%s.pdf', home_figures_path, suffix_save));
+print(gcf, '-dpdf', sprintf('%s/lambda_pdf_from_U_%s.pdf', home_figures_path, suffix_save));
 
 close(fig)
