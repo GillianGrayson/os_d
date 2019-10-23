@@ -3,13 +3,13 @@ clear all;
 data_path = '../../../source/cpp/MF/MF';
 
 task = 0;
-U = 0.05;
+U = 0.12;
 seed_start = 0;
 seed_num = 1;
-path = ''; 
+path = '';
 mt = 1;
 num_steps = 1000;
-npt = 1000;
+npt = 100;
 np = 10000;
 E = 0.0;
 A = 3.4 ;
@@ -20,10 +20,11 @@ J = 1.0;
 
 nu = [];
 phi = [];
+
+for seed = seed_start : seed_start + seed_num-1
     
-for seed = 1:seed_num
-    
-    fn_suffix = sprintf('mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)_A(%0.4f)_U(%0.4f)_seed(%d).txt', ...
+    fn_suffix = sprintf('t(%d)_mt(%d)_omega(%0.4f)_phase(%0.4f)_g(%0.4f)_J(%0.4f)_E(%0.4f)_A(%0.4f)_U(%0.4f)_seed(%d).txt', ...
+        task, ...
         mt, ...
         omega, ...
         phase, ...
@@ -32,13 +33,13 @@ for seed = 1:seed_num
         E, ...
         A, ...
         U, ...
-        seed-1);
+        seed);
     
     fn = sprintf('%s/data_%s', data_path, fn_suffix);
     data = importdata(fn);
     
-    nu_curr = data(2:end, 2);
-    phi_curr = data(2:end, 3);
+    nu_curr = data(2:end, 1);
+    phi_curr = data(2:end, 2);
     
     for p_id = 1 : size(nu_curr, 1)
         
@@ -55,7 +56,7 @@ for seed = 1:seed_num
     
 end
 
-    
+
 
 fig = figure;
 hLine = scatter(nu, phi);

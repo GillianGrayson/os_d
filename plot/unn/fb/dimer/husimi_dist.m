@@ -1,11 +1,11 @@
 clear all;
 
 drt = 1;
-N = 501;
+N = 101;
 E = 0;
 J = -1;
 
-U = 0.1125;
+U = 0.15;
 
 g = 0.1;
 A = -3.4;
@@ -18,7 +18,7 @@ phi_size = 100;
 nu_size = 100;
 
 phi_begin = 0;
-phi_end = 2*pi;
+phi_end = 1*pi;
 
 nu_begin = 0;
 nu_end = pi;
@@ -26,7 +26,7 @@ nu_end = pi;
 phis = linspace(phi_begin, phi_end, phi_size)';
 nus = linspace(nu_begin, nu_end, nu_size)';
 
-data_path = '../../../../data/cluster/unn/fb';
+data_path = '../../../../data/cluster/unn';
 
 warning('off', 'all');
 
