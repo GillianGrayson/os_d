@@ -71,6 +71,11 @@ int main()
 		ndb_exp = new LpnMultNewDelBehaviour();
 		eb = new LpnMultExperimentBehaviour();
 	}
+	else if (rp->task_id == LPN_MULT_DEEP_TASK_ID)
+	{
+		ndb_exp = new LpnMultDeepNewDelBehaviour();
+		eb = new LpnMultDeepExperimentBehaviour();
+	}
 	else if (rp->task_id == CD_TASK_ID)
 	{
 		ndb_exp = new CorrDimNewDelBehaviour();

@@ -44,6 +44,11 @@ void QJPropagateBehavior::one_period_obs_deep_lpn(AllData * ad, CoreBehavior * c
 	cb->ex_period_obs_deep_lpn(ad, period_id);
 }
 
+void QJPropagateBehavior::one_period_obs_deep_mult_lpn(AllData * ad, CoreBehavior * cb, int period_id) const
+{
+	cb->ex_period_obs_deep_mult_lpn(ad, period_id);
+}
+
 void QJPropagateBehavior::one_period_obs_deep_lpn_per_period(struct AllData* ad, CoreBehavior* cb, int period_id, int num_periods) const
 {
 	cb->ex_period_obs_deep_lpn_per_period(ad, period_id, num_periods);
@@ -97,6 +102,13 @@ void RKPropagateBehavior::one_period_obs_deep(AllData * ad, CoreBehavior * cb, i
 void RKPropagateBehavior::one_period_obs_deep_lpn(AllData * ad, CoreBehavior * cb, int period_id) const
 {
 	cb->rk_period_obs_deep_lpn(ad, period_id);
+}
+
+void RKPropagateBehavior::one_period_obs_deep_mult_lpn(AllData * ad, CoreBehavior * cb, int period_id) const
+{
+	stringstream msg;
+	msg << "Error: need to add functionality" << endl;
+	Error(msg.str());
 }
 
 void RKPropagateBehavior::one_period_obs_deep_lpn_per_period(struct AllData* ad, CoreBehavior* cb, int period_id, int num_periods) const

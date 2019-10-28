@@ -25,6 +25,13 @@ public:
 	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
+class LpnMultDeepNewDelBehaviour : public ExpNewDelBehavior
+{
+public:
+	virtual void init_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void free_data(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+};
+
 class StdNewDelBehaviour : public ExpNewDelBehavior
 {
 public:

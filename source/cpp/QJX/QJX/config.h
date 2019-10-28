@@ -24,7 +24,6 @@
 #define PS_SYS_ID 2
 #define MBL_SYS_ID 3
 
-#define LPN_MULT_TASK_ID 7
 #define LPN_TASK_ID 0
 #define STD_TASK_ID 1
 #define CD_TASK_ID 2
@@ -32,6 +31,8 @@
 #define STD_DEEP_TASK_ID 4
 #define LPN_DEEP_TASK_ID 5
 #define LPN_ALL_TASK_ID 6
+#define LPN_MULT_TASK_ID 7
+#define LPN_MULT_DEEP_TASK_ID 8
 
 #define LPN_DEEP_TASK_ID_PER_1T 10
 #define LPN_DEEP_TASK_ID_PER_10T 11

@@ -26,6 +26,13 @@ public:
 	virtual void obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
 };
 
+class LpnMultDeepExperimentBehaviour : public ExperimentBehavior
+{
+public:
+	virtual void trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+	virtual void obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const;
+};
+
 class StdExperimentBehaviour : public ExperimentBehavior
 {
 public:

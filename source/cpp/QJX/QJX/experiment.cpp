@@ -279,6 +279,121 @@ void LpnMultExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 
 
 
+void LpnMultDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
+{
+	ConfigParam * cp = ad->cp;
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories / 2; tr_id++)
+	{
+		int thread_id = omp_get_thread_num();
+		trans_process_single_deep(ad, pb, cb, tr_id, thread_id);
+		cb->calc_chars_std_start(ad, tr_id);
+		cb->calc_chars_lpn_start(ad, tr_id, tr_id);
+	}
+
+#pragma omp parallel for
+	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+	{
+		if (tr_id >= num_trajectories / 2)
+		{
+			copy_trajectory_lpn(ad, tr_id, tr_id - num_trajectories / 2);
+			var_trajectory_lpn(ad, cb, tr_id, tr_id - num_trajectories / 2);
+		}
+
+		resresh_times(ad, tr_id);
+
+		cb->calc_chars_std_start(ad, tr_id);
+		if (tr_id >= num_trajectories / 2)
+		{
+			cb->calc_chars_lpn_start(ad, tr_id, tr_id - num_trajectories / 2);
+		}
+		else
+		{
+			cb->calc_chars_lpn_start(ad, tr_id, tr_id);
+		}
+
+		cb->evo_chars_std(ad, tr_id, 0);
+		cb->evo_chars_lpn(ad, tr_id, 0);
+
+		if (dump_evo_sep == 1)
+		{
+			dump_adr_single(ad, tr_id, false);
+		}
+	}
+
+	if (dump_evo_avg == 1)
+	{
+		dump_adr_avg(ad, false);
+	}
+}
+
+
+void LpnMultDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	ExpData * ed = ad->ed;
+	MainData * md = ad->md;
+
+	ed->is_obs = 1;
+
+	int num_branches = md->num_ham_qj;
+	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
+
+	int num_trajectories = cp->num_trajectories;
+
+	int dump_num_total = cp->num_obs_periods + 1;
+
+	int * dump_periods = ed->dump_periods;
+
+	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
+
+	int begin_period_id = 0;
+	int end_period_id = 0;
+	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
+	{
+		if (rp->is_pp == 1)
+		{
+			cout << "dump_id: " << dump_id << endl;
+		}
+
+		begin_period_id = dump_id - 1;
+		end_period_id = dump_id;
+
+		for (int period_id = begin_period_id; period_id < end_period_id; period_id++)
+		{
+			pb->one_period_obs_deep_mult_lpn(ad, cb, period_id);
+		}
+
+		if (dump_evo_avg == 1)
+		{
+			dump_adr_avg_mult(ad, true, 0, num_trajectories / 2);
+		}
+	}
+
+	cb->dump_std(ad);
+	cb->dump_lpn(ad);
+
+	if (dump_evo_sep == 1)
+	{
+		cb->dump_std_evo(ad);
+		cb->dump_lpn_evo(ad);
+	}
+
+	if (dump_evo_avg == 0)
+	{
+		dump_adr_avg_mult(ad, true, 0, num_trajectories / 2);
+	}
+}
+
+
 
 
 

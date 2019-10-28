@@ -34,6 +34,8 @@ public:
 
 string suffix_qj(RunParam * rp, ConfigParam * cp, int precision);
 
+string suffix_setup(RunParam * rp);
+
 string suffix_lpn(RunParam * rp, ConfigParam * cp);
 
 string extension();

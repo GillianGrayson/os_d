@@ -1,4 +1,4 @@
-lpn_type 1
+lpn_type 0
 lpn_eps_deep 100
 lpn_eps_error 1e-10
 lpn_eps_high 10
@@ -16,7 +16,7 @@ dump_adr_avg 0
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
-dump_num 10000
+dump_num 1000
 N 100
 diss_type 1
 diss_gamma 0.1
@@ -44,13 +44,13 @@ ps_diss_w 0.05
 mbl_Nc 8
 mbl_seed 10
 mbl_mns 1000000
-mbl_prm_W 0.2
-mbl_prm_U 1.0
+mbl_prm_W 2.0
+mbl_prm_U 10.0
 mbl_prm_J 1.0
 start_type 0
 start_state 49
 cd_dim 1
 cd_eps 1e-08
-deep_num_steps 50
+deep_num_steps 1
 jump 0
 jumps_counts 0

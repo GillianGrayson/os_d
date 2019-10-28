@@ -2,6 +2,7 @@
 
 void DimerOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
 {
+	string setup = suffix_setup(rp);
 	string qj = suffix_qj(rp, cp, precision);
 
 	stringstream params;
@@ -28,7 +29,7 @@ void DimerOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int prec
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
 
-	string suffix = qj + params.str();
+	string suffix = setup + qj + params.str();
 
 	if (rp->task_id == LPN_MULT_TASK_ID)
 	{
@@ -44,6 +45,7 @@ void DimerOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int prec
 
 void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
 {
+	string setup = suffix_setup(rp);
 	string qj = suffix_qj(rp, cp, precision);
 
 	stringstream params;
@@ -67,7 +69,7 @@ void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
 
-	string suffix = qj + params.str();
+	string suffix = setup + qj + params.str();
 
 	if (rp->task_id == LPN_MULT_TASK_ID)
 	{
@@ -84,6 +86,7 @@ void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 
 void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
 {
+	string setup = suffix_setup(rp);
 	string qj = suffix_qj(rp, cp, precision);
 
 	stringstream params;
@@ -109,7 +112,7 @@ void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precisi
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
 
-	string suffix = qj + params.str();
+	string suffix = setup + qj + params.str();
 
 	if (rp->task_id == LPN_MULT_TASK_ID)
 	{
@@ -125,6 +128,7 @@ void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precisi
 
 void MBLOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
 {
+	string setup = suffix_setup(rp);
 	string qj = suffix_qj(rp, cp, precision);
 
 	stringstream params;
@@ -149,7 +153,7 @@ void MBLOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
 
-	string suffix = qj + params.str();
+	string suffix = setup + qj + params.str();
 
 	if (rp->task_id == LPN_MULT_TASK_ID)
 	{
@@ -168,6 +172,15 @@ string suffix_qj(RunParam * rp, ConfigParam * cp, int precision)
 	stringstream suffix;
 
 	suffix << "_rnd(" << cp->seed << "_" << cp->mns << ")";
+
+	return suffix.str();
+}
+
+string suffix_setup(RunParam * rp)
+{
+	stringstream suffix;
+
+	suffix << "_setup(" << rp->sys_id << "_" << rp->task_id << "_" << rp->prop_id << ")";
 
 	return suffix.str();
 }
