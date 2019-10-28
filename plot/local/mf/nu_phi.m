@@ -3,7 +3,7 @@ clear all;
 data_path = '../../../source/cpp/MF/MF';
 
 task = 0;
-U = 0.12;
+U = 0.15;
 seed_start = 0;
 seed_num = 1;
 path = '';

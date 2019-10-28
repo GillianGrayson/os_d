@@ -5,7 +5,7 @@ N = 101;
 E = 0;
 J = -1;
 
-U = 0.15;
+U = 0.10;
 
 g = 0.1;
 A = -3.4;
@@ -26,7 +26,7 @@ nu_end = pi;
 phis = linspace(phi_begin, phi_end, phi_size)';
 nus = linspace(nu_begin, nu_end, nu_size)';
 
-data_path = '../../../../data/cluster/unn';
+data_path = 'D:/YandexDisk/Work/os_d/unn';
 
 warning('off', 'all');
 
@@ -54,7 +54,9 @@ end
 
 tic
 hus = husimi(nus, phis, rho);
-toc 
+toc
+
+hus = hus / max(max(hus));
 
 fig = figure;
 propertyeditor(fig);
