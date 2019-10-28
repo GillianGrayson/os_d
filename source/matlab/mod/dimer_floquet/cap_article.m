@@ -2,7 +2,7 @@ clear all;
 
 global N J E0 A0 w U g HE HU HJ A phi0 Ps Pd
 
-N=25; % number of particles, system size = N+1
+N=50; % number of particles, system size = N+1
 show=0; % if = 1, generated matrices, coefficients, etc. are displayed
 imag1=sqrt(-1);
 
@@ -14,7 +14,7 @@ A0=-3.4; %driving amplitude
 w=1; % driving frequency
 phi0=pi*0; % initial phase
 %U=0.7; % on-site interaction
-Uarray=[0.01:0.01:0.75];
+Uarray=[0.12];
 g=0.1/N; % gamma;
 eigvals=zeros((N+1)^2, length(Uarray));
 
