@@ -31,7 +31,7 @@ void DimerOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int prec
 
 	string suffix = setup + qj + params.str();
 
-	if (rp->task_id == LPN_MULT_TASK_ID)
+	if (rp->task_id == LPN_MULT_TASK_ID || rp->task_id == LPN_MULT_DEEP_TASK_ID)
 	{
 		string lpn = suffix_lpn(rp, cp);
 		suffix += lpn;
@@ -71,7 +71,7 @@ void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 
 	string suffix = setup + qj + params.str();
 
-	if (rp->task_id == LPN_MULT_TASK_ID)
+	if (rp->task_id == LPN_MULT_TASK_ID || rp->task_id == LPN_MULT_DEEP_TASK_ID)
 	{
 		string lpn = suffix_lpn(rp, cp);
 		suffix += lpn;
@@ -114,7 +114,7 @@ void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precisi
 
 	string suffix = setup + qj + params.str();
 
-	if (rp->task_id == LPN_MULT_TASK_ID)
+	if (rp->task_id == LPN_MULT_TASK_ID || rp->task_id == LPN_MULT_DEEP_TASK_ID)
 	{
 		string lpn = suffix_lpn(rp, cp);
 		suffix += lpn;
@@ -155,7 +155,7 @@ void MBLOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 
 	string suffix = setup + qj + params.str();
 
-	if (rp->task_id == LPN_MULT_TASK_ID)
+	if (rp->task_id == LPN_MULT_TASK_ID || rp->task_id == LPN_MULT_DEEP_TASK_ID)
 	{
 		string lpn = suffix_lpn(rp, cp);
 		suffix += lpn;
