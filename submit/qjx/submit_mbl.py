@@ -11,9 +11,9 @@ medium = 0
 
 mbl_U_start = 0.1
 mbl_U_shift = 0.1
-mbl_U_num = 100
+mbl_U_num = 1
 
-mbl_W_start = 20
+mbl_W_start = 2
 mbl_W_shift = 0.2
 mbl_W_num = 1
 
@@ -50,7 +50,7 @@ for mbl_U_id in range(0, mbl_U_num):
             ex_deep = 16
             rk_ns = 10000
 
-            lpn_type = 0
+            lpn_type = 1
             lpn_eps_deep = 100
             lpn_eps_error = 1.0e-10
             lpn_eps_high = 10
