@@ -15,7 +15,7 @@ num_obs_periods = 1000;
 Nc = 8;
 
 W_seed_s = 1;
-W_seed_num = 1;
+W_seed_num = 100;
 W_seed_f = W_seed_s + W_seed_num - 1;
 W_mns = 1000000;
 
@@ -29,7 +29,7 @@ J = 1;
 start_type = 0;
 start_state = 49;
 
-lpn_type = 1;
+lpn_type = 0;
 lpn_delta_f = 0.001;
 lpn_delta_s = 0.000001;
 
@@ -40,8 +40,8 @@ num_trajectories = 200;
 num_target_trajectories = num_trajectories / 2;
 num_runs = 1;
 
-lambda_min = -0.1;
-lambda_max = 0.1;
+lambda_min = -0.25;
+lambda_max = 0.25;
 lambda_num_bins = 400;
 lambda_shift = (lambda_max - lambda_min) / lambda_num_bins;
 lambda_bins = linspace(lambda_min + 0.5 * lambda_shift, lambda_max - 0.5 * lambda_shift, lambda_num_bins);
