@@ -9,11 +9,11 @@ num_runs = 1
 
 medium = 0
 
-mbl_U_start = 0.1
+mbl_U_start = 1.0
 mbl_U_shift = 0.1
 mbl_U_num = 1
 
-mbl_W_start = 2
+mbl_W_start = 0.2
 mbl_W_shift = 0.2
 mbl_W_num = 1
 
@@ -55,9 +55,9 @@ for mbl_U_id in range(0, mbl_U_num):
             lpn_eps_error = 1.0e-10
             lpn_eps_high = 10
             lpn_eps_low = -10
-            lpn_delta_s = 0.000001
-            lpn_delta_f_high = 0.001
-            lpn_delta_f_low = 1.0e-12
+            lpn_delta_s = 1.0e-6
+            lpn_delta_f_high = 1.0e-4
+            lpn_delta_f_low = 1.0e-8
             save_lambdas = 0
             num_lambdas_periods = 2
             dump_obs = 1
@@ -95,6 +95,7 @@ for mbl_U_id in range(0, mbl_U_num):
 
             lpn_delta_s_str = str(format(np.log10(lpn_delta_s), '0.4f'))
             lpn_delta_f_high_str = str(format(np.log10(lpn_delta_f_high), '0.4f'))
+            lpn_delta_f_low_str = str(format(np.log10(lpn_delta_f_low), '0.4f'))
 
             start_seed = 0
             finish_seed = num_runs * num_trajectories
@@ -117,7 +118,7 @@ for mbl_U_id in range(0, mbl_U_num):
                     '/start_' + str(start_type) + '_' + str(start_state)
 
             if task_id == 7:
-                local_path += '/lpn_' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str
+                local_path = '/lpn_' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str + local_path
 
             for ss in range(start_seed, finish_seed, step_seed):
                 print("ss = " + str(ss))
@@ -196,7 +197,7 @@ for mbl_U_id in range(0, mbl_U_num):
                         'start(' + str(start_type) + '_' + str(start_state) + ')'
 
                 if task_id == 7:
-                    fn_suffix += '_lpn(' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + ')'
+                    fn_suffix += '_lpn(' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str + ')'
 
                 fn_test = ''
                 if sys_id == 3:

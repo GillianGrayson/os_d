@@ -191,7 +191,8 @@ string suffix_lpn(RunParam * rp, ConfigParam * cp)
 
 	suffix << "_lpn(" << double(cp->params.find("lpn_type")->second) << "_"
 		<< setprecision(4) << fixed << log10(double(cp->params.find("lpn_delta_s")->second)) << "_"
-		<< setprecision(4) << fixed << log10(double(cp->params.find("lpn_delta_f_high")->second)) << ")";
+		<< setprecision(4) << fixed << log10(double(cp->params.find("lpn_delta_f_high")->second)) << "_"
+		<< setprecision(4) << fixed << log10(double(cp->params.find("lpn_delta_f_low")->second)) << ")";
 
 	return suffix.str();
 }
