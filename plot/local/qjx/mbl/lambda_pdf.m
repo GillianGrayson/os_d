@@ -2,7 +2,9 @@ clear all;
 
 num_traj = 200;
 
-lambda_num_bins = 100;
+lambda_num_bins = 400;
+lambda_min = -0.25;
+lambda_max = 0.25;
 
 sys_id = 3;
 task_id = 7;
@@ -61,8 +63,7 @@ lambda_data = importdata(fn);
 
 curr_lambdas = lambda_data(num_traj / 2  + 1 : end);
 
-lambda_min = min(curr_lambdas) - 1e-8;
-lambda_max = max(curr_lambdas) + 1e-8;
+
 
 lambda_shift = (lambda_max - lambda_min) / lambda_num_bins;
 lambda_bins = linspace(lambda_min + 0.5 * lambda_shift, lambda_max - 0.5 * lambda_shift, lambda_num_bins);
