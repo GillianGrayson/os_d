@@ -15,7 +15,7 @@ mbl_U_num = 1
 
 mbl_W_start = 0.2
 mbl_W_shift = 0.2
-mbl_W_num = 1
+mbl_W_num = 100
 
 mbl_seed_start = 1
 mbl_seed_shift = 1
@@ -55,9 +55,9 @@ for mbl_U_id in range(0, mbl_U_num):
             lpn_eps_error = 1.0e-10
             lpn_eps_high = 10
             lpn_eps_low = -10
-            lpn_delta_s = 1.0e-6
-            lpn_delta_f_high = 1.0e-4
-            lpn_delta_f_low = 1.0e-8
+            lpn_delta_s = 1.0e-8
+            lpn_delta_f_high = 1.0e-6
+            lpn_delta_f_low = 1.0e-10
             save_lambdas = 0
             num_lambdas_periods = 2
             dump_obs = 1
@@ -105,20 +105,18 @@ for mbl_U_id in range(0, mbl_U_num):
             print('finish_seed: ' + str(finish_seed))
             print('step_seed: ' + str(step_seed))
 
-            local_path = ''
-            file_suffix = ''
-            if sys_id == 3:
-                local_path = \
-                    '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
-                    '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
-                    '/Nс_' + str(mbl_Nc) + \
-                    '/rnd_' + str(mbl_seed) + '_' + str(mbl_mns) + \
-                    '/diss_' + str(diss_type) + '_' + diss_phase_str + '_' + diss_gamma_str + \
-                    '/prm_' + mbl_prm_W_str + '_' + mbl_prm_U_str + '_' + mbl_prm_J_str + \
-                    '/start_' + str(start_type) + '_' + str(start_state)
+            local_path = \
+                '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id)
 
             if task_id == 7:
-                local_path = '/lpn_' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str + local_path
+                local_path += '/lpn_' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str
+
+            local_path += '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
+                '/Nс_' + str(mbl_Nc) + \
+                '/rnd_' + str(mbl_seed) + '_' + str(mbl_mns) + \
+                '/diss_' + str(diss_type) + '_' + diss_phase_str + '_' + diss_gamma_str + \
+                '/prm_' + mbl_prm_W_str + '_' + mbl_prm_U_str + '_' + mbl_prm_J_str + \
+                '/start_' + str(start_type) + '_' + str(start_state)
 
             for ss in range(start_seed, finish_seed, step_seed):
                 print("ss = " + str(ss))
@@ -185,23 +183,19 @@ for mbl_U_id in range(0, mbl_U_num):
 
                 file_params.close()
 
-                fn_suffix = ''
-                if sys_id == 3:
-
-                    fn_suffix = \
-                        'rnd(' + str(ss) + '_' + str(mns) + ')_' + \
-                        'Nc(' + str(mbl_Nc) + ')_' + \
-                        'rnd(' + str(mbl_seed) + '_' + str(mbl_mns) + ')_' + \
-                        'diss(' + str(diss_type) + '_' + diss_phase_str + '_' + diss_gamma_str + ')_' + \
-                        'prm(' + mbl_prm_W_str + '_' + mbl_prm_U_str + '_' + mbl_prm_J_str + ')_' + \
-                        'start(' + str(start_type) + '_' + str(start_state) + ')'
+                fn_suffix = \
+                    'setup(' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + ')_' + \
+                    'rnd(' + str(ss) + '_' + str(mns) + ')_' + \
+                    'Nc(' + str(mbl_Nc) + ')_' + \
+                    'rnd(' + str(mbl_seed) + '_' + str(mbl_mns) + ')_' + \
+                    'diss(' + str(diss_type) + '_' + diss_phase_str + '_' + diss_gamma_str + ')_' + \
+                    'prm(' + mbl_prm_W_str + '_' + mbl_prm_U_str + '_' + mbl_prm_J_str + ')_' + \
+                    'start(' + str(start_type) + '_' + str(start_state) + ')'
 
                 if task_id == 7:
                     fn_suffix += '_lpn(' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str + ')'
 
-                fn_test = ''
-                if sys_id == 3:
-                    fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
+                fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
 
                 if not os.path.isfile(fn_test):
                     if type == FSType.cluster:
