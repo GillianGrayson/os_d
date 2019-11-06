@@ -3,10 +3,9 @@ clear;
 global N J E0 A0 w U g HE HU HJ A phi0 Ps Pd
 imag1=sqrt(-1);
 
-
 N=10; % number of particles, system size = N+1
 
-path_to_debug = 'E:/Work/os_d/source/cpp/CQdiss_os_dimer/CQdiss_fbasis';
+path_to_debug = 'D:/Work/os_d/source/cpp/CQdiss_os_dimer/CQdiss_fbasis';
 
 tic
 
@@ -97,11 +96,13 @@ Pd=sparse(-sqrt(-1)*(kron(eye(N+1),HE)-kron(transpose(HE),eye(N+1))));
 toc
 tic
 
-rho_f_sim = (N+1)^2 - 1;
-RhoFloquet = zeros(rho_f_sim);
+rho_f_sim = (N+1)^2;
+RhoFloquet = zeros((N+1)^2);
 diffs = zeros(rho_f_sim, 1);
 
 for jj=1:rho_f_sim
+    
+    jj = jj
     
     t0 = 0;
     
@@ -119,11 +120,11 @@ for jj=1:rho_f_sim
         end
     end
     
-    options = odeset('RelTol',1e-8,'AbsTol',1e-10);
+    options = odeset('RelTol', 1e-8, 'AbsTol', 1e-10);
     [t,Y]=ode45('sysLind',[t0:pi/w:t0+2*pi/w],rho_before, options);
     rho_after = transpose(Y(length(t),:));
     
-    %RhoFloquet(:, jj) = rho_after;
+    RhoFloquet(:,jj)=transpose(Y(length(t),:));
     
     rho_after_mtx = zeros(N+1);
     for st_1 = 1:N+1
@@ -146,68 +147,9 @@ for jj=1:rho_f_sim
     t0 = t(length(t));
 end
 
-max(diffs)
-
-toc
-
 tic
 eigv=eig(RhoFloquet);
-toc
-tic
-[RhoF,S]=eigs(RhoFloquet,1,'lm');
-toc
-for i=1:N+1
-    Rho(:,i)=RhoF(1+(i-1)*(N+1):i*(N+1),1);
-end
-Rho=Rho/trace(Rho);
-Purity=trace(Rho^2)
-Negativity=0.5*(sum(sum(abs(Rho)))-trace(Rho))
-
-
-figure;
-plot(eigv,'og')
-hold on
-plot(cos([0:0.01:2*pi]),sin([0:0.01:2*pi]),'-')
-
-temp=sort(abs(eigv));
-
-
-eigmax(kk)=temp(length(temp)-1);
-eigmin(kk)=temp(1);
-
-eigvals(1+(kk-1)*(N+1)^2:kk*(N+1)^2,1)=U*ones((N+1)^2,1);
-eigvals(1+(kk-1)*(N+1)^2:kk*(N+1)^2,2)=real(eigv);
-eigvals(1+(kk-1)*(N+1)^2:kk*(N+1)^2,3)=imag(eigv);
-delta=1-eigmax(kk)
-
-
-
-figure;
-
-plot(Uarray,eigmin,'s-b')
-hold on
-plot(Uarray,eigmax,'s-r')
-
-%Rho2=Rho2/N_it_post;
-%RhoD=RhoD/N_it_post;
-%eVmax=eVmax/N_it_post;
-tic
-
-theta=linspace(0,pi,50);
-phi=linspace(0,2*pi,50);
-Hu=Husimi(theta,phi,Rho);
-
+eigvals(:, kk) = eigv;
 toc
 
-figure;
-[theta_grid,phi_grid]=meshgrid(theta,phi);
-h=pcolor(theta_grid,phi_grid,real(Hu'));
-set(h,'EdgeColor','None')
-
-
-
-
-toc
-
-
-save eigvals.txt eigvals -ascii
+max(diffs)
