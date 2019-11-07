@@ -15,7 +15,7 @@ num_obs_periods = 1000;
 Nc = 8;
 
 W_seed_s = 1;
-W_seed_num = 100;
+W_seed_num = 1;
 W_seed_f = W_seed_s + W_seed_num - 1;
 W_mns = 1000000;
 
