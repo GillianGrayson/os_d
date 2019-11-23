@@ -34,6 +34,8 @@ struct MainData
 	MKL_Complex16 * special_3;			// Matrix for special observable
 	MKL_Complex16 * special_4;			// Matrix for special observable
 
+	std::vector<MKL_Complex16*> random_obs_mtxs;
+
 	Split * structure;					// Split structure
 	Split * splits;						// Splits
 };
@@ -88,6 +90,7 @@ struct ExpData
 	MKL_Complex16 * spec;
 	MKL_Complex16 * spec_2;
 	MKL_Complex16 * spec_3;
+	std::vector<std::vector<std::complex<double>>> random_obs; // 1 - trajectory, 2 - observable
 
 	double * norm_evo;
 	double * mean_evo;
@@ -96,6 +99,7 @@ struct ExpData
 	MKL_Complex16 * spec_evo;
 	MKL_Complex16 * spec_2_evo;
 	MKL_Complex16 * spec_3_evo;
+	std::vector<std::vector<std::vector<std::complex<double>>>> random_obs_evo; // 1 - trajectory, 2 - observable, 3 - time
 	// ======================================
 
 	// ======== Lyapunov observables ========
@@ -111,6 +115,7 @@ struct ExpData
 	MKL_Complex16 * spec_lpn;
 	MKL_Complex16 * spec_2_lpn;
 	MKL_Complex16 * spec_3_lpn;
+	std::vector<std::vector<std::complex<double>>> random_obs_lpn; // 1 - trajectory, 2 - observable
 
 	double * energy_evo;
 	double * lambda_evo;
@@ -119,6 +124,7 @@ struct ExpData
 	MKL_Complex16 * spec_lpn_evo;
 	MKL_Complex16 * spec_2_lpn_evo;
 	MKL_Complex16 * spec_3_lpn_evo;
+	std::vector<std::vector<std::vector<std::complex<double>>>> random_obs_lpn_evo; // 1 - trajectory, 2 - observable, 3 - time
 
 	int * num_renorms;
 	vector<double>* lambdas;

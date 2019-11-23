@@ -462,6 +462,8 @@ void init_obs_std(AllData * ad)
 	int num_trajectories = cp->num_trajectories;
 	int dump_num_total = ed->dump_num_total;
 
+	int num_random_obs = int(cp->params.find("num_random_obs")->second);
+
 	ed->mean_start = new double[num_trajectories];
 
 	ed->norm			= new double[num_trajectories];
@@ -472,7 +474,7 @@ void init_obs_std(AllData * ad)
 	ed->spec			= new MKL_Complex16[num_trajectories];
 	ed->spec_2 = new MKL_Complex16[num_trajectories];
 	ed->spec_3 = new MKL_Complex16[num_trajectories];
-
+	
 	ed->norm_evo		= new double[num_trajectories * dump_num_total];
 	ed->mean_evo		= new double[num_trajectories * dump_num_total];
 	ed->dispersion_evo	= new double[num_trajectories * dump_num_total];
@@ -481,6 +483,12 @@ void init_obs_std(AllData * ad)
 	ed->spec_evo		= new MKL_Complex16[num_trajectories * dump_num_total];
 	ed->spec_2_evo = new MKL_Complex16[num_trajectories * dump_num_total];
 	ed->spec_3_evo = new MKL_Complex16[num_trajectories * dump_num_total];
+	
+	if (num_random_obs > 0)
+	{
+		ed->random_obs = std::vector<std::vector<std::complex<double>>>(num_trajectories, std::vector<std::complex<double>>(num_random_obs));
+		ed->random_obs_evo = std::vector<std::vector<std::vector<std::complex<double>>>>(num_trajectories, std::vector<std::vector<std::complex<double>>>(num_random_obs));
+	}
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{
@@ -522,6 +530,8 @@ void init_obs_lpn(AllData * ad)
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 	ExpData * ed = ad->ed;
+
+	int num_random_obs = int(cp->params.find("num_random_obs")->second);
 
 	int sys_size = md->sys_size;
 	int num_trajectories = cp->num_trajectories;
@@ -566,6 +576,12 @@ void init_obs_lpn(AllData * ad)
 	ed->spec_lpn_evo = new MKL_Complex16[num_trajectories * dump_num_total];
 	ed->spec_2_lpn_evo = new MKL_Complex16[num_trajectories * dump_num_total];
 	ed->spec_3_lpn_evo = new MKL_Complex16[num_trajectories * dump_num_total];
+
+	if (num_random_obs > 0)
+	{
+		ed->random_obs_lpn = std::vector<std::vector<std::complex<double>>>(num_trajectories, std::vector<std::complex<double>>(num_random_obs));
+		ed->random_obs_lpn_evo = std::vector<std::vector<std::vector<std::complex<double>>>>(num_trajectories, std::vector<std::vector<std::complex<double>>>(num_random_obs));
+	}
 
 	for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 	{

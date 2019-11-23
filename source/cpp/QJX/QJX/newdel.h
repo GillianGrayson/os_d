@@ -68,3 +68,8 @@ public:
 	virtual void free_dissipators(AllData * ad) const;
 	virtual void free_hamiltonians_qj(AllData * ad) const;
 };
+
+
+void init_random_obs(AllData* ad);
+
+void free_random_obs(AllData* ad);

@@ -637,6 +637,8 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		}
 	}
 	// =========================================
+
+	init_random_obs(ad);
 }
 
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
@@ -1440,6 +1442,8 @@ void MBLNewDelBehaviour::free_hamiltonians(AllData * ad) const
 
 	delete[] md->hamiltonian;
 	delete[] md->special;
+
+	free_random_obs(ad);
 }
 
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
@@ -1539,4 +1543,121 @@ void MBLNewDelBehaviour::free_hamiltonians_qj(AllData * ad) const
 		delete[] md->hamiltonians_qj[qj_ham_id];
 	}
 	delete[] md->hamiltonians_qj;
+}
+
+
+
+void init_random_obs(AllData* ad)
+{
+	RunParam * rp = ad->rp;
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+
+	int num_random_obs = int(cp->params.find("num_random_obs")->second);
+	int random_obs_seed = double(cp->params.find("random_obs_seed")->second);
+	int random_obs_mns = double(cp->params.find("random_obs_mns")->second);
+	int random_obs_type = double(cp->params.find("random_obs_type")->second);
+
+	if (num_random_obs > 0)
+	{
+		md->random_obs_mtxs.reserve(num_random_obs);
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+		{
+			md->random_obs_mtxs.push_back(new MKL_Complex16[md->sys_size * md->sys_size]);
+		}
+
+		double* disorder_real = new double[md->sys_size * md->sys_size];
+		double* disorder_imag = new double[md->sys_size * md->sys_size];
+
+		MKL_Complex16* x_mtx = new MKL_Complex16[md->sys_size * md->sys_size];
+
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+		{
+			VSLStreamStatePtr stream;
+			vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
+			vslLeapfrogStream(stream, random_obs_seed + obs_id, random_obs_mns);
+
+			vdRngGaussian(VSL_RNG_METHOD_GAUSSIAN_BOXMULLER, stream, md->sys_size * md->sys_size, disorder_real, 0.0, 1.0);
+			vdRngGaussian(VSL_RNG_METHOD_GAUSSIAN_BOXMULLER, stream, md->sys_size * md->sys_size, disorder_imag, 0.0, 1.0);
+
+			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+			{
+				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+				{
+					int index = st_id_1 * md->sys_size + st_id_2;
+
+					md->random_obs_mtxs[obs_id][index].real = 0.0;
+					md->random_obs_mtxs[obs_id][index].imag = 0.0;
+
+					x_mtx[index].real = 0.5 * disorder_real[index];
+					x_mtx[index].imag = 0.5 * disorder_imag[index];
+				}
+			}
+
+			MKL_Complex16 alpha = { 1.0, 0.0 };
+			MKL_Complex16 beta = { 0.0, 0.0 };
+
+			cblas_zgemm(
+				CblasRowMajor,
+				CblasNoTrans,
+				CblasConjTrans,
+				md->sys_size,
+				md->sys_size,
+				md->sys_size,
+				&alpha,
+				x_mtx,
+				md->sys_size,
+				x_mtx,
+				md->sys_size,
+				&beta,
+				md->random_obs_mtxs[obs_id],
+				md->sys_size
+			);
+
+
+			if (random_obs_type > 0)
+			{
+				double trace = 0.0;
+
+				for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+				{
+					int index = st_id_1 * md->sys_size + st_id_1;
+					trace += md->random_obs_mtxs[obs_id][index].real;
+				}
+
+				if (random_obs_type == 2)
+				{
+					trace = trace * trace;
+				}
+
+				for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+				{
+					for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+					{
+						int index = st_id_1 * md->sys_size + st_id_2;
+
+						md->random_obs_mtxs[obs_id][index].real = md->random_obs_mtxs[obs_id][index].real / trace;
+						md->random_obs_mtxs[obs_id][index].imag = md->random_obs_mtxs[obs_id][index].imag / trace;
+					}
+				}
+			}
+		}
+
+		delete[] disorder_real;
+		delete[] disorder_imag;
+
+		delete[] x_mtx;
+	}
+}
+
+void free_random_obs(AllData* ad)
+{
+	int num_random_obs = int(ad->cp->params.find("num_random_obs")->second);
+	if (num_random_obs > 0)
+	{
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+		{
+			delete[] ad->md->random_obs_mtxs[obs_id];
+		}
+	}
 }

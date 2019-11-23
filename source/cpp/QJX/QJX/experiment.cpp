@@ -1735,6 +1735,63 @@ double get_imbalance_mbl(AllData * ad, double * adr)
 }
 
 
+vector<complex<double>> get_random_obs(AllData * ad, int tr_id)
+{
+	ConfigParam * cp = ad->cp;
+	MainData * md = ad->md;
+	ExpData * ed = ad->ed;
+
+	int num_random_obs = int(cp->params.find("num_random_obs")->second);
+
+	vector<complex<double>> random_obs;
+
+	if (num_random_obs > 0)
+	{ 
+		int sys_size = md->sys_size;
+
+		MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
+		MKL_Complex16 * phi_normed = new MKL_Complex16[sys_size];
+		MKL_Complex16 * phi_normed_conj = new MKL_Complex16[sys_size];
+		double norm = sqrt(norm_square(phi, sys_size));
+		MKL_Complex16 * mult_tmp = new MKL_Complex16[sys_size];
+		for (int st_id = 0; st_id < sys_size; st_id++)
+		{
+			phi_normed[st_id].real = phi[st_id].real / norm;
+			phi_normed[st_id].imag = phi[st_id].imag / norm;
+
+			phi_normed_conj[st_id].real = phi_normed[st_id].real;
+			phi_normed_conj[st_id].imag = -phi_normed[st_id].imag;
+		}
+
+		MKL_Complex16 ZERO = { 0.0, 0.0 };
+		MKL_Complex16 ONE = { 1.0, 0.0 };
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+		{
+			cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->random_obs_mtxs[obs_id], sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
+			complex<double> result(0.0, 0.0);
+
+			for (int st_id = 0; st_id < sys_size; st_id++)
+			{
+				complex<double> tmp(
+					(phi_normed_conj[st_id].real * mult_tmp[st_id].real - phi_normed_conj[st_id].imag * mult_tmp[st_id].imag),
+					(phi_normed_conj[st_id].imag * mult_tmp[st_id].real + phi_normed_conj[st_id].real * mult_tmp[st_id].imag)
+
+				);
+
+				result += tmp;
+			}
+
+			random_obs.push_back(result);
+		}
+
+		delete[] mult_tmp;
+		delete[] phi_normed;
+		delete[] phi_normed_conj;
+	}
+
+	return random_obs;
+}
+
 MKL_Complex16 get_num_photons_jcs(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;

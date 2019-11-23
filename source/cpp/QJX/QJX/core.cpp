@@ -3361,6 +3361,13 @@ void MBLCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
 	ed->norm[tr_id] = norm;
 	ed->spec[tr_id] = spec;
 	ed->mean[tr_id] = imbalance;
+	
+	int num_random_obs = int(ad->cp->params.find("num_random_obs")->second);
+	if (num_random_obs > 0)
+	{
+		vector<complex<double>> random_obs = get_random_obs(ad, tr_id);
+		ed->random_obs[tr_id] = random_obs;
+	}
 }
 
 void MBLCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
@@ -3385,6 +3392,13 @@ void MBLCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	ed->norm[tr_id] = norm;
 	ed->spec[tr_id] = spec;
 	ed->mean[tr_id] = imbalance;
+
+	int num_random_obs = int(ad->cp->params.find("num_random_obs")->second);
+	if (num_random_obs > 0)
+	{
+		vector<complex<double>> random_obs = get_random_obs(ad, tr_id);
+		ed->random_obs[tr_id] = random_obs;
+	}
 }
 
 void MBLCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
@@ -3407,6 +3421,12 @@ void MBLCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr
 
 	ed->spec_lpn[tr_id] = spec_lpn;
 	ed->mean_lpn[tr_id] = imbalance_lpn;
+
+	int num_random_obs = int(ad->cp->params.find("num_random_obs")->second);
+	if (num_random_obs > 0)
+	{
+		ed->random_obs_lpn[tr_id] = ed->random_obs[tr_id];
+	}
 }
 
 void MBLCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
@@ -3429,6 +3449,13 @@ void MBLCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) c
 
 	ed->spec_lpn[tr_id] = spec_lpn;
 	ed->mean_lpn[tr_id] = imbalance_lpn;
+
+	int num_random_obs = int(ad->cp->params.find("num_random_obs")->second);
+	if (num_random_obs > 0)
+	{
+		vector<complex<double>> random_obs = get_random_obs(ad, tr_id);
+		ed->random_obs_lpn[tr_id] = random_obs;
+	}
 }
 
 double MBLCoreBehaviour::calc_T(AllData * ad) const
@@ -3449,6 +3476,12 @@ void MBLCoreBehaviour::evo_chars_std(AllData * ad, int tr_id, int dump_id) const
 	ed->norm_evo[index] = ed->norm[tr_id];
 	ed->spec_evo[index] = ed->spec[tr_id];
 	ed->mean_evo[index] = ed->mean[tr_id];
+
+	int num_random_obs = int(cp->params.find("num_random_obs")->second);
+	for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+	{
+		ed->random_obs_evo[tr_id][obs_id].push_back(ed->random_obs[tr_id][obs_id]);
+	}
 }
 
 void MBLCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
@@ -3463,6 +3496,12 @@ void MBLCoreBehaviour::evo_chars_lpn(AllData * ad, int tr_id, int dump_id) const
 	ed->lambda_evo[index] = ed->lambda_now[tr_id];
 	ed->spec_lpn_evo[index] = ed->spec_lpn[tr_id];
 	ed->mean_lpn_evo[index] = ed->mean_lpn[tr_id];
+
+	int num_random_obs = int(cp->params.find("num_random_obs")->second);
+	for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+	{
+		ed->random_obs_lpn_evo[tr_id][obs_id].push_back(ed->random_obs_lpn[tr_id][obs_id]);
+	}
 }
 
 double MBLCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) const
@@ -3476,16 +3515,23 @@ double MBLCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) c
 	int lpn_type = int(cp->params.find("lpn_type")->second);
 
 	double delta_s = 0.0;
-	if (lpn_type == 0)
+	if (lpn_type == -1)
 	{
 		MKL_Complex16 base = ed->spec_lpn[base_tr_id];
 		MKL_Complex16 var = ed->spec_lpn[tr_id];
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_s = sqrt(tmp);
 	}
-	else if (lpn_type == 1)
+	else if (lpn_type == -2)
 	{
 		delta_s = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[base_tr_id]);
+	}
+	else if (lpn_type >= 0)
+	{
+		complex<double> base = ed->random_obs_lpn[base_tr_id][lpn_type];
+		complex<double> var = ed->random_obs_lpn[tr_id][lpn_type];
+		double tmp = pow((base.real() - var.real()), 2) + pow((base.imag() - var.imag()), 2);
+		delta_s = sqrt(tmp);
 	}
 	else
 	{
@@ -3508,16 +3554,23 @@ double MBLCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) c
 	int lpn_type = int(cp->params.find("lpn_type")->second);
 
 	double delta_f = 0.0;
-	if (lpn_type == 0)
+	if (lpn_type == -1)
 	{
 		MKL_Complex16 base = ed->spec[base_tr_id];
 		MKL_Complex16 var = ed->spec[tr_id];
 		double tmp = pow((base.real - var.real), 2) + pow((base.imag - var.imag), 2);
 		delta_f = sqrt(tmp);
 	}
-	else if (lpn_type == 1)
+	else if (lpn_type == -2)
 	{
 		delta_f = fabs(ed->mean[tr_id] - ed->mean[base_tr_id]);
+	}
+	else if (lpn_type >= 0)
+	{
+		complex<double> base = ed->random_obs[base_tr_id][lpn_type];
+		complex<double> var = ed->random_obs[tr_id][lpn_type];
+		double tmp = pow((base.real() - var.real()), 2) + pow((base.imag() - var.imag()), 2);
+		delta_f = sqrt(tmp);
 	}
 	else
 	{
@@ -3648,6 +3701,17 @@ void MBLCoreBehaviour::dump_std_evo(AllData * ad) const
 		fn = rp->path + "imbalance_evo" + cp->fn_suffix;
 		save_2d_inv_double_data(fn, imbalance_evo, dump_num_total, num_trajectories, 16, false);
 
+		int num_random_obs = int(cp->params.find("num_random_obs")->second);
+		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			{
+				fn = rp->path + "random_obs_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+				save_vector(ed->random_obs_evo[tr_id][obs_id], fn);
+			}
+		}
+
 		if (jump > 0)
 		{
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
@@ -3698,6 +3762,17 @@ void MBLCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 		fn = rp->path + "imbalance_lpn_evo" + cp->fn_suffix;
 		save_2d_inv_double_data(fn, imbalance_lpn_evo, dump_num_total, num_trajectories, 16, false);
+
+		int num_random_obs = int(cp->params.find("num_random_obs")->second);
+		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
+		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		{
+			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			{
+				fn = rp->path + "random_obs_lpn_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+				save_vector(ed->random_obs_lpn_evo[tr_id][obs_id], fn);
+			}
+		}
 	}
 }
 

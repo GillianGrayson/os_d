@@ -1,4 +1,8 @@
-lpn_type 0
+num_random_obs 0
+random_obs_seed 10
+random_obs_mns 1000000
+random_obs_type 1
+lpn_type -1
 lpn_eps_deep 100
 lpn_eps_error 1e-10
 lpn_eps_high 10
@@ -51,6 +55,6 @@ start_type 0
 start_state 49
 cd_dim 1
 cd_eps 1e-08
-deep_num_steps 1024
+deep_num_steps 10
 jump 0
 jumps_counts 0

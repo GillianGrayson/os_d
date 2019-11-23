@@ -15,6 +15,20 @@ void print_int_array(int * data, int N);
 
 void save_double_data(string file_name, double * data, int size, int precision, bool append);
 
+template <class T>
+void save_vector(const std::vector<T>& v, const std::string& fn, int precision = 16)
+{
+	std::ofstream f_out(fn);
+	f_out << std::setprecision(precision) << std::scientific;
+
+	for (auto const& x : v)
+	{
+		f_out << x << std::endl;
+	}
+
+	f_out.close();
+}
+
 void save_2d_double_data(string file_name, double * data, int num_rows, int num_cols, int precision, bool append);
 
 void save_double_vector(string file_name, vector<double> vec, int precision, bool append);
