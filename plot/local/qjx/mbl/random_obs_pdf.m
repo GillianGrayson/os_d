@@ -12,7 +12,7 @@ prop_id = 0;
 seed = 1;
 mns = 1000000;
 
-Nc = 10;
+Nc = 8;
 
 W_seed = 10;
 W_mns = 1000000;

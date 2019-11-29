@@ -1627,7 +1627,7 @@ void init_random_obs(AllData* ad)
 
 				if (random_obs_type == 2)
 				{
-					trace = trace * trace;
+					trace = trace / double(md->sys_size);
 				}
 
 				for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)

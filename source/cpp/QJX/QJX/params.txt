@@ -1,7 +1,7 @@
 num_random_obs 10
 random_obs_seed 10
 random_obs_mns 1000000
-random_obs_type 1
+random_obs_type 2
 lpn_type -1
 lpn_eps_deep 100
 lpn_eps_error 1e-10
@@ -45,10 +45,10 @@ ps_prm_alpha 5
 ps_prm_d 10.0
 ps_prm_g 10.0
 ps_diss_w 0.05
-mbl_Nc 10
+mbl_Nc 8
 mbl_seed 10
 mbl_mns 1000000
-mbl_prm_W 20.0
+mbl_prm_W 2.0
 mbl_prm_U 1.0
 mbl_prm_J 1.0
 start_type 0
