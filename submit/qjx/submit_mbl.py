@@ -13,13 +13,13 @@ mbl_U_start = 1.0
 mbl_U_shift = 0.1
 mbl_U_num = 1
 
-mbl_W_start = 20.0
+mbl_W_start = 0.0
 mbl_W_shift = 0.2
 mbl_W_num = 1
 
 mbl_seed_start = 1
 mbl_seed_shift = 1
-mbl_seed_num = 100
+mbl_seed_num = 1
 
 for mbl_U_id in range(0, mbl_U_num):
     mbl_U = mbl_U_start + mbl_U_id * mbl_U_shift
@@ -46,10 +46,14 @@ for mbl_U_id in range(0, mbl_U_num):
             num_threads = 1
             num_trajectories = 200
             num_tp_periods = 1000
-            num_obs_periods = 100000
+            num_obs_periods = 1000
             ex_deep = 16
             rk_ns = 10000
 
+            num_random_obs = 1
+            random_obs_seed = 100
+            random_obs_mns = 1000000
+            random_obs_type = 2
             lpn_type = 1
             lpn_eps_deep = 100
             lpn_eps_error = 1.0e-10
@@ -65,7 +69,7 @@ for mbl_U_id in range(0, mbl_U_num):
             dump_phi_evo = 0
             dump_adr_sep = 0
             dump_adr_avg = 0
-            dump_evo_sep = 1
+            dump_evo_sep = 0
             dump_evo_avg = 0
             dump_type = 0
             dump_num = 1000
@@ -113,6 +117,7 @@ for mbl_U_id in range(0, mbl_U_num):
 
             local_path += '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(num_obs_periods) + \
                 '/Nс_' + str(mbl_Nc) + \
+                '/obs_' + str(num_random_obs) + '_' + str(random_obs_seed) + '_' + str(random_obs_type) + \
                 '/rnd_' + str(mbl_seed) + '_' + str(mbl_mns) + \
                 '/diss_' + str(diss_type) + '_' + diss_phase_str + '_' + diss_gamma_str + \
                 '/prm_' + mbl_prm_W_str + '_' + mbl_prm_U_str + '_' + mbl_prm_J_str + \
@@ -144,6 +149,11 @@ for mbl_U_id in range(0, mbl_U_num):
                 file_config.close()
 
                 file_params = open(fn_path + '/params.txt', 'w')
+
+                file_params.write('num_random_obs ' + str(num_random_obs) + '\n')
+                file_params.write('random_obs_seed ' + str(random_obs_seed) + '\n')
+                file_params.write('random_obs_mns ' + str(random_obs_mns) + '\n')
+                file_params.write('random_obs_type ' + str(random_obs_type) + '\n')
 
                 file_params.write('lpn_type ' + str(lpn_type) + '\n')
                 file_params.write('lpn_eps_deep ' + str(lpn_eps_deep) + '\n')
