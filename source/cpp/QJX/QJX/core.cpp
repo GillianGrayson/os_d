@@ -3512,6 +3512,7 @@ double MBLCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) c
 
 	int sys_size = md->sys_size;
 
+	int num_random_obs = int(ad->cp->params.find("num_random_obs")->second);
 	int lpn_type = int(cp->params.find("lpn_type")->second);
 
 	double delta_s = 0.0;
@@ -3526,7 +3527,7 @@ double MBLCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id) c
 	{
 		delta_s = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[base_tr_id]);
 	}
-	else if (lpn_type >= 0)
+	else if (lpn_type >= 0 && lpn_type < num_random_obs)
 	{
 		complex<double> base = ed->random_obs_lpn[base_tr_id][lpn_type];
 		complex<double> var = ed->random_obs_lpn[tr_id][lpn_type];
@@ -3551,6 +3552,7 @@ double MBLCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) c
 
 	int sys_size = md->sys_size;
 
+	int num_random_obs = int(ad->cp->params.find("num_random_obs")->second);
 	int lpn_type = int(cp->params.find("lpn_type")->second);
 
 	double delta_f = 0.0;
@@ -3565,7 +3567,7 @@ double MBLCoreBehaviour::calc_delta_f(AllData * ad, int tr_id, int base_tr_id) c
 	{
 		delta_f = fabs(ed->mean[tr_id] - ed->mean[base_tr_id]);
 	}
-	else if (lpn_type >= 0)
+	else if (lpn_type >= 0 && lpn_type < num_random_obs)
 	{
 		complex<double> base = ed->random_obs[base_tr_id][lpn_type];
 		complex<double> var = ed->random_obs[tr_id][lpn_type];
