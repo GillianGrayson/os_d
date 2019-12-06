@@ -262,3 +262,10 @@ void calc_ci_double(AllData * ad, int tr_id);
 void dump_phi(AllData * ad);
 
 void dump_phi_evo(AllData * ad, bool append);
+
+
+void calc_random_obs(AllData * ad, int tr_id);
+
+void calc_random_obs_lpn_start(AllData * ad, int tr_id);
+
+void calc_random_obs_lpn(AllData * ad, int tr_id);

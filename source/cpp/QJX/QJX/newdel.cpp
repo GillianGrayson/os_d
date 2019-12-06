@@ -255,6 +255,8 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		md->hamiltonian[down_left] -= dimer_prm_J * sqrt(double((md->sys_size - (st_id + 1)) * (st_id + 1)));
 		md->hamiltonian[up_right] -= dimer_prm_J * sqrt(double((st_id + 1) * (md->sys_size - (st_id + 1))));
 	}
+
+	init_random_obs(ad);
 }
 
 void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
@@ -336,6 +338,8 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	delete[] mult_tmp_1;
 	delete[] mult_tmp_2;
 	delete[] mult_tmp_3;
+
+	init_random_obs(ad);
 }
 
 void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
@@ -550,6 +554,8 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 			md->special_4[index].imag = 0.0;
 		}
 	}
+
+	init_random_obs(ad);
 }
 
 void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
@@ -1411,6 +1417,8 @@ void DimerNewDelBehaviour::free_hamiltonians(AllData * ad) const
 
 	delete[] md->hamiltonian;
 	delete[] md->hamiltonian_drv;
+
+	free_random_obs(ad);
 }
 
 void JCSNewDelBehaviour::free_hamiltonians(AllData * ad) const
@@ -1422,6 +1430,8 @@ void JCSNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	delete[] md->special;
 	delete[] md->special_2;
 	delete[] md->special_3;
+
+	free_random_obs(ad);
 }
 
 void PSNewDelBehaviour::free_hamiltonians(AllData * ad) const
@@ -1434,6 +1444,8 @@ void PSNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	delete[] md->special_2;
 	delete[] md->special_3;
 	delete[] md->special_4;
+
+	free_random_obs(ad);
 }
 
 void MBLNewDelBehaviour::free_hamiltonians(AllData * ad) const
