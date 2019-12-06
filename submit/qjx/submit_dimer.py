@@ -115,13 +115,14 @@ for dimer_U_id in range(0, dimer_U_num):
                 lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str
 
         local_path += '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
-                num_obs_periods) + \
-            '/N_' + str(N) + \
-            '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
-            '/drv_' + str(
-                dimer_drv_type) + '_' + dimer_drv_ampl_str + '_' + dimer_drv_freq_str + '_' + dimer_drv_phase_str + \
-            '/prm_' + dimer_prm_E_str + '_' + dimer_prm_U_str + '_' + dimer_prm_J_str + \
-            '/start_' + str(start_type) + '_' + str(start_state)
+            num_obs_periods) + \
+                      '/obs_' + str(num_random_obs) + '_' + str(random_obs_seed) + '_' + str(random_obs_type) + \
+                      '/N_' + str(N) + \
+                      '/diss_' + str(diss_type) + '_' + diss_gamma_str + '_' + diss_phase_str + \
+                      '/drv_' + str(
+            dimer_drv_type) + '_' + dimer_drv_ampl_str + '_' + dimer_drv_freq_str + '_' + dimer_drv_phase_str + \
+                      '/prm_' + dimer_prm_E_str + '_' + dimer_prm_U_str + '_' + dimer_prm_J_str + \
+                      '/start_' + str(start_type) + '_' + str(start_state)
 
         for ss in range(start_seed, finish_seed, step_seed):
             print("ss = " + str(ss))
