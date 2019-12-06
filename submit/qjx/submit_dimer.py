@@ -37,8 +37,8 @@ for dimer_U_id in range(0, dimer_U_num):
         mns = 1000000
         num_threads = 1
         num_trajectories = 20
-        num_tp_periods = 100
-        num_obs_periods = 100
+        num_tp_periods = 1000
+        num_obs_periods = 1000
         ex_deep = 16
         rk_ns = 10000
 
@@ -210,6 +210,8 @@ for dimer_U_id in range(0, dimer_U_num):
                     lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str + ')'
 
             fn_test = fn_path + '/mean_' + fn_suffix + '.txt'
+
+            #print(fn_test)
 
             if not os.path.isfile(fn_test):
                 if type == FSType.cluster:
