@@ -53,7 +53,7 @@ for dimer_U_id in range(0, dimer_U_num):
         lpn_eps_high = 10
         lpn_eps_low = -10
         lpn_delta_s = 1.0e-3
-        lpn_delta_f_high = 1.0e-1
+        lpn_delta_f_high = 5.0e-1
         lpn_delta_f_low = 1.0e-5
         save_lambdas = 0
         num_lambdas_periods = 2
@@ -66,7 +66,7 @@ for dimer_U_id in range(0, dimer_U_num):
         dump_evo_avg = 0
         dump_type = 0
         dump_num = 1
-        N = 100
+        N = 250
         diss_type = 0
         diss_gamma = 0.1
         diss_phase = 0.0
