@@ -15,11 +15,11 @@ mbl_U_num = 1
 
 mbl_W_start = 0.0
 mbl_W_shift = 0.2
-mbl_W_num = 1
+mbl_W_num = 101
 
 mbl_seed_start = 1
 mbl_seed_shift = 1
-mbl_seed_num = 1
+mbl_seed_num = 100
 
 for mbl_U_id in range(0, mbl_U_num):
     mbl_U = mbl_U_start + mbl_U_id * mbl_U_shift
@@ -54,14 +54,14 @@ for mbl_U_id in range(0, mbl_U_num):
             random_obs_seed = 100
             random_obs_mns = 1000000
             random_obs_type = 2
-            lpn_type = 1
+            lpn_type = 0
             lpn_eps_deep = 100
             lpn_eps_error = 1.0e-10
             lpn_eps_high = 10
             lpn_eps_low = -10
-            lpn_delta_s = 1.0e-6
-            lpn_delta_f_high = 1.0e-4
-            lpn_delta_f_low = 1.0e-8
+            lpn_delta_s = 1.0e-8
+            lpn_delta_f_high = 1.0e-6
+            lpn_delta_f_low = 1.0e-10
             save_lambdas = 0
             num_lambdas_periods = 2
             dump_obs = 1
