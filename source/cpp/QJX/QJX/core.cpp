@@ -840,7 +840,7 @@ double DimerCoreBehaviour::calc_delta_s(AllData * ad, int tr_id, int base_tr_id)
 	{
 		delta_s = fabs(ed->mean_lpn[tr_id] - ed->mean_lpn[base_tr_id]) / double(sys_size);
 	}
-	else if (lpn_type ==-21)
+	else if (lpn_type == -2)
 	{
 		delta_s = fabs(ed->energy_lpn[tr_id] - ed->energy_lpn[base_tr_id]) / ed->max_energy;
 	}
