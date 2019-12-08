@@ -708,6 +708,8 @@ void DimerCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	ed->dispersion[tr_id] = dispersion;
 	ed->m2[tr_id] = m2;
 	ed->energy[tr_id] = energy;
+
+	calc_random_obs(ad, tr_id);
 }
 
 void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
@@ -740,6 +742,8 @@ void DimerCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_
 	ed->mean_lpn[tr_id] = mean_lpn;
 	ed->energy_lpn[tr_id] = energy_lpn;
 	ed->delta_s[tr_id] = delta_s;
+
+	calc_random_obs_lpn_start(ad, tr_id);
 }
 
 void DimerCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
@@ -765,6 +769,8 @@ void DimerCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id)
 
 	ed->mean_lpn[tr_id] = mean_lpn;
 	ed->energy_lpn[tr_id] = energy_lpn;
+
+	calc_random_obs_lpn(ad, tr_id);
 }
 
 double DimerCoreBehaviour::calc_T(AllData * ad) const
@@ -1639,6 +1645,8 @@ void JCSCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
 	ed->norm[tr_id] = norm;
 	ed->spec[tr_id] = spec;
 	ed->mean[tr_id] = num_photons.real;
+
+	calc_random_obs(ad, tr_id);
 }
 
 void JCSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
@@ -1663,6 +1671,8 @@ void JCSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	ed->norm[tr_id] = norm;
 	ed->spec[tr_id] = spec;
 	ed->mean[tr_id] = num_photons.real;
+
+	calc_random_obs(ad, tr_id);
 }
 
 void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
@@ -1686,6 +1696,8 @@ void JCSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr
 
 	ed->spec_lpn[tr_id] = spec_lpn;
 	ed->mean_lpn[tr_id] = mean_lpn;
+
+	calc_random_obs_lpn_start(ad, tr_id);
 }
 
 void JCSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
@@ -1701,6 +1713,8 @@ void JCSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) c
 
 	ed->spec_lpn[tr_id] = spec_lpn;
 	ed->mean_lpn[tr_id] = mean_lpn;
+
+	calc_random_obs_lpn(ad, tr_id);
 }
 
 double JCSCoreBehaviour::calc_T(AllData * ad) const
@@ -2547,6 +2561,8 @@ void PSCoreBehaviour::calc_chars_std_start(AllData * ad, int tr_id) const
 	ed->spec_2[tr_id] = spec_2;
 	ed->spec_3[tr_id] = spec_3;
 	ed->mean[tr_id] = num_photons.real;
+
+	calc_random_obs(ad, tr_id);
 }
 
 void PSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
@@ -2575,6 +2591,8 @@ void PSCoreBehaviour::calc_chars_std(AllData * ad, int tr_id) const
 	ed->spec_2[tr_id] = spec_2;
 	ed->spec_3[tr_id] = spec_3;
 	ed->mean[tr_id] = num_photons.real;
+
+	calc_random_obs(ad, tr_id);
 }
 
 void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_id) const
@@ -2602,6 +2620,8 @@ void PSCoreBehaviour::calc_chars_lpn_start(AllData * ad, int tr_id, int base_tr_
 	ed->spec_2_lpn[tr_id] = spec_2_lpn;
 	ed->spec_3_lpn[tr_id] = spec_3_lpn;
 	ed->mean_lpn[tr_id] = mean_lpn;
+
+	calc_random_obs_lpn_start(ad, tr_id);
 }
 
 void PSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) const
@@ -2621,6 +2641,8 @@ void PSCoreBehaviour::calc_chars_lpn(AllData * ad, int tr_id, int base_tr_id) co
 	ed->spec_2_lpn[tr_id] = spec_2_lpn;
 	ed->spec_3_lpn[tr_id] = spec_3_lpn;
 	ed->mean_lpn[tr_id] = mean_lpn;
+
+	calc_random_obs_lpn(ad, tr_id);
 }
 
 double PSCoreBehaviour::calc_T(AllData * ad) const
