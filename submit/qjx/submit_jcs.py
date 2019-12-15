@@ -36,7 +36,7 @@ for ampl_id in range(0, ampl_num):
         seed = 0
         mns = 1000000
         num_threads = 1
-        num_trajectories = 20
+        num_trajectories = 200
         num_tp_periods = 100
         num_obs_periods = 100
         ex_deep = 16
@@ -65,8 +65,8 @@ for ampl_id in range(0, ampl_num):
         dump_evo_sep = 1
         dump_evo_avg = 0
         dump_type = 0
-        dump_num = 1
-        N = 200
+        dump_num = 100
+        N = 180
         diss_type = 0
         diss_gamma = 0.1
         diss_phase = 0.0
