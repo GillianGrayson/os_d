@@ -13,9 +13,9 @@ ampl_start = 0.05
 ampl_shift = 0.05
 ampl_num = 100
 
-T_start = 0.05
+T_start = 1.00
 T_shift = 0.05
-T_num = 100
+T_num = 1
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -47,7 +47,7 @@ for ampl_id in range(0, ampl_num):
         random_obs_mns = 1000000
         random_obs_type = 2
 
-        lpn_type = 0
+        lpn_type = -1
         lpn_eps_deep = 100
         lpn_eps_error = 1.0e-10
         lpn_eps_high = 10
