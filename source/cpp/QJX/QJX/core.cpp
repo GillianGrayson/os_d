@@ -1037,13 +1037,15 @@ void DimerCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		int num_random_obs = int(cp->params.find("num_random_obs")->second);
 		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
-		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
-			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			fn = rp->path + "random_obs_evo_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+			std::vector<std::vector<std::complex<double>>> random_obs_evo_to_dump;
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				fn = rp->path + "random_obs_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
-				save_vector(ed->random_obs_evo[tr_id][obs_id], fn);
+				random_obs_evo_to_dump.push_back(ed->random_obs_evo[tr_id][obs_id]);
 			}
+			save_2d_vector(fn, random_obs_evo_to_dump, 16);
 		}
 
 		if (jump > 0)
@@ -1099,13 +1101,15 @@ void DimerCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 		int num_random_obs = int(cp->params.find("num_random_obs")->second);
 		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
-		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
-			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			fn = rp->path + "random_obs_lpn_evo_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+			std::vector<std::vector<std::complex<double>>> random_obs_evo_to_dump;
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				fn = rp->path + "random_obs_lpn_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
-				save_vector(ed->random_obs_lpn_evo[tr_id][obs_id], fn);
+				random_obs_evo_to_dump.push_back(ed->random_obs_lpn_evo[tr_id][obs_id]);
 			}
+			save_2d_vector(fn, random_obs_evo_to_dump, 16);
 		}
 	}
 }
@@ -1954,13 +1958,15 @@ void JCSCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		int num_random_obs = int(cp->params.find("num_random_obs")->second);
 		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
-		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
-			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			fn = rp->path + "random_obs_evo_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+			std::vector<std::vector<std::complex<double>>> random_obs_evo_to_dump;
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				fn = rp->path + "random_obs_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
-				save_vector(ed->random_obs_evo[tr_id][obs_id], fn);
+				random_obs_evo_to_dump.push_back(ed->random_obs_evo[tr_id][obs_id]);
 			}
+			save_2d_vector(fn, random_obs_evo_to_dump, 16);
 		}
 
 		if (jump > 0)
@@ -2016,13 +2022,15 @@ void JCSCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 		int num_random_obs = int(cp->params.find("num_random_obs")->second);
 		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
-		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
-			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			fn = rp->path + "random_obs_lpn_evo_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+			std::vector<std::vector<std::complex<double>>> random_obs_evo_to_dump;
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				fn = rp->path + "random_obs_lpn_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
-				save_vector(ed->random_obs_lpn_evo[tr_id][obs_id], fn);
+				random_obs_evo_to_dump.push_back(ed->random_obs_lpn_evo[tr_id][obs_id]);
 			}
+			save_2d_vector(fn, random_obs_evo_to_dump, 16);
 		}
 	}
 }
@@ -2958,13 +2966,15 @@ void PSCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		int num_random_obs = int(cp->params.find("num_random_obs")->second);
 		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
-		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
-			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			fn = rp->path + "random_obs_evo_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+			std::vector<std::vector<std::complex<double>>> random_obs_evo_to_dump;
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				fn = rp->path + "random_obs_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
-				save_vector(ed->random_obs_evo[tr_id][obs_id], fn);
+				random_obs_evo_to_dump.push_back(ed->random_obs_evo[tr_id][obs_id]);
 			}
+			save_2d_vector(fn, random_obs_evo_to_dump, 16);
 		}
 
 		if (jump > 0)
@@ -3028,13 +3038,15 @@ void PSCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 		int num_random_obs = int(cp->params.find("num_random_obs")->second);
 		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
-		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
-			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			fn = rp->path + "random_obs_lpn_evo_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+			std::vector<std::vector<std::complex<double>>> random_obs_evo_to_dump;
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				fn = rp->path + "random_obs_lpn_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
-				save_vector(ed->random_obs_lpn_evo[tr_id][obs_id], fn);
+				random_obs_evo_to_dump.push_back(ed->random_obs_lpn_evo[tr_id][obs_id]);
 			}
+			save_2d_vector(fn, random_obs_evo_to_dump, 16);
 		}
 	}
 }
@@ -3860,13 +3872,15 @@ void MBLCoreBehaviour::dump_std_evo(AllData * ad) const
 
 		int num_random_obs = int(cp->params.find("num_random_obs")->second);
 		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
-		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
-			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			fn = rp->path + "random_obs_evo_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+			std::vector<std::vector<std::complex<double>>> random_obs_evo_to_dump;
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				fn = rp->path + "random_obs_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
-				save_vector(ed->random_obs_evo[tr_id][obs_id], fn);
+				random_obs_evo_to_dump.push_back(ed->random_obs_evo[tr_id][obs_id]);
 			}
+			save_2d_vector(fn, random_obs_evo_to_dump, 16);
 		}
 
 		if (jump > 0)
@@ -3922,13 +3936,15 @@ void MBLCoreBehaviour::dump_lpn_evo(AllData * ad) const
 
 		int num_random_obs = int(cp->params.find("num_random_obs")->second);
 		int random_obs_seed = int(cp->params.find("random_obs_seed")->second);
-		for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
+		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
-			for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
+			fn = rp->path + "random_obs_lpn_evo_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
+			std::vector<std::vector<std::complex<double>>> random_obs_evo_to_dump;
+			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{
-				fn = rp->path + "random_obs_lpn_evo_" + to_string(tr_id) + "_" + to_string(random_obs_seed + obs_id) + cp->fn_suffix;
-				save_vector(ed->random_obs_lpn_evo[tr_id][obs_id], fn);
+				random_obs_evo_to_dump.push_back(ed->random_obs_lpn_evo[tr_id][obs_id]);
 			}
+			save_2d_vector(fn, random_obs_evo_to_dump, 16);
 		}
 	}
 }

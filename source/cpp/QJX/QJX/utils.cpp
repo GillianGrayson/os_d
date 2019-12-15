@@ -283,7 +283,7 @@ void save_2d_inv_complex_data(string file_name, MKL_Complex16 * data, int num_ro
 	}
 }
 
-void save_double_vector(string file_name, vector<double> vec, int precision, bool append)
+void save_double_vector(string file_name, vector<double>& vec, int precision, bool append)
 {
 	if (append)
 	{
@@ -331,7 +331,8 @@ void save_double_vector(string file_name, vector<double> vec, int precision, boo
 	}
 }
 
-void save_int_vector(string file_name, vector<int> vec, bool append)
+
+void save_int_vector(string file_name, vector<int>& vec, bool append)
 {
 	if (append)
 	{
