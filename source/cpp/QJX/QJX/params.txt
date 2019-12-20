@@ -2,7 +2,7 @@ num_random_obs 1
 random_obs_seed 10
 random_obs_mns 1000000
 random_obs_type 2
-lpn_type 0
+lpn_type -1
 lpn_eps_deep 100
 lpn_eps_error 1e-10
 lpn_eps_high 10
@@ -20,8 +20,8 @@ dump_adr_avg 0
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
-dump_num 10
-N 200
+dump_num 100
+N 300
 diss_type 1
 diss_gamma 0.1
 diss_phase 0.0
@@ -34,7 +34,7 @@ dimer_prm_U 0.5
 dimer_prm_J 1.0
 jcs_drv_part_1 1.0
 jcs_drv_part_2 1.0
-jcs_drv_ampl 3.2
+jcs_drv_ampl 5.0
 jcs_prm_alpha 5.0
 ps_num_spins 1
 ps_num_photons_states 200
@@ -55,6 +55,6 @@ start_type 0
 start_state 0
 cd_dim 1
 cd_eps 1e-08
-deep_num_steps 10
+deep_num_steps 50
 jump 0
 jumps_counts 0
