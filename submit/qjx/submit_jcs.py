@@ -7,7 +7,7 @@ type = FSType.mpipks_sd
 
 num_runs = 1
 
-medium = 0
+medium = 1
 
 ampl_start = 0.05
 ampl_shift = 0.05
@@ -66,7 +66,7 @@ for ampl_id in range(0, ampl_num):
         dump_evo_avg = 0
         dump_type = 0
         dump_num = 100
-        N = 180
+        N = 300
         diss_type = 0
         diss_gamma = 0.1
         diss_phase = 0.0

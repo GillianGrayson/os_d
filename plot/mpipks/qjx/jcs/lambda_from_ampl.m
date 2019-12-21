@@ -33,7 +33,7 @@ num_random_obs = 1;
 random_obs_seed = 100;
 random_obs_type = 2;
  
-N = 200;
+N = 300;
 
 diss_type = 0; 
 
@@ -118,7 +118,7 @@ for ampl_id = 1:ampl_num
     
 end
 
-suffix = sprintf('lpn(%d_%0.4f_%0.4f_%0.4f)_N(%d)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)_time(%d_%d_%d_%d)_numTraj(%d)', ...
+suffix = sprintf('lpn(%d_%0.4f_%0.4f_%0.4f)_N(%d)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)_time(%d_%d)_numTraj(%d)', ...
             lpn_type, ...
             lpn_delta_s, ...
             lpn_delta_f_high, ...
