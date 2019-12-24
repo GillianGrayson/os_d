@@ -3,11 +3,10 @@ clear all;
 home_figures_path = '/home/denysov/yusipov/os_d/figures';
 data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
 
-T = 1;
 num_trajectories = 10;
 num_runs = 1;
 
-min_decades = 2;
+min_decades = 1;
 
 sys_id = 1;
 task_id = 1;
@@ -16,9 +15,13 @@ prop_id = 0;
 ex_deep = 16;
 rk_ns = 10000;
 num_tp_periods = 100;
-num_obs_periods = 10000;
+num_obs_periods = 1000000;
 
-N = 200;
+num_random_obs = 1;
+random_obs_seed = 100;
+random_obs_type = 2;
+
+N = 300;
 
 diss_type = 0;
 
@@ -79,7 +82,7 @@ for T_id = 1:T_num
             
             ss = (run_id - 1) * num_trajectories;
             
-            path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/N_%d/diss_%d/drv_%0.4f_%0.4f_%0.4f/prm_%0.4f/start_%d_%d/ss_%d', ...
+            path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/obs_%d_%d_%d/N_%d/diss_%d/drv_%0.4f_%0.4f_%0.4f/prm_%0.4f/start_%d_%d/ss_%d', ...
                 data_path, ...
                 sys_id, ...
                 task_id, ...
@@ -88,6 +91,9 @@ for T_id = 1:T_num
                 rk_ns, ...
                 num_tp_periods, ...
                 num_obs_periods, ...
+				num_random_obs, ...
+                random_obs_seed, ...
+                random_obs_type, ...
                 N, ...
                 diss_type, ...
                 jcs_drv_part_1 * T, ...
@@ -98,7 +104,10 @@ for T_id = 1:T_num
                 start_state, ...
                 ss);
             
-            suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)', ...
+            suffix = sprintf('setup(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)', ...
+                sys_id, ...
+                task_id, ...
+                prop_id, ...
                 ss, ...
                 mns, ...
                 N, ...
@@ -163,13 +172,12 @@ for T_id = 1:T_num
         
     end
     
-    name = sprintf('T_%0.4f.txt', T);
-    file_id = fopen(name, 'w');
-    for id = 1:ampl_num
-        fprintf(file_id, '%0.16e %0.16e\n', alphas(id, T_id), decades(id, T_id));
-    end
-    fclose(file_id);
-    
+%     name = sprintf('T_%0.4f.txt', T);
+%     file_id = fopen(name, 'w');
+%     for id = 1:ampl_num
+%         fprintf(file_id, '%0.16e %0.16e\n', alphas(id, T_id), decades(id, T_id));
+%     end
+%     fclose(file_id);
     
 end
 

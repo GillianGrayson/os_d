@@ -13,9 +13,9 @@ ampl_start = 0.05
 ampl_shift = 0.05
 ampl_num = 100
 
-T_start = 1.00
+T_start = 0.05
 T_shift = 0.05
-T_num = 1
+T_num = 100
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -27,7 +27,7 @@ for ampl_id in range(0, ampl_num):
         print('T: ' + str(T))
 
         sys_id = 1
-        task_id = 7
+        task_id = 1
         prop_id = 0
         is_debug = 0
         is_pp = 0
@@ -36,9 +36,9 @@ for ampl_id in range(0, ampl_num):
         seed = 0
         mns = 1000000
         num_threads = 1
-        num_trajectories = 200
+        num_trajectories = 10
         num_tp_periods = 100
-        num_obs_periods = 100
+        num_obs_periods = 1000000
         ex_deep = 16
         rk_ns = 10000
 
@@ -65,7 +65,7 @@ for ampl_id in range(0, ampl_num):
         dump_evo_sep = 1
         dump_evo_avg = 0
         dump_type = 0
-        dump_num = 100
+        dump_num = 1
         N = 300
         diss_type = 0
         diss_gamma = 0.1
@@ -81,8 +81,8 @@ for ampl_id in range(0, ampl_num):
         deep_num_steps = 1000
         # jump = 2
         # jumps_counts = 1000
-        jump = 0
-        jumps_counts = 0
+        jump = 2
+        jumps_counts = 1000
 
         diss_gamma_str = str(format(diss_gamma, '0.4f'))
         diss_phase_str = str(format(diss_phase, '0.4f'))
