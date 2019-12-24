@@ -32,9 +32,9 @@ dimer_drv_phase 0.0
 dimer_prm_E 1.0
 dimer_prm_U 0.5
 dimer_prm_J 1.0
-jcs_drv_part_1 1.0
-jcs_drv_part_2 1.0
-jcs_drv_ampl 5.0
+jcs_drv_part_1 2.0
+jcs_drv_part_2 2.0
+jcs_drv_ampl 4.0
 jcs_prm_alpha 5.0
 ps_num_spins 1
 ps_num_photons_states 200

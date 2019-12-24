@@ -5,15 +5,15 @@ tr_id = 0;
 seed = 1;
 num_seeds = 1000000;
 
-N = 200;
-diss_type = 0;
+N = 300;
+diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
 
-T_part = 2;
+T = 2;
 
-drv_T_1 = 0.98 * T_part;
-drv_T_2 = 1.00 * T_part;
+drv_T_1 = 1.00 * T;
+drv_T_2 = 1.00 * T;
 drv_A = 4.0;
 
 prm_alpha = 5.0;
@@ -25,14 +25,14 @@ T = drv_T_1 + drv_T_2;
 
 
 cd_dump_deep = 1;
-cd_num_sub_steps = 100;
+cd_num_sub_steps = 50;
 
 is_mean = 1;
 
 
 data_path = '../../../../source/cpp/QJX/QJX';
 
-suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)', ...
+suffix = sprintf('setup(1_4_0)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)', ...
     seed, ...
     num_seeds, ...
     N, ...

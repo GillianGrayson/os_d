@@ -1390,6 +1390,8 @@ void JCSCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id) 
 			dump_point_id++;
 			int dump_id = global_point_id + 1;
 
+			ed->curr_time = double(dump_id) / double(num_sub_steps) * T;
+
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories / 2; tr_id++)
 			{

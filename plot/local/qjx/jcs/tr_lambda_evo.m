@@ -1,12 +1,17 @@
 clear all;
 
-tr_id = 5;
+tr_id = 11;
 
-seed = 10;
+lpn_type = -1;
+lpn_delta_s = log10(1.0e-3);
+lpn_delta_f_high = log10(1.0e-1);
+lpn_delta_f_low = log10(1.0e-5);
+
+seed = 1;
 num_seeds = 1000000;
 
-N = 200;
-diss_type = 0;
+N = 300;
+diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
 
@@ -24,11 +29,11 @@ start_state = 0;
 T = drv_T_1 + drv_T_2;
 
 cd_dump_deep = 1;
-cd_num_sub_steps = 20;
+cd_num_sub_steps = 50;
 
 data_path = '../../../../source/cpp/QJX/QJX';
 
-suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)', ...
+suffix = sprintf('setup(1_8_0)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)_lpn(%d_%0.4f_%0.4f_%0.4f)', ...
     seed, ...
     num_seeds, ...
     N, ...
@@ -40,7 +45,11 @@ suffix = sprintf('rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_p
     drv_A, ...
     prm_alpha, ...
     start_type, ...
-    start_state);
+    start_state, ...
+    lpn_type, ...
+    lpn_delta_s, ...
+    lpn_delta_f_high, ...
+    lpn_delta_f_low);
 
 fn = sprintf('%s/periods_%s.txt', data_path, suffix);
 dump_periods = importdata(fn) - 2;
