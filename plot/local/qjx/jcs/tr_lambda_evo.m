@@ -1,6 +1,6 @@
 clear all;
 
-tr_id = 11;
+tr_id = 5;
 
 lpn_type = -1;
 lpn_delta_s = log10(1.0e-3);
