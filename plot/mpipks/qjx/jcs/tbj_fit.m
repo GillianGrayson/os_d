@@ -3,8 +3,8 @@ clear all;
 home_figures_path = '/home/denysov/yusipov/os_d/figures';
 data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
 
-ampl = 4.8;
-T = 4.8;
+ampl = 2;
+T = 2;
 num_trajectories = 10;
 num_runs = 1;
 
@@ -148,6 +148,7 @@ suffix_save = sprintf('N(%d)_diss(%d)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d
 
 [x_min, x_max] = find_range(bin_centers, curr_pdf)
 [alpha, coef, R2, yy, R2_, cnt] = powerlaw_regression(bin_centers, curr_pdf, x_min, x_max);
+R2 = R2
 alpha = alpha
 left = find(bin_centers==x_min)
 right = find(bin_centers==x_max)

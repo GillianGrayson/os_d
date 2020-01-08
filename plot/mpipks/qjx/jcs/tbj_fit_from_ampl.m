@@ -3,7 +3,7 @@ clear all;
 home_figures_path = '/home/denysov/yusipov/os_d/figures';
 data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
 
-T = 1;
+T = 2;
 num_trajectories = 10;
 num_runs = 1;
 
@@ -62,6 +62,7 @@ non_inc_count = 0;
 
 alphas = zeros(ampl_num, 1);
 decades = zeros(ampl_num, 1);
+decades_y = zeros(ampl_num, 1);
 
 for ampl_id = 1:ampl_num
     
@@ -154,6 +155,13 @@ for ampl_id = 1:ampl_num
     alphas(ampl_id) = abs(alpha);
 	decades(ampl_id) = log10(x_max) - log10(x_min);
     
+    left = find(bin_centers==x_min);
+    right = find(bin_centers==x_max);
+	if isempty(left) || isempty(right)
+		decades_y(ampl_id) = 0;
+	else
+		decades_y(ampl_id) = log10(yy(left)) - log10(yy(right));
+    end
 end
 
 suffix_save = sprintf('decs(%0.4f)_N(%d)_diss(%d)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)', ...
@@ -198,6 +206,23 @@ set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
 print(gcf, '-dpdf', sprintf('%s/tbj_decades_from_ampl_%s.pdf', home_figures_path, suffix_save));
+
+close(fig);
+
+fig = figure;
+hLine = plot(ampls, decades_y);
+set(gca, 'FontSize', 30);
+xlabel('$A$', 'Interpreter', 'latex');
+set(gca, 'FontSize', 30);
+ylabel('$decades_y$', 'Interpreter', 'latex');
+
+savefig(sprintf('%s/tbj_decades_y_from_ampl_%s.fig', home_figures_path, suffix_save));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/tbj_decades_y_from_ampl_%s.pdf', home_figures_path, suffix_save));
 
 close(fig);
 
