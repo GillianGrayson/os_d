@@ -10,11 +10,11 @@ diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
 
-T = 2;
+T = 2.0;
 
 drv_T_1 = 1.00 * T;
 drv_T_2 = 1.00 * T;
-drv_A = 4.0;
+drv_A = 3.0;
 
 prm_alpha = 5.0;
 
@@ -69,9 +69,8 @@ if(cd_dump_deep == 1)
         end
 
     end
+    dump_periods = dump_periods / T;
 end
-
-dump_periods = dump_periods / T;
 
 adr = zeros(N, num_dumps);
 
@@ -97,7 +96,7 @@ set(gca, 'FontSize', 30);
 xlabel('$t/T$', 'Interpreter', 'latex');
 xlim([dump_periods(1) dump_periods(end)])
 set(gca, 'FontSize', 30);
-ylabel('$n$', 'Interpreter', 'latex');
+ylabel('$n/N$', 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 30);

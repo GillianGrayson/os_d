@@ -3,26 +3,31 @@ clear all;
 sys_id = 1;
 task_id = 1;
 prop_id = 0;
-seed = 0;
+seed = 1;
 mns = 1000000;
-num_trajectories = 10;
+num_trajectories = 16;
 
-N = 200;
+T = 0.5;
+
+N = 300;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
-jcs_drv_part_1 = 0.98;
-jcs_drv_part_2 = 1.0;
-jcs_drv_ampl = 3.2;
+jcs_drv_part_1 = 1.0 * T;
+jcs_drv_part_2 = 1.0 * T;
+jcs_drv_ampl = 0.5;
 jcs_prm_alpha = 5.0;
 start_type = 0;
 start_state = 0;
 
-num_bins = 201;
+num_bins = 400;
 
 path = "../../../../source/cpp/QJX/QJX";
 
-suffix = sprintf("rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)", ...
+suffix = sprintf("setup(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f)_start(%d_%d)", ...
+    sys_id, ...
+    task_id, ...
+    prop_id, ...
     seed, ...
     mns, ...
     N, ...
@@ -92,8 +97,8 @@ h = colorbar;
 set(gca, 'FontSize', 30);
 title(h, '$PDF$', 'FontSize', 33, 'interpreter','latex');
 set(gca,'YDir','normal');
-set(gca, 'Position', [0.125 0.15 0.75 0.75]);
-set(h, 'Position', [0.885 0.15 0.02 0.75]);
+%%set(gca, 'Position', [0.125 0.15 0.75 0.75]);
+%%set(h, 'Position', [0.885 0.15 0.02 0.75]);
 hold all;
 
 

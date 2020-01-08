@@ -15,12 +15,12 @@ num_lambdas_periods 2
 dump_obs 1
 dump_phi 0
 dump_phi_evo 0
-dump_adr_sep 0
+dump_adr_sep 1
 dump_adr_avg 0
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
-dump_num 100
+dump_num 1000
 N 300
 diss_type 1
 diss_gamma 0.1
@@ -34,7 +34,7 @@ dimer_prm_U 0.5
 dimer_prm_J 1.0
 jcs_drv_part_1 2.0
 jcs_drv_part_2 2.0
-jcs_drv_ampl 4.0
+jcs_drv_ampl 3.0
 jcs_prm_alpha 5.0
 ps_num_spins 1
 ps_num_photons_states 200

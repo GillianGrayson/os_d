@@ -1,7 +1,7 @@
 clear all;
 
 sys_id = 1;
-task_id = 4;
+task_id = 1;
 prop_id = 0;
 seed = 1;
 mns = 1000000;
@@ -12,14 +12,14 @@ N = 300;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
-jcs_drv_part_1 = 1.0;
-jcs_drv_part_2 = 1.0;
-jcs_drv_ampl = 5.0;
+jcs_drv_part_1 = 0.5;
+jcs_drv_part_2 = 0.5;
+jcs_drv_ampl = 0.5;
 jcs_prm_alpha = 5.0;
 start_type = 0;
 start_state = 0;
 
-deep_dump = 1;
+deep_dump = 0;
 deep_num_steps = 50;
 
 
