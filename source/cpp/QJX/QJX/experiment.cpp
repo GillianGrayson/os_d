@@ -190,7 +190,6 @@ void LpnMultExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior *
 }
 
 
-
 void LpnMultExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
 {
 	RunParam * rp = ad->rp;
@@ -207,6 +206,8 @@ void LpnMultExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
+
+	int lambda_per_periods = int(cp->params.find("lambda_per_periods")->second);
 
 	int begin_period_id = 0;
 	int end_period_id = 0;
@@ -240,7 +241,14 @@ void LpnMultExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 #pragma omp parallel for
 			for (int tr_id = num_trajectories / 2; tr_id < num_trajectories; tr_id++)
 			{
-				lambda_lpn(ad, cb, tr_id, tr_id - num_trajectories / 2);
+				if (lambda_per_periods == 0)
+				{
+					lambda_lpn(ad, cb, tr_id, tr_id - num_trajectories / 2);
+				}
+				else
+				{
+					lambda_lpn_now(ad, cb, tr_id, tr_id - num_trajectories / 2);
+				}
 			}
 		}
 
@@ -276,7 +284,6 @@ void LpnMultExperimentBehaviour::obser_process(AllData * ad, PropagateBehavior *
 		dump_adr_avg_mult(ad, true, 0, num_trajectories / 2);
 	}
 }
-
 
 
 void LpnMultDeepExperimentBehaviour::trans_process(AllData * ad, PropagateBehavior * pb, CoreBehavior * cb) const
@@ -2817,6 +2824,35 @@ void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id, int base_tr_id)
 		cb->calc_chars_lpn(ad, tr_id, base_tr_id);
 		ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / ed->curr_time;
 	}
+}
+
+void lambda_lpn_now(AllData* ad, CoreBehavior* cb, int tr_id, int base_tr_id)
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+	ExpData* ed = ad->ed;
+	
+	double delta_f = cb->calc_delta_f(ad, tr_id, base_tr_id);
+
+	ed->lambda[tr_id] += log(delta_f / ed->delta_s[tr_id] + 1.0e-16);
+	ed->num_renorms[tr_id] += 1;
+
+	int save_lambdas = int(cp->params.find("save_lambdas")->second);
+	if (save_lambdas > 0)
+	{
+		ed->lambdas[tr_id].push_back(delta_f / ed->delta_s[tr_id]);
+		ed->deltas_s[tr_id].push_back(ed->delta_s[tr_id]);
+		ed->deltas_f[tr_id].push_back(delta_f);
+	}
+
+	copy_stream_lpn(ad, tr_id, base_tr_id);
+	var_trajectory_lpn(ad, cb, tr_id, base_tr_id);
+
+	cb->calc_chars_lpn(ad, tr_id, base_tr_id);
+
+	ed->delta_s[tr_id] = cb->calc_delta_s(ad, tr_id, base_tr_id);
+
+	ed->lambda_now[tr_id] = ed->lambda[tr_id] / ed->curr_time;
 }
 
 void lambda_lpn_per_periods(AllData * ad, CoreBehavior *cb, int tr_id, int base_tr_id, int num_steps_T, int curr_step, int num_periods)
