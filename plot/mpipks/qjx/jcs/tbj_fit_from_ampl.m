@@ -162,6 +162,14 @@ for ampl_id = 1:ampl_num
 	else
 		decades_y(ampl_id) = log10(yy(left)) - log10(yy(right));
     end
+	
+	if decades_y(ampl_id) > 2.0
+        alphas(ampl_id) = abs(alpha);
+        decades(ampl_id) = log10(x_max) - log10(x_min);
+    else
+        alphas(ampl_id) = 0;
+        decades(ampl_id) = 0;
+    end
 end
 
 suffix_save = sprintf('decs(%0.4f)_N(%d)_diss(%d)_drv(%0.4f_%0.4f_var)_prm(%0.4f)_start(%d_%d)', ...

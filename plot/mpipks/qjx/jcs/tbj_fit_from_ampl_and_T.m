@@ -167,9 +167,21 @@ for T_id = 1:T_num
         alpha = alpha;
         decade = log10(x_max) - log10(x_min);
         
-        alphas(ampl_id, T_id) = abs(alpha);
-        decades(ampl_id, T_id) = log10(x_max) - log10(x_min);
+        left = find(bin_centers==x_min);
+        right = find(bin_centers==x_max);
+        if isempty(left) || isempty(right)
+            decade_y = 0;
+        else
+            decade_y = log10(yy(left)) - log10(yy(right));
+        end
         
+        if decade_y > 3
+            alphas(ampl_id, T_id) = abs(alpha);
+            decades(ampl_id, T_id) = log10(x_max) - log10(x_min);
+        else
+            alphas(ampl_id, T_id) = 0;
+            decades(ampl_id, T_id) = 0;
+        end
     end
     
 %     name = sprintf('T_%0.4f.txt', T);
