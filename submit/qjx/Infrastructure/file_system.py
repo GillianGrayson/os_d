@@ -4,6 +4,7 @@ class FSType(Enum):
     local = 0
     cluster = 1
     mpipks_sd = 2
+    mpipks_mv = 3
 
 def get_root(type):
 

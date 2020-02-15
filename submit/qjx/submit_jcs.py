@@ -217,3 +217,8 @@ for ampl_id in range(0, ampl_num):
                         os.system('sbatch run_mpipks_sd_sbatch.sh ' + fn_path)
                     elif medium == 1:
                         os.system('sbatch run_mpipks_sd_sbatch_medium.sh ' + fn_path)
+                elif type == FSType.mpipks_mv:
+                    if medium == 0:
+                        os.system('sbatch run_mpipks_mv_sbatch.sh ' + fn_path)
+                    elif medium == 1:
+                        os.system('sbatch run_mpipks_mv_sbatch_medium.sh ' + fn_path)
