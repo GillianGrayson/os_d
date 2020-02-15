@@ -54,14 +54,15 @@ for mbl_U_id in range(0, mbl_U_num):
             random_obs_seed = 100
             random_obs_mns = 1000000
             random_obs_type = 2
-            lpn_type = 0
+            lpn_type = -2
             lpn_eps_deep = 100
             lpn_eps_error = 1.0e-10
             lpn_eps_high = 10
             lpn_eps_low = -10
-            lpn_delta_s = 1.0e-8
-            lpn_delta_f_high = 1.0e-6
-            lpn_delta_f_low = 1.0e-10
+            lpn_delta_s = 1.0e-4
+            lpn_delta_f_high = 1.0e-2
+            lpn_delta_f_low = 1.0e-6
+            lambda_per_periods = 0
             save_lambdas = 0
             num_lambdas_periods = 2
             dump_obs = 1
@@ -163,6 +164,7 @@ for mbl_U_id in range(0, mbl_U_num):
                 file_params.write('lpn_delta_s ' + str(lpn_delta_s) + '\n')
                 file_params.write('lpn_delta_f_high ' + str(lpn_delta_f_high) + '\n')
                 file_params.write('lpn_delta_f_low ' + str(lpn_delta_f_low) + '\n')
+                file_params.write('lambda_per_periods ' + str(lambda_per_periods) + '\n')
                 file_params.write('save_lambdas ' + str(save_lambdas) + '\n')
                 file_params.write('num_lambdas_periods ' + str(num_lambdas_periods) + '\n')
                 file_params.write('dump_obs ' + str(dump_obs) + '\n')
