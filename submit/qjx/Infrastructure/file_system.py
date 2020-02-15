@@ -12,6 +12,8 @@ def get_root(type):
         root = '/common/home/yusipov_i/Work/os_d/data/qjx'
     elif type == FSType.mpipks_sd:
         root = '/data/biophys/denysov/yusipov/os_d/data/qjx'
+    elif type == FSType.mpipks_mv:
+        root = '/data/condmat/ivanchen/yusipov/os_d/qjx'
     elif type == FSType.local:
         root = 'E:/Work/os_d/data/qjx'
 
