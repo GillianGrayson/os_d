@@ -1689,6 +1689,11 @@ MKL_Complex16 get_spec_mbl(AllData * ad, int tr_id)
 	delete[] phi_normed;
 	delete[] phi_normed_conj;
 
+	double mbl_prm_W = double(cp->params.find("mbl_prm_W")->second);
+
+	result.real = result.real / mbl_prm_W;
+	result.imag = result.imag / mbl_prm_W;
+
 	return result;
 }
 
