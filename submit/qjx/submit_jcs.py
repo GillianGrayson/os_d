@@ -3,19 +3,19 @@ from Infrastructure.file_system import *
 import os.path
 import numpy as np
 
-type = FSType.mpipks_sd
+type = FSType.mpipks_mv
 
 num_runs = 1
 
-medium = 1
+medium = 0
 
 ampl_start = 0.05
 ampl_shift = 0.05
-ampl_num = 100
+ampl_num = 1
 
 T_start = 0.05
 T_shift = 0.05
-T_num = 100
+T_num = 1
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -27,7 +27,7 @@ for ampl_id in range(0, ampl_num):
         print('T: ' + str(T))
 
         sys_id = 1
-        task_id = 1
+        task_id = 7
         prop_id = 0
         is_debug = 0
         is_pp = 0
@@ -36,9 +36,9 @@ for ampl_id in range(0, ampl_num):
         seed = 0
         mns = 1000000
         num_threads = 1
-        num_trajectories = 10
+        num_trajectories = 200
         num_tp_periods = 100
-        num_obs_periods = 1000000
+        num_obs_periods = 100
         ex_deep = 16
         rk_ns = 10000
 
@@ -53,8 +53,8 @@ for ampl_id in range(0, ampl_num):
         lpn_eps_high = 10
         lpn_eps_low = -10
         lpn_delta_s = 1.0e-3
-        lpn_delta_f_high = 1.0e-1
-        lpn_delta_f_low = 1.0e-5
+        lpn_delta_f_high = 1.0e-3
+        lpn_delta_f_low = 1.0e-3
         lambda_per_periods = 0
         save_lambdas = 0
         num_lambdas_periods = 2
@@ -82,7 +82,7 @@ for ampl_id in range(0, ampl_num):
         deep_num_steps = 1000
         # jump = 2
         # jumps_counts = 1000
-        jump = 2
+        jump = 0
         jumps_counts = 1000
 
         diss_gamma_str = str(format(diss_gamma, '0.4f'))
