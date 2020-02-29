@@ -12,7 +12,7 @@ rk_ns = 10000;
 num_tp_periods = 1000;
 num_obs_periods = 1000;
 
-Nc = 8;
+Nc = 10;
 
 num_rnd_obs = 1;
 rnd_obs_seed = 100;
@@ -30,12 +30,12 @@ U = 1;
 J = 1;
 
 start_type = 0;
-start_state = 49;
+start_state = 0;
 
-lpn_type = 0;
-lpn_delta_f_h = 1e-3;
-lpn_delta_s = 1e-3;
-lpn_delta_f_l = 1e-3;
+lpn_type = -1;
+lpn_delta_f_h = 1e-2;
+lpn_delta_s = 1e-2;
+lpn_delta_f_l = 1e-2;
 
 ss = 0;
 mns = 1000000;
@@ -44,9 +44,9 @@ num_trajectories = 200;
 num_target_trajectories = num_trajectories / 2;
 num_runs = 1;
 
-W_begin = 0.0;
+W_begin = 0.2;
 W_step = 0.2;
-W_num = 101;
+W_num = 100;
 Ws = zeros(W_num, 1);
 
 all_lambdas = zeros(W_num, W_seed_num * num_runs * num_target_trajectories);

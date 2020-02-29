@@ -3,27 +3,27 @@ from Infrastructure.file_system import *
 import os.path
 import numpy as np
 
-type = FSType.mpipks_sd
+type = FSType.mpipks_mv
 
 medium = 0
 
 num_runs = 1
 
-ampl_start = 0.4
+ampl_start = 0.05
 ampl_shift = 0.05
-ampl_num = 1
+ampl_num = 100
 
-d_start = 1.0
+T_start = 0.05
+T_shift = 0.05
+T_num = 100
+
+d_start = 0.0
 d_shift = 0.1
 d_num = 1
 
 g_start = 0.0
 g_shift = 0.1
-g_num = 100
-
-T_start = 2.0
-T_shift = 0.05
-T_num = 1
+g_num = 1
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -40,6 +40,7 @@ for ampl_id in range(0, ampl_num):
                 #g = d
 
                 print('ampl: ' + str(ampl))
+                print('T: ' + str(T))
                 print('d: ' + str(d))
                 print('g: ' + str(g))
 
@@ -47,26 +48,31 @@ for ampl_id in range(0, ampl_num):
                 task_id = 7
                 prop_id = 0
                 is_debug = 0
-                is_pp = 1
+                is_pp = 0
                 init_fn = ''
                 path = ''
                 seed = 0
                 mns = 1000000
                 num_threads = 1
-                num_trajectories = 20
-                num_tp_periods = 100
-                num_obs_periods = 100
+                num_trajectories = 200
+                num_tp_periods = 10
+                num_obs_periods = 10
                 ex_deep = 16
                 rk_ns = 10000
 
-                lpn_type = 3
+                num_random_obs = 1
+                random_obs_seed = 100
+                random_obs_mns = 1000000
+                random_obs_type = 2
+
+                lpn_type = -1
                 lpn_eps_deep = 100
                 lpn_eps_error = 1.0e-10
                 lpn_eps_high = 10
                 lpn_eps_low = -10
-                lpn_delta_s = 0.001
-                lpn_delta_f_high = 1.0e-1
-                lpn_delta_f_low = 1.0e-12
+                lpn_delta_s = 1.0e-3
+                lpn_delta_f_high = 1.0e-2
+                lpn_delta_f_low = 1.0e-4
                 lambda_per_periods = 0
                 save_lambdas = 0
                 num_lambdas_periods = 2
@@ -78,13 +84,13 @@ for ampl_id in range(0, ampl_num):
                 dump_evo_sep = 0
                 dump_evo_avg = 0
                 dump_type = 0
-                dump_num = 100
-                N = 200
-                diss_type = 1
+                dump_num = 1
+                N = 300
+                diss_type = 1 # 0 - only photon subsystem; 1 - photons + spins
                 diss_gamma = 0.1
                 diss_phase = 0.0
                 ps_num_spins = 1
-                ps_num_photons_states = 200
+                ps_num_photons_states = 300
                 ps_drv_part_1 = 1.00 * T
                 ps_drv_part_2 = 1.00 * T
                 ps_drv_ampl = ampl
@@ -96,7 +102,7 @@ for ampl_id in range(0, ampl_num):
                 start_state = 0
                 deep_num_steps = 1000
                 jump = 0
-                jumps_counts = 0
+                jumps_counts = 1000
 
                 diss_gamma_str = str(format(diss_gamma, '0.4f'))
                 diss_phase_str = str(format(diss_phase, '0.4f'))
@@ -111,6 +117,7 @@ for ampl_id in range(0, ampl_num):
 
                 lpn_delta_s_str = str(format(np.log10(lpn_delta_s), '0.4f'))
                 lpn_delta_f_high_str = str(format(np.log10(lpn_delta_f_high), '0.4f'))
+                lpn_delta_f_low_str = str(format(np.log10(lpn_delta_f_low), '0.4f'))
 
                 start_seed = 0
                 finish_seed = num_runs * num_trajectories
@@ -121,26 +128,20 @@ for ampl_id in range(0, ampl_num):
                 print('step_seed: ' + str(step_seed))
 
                 local_path = \
-                    '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
-                    '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
-                        num_obs_periods) + \
-                    '/N_' + str(ps_num_spins) + '_' + str(ps_num_photons_states) + \
-                    '/diss_' + str(diss_type) + '_' + ps_diss_w_str + \
-                    '/drv_' + ps_drv_part_1_str + '_' + ps_drv_part_2_str + '_' + ps_drv_ampl_str + \
-                    '/prm_' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + \
-                    '/start_' + str(start_type) + '_' + str(start_state)
+                    '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id)
 
                 if task_id == 7:
-                    local_path = \
-                        '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + \
-                        '/lpn_' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + \
-                        '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
-                            num_obs_periods) + \
-                        '/N_' + str(ps_num_spins) + '_' + str(ps_num_photons_states) + \
-                        '/diss_' + str(diss_type) + '_' + ps_diss_w_str + \
-                        '/drv_' + ps_drv_part_1_str + '_' + ps_drv_part_2_str + '_' + ps_drv_ampl_str + \
-                        '/prm_' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + \
-                        '/start_' + str(start_type) + '_' + str(start_state)
+                    local_path += '/lpn_' + str(
+                        lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str
+
+                local_path += '/run_' + str(ex_deep) + '_' + str(rk_ns) + '_' + str(num_tp_periods) + '_' + str(
+                    num_obs_periods) + \
+                              '/obs_' + str(num_random_obs) + '_' + str(random_obs_seed) + '_' + str(random_obs_type) + \
+                              '/N_' + str(ps_num_spins) + '_' + str(ps_num_photons_states) + \
+                              '/diss_' + str(diss_type) + '_' + ps_diss_w_str + \
+                              '/drv_' + ps_drv_part_1_str + '_' + ps_drv_part_2_str + '_' + ps_drv_ampl_str + \
+                              '/prm_' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + \
+                              '/start_' + str(start_type) + '_' + str(start_state)
 
                 for ss in range(start_seed, finish_seed, step_seed):
                     print("ss = " + str(ss))
@@ -168,6 +169,11 @@ for ampl_id in range(0, ampl_num):
                     file_config.close()
 
                     file_params = open(fn_path + '/params.txt', 'w')
+
+                    file_params.write('num_random_obs ' + str(num_random_obs) + '\n')
+                    file_params.write('random_obs_seed ' + str(random_obs_seed) + '\n')
+                    file_params.write('random_obs_mns ' + str(random_obs_mns) + '\n')
+                    file_params.write('random_obs_type ' + str(random_obs_type) + '\n')
 
                     file_params.write('lpn_type ' + str(lpn_type) + '\n')
                     file_params.write('lpn_eps_deep ' + str(lpn_eps_deep) + '\n')
@@ -211,6 +217,7 @@ for ampl_id in range(0, ampl_num):
                     file_params.close()
 
                     fn_suffix = \
+                        'setup(' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id) + ')_' + \
                         'rnd(' + str(ss) + '_' + str(mns) + ')_' + \
                         's(' + str(ps_num_spins) + ')_' + \
                         'nps(' + str(ps_num_photons_states) + ')_' + \
@@ -219,9 +226,9 @@ for ampl_id in range(0, ampl_num):
                         'prm(' + ps_prm_alpha_str + '_' + ps_prm_d_str + '_' + ps_prm_g_str + ')_' + \
                         'start(' + str(start_type) + '_' + str(start_state) + ')'
 
-
                     if task_id == 7:
-                        fn_suffix += '_lpn(' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + ')'
+                        fn_suffix += '_lpn(' + str(
+                            lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str + ')'
 
                     fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
 

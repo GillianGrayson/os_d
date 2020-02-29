@@ -1,8 +1,8 @@
 clear all;
 
-home_figures_path = '/home/denysov/yusipov/os_d/figures';
+home_figures_path = '/home/ivanchen/yusipov/os_d/figures';
 
-data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
+data_path = '/data/condmat/ivanchen/yusipov/os_d/qjx';
 
 num_runs = 1;
 num_trajectories = 200;
@@ -11,14 +11,14 @@ jcs_drv_part_1 = 1.0;
 jcs_drv_part_2 = 1.0;
 jcs_prm_alpha = 5;
 
-ampl_begin = 0.05;
+ampl_begin = 0.5;
 ampl_step = 0.05;
-ampl_num = 100;
+ampl_num = 91;
 ampls = linspace(ampl_begin, ampl_begin + (ampl_num - 1) * ampl_step, ampl_num);
 
-T_begin = 0.05;
+T_begin = 0.50;
 T_step = 0.05;
-T_num = 100;
+T_num = 91;
 Ts = linspace(T_begin * (jcs_drv_part_1 + jcs_drv_part_2) * jcs_prm_alpha, (T_begin + (T_num - 1) * T_step) * (jcs_drv_part_1 + jcs_drv_part_2) * jcs_prm_alpha, T_num);
 
 sys_id = 1;
@@ -26,15 +26,15 @@ task_id = 7;
 prop_id = 0;
 
 lpn_type = -1;
-lpn_delta_s = log10(1.0e-3);
+lpn_delta_s = log10(1.0e-1);
 lpn_delta_f_high = log10(1.0e-1);
-lpn_delta_f_low = log10(1.0e-5);
+lpn_delta_f_low = log10(1.0e-1);
 
 
 ex_deep = 16;
 rk_ns = 10000;
-num_tp_periods = 100;
-num_obs_periods = 100;
+num_tp_periods = 10;
+num_obs_periods = 10;
 
 num_random_obs = 1;
 random_obs_seed = 100;

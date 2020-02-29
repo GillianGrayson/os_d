@@ -11,11 +11,11 @@ medium = 0
 
 ampl_start = 0.05
 ampl_shift = 0.05
-ampl_num = 1
+ampl_num = 100
 
 T_start = 0.05
 T_shift = 0.05
-T_num = 1
+T_num = 100
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -37,8 +37,8 @@ for ampl_id in range(0, ampl_num):
         mns = 1000000
         num_threads = 1
         num_trajectories = 200
-        num_tp_periods = 100
-        num_obs_periods = 100
+        num_tp_periods = 10
+        num_obs_periods = 10
         ex_deep = 16
         rk_ns = 10000
 
@@ -53,8 +53,8 @@ for ampl_id in range(0, ampl_num):
         lpn_eps_high = 10
         lpn_eps_low = -10
         lpn_delta_s = 1.0e-3
-        lpn_delta_f_high = 1.0e-3
-        lpn_delta_f_low = 1.0e-3
+        lpn_delta_f_high = 1.0e-2
+        lpn_delta_f_low = 1.0e-4
         lambda_per_periods = 0
         save_lambdas = 0
         num_lambdas_periods = 2
@@ -63,7 +63,7 @@ for ampl_id in range(0, ampl_num):
         dump_phi_evo = 0
         dump_adr_sep = 0
         dump_adr_avg = 0
-        dump_evo_sep = 1
+        dump_evo_sep = 0
         dump_evo_avg = 0
         dump_type = 0
         dump_num = 1
