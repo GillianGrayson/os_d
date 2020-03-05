@@ -52,10 +52,10 @@ for ampl_id in range(0, ampl_num):
         lpn_eps_error = 1.0e-10
         lpn_eps_high = 10
         lpn_eps_low = -10
-        lpn_delta_s = 1.0e-3
-        lpn_delta_f_high = 1.0e-2
+        lpn_delta_s = 1.0e-4
+        lpn_delta_f_high = 1.0e-4
         lpn_delta_f_low = 1.0e-4
-        lambda_per_periods = 0
+        lambda_per_periods = 1
         save_lambdas = 0
         num_lambdas_periods = 2
         dump_obs = 1

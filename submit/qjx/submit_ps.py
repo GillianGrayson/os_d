@@ -5,7 +5,7 @@ import numpy as np
 
 type = FSType.mpipks_mv
 
-medium = 0
+medium = 1
 
 num_runs = 1
 
@@ -13,17 +13,17 @@ ampl_start = 0.05
 ampl_shift = 0.05
 ampl_num = 100
 
-T_start = 0.05
+T_start = 4.00
 T_shift = 0.05
-T_num = 100
+T_num = 1
 
-d_start = 0.0
+d_start = 1.0
 d_shift = 0.1
 d_num = 1
 
-g_start = 0.0
+g_start = 0.1
 g_shift = 0.1
-g_num = 1
+g_num = 100
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -70,10 +70,10 @@ for ampl_id in range(0, ampl_num):
                 lpn_eps_error = 1.0e-10
                 lpn_eps_high = 10
                 lpn_eps_low = -10
-                lpn_delta_s = 1.0e-3
-                lpn_delta_f_high = 1.0e-2
+                lpn_delta_s = 1.0e-4
+                lpn_delta_f_high = 1.0e-4
                 lpn_delta_f_low = 1.0e-4
-                lambda_per_periods = 0
+                lambda_per_periods = 1
                 save_lambdas = 0
                 num_lambdas_periods = 2
                 dump_obs = 1

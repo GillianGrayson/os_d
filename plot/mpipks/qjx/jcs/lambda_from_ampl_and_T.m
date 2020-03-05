@@ -25,10 +25,10 @@ sys_id = 1;
 task_id = 7;
 prop_id = 0;
 
-lpn_type = -1;
-lpn_delta_s = log10(1.0e-1);
-lpn_delta_f_high = log10(1.0e-1);
-lpn_delta_f_low = log10(1.0e-1);
+lpn_type = -2;
+lpn_delta_s = log10(1.0e-4);
+lpn_delta_f_high = log10(1.0e-4);
+lpn_delta_f_low = log10(1.0e-4);
 
 
 ex_deep = 16;
