@@ -83,6 +83,7 @@ for mbl_U_id in range(0, mbl_U_num):
             mbl_prm_W = mbl_W
             mbl_prm_U = mbl_U
             mbl_prm_J = 1
+            mbl_T = 1.0
             start_type = 0
             start_state = 0
             cd_dim = 1
@@ -98,6 +99,8 @@ for mbl_U_id in range(0, mbl_U_num):
             mbl_prm_U_str = str(format(mbl_prm_U, '0.4f'))
             mbl_prm_J_str = str(format(mbl_prm_J, '0.4f'))
 
+            mbl_T_str = str(format(mbl_T, '0.4f'))
+
             lpn_delta_s_str = str(format(np.log10(lpn_delta_s), '0.4f'))
             lpn_delta_f_high_str = str(format(np.log10(lpn_delta_f_high), '0.4f'))
             lpn_delta_f_low_str = str(format(np.log10(lpn_delta_f_low), '0.4f'))
@@ -112,6 +115,8 @@ for mbl_U_id in range(0, mbl_U_num):
 
             local_path = \
                 '/main_' + str(sys_id) + '_' + str(task_id) + '_' + str(prop_id)
+
+            local_path += '/T_' + mbl_T_str
 
             if task_id == 7:
                 local_path += '/lpn_' + str(lpn_type) + '_' + lpn_delta_s_str + '_' + lpn_delta_f_high_str + '_' + lpn_delta_f_low_str
@@ -185,6 +190,7 @@ for mbl_U_id in range(0, mbl_U_num):
                 file_params.write('mbl_prm_W ' + str(mbl_prm_W) + '\n')
                 file_params.write('mbl_prm_U ' + str(mbl_prm_U) + '\n')
                 file_params.write('mbl_prm_J ' + str(mbl_prm_J) + '\n')
+                file_params.write('mbl_T ' + str(mbl_T) + '\n')
                 file_params.write('start_type ' + str(start_type) + '\n')
                 file_params.write('start_state ' + str(start_state) + '\n')
                 file_params.write('cd_dim ' + str(cd_dim) + '\n')

@@ -52,6 +52,7 @@ mbl_mns 1000000
 mbl_prm_W 20.0
 mbl_prm_U 1.0
 mbl_prm_J 1.0
+mbl_T 1.0
 start_type 0
 start_state 0
 cd_dim 1

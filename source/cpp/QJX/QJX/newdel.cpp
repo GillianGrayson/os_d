@@ -209,7 +209,9 @@ void MBLNewDelBehaviour::init_sizes(AllData * ad) const
 	}
 	
 	md->num_ham_qj = 1;
-	md->T = 1.0;
+
+	double T = double(cp->params.find("mbl_T")->second);
+	md->T = T;
 }
 
 void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
