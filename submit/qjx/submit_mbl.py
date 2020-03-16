@@ -45,7 +45,7 @@ for mbl_U_id in range(0, mbl_U_num):
             mns = 1000000
             num_threads = 1
             num_trajectories = 200
-            num_tp_periods = 10000
+            num_tp_periods = 1000
             num_obs_periods = 1000
             ex_deep = 16
             rk_ns = 10000
@@ -60,8 +60,8 @@ for mbl_U_id in range(0, mbl_U_num):
             lpn_eps_high = 10
             lpn_eps_low = -10
             lpn_delta_s = 1.0e-6
-            lpn_delta_f_high = 1.0e-4
-            lpn_delta_f_low = 1.0e-8
+            lpn_delta_f_high = 1.0e-6
+            lpn_delta_f_low = 1.0e-6
             lambda_per_periods = 0
             save_lambdas = 0
             num_lambdas_periods = 2
