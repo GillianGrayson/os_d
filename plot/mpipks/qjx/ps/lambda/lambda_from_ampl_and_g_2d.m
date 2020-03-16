@@ -33,7 +33,7 @@ drv_part_1 = 1.0;
 drv_part_2 = 1.0;
 ps_prm_alpha = 5;
 d = 1;
-T = 3;
+T = 2;
 ps_drv_part_1 = drv_part_1 * T;
 ps_drv_part_2 = drv_part_2 * T;
 start_type = 0;
@@ -49,7 +49,7 @@ ampls = linspace(ampl_begin, ampl_begin + (ampl_num - 1) * ampl_step, ampl_num);
 g_begin = 0.1;
 g_step = 0.1;
 g_num = 100;
-gs = linspace(g_begin * (drv_part_1 + drv_part_2) * ps_prm_alpha, (g_begin + (g_num - 1) * g_step) * (drv_part_1 + drv_part_2) * ps_prm_alpha, g_num);
+gs = linspace(g_begin,  g_begin + (g_num - 1) * g_step, g_num);
 
 lambdas = zeros(ampl_num, g_num);
 

@@ -7,7 +7,7 @@ type = FSType.mpipks_mv
 
 num_runs = 1
 
-medium = 0
+medium = 1
 
 mbl_U_start = 1.0
 mbl_U_shift = 0.1
@@ -45,7 +45,7 @@ for mbl_U_id in range(0, mbl_U_num):
             mns = 1000000
             num_threads = 1
             num_trajectories = 200
-            num_tp_periods = 1000
+            num_tp_periods = 10000
             num_obs_periods = 1000
             ex_deep = 16
             rk_ns = 10000
@@ -54,15 +54,15 @@ for mbl_U_id in range(0, mbl_U_num):
             random_obs_seed = 100
             random_obs_mns = 1000000
             random_obs_type = 2
-            lpn_type = -2
+            lpn_type = -1
             lpn_eps_deep = 100
             lpn_eps_error = 1.0e-10
             lpn_eps_high = 10
             lpn_eps_low = -10
             lpn_delta_s = 1.0e-6
-            lpn_delta_f_high = 1.0e-6
-            lpn_delta_f_low = 1.0e-6
-            lambda_per_periods = 1
+            lpn_delta_f_high = 1.0e-4
+            lpn_delta_f_low = 1.0e-8
+            lambda_per_periods = 0
             save_lambdas = 0
             num_lambdas_periods = 2
             dump_obs = 1
