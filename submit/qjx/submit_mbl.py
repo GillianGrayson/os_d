@@ -62,7 +62,7 @@ for mbl_U_id in range(0, mbl_U_num):
             lpn_delta_s = 1.0e-6
             lpn_delta_f_high = 1.0e-6
             lpn_delta_f_low = 1.0e-6
-            lambda_per_periods = 0
+            lambda_per_periods = 1
             save_lambdas = 0
             num_lambdas_periods = 2
             dump_obs = 1
@@ -83,7 +83,7 @@ for mbl_U_id in range(0, mbl_U_num):
             mbl_prm_W = mbl_W
             mbl_prm_U = mbl_U
             mbl_prm_J = 1
-            mbl_T = 1.0
+            mbl_T = 10.0
             start_type = 0
             start_state = 0
             cd_dim = 1
