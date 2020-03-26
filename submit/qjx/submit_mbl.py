@@ -77,13 +77,13 @@ for mbl_U_id in range(0, mbl_U_num):
             diss_type = 1
             diss_gamma = 0.1
             diss_phase = 0.0
-            mbl_Nc = 10
+            mbl_Nc = 8
             mbl_seed = mbl_seed
             mbl_mns = 1000000
             mbl_prm_W = mbl_W
             mbl_prm_U = mbl_U
             mbl_prm_J = 1
-            mbl_T = 10.0
+            mbl_T = 0.1
             start_type = 0
             start_state = 0
             cd_dim = 1

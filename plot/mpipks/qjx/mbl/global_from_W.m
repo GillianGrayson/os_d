@@ -14,7 +14,7 @@ num_obs_periods = 1000;
 
 T = 0.1;
 
-Nc = 10;
+Nc = 8;
 
 num_rnd_obs = 1;
 rnd_obs_seed = 100;

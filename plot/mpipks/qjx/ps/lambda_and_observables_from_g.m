@@ -1,129 +1,141 @@
 clear all;
 
-home_figures_path = '/home/denysov/yusipov/os_d/figures';
+addpath('/home/ivanchen/yusipov/os_lnd/source/matlab/lib')
 
-data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
+home_figures_path = '/home/ivanchen/yusipov/os_d/figures';
 
-task_id_lambda = 7; 
-num_trajectories_lambda = 20;
+data_path = '/data/condmat/ivanchen/yusipov/os_d/qjx';
+
+task_id_lambda = 7;
+num_trajectories_lambda = 200;
 num_runs_lambda = 1;
 
-sys_id = 2; 
+sys_id = 2;
 task_id = 1;
-prop_id = 0; 
-seed = 0; 
+prop_id = 0;
+seed = 0;
 mns = 1000000;
-num_trajectories = 10;
-num_tp_periods = 100;
-num_obs_periods = 100; 
+num_trajectories = 100;
+num_tp_periods = 10;
+num_obs_periods = 10;
 ex_deep = 16;
 rk_ns = 10000;
 
-ps_drv_ampl = 0.4;
-T = 2.0;
+num_random_obs = 1;
+random_obs_seed = 100;
+random_obs_type = 2;
+
+lpn_type = -1;
+lpn_delta_s = log10(1.0e-4);
+lpn_delta_f_high = log10(1.0e-4);
+lpn_delta_f_low = log10(1.0e-4);
+
+ampl = 0.5;
+T = 4.0;
 d = 1.0;
-g_start = 0.0;
-g_shift = 0.1;
+g_start = 0.01;
+g_shift = 0.01;
+g_num = 1000;
+gs = linspace(g_start, g_start + (g_num - 1) * g_shift, g_num);
 
 diss_type = 1;
 ps_diss_w = 0.05;
 ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
-ps_num_photons_states = 200;
+ps_num_photons_states = 300;
 ps_drv_part_1 = 1.00 * T;
 ps_drv_part_2 = 1.00 * T;
 ps_prm_alpha = 5;
 start_type = 0;
 start_state = 0;
 
-num_runs = 10;
+num_runs = 1;
 
 num_bins = 200;
 
-num_points = 100;
-params = zeros(num_points, 1);
-lambdas = zeros(num_points, 1);
-theta_re = zeros(num_points, num_bins);
-theta_im = zeros(num_points, num_bins);
-J_plus_re = zeros(num_points, num_bins);
-J_plus_im = zeros(num_points, num_bins);
-J_z = zeros(num_points, num_bins);
+lambdas = zeros(g_num, 1);
 
-min_theta_re = -3;
-max_theta_re = 3;
-shift_theta_re = (max_theta_re - min_theta_re) / num_bins;
-int_theta_re = zeros(num_bins, 1);
-for int_id = 1:num_bins
-    int_theta_re(int_id) = min_theta_re + shift_theta_re * int_id - 0.5 * shift_theta_re;
-end
+theta_re_pdf.xs = gs;
+theta_re_pdf.x_num_points = g_num;
+theta_re_pdf.y_num_bins = num_bins;
+theta_re_pdf.x_label = '$g$';
+theta_re_pdf.y_label = '$Re(\theta)$';
 
-min_theta_im = -3;
-max_theta_im = 3;
-shift_theta_im = (max_theta_im - min_theta_im) / num_bins;
-int_theta_im = zeros(num_bins, 1);
-for int_id = 1:num_bins
-    int_theta_im(int_id) = min_theta_im + shift_theta_im * int_id - 0.5 * shift_theta_im;
-end
+theta_im_pdf.xs = gs;
+theta_im_pdf.x_num_points = g_num;
+theta_im_pdf.y_num_bins = num_bins;
+theta_im_pdf.x_label = '$g$';
+theta_im_pdf.y_label = '$Im(\theta)$';
 
-min_J_plus_re = -ps_num_spins * 0.5 - 0.3;
-max_J_plus_re = ps_num_spins * 0.5 + 0.3;
-shift_J_plus_re = (max_J_plus_re - min_J_plus_re) / num_bins;
-int_J_plus_re = zeros(num_bins, 1);
-for int_id = 1:num_bins
-    int_J_plus_re(int_id) = min_J_plus_re + shift_J_plus_re * int_id - 0.5 * shift_J_plus_re;
-end
+J_plus_re_pdf.xs = gs;
+J_plus_re_pdf.x_num_points = g_num;
+J_plus_re_pdf.y_num_bins = num_bins;
+J_plus_re_pdf.x_label = '$g$';
+J_plus_re_pdf.y_label = '$Re(J_{+})$';
 
-min_J_plus_im = -ps_num_spins * 0.5 - 0.3;
-max_J_plus_im = ps_num_spins * 0.5 + 0.3;
-shift_J_plus_im = (max_J_plus_im - min_J_plus_im) / num_bins;
-int_J_plus_im = zeros(num_bins, 1);
-for int_id = 1:num_bins
-    int_J_plus_im(int_id) = min_J_plus_im + shift_J_plus_im * int_id - 0.5 * shift_J_plus_im;
-end
+J_plus_im_pdf.xs = gs;
+J_plus_im_pdf.x_num_points = g_num;
+J_plus_im_pdf.y_num_bins = num_bins;
+J_plus_im_pdf.x_label = '$g$';
+J_plus_im_pdf.y_label = '$Im(J_{+})$';
 
-min_J_z = -ps_num_spins * 0.5 - 0.3;
-max_J_z = ps_num_spins * 0.5 + 0.3;
-shift_J_z = (max_J_z - min_J_z) / num_bins;
-int_J_z = zeros(num_bins, 1);
-for int_id = 1:num_bins
-    int_J_z(int_id) = min_J_z + shift_J_z * int_id - 0.5 * shift_J_z;
-end
+J_z_pdf.xs = gs;
+J_z_pdf.x_num_points = g_num;
+J_z_pdf.y_num_bins = num_bins;
+J_z_pdf.x_label = '$g$';
+J_z_pdf.y_label = '$J_z$';
 
+num_global = (num_obs_periods + 1) * num_trajectories * num_runs;
 
-for param_id = 1:num_points
+theta_re = zeros(g_num, num_global);
+theta_im = zeros(g_num, num_global);
+J_plus_re = zeros(g_num, num_global);
+J_plus_im = zeros(g_num, num_global);
+J_z = zeros(g_num, num_global);
+
+for g_id = 1:g_num
     
-    ps_prm_g = g_start + (param_id - 1) * g_shift
-    params(param_id) = ps_prm_g;
-	ps_prm_d = d;
+    g = gs(g_id);
+	fprintf('g = %0.16e\n', g);
     
     for run_id = 1:num_runs_lambda
         
         ss = (run_id - 1) * num_trajectories_lambda;
         
-        path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/N_%d_%d/diss_%d_%0.4f/drv_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
+        path_to_folder = sprintf('%s/main_%d_%d_%d/lpn_%d_%0.4f_%0.4f_%0.4f/run_%d_%d_%d_%d/obs_%d_%d_%d/N_%d_%d/diss_%d_%0.4f/drv_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
             data_path, ...
             sys_id, ...
             task_id_lambda, ...
             prop_id, ...
+            lpn_type, ...
+            lpn_delta_s, ...
+            lpn_delta_f_high, ...
+            lpn_delta_f_low, ...
             ex_deep, ...
             rk_ns, ...
             num_tp_periods, ...
             num_obs_periods, ...
+            num_random_obs, ...
+            random_obs_seed, ...
+            random_obs_type, ...
             ps_num_spins, ...
             ps_num_photons_states, ...
             diss_type, ...
             ps_diss_w, ...
             ps_drv_part_1, ...
             ps_drv_part_2, ...
-            ps_drv_ampl, ...
+            ampl, ...
             ps_prm_alpha, ...
-            ps_prm_d, ...
-            ps_prm_g, ...
+            d, ...
+            g, ...
             start_type, ...
             start_state, ...
             ss);
         
-        suffix = sprintf("rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
+        suffix = sprintf("setup(%d_%d_%d)_rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)_lpn(%d_%0.4f_%0.4f_%0.4f)", ...
+            sys_id, ...
+            task_id_lambda, ...
+            prop_id, ...
             ss, ...
             mns, ...
             ps_num_spins, ...
@@ -132,24 +144,28 @@ for param_id = 1:num_points
             ps_diss_w, ...
             ps_drv_part_1, ...
             ps_drv_part_2, ...
-            ps_drv_ampl, ...
+            ampl, ...
             ps_prm_alpha, ...
-            ps_prm_d, ...
-            ps_prm_g, ...
+            d, ...
+            g, ...
             start_type, ...
-            start_state);
+            start_state, ...
+            lpn_type, ...
+            lpn_delta_s, ...
+            lpn_delta_f_high, ...
+            lpn_delta_f_low);
         
-        path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
+        path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix)
         data = importdata(path);
         
-        lambdas(param_id) = lambdas(param_id) + mean(data(num_trajectories_lambda / 2 + 1:end));
+        lambdas(g_id) = lambdas(g_id) + mean(data(num_trajectories_lambda / 2 + 1:end));
     end
     
     for run_id = 1:num_runs
         
         ss = (run_id - 1) * num_trajectories;
         
-        path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/N_%d_%d/diss_%d_%0.4f/drv_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
+        path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/obs_%d_%d_%d/N_%d_%d/diss_%d_%0.4f/drv_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
             data_path, ...
             sys_id, ...
             task_id, ...
@@ -158,21 +174,27 @@ for param_id = 1:num_points
             rk_ns, ...
             num_tp_periods, ...
             num_obs_periods, ...
+            num_random_obs, ...
+            random_obs_seed, ...
+            random_obs_type, ...
             ps_num_spins, ...
             ps_num_photons_states, ...
             diss_type, ...
             ps_diss_w, ...
             ps_drv_part_1, ...
             ps_drv_part_2, ...
-            ps_drv_ampl, ...
+            ampl, ...
             ps_prm_alpha, ...
-            ps_prm_d, ...
-            ps_prm_g, ...
+            d, ...
+            g, ...
             start_type, ...
             start_state, ...
             ss);
         
-        suffix = sprintf("rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
+        suffix = sprintf("setup(%d_%d_%d)_rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
+            sys_id, ...
+            task_id, ...
+            prop_id, ...
             ss, ...
             mns, ...
             ps_num_spins, ...
@@ -181,10 +203,10 @@ for param_id = 1:num_points
             ps_diss_w, ...
             ps_drv_part_1, ...
             ps_drv_part_2, ...
-            ps_drv_ampl, ...
+            ampl, ...
             ps_prm_alpha, ...
-            ps_prm_d, ...
-            ps_prm_g, ...
+            d, ...
+            g, ...
             start_type, ...
             start_state);
         
@@ -197,46 +219,59 @@ for param_id = 1:num_points
         path = sprintf('%s/spec_3_evo_%s.txt', path_to_folder, suffix);
         data_spec_3 = importdata(path);
         
-        theta_re_curr = data_spec(:, 1);
-        theta_im_curr = data_spec(:, 2);
-        J_plus_re_curr = data_spec_3(:, 1);
-        J_plus_im_curr = data_spec_3(:, 2);
-        J_z_curr = data_spec_2(:, 1);
+        theta_re_curr = data_spec(:, 1:2:end);
+        theta_re_curr = theta_re_curr(:);
+        theta_im_curr = data_spec(:, 2:2:end);
+        theta_im_curr = theta_im_curr(:);
+        J_plus_re_curr = data_spec_3(:, 1:2:end);
+        J_plus_re_curr = J_plus_re_curr(:);
+        J_plus_im_curr = data_spec_3(:, 2:2:end);
+        J_plus_im_curr = J_plus_im_curr(:);
+        J_z_curr = data_spec_2(:, 1:2:end);
+        J_z_curr = J_z_curr(:);
         
-        for tr_id = 1:num_trajectories-1
-            theta_re_curr = vertcat(theta_re_curr, data_spec(:, 1 + 2*tr_id));
-            theta_im_curr = vertcat(theta_im_curr, data_spec(:, 2 + 2*tr_id));
-            J_plus_re_curr = vertcat(J_plus_re_curr, data_spec_3(:, 1 + 2*tr_id));
-            J_plus_im_curr = vertcat(J_plus_im_curr, data_spec_3(:, 2 + 2*tr_id));
-            J_z_curr = vertcat(J_z_curr, data_spec_2(:, 1 + 2*tr_id));
-        end
+        s_id = (run_id - 1) * (num_obs_periods + 1) * num_trajectories + 1;
+        f_id = run_id * (num_obs_periods + 1) * num_trajectories;
         
-        global_size = size(J_z_curr, 1);
-        
-        for d_id = 1:global_size
-
-            int_theta_re_id = floor((theta_re_curr(d_id) - min_theta_re) * num_bins / (max_theta_re - min_theta_re + 10e-8)) + 1;
-            int_theta_im_id = floor((theta_im_curr(d_id) - min_theta_im) * num_bins / (max_theta_im - min_theta_im + 10e-8)) + 1;
-            int_J_plus_re_id = floor((J_plus_re_curr(d_id) - min_J_plus_re) * num_bins / (max_J_plus_re - min_J_plus_re + 10e-8)) + 1;
-            int_J_plus_im_id = floor((J_plus_im_curr(d_id) - min_J_plus_im) * num_bins / (max_J_plus_im - min_J_plus_im + 10e-8)) + 1;
-            int_J_z_id = floor((J_z_curr(d_id) - min_J_z) * num_bins / (max_J_z - min_J_z + 10e-8)) + 1;
-            
-            theta_re(param_id, int_theta_re_id) = theta_re(param_id, int_theta_re_id) + 1;
-            theta_im(param_id, int_theta_im_id) = theta_im(param_id, int_theta_im_id) + 1;
-            J_plus_re(param_id, int_J_plus_re_id) = J_plus_re(param_id, int_J_plus_re_id) + 1;
-            J_plus_im(param_id, int_J_plus_im_id) = J_plus_im(param_id, int_J_plus_im_id) + 1;
-            J_z(param_id, int_J_z_id) = J_z(param_id, int_J_z_id) + 1;
-        end
+        theta_re(g_id, s_id:f_id) = theta_re_curr;
+        theta_im(g_id, s_id:f_id) = theta_im_curr;
+        J_plus_re(g_id, s_id:f_id) = J_plus_re_curr;
+        J_plus_im(g_id, s_id:f_id) = J_plus_im_curr;
+        J_z(g_id, s_id:f_id) = J_z_curr;
         
     end
-    
-    theta_re(param_id, :) = theta_re(param_id, :) / max(theta_re(param_id, :));
-    theta_im(param_id, :) = theta_im(param_id, :) / max(theta_im(param_id, :));
-    J_plus_re(param_id, :) = J_plus_re(param_id, :) / max(J_plus_re(param_id, :));
-    J_plus_im(param_id, :) = J_plus_im(param_id, :) / max(J_plus_im(param_id, :));
-    J_z(param_id, :) = J_z(param_id, :) / max(J_z(param_id, :));
-    
 end
+
+
+theta_re_pdf.y_bin_s = min(theta_re, [], 'all');
+theta_re_pdf.y_bin_f = max(theta_re, [], 'all');
+theta_re_pdf = oqs_pdf_2d_lead_by_x_setup(theta_re_pdf);
+theta_re_pdf = oqs_pdf_2d_lead_by_x_update(theta_re_pdf, theta_re);
+theta_re_pdf = oqs_pdf_2d_lead_by_x_release(theta_re_pdf);
+
+theta_im_pdf.y_bin_s = min(theta_im, [], 'all');
+theta_im_pdf.y_bin_f = max(theta_im, [], 'all');
+theta_im_pdf = oqs_pdf_2d_lead_by_x_setup(theta_im_pdf);
+theta_im_pdf = oqs_pdf_2d_lead_by_x_update(theta_im_pdf, theta_im);
+theta_im_pdf = oqs_pdf_2d_lead_by_x_release(theta_im_pdf);
+
+J_plus_re_pdf.y_bin_s = min(J_plus_re, [], 'all');
+J_plus_re_pdf.y_bin_f = max(J_plus_re, [], 'all');
+J_plus_re_pdf = oqs_pdf_2d_lead_by_x_setup(J_plus_re_pdf);
+J_plus_re_pdf = oqs_pdf_2d_lead_by_x_update(J_plus_re_pdf, J_plus_re);
+J_plus_re_pdf = oqs_pdf_2d_lead_by_x_release(J_plus_re_pdf);
+
+J_plus_im_pdf.y_bin_s = min(J_plus_im, [], 'all');
+J_plus_im_pdf.y_bin_f = max(J_plus_im, [], 'all');
+J_plus_im_pdf = oqs_pdf_2d_lead_by_x_setup(J_plus_im_pdf);
+J_plus_im_pdf = oqs_pdf_2d_lead_by_x_update(J_plus_im_pdf, J_plus_im);
+J_plus_im_pdf = oqs_pdf_2d_lead_by_x_release(J_plus_im_pdf);
+
+J_z_pdf.y_bin_s = min(J_z, [], 'all');
+J_z_pdf.y_bin_f = max(J_z, [], 'all');
+J_z_pdf = oqs_pdf_2d_lead_by_x_setup(J_z_pdf);
+J_z_pdf = oqs_pdf_2d_lead_by_x_update(J_z_pdf, J_z);
+J_z_pdf = oqs_pdf_2d_lead_by_x_release(J_z_pdf);
 
 fig = figure;
 
@@ -247,7 +282,7 @@ for i = 1:6
 end
 
 subplot(6,1,1);
-hLine = imagesc(params, int_theta_re, theta_re');
+hLine = imagesc(theta_re_pdf.xs, theta_re_pdf.y_bin_centers, theta_re_pdf.pdf');
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
@@ -262,7 +297,7 @@ set(h,'ytick', [0.25 0.5 0.75 1])
 hold all;
 
 subplot(6,1,2);
-hLine = imagesc(params, int_theta_im, theta_im');
+hLine = imagesc(theta_im_pdf.xs, theta_im_pdf.y_bin_centers, theta_im_pdf.pdf');
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
@@ -274,7 +309,7 @@ set(gca, 'Position', [0.1 starts_y(5) 0.8 0.14]);
 hold all;
 
 subplot(6,1,3);
-hLine = imagesc(params, int_J_plus_re, J_plus_re');
+hLine = imagesc(J_plus_re_pdf.xs, J_plus_re_pdf.y_bin_centers, J_plus_re_pdf.pdf');
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
@@ -286,7 +321,7 @@ set(gca, 'Position', [0.1 starts_y(4) 0.8 0.14]);
 hold all;
 
 subplot(6,1,4);
-hLine = imagesc(params, int_J_plus_im, J_plus_im');
+hLine = imagesc(J_plus_im_pdf.xs, J_plus_im_pdf.y_bin_centers, J_plus_im_pdf.pdf');
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
@@ -298,7 +333,7 @@ set(gca, 'Position', [0.1 starts_y(3) 0.8 0.14]);
 hold all;
 
 subplot(6,1,5);
-hLine = imagesc(params, int_J_z, J_z');
+hLine = imagesc(J_z_pdf.xs, J_z_pdf.y_bin_centers, J_z_pdf.pdf');
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
@@ -310,9 +345,9 @@ set(gca, 'Position', [0.1 starts_y(2) 0.8 0.14]);
 hold all;
 
 subplot(6,1,6);
-hLine = plot(params, lambdas, 'LineWidth', 2);
+hLine = plot(gs, lambdas, 'LineWidth', 2);
 hold all;
-hLine = plot([params(1) params(end)], [0 0], 'k', 'LineStyle','--');
+hLine = plot([gs(1) gs(end)], [0 0], 'k', 'LineStyle','--');
 set(gca, 'FontSize', 20);
 xlabel('$g$', 'Interpreter', 'latex');
 ylabel('$\lambda$', 'Interpreter', 'latex');
@@ -320,14 +355,14 @@ set(gca, 'Position', [0.1 starts_y(1) 0.8 0.14]);
 hold all;
 
 suffix_save = sprintf("s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_var)", ...
-	ps_num_spins, ...
-	ps_num_photons_states, ...
-	diss_type, ...
-	ps_diss_w, ...
-	ps_drv_part_1, ...
-	ps_drv_part_2, ...
-	ps_drv_ampl, ...
-	ps_prm_alpha, ...
+    ps_num_spins, ...
+    ps_num_photons_states, ...
+    diss_type, ...
+    ps_diss_w, ...
+    ps_drv_part_1, ...
+    ps_drv_part_2, ...
+    ampl, ...
+    ps_prm_alpha, ...
     d);
 
 savefig(sprintf('%s/lambda_and_observables_from_g_%s.fig', home_figures_path, suffix_save));

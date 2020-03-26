@@ -9,21 +9,21 @@ medium = 1
 
 num_runs = 1
 
-ampl_start = 0.05
+ampl_start = 0.5
 ampl_shift = 0.05
-ampl_num = 100
+ampl_num = 1
 
-T_start = 0.05
+T_start = 4.00
 T_shift = 0.05
-T_num = 100
+T_num = 1
 
-d_start = 0.0
+d_start = 1.0
 d_shift = 0.1
 d_num = 1
 
-g_start = 0.0
-g_shift = 0.1
-g_num = 1
+g_start = 0.01
+g_shift = 0.01
+g_num = 1000
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -44,8 +44,8 @@ for ampl_id in range(0, ampl_num):
                 print('d: ' + str(d))
                 print('g: ' + str(g))
 
-                sys_id = 2
-                task_id = 7
+                sys_id = 7
+                task_id = 1
                 prop_id = 0
                 is_debug = 0
                 is_pp = 0
@@ -81,10 +81,10 @@ for ampl_id in range(0, ampl_num):
                 dump_phi_evo = 0
                 dump_adr_sep = 0
                 dump_adr_avg = 0
-                dump_evo_sep = 0
+                dump_evo_sep = 1
                 dump_evo_avg = 0
                 dump_type = 0
-                dump_num = 1
+                dump_num = num_obs_periods
                 N = 300
                 diss_type = 1 # 0 - only photon subsystem; 1 - photons + spins
                 diss_gamma = 0.1
