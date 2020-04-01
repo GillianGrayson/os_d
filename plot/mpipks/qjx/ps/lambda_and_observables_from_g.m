@@ -30,7 +30,7 @@ lpn_delta_s = log10(1.0e-4);
 lpn_delta_f_high = log10(1.0e-4);
 lpn_delta_f_low = log10(1.0e-4);
 
-ampl = 0.5;
+ampl = 2.75;
 T = 4.0;
 d = 1.0;
 g_start = 0.01;
@@ -71,19 +71,19 @@ J_plus_re_pdf.xs = gs;
 J_plus_re_pdf.x_num_points = g_num;
 J_plus_re_pdf.y_num_bins = num_bins;
 J_plus_re_pdf.x_label = '$g$';
-J_plus_re_pdf.y_label = '$Re(J_{+})$';
+J_plus_re_pdf.y_label = '$Re(\nu)$';
 
 J_plus_im_pdf.xs = gs;
 J_plus_im_pdf.x_num_points = g_num;
 J_plus_im_pdf.y_num_bins = num_bins;
 J_plus_im_pdf.x_label = '$g$';
-J_plus_im_pdf.y_label = '$Im(J_{+})$';
+J_plus_im_pdf.y_label = '$Im(\nu)$';
 
 J_z_pdf.xs = gs;
 J_z_pdf.x_num_points = g_num;
 J_z_pdf.y_num_bins = num_bins;
 J_z_pdf.x_label = '$g$';
-J_z_pdf.y_label = '$J_z$';
+J_z_pdf.y_label = '$\eta$';
 
 num_global = (num_obs_periods + 1) * num_trajectories * num_runs;
 
@@ -155,7 +155,7 @@ for g_id = 1:g_num
             lpn_delta_f_high, ...
             lpn_delta_f_low);
         
-        path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix)
+        path = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
         data = importdata(path);
         
         lambdas(g_id) = lambdas(g_id) + mean(data(num_trajectories_lambda / 2 + 1:end));
@@ -286,7 +286,7 @@ hLine = imagesc(theta_re_pdf.xs, theta_re_pdf.y_bin_centers, theta_re_pdf.pdf');
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
-ylabel('$Re(\theta)$', 'Interpreter', 'latex');
+ylabel(theta_re_pdf.y_label, 'Interpreter', 'latex');
 colormap hot;
 h = colorbar;
 set(gca, 'FontSize', 20);
@@ -301,7 +301,7 @@ hLine = imagesc(theta_im_pdf.xs, theta_im_pdf.y_bin_centers, theta_im_pdf.pdf');
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
-ylabel('$Im(\theta)$', 'Interpreter', 'latex');
+ylabel(theta_im_pdf.y_label, 'Interpreter', 'latex');
 colorbar('off')
 set(gca, 'FontSize', 20);
 set(gca,'YDir','normal');
@@ -313,7 +313,7 @@ hLine = imagesc(J_plus_re_pdf.xs, J_plus_re_pdf.y_bin_centers, J_plus_re_pdf.pdf
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
-ylabel('$Re(J_{+})$', 'Interpreter', 'latex');
+ylabel(J_plus_re_pdf.y_label, 'Interpreter', 'latex');
 colorbar('off')
 set(gca, 'FontSize', 20);
 set(gca,'YDir','normal');
@@ -325,7 +325,7 @@ hLine = imagesc(J_plus_im_pdf.xs, J_plus_im_pdf.y_bin_centers, J_plus_im_pdf.pdf
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
-ylabel('$Im(J_{+})$', 'Interpreter', 'latex');
+ylabel(J_plus_im_pdf.y_label, 'Interpreter', 'latex');
 colorbar('off')
 set(gca, 'FontSize', 20);
 set(gca,'YDir','normal');
@@ -337,7 +337,7 @@ hLine = imagesc(J_z_pdf.xs, J_z_pdf.y_bin_centers, J_z_pdf.pdf');
 set(gca, 'FontSize', 20);
 xlabel('')
 set(gca,'xticklabel',{[]})
-ylabel('$J_{z}$', 'Interpreter', 'latex');
+ylabel(J_z_pdf.y_label, 'Interpreter', 'latex');
 colorbar('off')
 set(gca, 'FontSize', 20);
 set(gca,'YDir','normal');

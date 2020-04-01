@@ -9,7 +9,7 @@ medium = 1
 
 num_runs = 1
 
-ampl_start = 0.5
+ampl_start = 2.75
 ampl_shift = 0.05
 ampl_num = 1
 
@@ -44,8 +44,8 @@ for ampl_id in range(0, ampl_num):
                 print('d: ' + str(d))
                 print('g: ' + str(g))
 
-                sys_id = 7
-                task_id = 1
+                sys_id = 2
+                task_id = 7
                 prop_id = 0
                 is_debug = 0
                 is_pp = 0

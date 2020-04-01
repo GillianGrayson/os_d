@@ -12,9 +12,9 @@ rk_ns = 10000;
 num_tp_periods = 1000;
 num_obs_periods = 1000;
 
-T = 0.1;
+T = 10;
 
-Nc = 8;
+Nc = 12;
 
 num_rnd_obs = 1;
 rnd_obs_seed = 100;
