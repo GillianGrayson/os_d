@@ -9,8 +9,8 @@ prop_id = 0;
 
 ex_deep = 16;
 rk_ns = 10000;
-num_tp_periods = 1000;
-num_obs_periods = 1000;
+num_tp_periods = 500;
+num_obs_periods = 500;
 
 T = 10;
 

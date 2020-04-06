@@ -45,8 +45,8 @@ for mbl_U_id in range(0, mbl_U_num):
             mns = 1000000
             num_threads = 1
             num_trajectories = 200
-            num_tp_periods = 1000
-            num_obs_periods = 1000
+            num_tp_periods = 500
+            num_obs_periods = 500
             ex_deep = 16
             rk_ns = 10000
 
@@ -73,7 +73,7 @@ for mbl_U_id in range(0, mbl_U_num):
             dump_evo_sep = 0
             dump_evo_avg = 0
             dump_type = 0
-            dump_num = 1000
+            dump_num = num_obs_periods
             diss_type = 1
             diss_gamma = 0.1
             diss_phase = 0.0
