@@ -1,36 +1,45 @@
 clear all;
 
-home_figures_path = '/home/denysov/yusipov/os_d/figures';
-data_path = '/data/biophys/denysov/yusipov/os_d/data/qjx';
+addpath('/home/ivanchen/yusipov/os_lnd/source/matlab/lib')
 
-diss = 0;
+home_figures_path = '/home/ivanchen/yusipov/os_d/figures';
+
+data_path = '/data/condmat/ivanchen/yusipov/os_d/qjx';
+
+diss = -1;
 
 sys_id = 2;
 task_id = 1;
 prop_id = 0;
 seed = 0;
 mns = 1000000;
-num_trajectories = 1;
-num_tp_periods = 100;
-num_obs_periods = 20000;
+num_trajectories = 20;
+num_tp_periods = 10;
+num_obs_periods = 10000;
 ex_deep = 16;
 rk_ns = 10000;
+
+num_random_obs = 1;
+random_obs_seed = 100;
+random_obs_type = 2;
+
+ampl = 2.75;
+T = 4.0;
+d = 1.0;
+g = 10;
 
 diss_type = 1;
 ps_diss_w = 0.05;
 ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
-ps_num_photons_states = 200;
-ps_drv_part_1 = 0.98;
-ps_drv_part_2 = 1.00;
-ps_drv_ampl = 1.75;
+ps_num_photons_states = 300;
+ps_drv_part_1 = 1.00 * T;
+ps_drv_part_2 = 1.00 * T;
 ps_prm_alpha = 5;
-ps_prm_d = 10.00;
-ps_prm_g = 10.00;
 start_type = 0;
 start_state = 0;
 
-num_runs = 100;
+num_runs = 1;
 
 bin_begin = 1e-10;
 num_decades = 15;
@@ -46,14 +55,14 @@ for bin_id = 1 : num_bins + 1
     end
 end
 bin_diff = diff(bin_borders);
-
 non_inc_count = 0;
 curr_pdf = zeros(num_bins, 1);
+
 for run_id = 1:num_runs
     
-    ss = (run_id - 1) * num_trajectories
+    ss = (run_id - 1) * num_trajectories;
     
-    path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/N_%d_%d/diss_%d_%0.4f/drv_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
+    path_to_folder = sprintf('%s/main_%d_%d_%d/run_%d_%d_%d_%d/obs_%d_%d_%d/N_%d_%d/diss_%d_%0.4f/drv_%0.4f_%0.4f_%0.4f/prm_%0.4f_%0.4f_%0.4f/start_%d_%d/ss_%d', ...
         data_path, ...
         sys_id, ...
         task_id, ...
@@ -62,21 +71,27 @@ for run_id = 1:num_runs
         rk_ns, ...
         num_tp_periods, ...
         num_obs_periods, ...
+        num_random_obs, ...
+        random_obs_seed, ...
+        random_obs_type, ...
         ps_num_spins, ...
         ps_num_photons_states, ...
         diss_type, ...
         ps_diss_w, ...
         ps_drv_part_1, ...
         ps_drv_part_2, ...
-        ps_drv_ampl, ...
+        ampl, ...
         ps_prm_alpha, ...
-        ps_prm_d, ...
-        ps_prm_g, ...
+        d, ...
+        g, ...
         start_type, ...
         start_state, ...
         ss);
     
-    suffix = sprintf("rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
+    suffix = sprintf("setup(%d_%d_%d)_rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
+        sys_id, ...
+        task_id, ...
+        prop_id, ...
         ss, ...
         mns, ...
         ps_num_spins, ...
@@ -85,10 +100,10 @@ for run_id = 1:num_runs
         ps_diss_w, ...
         ps_drv_part_1, ...
         ps_drv_part_2, ...
-        ps_drv_ampl, ...
+        ampl, ...
         ps_prm_alpha, ...
-        ps_prm_d, ...
-        ps_prm_g, ...
+        d, ...
+        g, ...
         start_type, ...
         start_state);
     
@@ -96,15 +111,15 @@ for run_id = 1:num_runs
         
         path = sprintf('%s/jump_times_%d_%s.txt', path_to_folder, trajectory_id - 1, suffix);
         data = importdata(path);
-		path = sprintf('%s/diss_types_%d_%s.txt', path_to_folder, trajectory_id - 1, suffix);
+        path = sprintf('%s/diss_types_%d_%s.txt', path_to_folder, trajectory_id - 1, suffix);
         diss_types = importdata(path);
-		if diss ~= -1
-			indexes = find(diss_types ~= diss);
-			num_diss_before = size(data, 1)
-			data(indexes) = [];
-			num_diss_after = size(data, 1)
-		end
-		curr_diff = diff(data);
+        if diss ~= -1
+            indexes = find(diss_types ~= diss);
+            num_diss_before = size(data, 1);
+            data(indexes) = [];
+            num_diss_after = size(data, 1);
+        end
+        curr_diff = diff(data);
         curr_size = size(curr_diff, 1);
         
         for jump_diff_id = 1:curr_size
@@ -119,6 +134,7 @@ for run_id = 1:num_runs
             end
             
         end
+        
     end
     
 end
@@ -136,8 +152,8 @@ for bin_id = 1 : num_bins
 end
 norm_check = norm_check
 
-[x_min, x_max] = find_range(bin_centers, curr_pdf);
-[alpha, coef, R2, yy, R2_, cnt] = powerlaw_regression(bin_centers, curr_pdf, x_min, x_max);
+[x_min, x_max] = oqs_find_range(bin_centers, curr_pdf);
+[alpha, coef, R2, yy, R2_, cnt] = oqs_powerlaw_regression(bin_centers, curr_pdf, x_min, x_max);
 left = find(bin_centers==x_min);
 right = find(bin_centers==x_max);
 
@@ -151,6 +167,7 @@ hLine = plot(bin_centers, curr_pdf);
 hold all;
 if ~isnan(R2)
 	hLine = plot(bin_centers(left - 1:right + 1), yy(left - 1:right + 1));
+	hLine.Annotation.LegendInformation.IconDisplayStyle = 'off';
 end
 set(gca, 'FontSize', 30);
 xlabel('$\Delta t$', 'Interpreter', 'latex');
@@ -160,22 +177,23 @@ set(gca,'XScale','log');
 set(gca,'YScale','log');
 
 suffix_save = sprintf("diss(%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)", ...
-	diss, ...
+    diss, ...
     ps_num_spins, ...
     ps_num_photons_states, ...
     diss_type, ...
     ps_diss_w, ...
     ps_drv_part_1, ...
     ps_drv_part_2, ...
-    ps_drv_ampl, ...
+    ampl, ...
     ps_prm_alpha, ...
-    ps_prm_d, ...
-    ps_prm_g);
+    d, ...
+    g);
 
-h=gcf; 
-set(h,'PaperOrientation','landscape'); 
-set(h,'PaperUnits','normalized'); 
-set(h,'PaperPosition', [0 0 1 1]); 
-print(gcf, '-dpdf', sprintf('%s/tbj_pdf_%s.pdf', home_figures_path, suffix_save));
-savefig(gcf, sprintf('%s/tbj_pdf_%s.fig', home_figures_path, suffix_save));
-close(gcf)
+
+savefig(sprintf('%s/tbj_%s.fig', home_figures_path, suffix_save));
+
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/tbj_%s.pdf', home_figures_path, suffix_save));
