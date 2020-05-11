@@ -1,8 +1,8 @@
 clear all;
 
-T_part = 1;
+T_part = 4;
 
-tr_id = 1;
+tr_id = 2;
 
 seed = 1;
 mns = 1000000;
@@ -10,35 +10,35 @@ mns = 1000000;
 diss_type = 1;
 ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
-ps_num_photons_states = 200;
+ps_num_photons_states = 300;
 ps_drv_part_1 = 1.00; 
 ps_drv_part_2 = 1.00; 
-ps_drv_ampl = 1.75;
+ps_drv_ampl = 0.5;
 ps_prm_alpha = 5;
-ps_prm_d = 10;
-ps_prm_g = 10;
+ps_prm_d = 1;
+ps_prm_g = 1;
 ps_diss_w = 0.05;
 start_type = 0;
-start_state = 49;
+start_state = 0;
 
 drv_T_1 = ps_drv_part_1 * T_part;
 drv_T_2 = ps_drv_part_2 * T_part;
 T = drv_T_1 + drv_T_2;
 
 cd_dump_deep = 1;
-cd_num_sub_steps = 50;
+cd_num_sub_steps = 100;
 
 path = "../../../../source/cpp/QJX/QJX";
 
-suffix = sprintf("rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
+suffix = sprintf("setup(2_4_0)_rnd(%d_%d)_s(%d)_nps(%d)_diss(%d_%0.4f)_drv(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)", ...
     seed, ...
     mns, ...
     ps_num_spins, ...
     ps_num_photons_states, ...
     diss_type, ...
     ps_diss_w, ...
-    ps_drv_part_1, ...
-    ps_drv_part_2, ...
+    drv_T_1, ...
+    drv_T_1, ...
     ps_drv_ampl, ...
     ps_prm_alpha, ...
     ps_prm_d, ...
