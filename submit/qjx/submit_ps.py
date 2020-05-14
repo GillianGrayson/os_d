@@ -9,21 +9,21 @@ medium = 1
 
 num_runs = 1
 
-ampl_start = 0.5
+ampl_start = 0.05
 ampl_shift = 0.05
-ampl_num = 1
+ampl_num = 100
 
-T_start = 4.00
+T_start = 0.05
 T_shift = 0.05
-T_num = 1
+T_num = 100
 
 d_start = 1.0
 d_shift = 0.1
 d_num = 1
 
-g_start = 0.1
+g_start = 10.0
 g_shift = 0.1
-g_num = 100
+g_num = 1
 
 for ampl_id in range(0, ampl_num):
     ampl = ampl_start + ampl_id * ampl_shift
@@ -56,7 +56,7 @@ for ampl_id in range(0, ampl_num):
                 num_threads = 1
                 num_trajectories = 20
                 num_tp_periods = 10
-                num_obs_periods = 10000
+                num_obs_periods = 20000
                 ex_deep = 16
                 rk_ns = 10000
 
@@ -84,7 +84,7 @@ for ampl_id in range(0, ampl_num):
                 dump_evo_sep = 1
                 dump_evo_avg = 0
                 dump_type = 0
-                dump_num = num_obs_periods
+                dump_num = 1
                 N = 300
                 diss_type = 1 # 0 - only photon subsystem; 1 - photons + spins
                 diss_gamma = 0.1

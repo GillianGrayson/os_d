@@ -25,15 +25,15 @@ lpn_delta_f_high = log10(1.0e-4);
 lpn_delta_f_low = log10(1.0e-4);
 
 diss_type = 1;
-ps_diss_w = 0.00;
+ps_diss_w = 0.05;
 ps_num_spins = 1;
 ps_num_spins_states = 2^ps_num_spins;
 ps_num_photons_states = 300;
 drv_part_1 = 1.0;
 drv_part_2 = 1.0;
 ps_prm_alpha = 5;
-d = 0;
-g = 0;
+d = 1;
+g = 2;
 start_type = 0;
 start_state = 0;
 

@@ -15,7 +15,7 @@ seed = 0;
 mns = 1000000;
 num_trajectories = 20;
 num_tp_periods = 10;
-num_obs_periods = 10000;
+num_obs_periods = 20000;
 ex_deep = 16;
 rk_ns = 10000;
 
@@ -23,8 +23,8 @@ num_random_obs = 1;
 random_obs_seed = 100;
 random_obs_type = 2;
 
-ampl = 2.75;
-T = 4.0;
+ampl = 3.5;
+T = 3.5;
 d = 1.0;
 g = 10;
 
