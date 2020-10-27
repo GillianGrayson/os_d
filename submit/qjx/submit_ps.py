@@ -13,15 +13,15 @@ ampl_start = 0.05
 ampl_shift = 0.05
 ampl_num = 100
 
-T_start = 0.05
+T_start = 2.00
 T_shift = 0.05
-T_num = 100
+T_num = 1
 
 d_start = 1.0
 d_shift = 0.1
 d_num = 1
 
-g_start = 10.0
+g_start = 1.0
 g_shift = 0.1
 g_num = 1
 

@@ -15,7 +15,7 @@ seed = 0;
 mns = 1000000;
 num_trajectories = 20;
 num_tp_periods = 10;
-num_obs_periods = 10000;
+num_obs_periods = 20000;
 ex_deep = 16;
 rk_ns = 10000;
 
@@ -27,7 +27,7 @@ ampl_start = 0.05;
 ampl_shift = 0.05;
 ampl_num = 100;
 ampls = linspace(ampl_start, ampl_start + (ampl_num - 1) * ampl_shift, ampl_num);
-T = 2.0;
+T = 4.0;
 d = 1.0;
 g = 1.0;
 

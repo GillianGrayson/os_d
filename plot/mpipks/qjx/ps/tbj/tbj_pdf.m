@@ -6,7 +6,7 @@ home_figures_path = '/home/ivanchen/yusipov/os_d/figures';
 
 data_path = '/data/condmat/ivanchen/yusipov/os_d/qjx';
 
-diss = -1;
+diss = 0;
 
 sys_id = 2;
 task_id = 1;
@@ -23,10 +23,10 @@ num_random_obs = 1;
 random_obs_seed = 100;
 random_obs_type = 2;
 
-ampl = 3.5;
-T = 3.5;
+ampl = 4.0;
+T = 2.0;
 d = 1.0;
-g = 10;
+g = 1;
 
 diss_type = 1;
 ps_diss_w = 0.05;
