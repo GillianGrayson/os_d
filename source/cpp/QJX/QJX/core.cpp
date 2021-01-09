@@ -230,6 +230,8 @@ void DimerCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id
 	int num_sub_steps_per_part = int(cp->params.find("deep_num_steps")->second);
 	int num_sub_steps = num_branches * int(cp->params.find("deep_num_steps")->second);
 
+	int lambda_per_periods = int(cp->params.find("lambda_per_periods")->second);
+
 	int dump_point_id = 0;
 	int global_point_id = 0;
 
@@ -266,7 +268,17 @@ void DimerCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+				if (lambda_per_periods == 0)
+				{
+					lambda_lpn(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+				}
+				if (lambda_per_periods == 1)
+				{
+					if ((part_id == num_branches - 1) && (sub_step_id == num_sub_steps_per_part - 1))
+					{
+						lambda_lpn_now(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+					}
+				}
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -1365,6 +1377,8 @@ void JCSCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id) 
 	double T_2 = jcs_drv_part_2 * md->T;
 	double T = T_1 + T_2;
 
+	int lambda_per_periods = int(cp->params.find("lambda_per_periods")->second);
+
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_trajectories = cp->num_trajectories;
@@ -1409,7 +1423,17 @@ void JCSCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id) 
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+				if (lambda_per_periods == 0)
+				{
+					lambda_lpn(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+				}
+				if (lambda_per_periods == 1)
+				{
+					if ((part_id == num_branches - 1) && (sub_step_id == num_sub_steps_per_part - 1))
+					{
+						lambda_lpn_now(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+					}
+				}
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -2282,6 +2306,7 @@ void PSCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id) c
 	double T = T_1 + T_2;
 
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
+	int lambda_per_periods = int(cp->params.find("lambda_per_periods")->second);
 
 	int num_trajectories = cp->num_trajectories;
 
@@ -2325,7 +2350,17 @@ void PSCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id) c
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+				if (lambda_per_periods == 0)
+				{
+					lambda_lpn(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+				}
+				if (lambda_per_periods == 1)
+				{
+					if ((part_id == num_branches - 1) && (sub_step_id == num_sub_steps_per_part - 1))
+					{
+						lambda_lpn_now(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+					}
+				}
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
@@ -3290,6 +3325,8 @@ void MBLCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id) 
 
 	double T = md->T;
 
+	int lambda_per_periods = int(cp->params.find("lambda_per_periods")->second);
+
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 
 	int num_trajectories = cp->num_trajectories;
@@ -3334,7 +3371,17 @@ void MBLCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id) 
 				int thread_id = omp_get_thread_num();
 				one_sub_period_deep(ad, tr_id, part_id, thread_id);
 				calc_chars_std(ad, tr_id);
-				lambda_lpn(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+				if (lambda_per_periods == 0)
+				{
+					lambda_lpn(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+				}
+				if (lambda_per_periods == 1)
+				{
+					if ((part_id == num_branches - 1) && (sub_step_id == num_sub_steps_per_part - 1))
+					{
+						lambda_lpn_now(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+					}
+				}
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}

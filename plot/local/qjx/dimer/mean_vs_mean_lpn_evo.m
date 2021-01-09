@@ -1,13 +1,15 @@
 clear all;
 
 sys_id = 0;
-task_id = 5;
+task_id = 8;
 prop_id = 0;
+
+lpn = 1e-6;
 
 seed = 1;
 mns = 1000000;
-N = 100;
-diss_type = 0;
+N = 200;
+diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
 drv_type = 0;
@@ -15,7 +17,7 @@ drv_ampl = 1.5;
 drv_freq = 1.0;
 drv_phase = 0.0;
 prm_E = 1.0;
-prm_U = 0.14;
+prm_U = 0.5;
 prm_J = 1.0;
 start_type = 0;
 start_state = 0;
@@ -33,7 +35,7 @@ is_mean = 1;
 
 data_path = '../../../../source/cpp/QJX/QJX';
 
-suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
+suffix = sprintf('setup(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)_lpn(-1_%0.4f_%0.4f_%0.4f)', ...
     sys_id, ...
     task_id, ...
     prop_id, ...
@@ -51,7 +53,10 @@ suffix = sprintf('config(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv(%d_
     prm_U, ...
     prm_J, ...
     start_type, ...
-    start_state);
+    start_state, ...
+    log10(lpn), ...
+    log10(lpn), ...
+    log10(lpn));
 
 fn = sprintf('%s/periods_%s.txt', data_path, suffix);
 dump_periods = importdata(fn);
