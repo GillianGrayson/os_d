@@ -1,6 +1,11 @@
 clear all;
 
-T = 0.1;
+base_color = [0 0 1];
+jump_color = [0 1 0];
+renorm_color = [1 0 0];
+linewidth = 2;
+
+T = 10;
 
 sys_id = 3;
 task_id = 8;
@@ -20,7 +25,7 @@ diss_type = 1;
 diss_phase = 0.0;
 diss_gamma = 0.1;
 
-prm_W = 20.0;
+prm_W = 1.0;
 prm_U = 1.0;
 prm_J = 1.0;
 
@@ -29,14 +34,14 @@ start_state = 0;
 
 lpn_type = -1;
 delta_lpn_s = 1e-6;
-delta_lpn_f_h = 10;
-delta_lpn_f_l = 1e-16;
+delta_lpn_f_h = 1e-6;
+delta_lpn_f_l = 1e-6;
 
 deep_dump = 1;
-deep_num_steps = 100;
+deep_num_steps = 200;
 
-num_target_traj = 10;
-num_plot_traj = 10;
+num_target_traj = 5;
+tr_id = 1;
 
 data_path = '../../../../source/cpp/QJX/QJX';
 
@@ -77,90 +82,85 @@ end
 
 dump_periods = dump_periods * T;
 
+num_periods = (size(dump_periods, 1) - 1) / deep_num_steps;
+x_ticks = T * linspace(1, num_periods, num_periods)';
+x_labels = {};
+for i = 1 : num_periods
+    x_labels{i} = sprintf('%d\\tau', i);
+end
+
 fn = sprintf('%s/spec_lpn_evo_%s.txt', data_path, suffix);
 spec_evo_data = importdata(fn);
 
 fn = sprintf('%s/lambda_%s.txt', data_path, suffix);
 lambda_data = importdata(fn);
 
+
+spec_evo_base = spec_evo_data(:, 2 * (tr_id - 1) + 1);
+spec_evo_var = spec_evo_data(:, 2 * (tr_id - 1 + num_target_traj) + 1);
+spec_evo_diff = abs(spec_evo_base - spec_evo_var);
+
+time_diff = dump_periods(2) - dump_periods(1);
+
+fn = sprintf('%s/jump_times_%d_%s.txt', data_path, (tr_id - 1), suffix);
+jump_data = importdata(fn);
+
+interruptions = vertcat(jump_data, x_ticks);
+
 fig = figure;
-for tr_id = 1 : num_plot_traj
+propertyeditor(fig);
+set(gca, 'FontSize', 30);
+xlabel('$t$', 'Interpreter', 'latex');
+xlim([dump_periods(1) dump_periods(end)])
+set(gca, 'FontSize', 30);
+ylabel('$|\Delta(t)|$', 'Interpreter', 'latex');
+set(gca, 'YScale', 'log')
+ylim([1e-7, 10]);
+xtickangle(0)
+xticks(x_ticks);
+xticklabels(x_labels);
+hold all;
+curr_jump_id = 1;
+prev_start = 1;
+for p_id = 1:num_periods
     
-    spec_evo_base = spec_evo_data(:, 2 * (tr_id - 1) + 1);
-    spec_evo_var = spec_evo_data(:, 2 * (tr_id - 1 + num_target_traj) + 1);
-
-    spec_evo_diff = abs(spec_evo_base - spec_evo_var);
-
-    hLine = plot(dump_periods, spec_evo_diff);
-    legend(hLine, sprintf('\\lambda=%0.2e', lambda_data(num_target_traj + tr_id)), 'FontSize', 14)
-    set(gca, 'FontSize', 30);
-    xlabel('$t/T$', 'Interpreter', 'latex');
-    xlim([dump_periods(1) dump_periods(end)])
-    set(gca, 'FontSize', 30);
-    ylabel('$|\Delta(\varepsilon)|$', 'Interpreter', 'latex');
-    hold all;
-    set(gca, 'YScale', 'log')
-    ylim([1e-12, 10]);
-    
-    
-    if (is_jump == 1)
-        color = get(hLine,'Color');
-        
-        fn = sprintf('%s/jump_times_%d_%s.txt', data_path, (tr_id - 1), suffix);
-        jump_data_1 = importdata(fn);
-        for j_id = 1:size(jump_data_1, 1)
-            plot([jump_data_1(j_id) jump_data_1(j_id)], [1e-20 1e+1], 'Color', color)
+    while(curr_jump_id <= size(jump_data, 1) && jump_data(curr_jump_id) < dump_periods(p_id * deep_num_steps))
+        jump_time = jump_data(curr_jump_id);
+        jump_time_id = floor(jump_time/time_diff);
+        if(jump_time_id + 1 ~= (p_id-1) * deep_num_steps)
+            plot_d = spec_evo_diff(prev_start:jump_time_id + 1);
+            plot_t = dump_periods(prev_start:jump_time_id + 1);
+            h = plot(plot_t, plot_d, 'LineWidth', linewidth, 'Color', base_color);
+            flipud(h)
+            h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+            h = plot([jump_time jump_time], [spec_evo_diff(jump_time_id + 1) spec_evo_diff(jump_time_id + 2)], 'Color', jump_color, 'LineWidth', linewidth, 'LineStyle', ':');
+            h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        else
+            ololo = 1;
         end
-        
-        fn = sprintf('%s/jump_times_%d_%s.txt', data_path, (tr_id - 1 + num_target_traj), suffix);
-        jump_data_2 = importdata(fn);
-        for j_id = 1:size(jump_data_2, 1)
-            plot([jump_data_2(j_id) jump_data_2(j_id)], [1e-20 1e+1], 'Color', color)
-        end
+
+        prev_start = jump_time_id + 2;
+        curr_jump_id = curr_jump_id + 1;
     end
     
+    plot_d = spec_evo_diff(prev_start:p_id * deep_num_steps);
+    plot_t = dump_periods(prev_start:p_id * deep_num_steps);
+    h = plot(plot_t, plot_d, 'LineWidth', linewidth, 'Color', base_color);
+    flipud(h)
+    h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+    
+    if (p_id < num_periods)
+        h = plot([dump_periods(p_id * deep_num_steps) + 0.5 * time_diff, dump_periods(p_id * deep_num_steps) + 0.5 * time_diff], ...
+            [spec_evo_diff(p_id * deep_num_steps), spec_evo_diff(p_id * deep_num_steps + 1)], ...
+            'LineWidth', linewidth, 'Color', renorm_color, 'LineStyle', ':');
+        h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        prev_start = p_id * deep_num_steps + 1;
+    end  
 end
 
-mean_lambda = mean(lambda_data(num_target_traj + 1:end));
-
-set(gca, 'YScale', 'log')
-h = plot([dump_periods(1) dump_periods(end)], [delta_lpn_f_h delta_lpn_f_h], 'LineStyle', '--', 'color', 'black');
+h = plot([dump_periods(1), dump_periods(end)], [delta_lpn_s, delta_lpn_s], 'Color', 'k', 'LineStyle', '--');
 set(get(get(h,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-h = plot([dump_periods(1) dump_periods(end)], [delta_lpn_f_l delta_lpn_f_l], 'LineStyle', '--', 'color', 'black');
-set(get(get(h,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-h = plot([dump_periods(1) dump_periods(end)], [delta_lpn_s delta_lpn_s], 'LineStyle', '--', 'color', 'black');
-set(get(get(h,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-ylim([delta_lpn_f_l * 0.1, delta_lpn_f_h * 10]);
+box on;
 
-title_str = sprintf('$ns=%d$ \\quad $W=%d$ \\quad $U=%d$ \\quad $J=%d$ \\quad $log_{10}\\Delta_s=%.2f$ \\quad $log_{10}\\Delta^h_f=%.2f$ \\quad $log_{10}\\Delta^l_f=%.2f$ \\quad $\\lambda=%0.2e$', ...
-    Nc, ...
-    prm_W, ...
-    prm_U, ...
-    prm_J, ...
-    log10(delta_lpn_s), ...
-    log10(delta_lpn_f_h), ...
-    log10(delta_lpn_f_l), ...
-    mean_lambda);
-title(title_str, 'interpreter', 'latex', 'FontSize', 20)
-
-propertyeditor(fig)
-b = gca; legend(b,'off');
-
-suffix = sprintf('ns(%d)_prm(%0.4f_%0.4f_%0.4f)_lpn(%d_%0.4f_%0.4f)', ...
-    Nc, ...
-    prm_W, ...
-    prm_U, ...
-    prm_J, ...
-    0, ...
-    log10(delta_lpn_s), ...
-    log10(delta_lpn_f_h));
-
-savefig(sprintf('tr_delta_energy_evo_%s.fig', suffix));
-h=gcf;
-set(h,'PaperOrientation','landscape');
-set(h,'PaperUnits','normalized');
-set(h,'PaperPosition', [0 0 1 1]);
-print(gcf, '-dpdf', sprintf('tr_delta_energy_evo_%s.pdf', suffix));
-
-
+    
 
