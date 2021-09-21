@@ -16,12 +16,12 @@ num_lambdas_periods 2
 dump_obs 1
 dump_phi 0
 dump_phi_evo 0
-dump_adr_sep 1
+dump_adr_sep 0
 dump_adr_avg 0
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
-dump_num 10
+dump_num 1
 N 200
 diss_type 1
 diss_gamma 0.1
@@ -58,5 +58,5 @@ start_state 0
 cd_dim 1
 cd_eps 1e-08
 deep_num_steps 200
-jump 2
-jumps_counts 0
+jump 1
+jumps_counts 1000

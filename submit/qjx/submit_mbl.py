@@ -3,7 +3,7 @@ from Infrastructure.file_system import *
 import os.path
 import numpy as np
 
-type = FSType.mpipks_mv
+type = FSType.mpipks_sd
 
 num_runs = 1
 
@@ -35,7 +35,7 @@ for mbl_U_id in range(0, mbl_U_num):
             print('mbl_seed: ' + str(mbl_seed))
 
             sys_id = 3
-            task_id = 7
+            task_id = 1 # 7
             prop_id = 0
             is_debug = 0
             is_pp = 0
@@ -44,9 +44,9 @@ for mbl_U_id in range(0, mbl_U_num):
             seed = 0
             mns = 1000000
             num_threads = 1
-            num_trajectories = 200
+            num_trajectories = 20 # 200
             num_tp_periods = 500
-            num_obs_periods = 500
+            num_obs_periods = 5000 # 500
             ex_deep = 16
             rk_ns = 10000
 
@@ -70,10 +70,10 @@ for mbl_U_id in range(0, mbl_U_num):
             dump_phi_evo = 0
             dump_adr_sep = 0
             dump_adr_avg = 0
-            dump_evo_sep = 0
+            dump_evo_sep = 1
             dump_evo_avg = 0
             dump_type = 0
-            dump_num = num_obs_periods
+            dump_num = 1 # num_obs_periods
             diss_type = 1
             diss_gamma = 0.1
             diss_phase = 0.0
@@ -89,8 +89,8 @@ for mbl_U_id in range(0, mbl_U_num):
             cd_dim = 1
             cd_eps = 1.0e-8
             deep_num_steps = 1000
-            jump = 0
-            jumps_counts = 0
+            jump = 1 # 0
+            jumps_counts = 1000 # 0
 
             diss_phase_str = str(format(diss_phase, '0.4f'))
             diss_gamma_str = str(format(diss_gamma, '0.4f'))
