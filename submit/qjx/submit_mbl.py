@@ -7,19 +7,19 @@ type = FSType.mpipks_sd
 
 num_runs = 1
 
-medium = 1
+medium = 0
 
 mbl_U_start = 1.0
 mbl_U_shift = 0.1
 mbl_U_num = 1
 
-mbl_W_start = 0.2
+mbl_W_start = 20.0
 mbl_W_shift = 0.2
-mbl_W_num = 100
+mbl_W_num = 1
 
 mbl_seed_start = 1
 mbl_seed_shift = 1
-mbl_seed_num = 100
+mbl_seed_num = 10
 
 for mbl_U_id in range(0, mbl_U_num):
     mbl_U = mbl_U_start + mbl_U_id * mbl_U_shift
@@ -44,9 +44,9 @@ for mbl_U_id in range(0, mbl_U_num):
             seed = 0
             mns = 1000000
             num_threads = 1
-            num_trajectories = 20 # 200
+            num_trajectories = 50 # 200
             num_tp_periods = 500
-            num_obs_periods = 5000 # 500
+            num_obs_periods = 100000 # 500
             ex_deep = 16
             rk_ns = 10000
 
@@ -77,7 +77,7 @@ for mbl_U_id in range(0, mbl_U_num):
             diss_type = 1
             diss_gamma = 0.1
             diss_phase = 0.0
-            mbl_Nc = 12
+            mbl_Nc = 8
             mbl_seed = mbl_seed
             mbl_mns = 1000000
             mbl_prm_W = mbl_W
@@ -90,7 +90,7 @@ for mbl_U_id in range(0, mbl_U_num):
             cd_eps = 1.0e-8
             deep_num_steps = 1000
             jump = 1 # 0
-            jumps_counts = 1000 # 0
+            jumps_counts = 100000 # 0
 
             diss_phase_str = str(format(diss_phase, '0.4f'))
             diss_gamma_str = str(format(diss_gamma, '0.4f'))
