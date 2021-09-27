@@ -49,6 +49,13 @@ int main()
 		ndb = new MBLNewDelBehaviour();
 		cb = new MBLCoreBehaviour();
 	}
+	else if (rp->sys_id == LNDHAM_SYS_ID)
+	{
+		db = new LndHamDebugBehaviour();
+		ob = new LndHamOutputBehavior();
+		ndb = new LndHamNewDelBehaviour();
+		cb = new LndHamCoreBehaviour();
+	}
 	else
 	{
 		stringstream msg;

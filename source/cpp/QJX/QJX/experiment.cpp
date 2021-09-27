@@ -1429,8 +1429,8 @@ double get_energy(AllData * ad, int tr_id)
 	double dimer_prm_E = double(cp->params.find("dimer_prm_E")->second);
 
 	MKL_Complex16 * phi = &(ed->phi_all[tr_id * sys_size]);
-	double * hamiltonian = md->hamiltonian;
-	double * hamiltonian_drv = md->hamiltonian_drv;
+	MKL_Complex16* hamiltonian = md->hamiltonian;
+	MKL_Complex16* hamiltonian_drv = md->hamiltonian_drv;
 
 	double norm_2 = norm_square(phi, sys_size);
 
@@ -1445,7 +1445,7 @@ double get_energy(AllData * ad, int tr_id)
 		{
 			int index = st_id_1 * sys_size + st_id_2;
 
-			double ham_val = (hamiltonian[index] + dimer_prm_E * hamiltonian_drv[index]);
+			double ham_val = (hamiltonian[index].real + dimer_prm_E * hamiltonian_drv[index].real);
 
 			tmp.real += (ham_val * phi[st_id_2].real / sqrt(norm_2) - (0.0) * phi[st_id_2].imag / sqrt(norm_2));
 			tmp.imag += (ham_val * phi[st_id_2].imag / sqrt(norm_2) + (0.0) * phi[st_id_2].real / sqrt(norm_2));

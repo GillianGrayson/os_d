@@ -537,12 +537,12 @@ void init_obs_lpn(AllData * ad)
 	int num_trajectories = cp->num_trajectories;
 	int dump_num_total = ed->dump_num_total;
 
-	double * hamiltonian = md->hamiltonian;
+	MKL_Complex16* hamiltonian = md->hamiltonian;
 	ed->max_energy = 0.0;
 	for (int st_id = 0; st_id < sys_size; st_id++)
 	{
 		int index = st_id * sys_size + st_id;
-		double ham_val = hamiltonian[index];
+		double ham_val = hamiltonian[index].real;
 		if (abs(ham_val) > ed->max_energy)
 		{
 			ed->max_energy = abs(ham_val);

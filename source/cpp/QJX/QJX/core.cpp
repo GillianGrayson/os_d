@@ -4542,7 +4542,6 @@ void LndHamCoreBehaviour::calc_chars_lpn_start(AllData* ad, int tr_id, int base_
 	double lambda = 0.0;
 	double lambda_now = 0.0;
 	MKL_Complex16 spec_lpn = ed->spec[tr_id];
-	double imbalance_lpn = ed->mean[tr_id];
 
 	double delta_s = this->calc_delta_f(ad, tr_id, base_tr_id); // Important! Here we use calc_delta_f not calc_delta_s
 

@@ -26,6 +26,8 @@ struct MainData
 	MKL_Complex16 * drv_part;			// Non-drv part for rk
 
 	MKL_Complex16 ** dissipators;		// Dissipators
+	std::vector<sp_mtx> dissipators_eigen;
+
 
 	MKL_Complex16 ** hamiltonians_qj;	// Non-Hermitian Hamiltonians for qj
 
