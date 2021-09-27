@@ -17,7 +17,7 @@ dump_obs 1
 dump_phi 0
 dump_phi_evo 0
 dump_adr_sep 0
-dump_adr_avg 0
+dump_adr_avg 1
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
@@ -46,8 +46,8 @@ ps_prm_alpha 5
 ps_prm_d 1.0
 ps_prm_g 1.0
 ps_diss_w 0.05
-mbl_Nc 8
-mbl_seed 10
+mbl_Nc 6
+mbl_seed 1
 mbl_mns 1000000
 mbl_prm_W 1.0
 mbl_prm_U 1.0
@@ -63,5 +63,5 @@ start_state 0
 cd_dim 1
 cd_eps 1e-08
 deep_num_steps 200
-jump 1
+jump 0
 jumps_counts 1000
