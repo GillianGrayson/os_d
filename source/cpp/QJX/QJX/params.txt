@@ -53,6 +53,11 @@ mbl_prm_W 1.0
 mbl_prm_U 1.0
 mbl_prm_J 1.0
 mbl_T 10
+lndham_N 10
+lndham_seed 1
+lndham_num_seeds 1000000
+lndham_alpha 0.5
+lndham_T 1.0
 start_type 0
 start_state 0
 cd_dim 1

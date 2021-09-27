@@ -5760,6 +5760,51 @@ void rk_right_part_mbl(AllData * ad, int sub_step, int tr_id, int th_id)
 	}
 }
 
+void rk_right_part_lndham(AllData* ad, int sub_step, int tr_id, int th_id)
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+	ExpData* ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double T = md->T;
+
+	double time = ed->times_all[tr_id];
+
+	MKL_Complex16* arg = ed->args[th_id];
+	MKL_Complex16* non_drv_tmp = ed->non_drv_tmp[th_id];
+
+	MKL_Complex16* k = ed->k1[th_id];
+	if (sub_step == 1)
+	{
+		k = ed->k1[th_id];
+	}
+	else if (sub_step == 2)
+	{
+		k = ed->k2[th_id];
+	}
+	else if (sub_step == 3)
+	{
+		k = ed->k3[th_id];
+	}
+	else if (sub_step == 4)
+	{
+		k = ed->k4[th_id];
+	}
+
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->non_drv_part, sys_size, arg, 1, &ZERO, non_drv_tmp, 1);
+
+	for (int st_id = 0; st_id < md->sys_size; st_id++)
+	{
+		k[st_id].real = +(ed->non_drv_tmp[th_id][st_id].imag);
+		k[st_id].imag = -(ed->non_drv_tmp[th_id][st_id].real);
+	}
+}
+
 
 void rk_int_dimer(AllData * ad, int tr_id, int th_id, double step)
 {
@@ -5873,6 +5918,35 @@ void rk_int_mbl(AllData * ad, int tr_id, int th_id, double step)
 	ed->times_all[tr_id] += step * 0.5;
 
 	rk_right_part_mbl(ad, 4, tr_id, th_id);
+
+	rk_final(ad, tr_id, th_id, step);
+}
+
+void rk_int_lndham(AllData* ad, int tr_id, int th_id, double step)
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+	ExpData* ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	set_init_args(ad, tr_id, th_id);
+
+	rk_right_part_lndham(ad, 1, tr_id, th_id);
+	arg_upd(ad, 1, tr_id, th_id);
+
+	ed->times_all[tr_id] += step * 0.5;
+
+	rk_right_part_lndham(ad, 2, tr_id, th_id);
+	arg_upd(ad, 2, tr_id, th_id);
+
+	rk_right_part_lndham(ad, 3, tr_id, th_id);
+	arg_upd(ad, 3, tr_id, th_id);
+
+	ed->times_all[tr_id] += step * 0.5;
+
+	rk_right_part_lndham(ad, 4, tr_id, th_id);
 
 	rk_final(ad, tr_id, th_id, step);
 }
@@ -6131,6 +6205,70 @@ void rk_step_mbl(AllData * ad, int tr_id, int th_id, double step)
 		}
 
 		rk_step_mbl(ad, tr_id, th_id, end_step);
+	}
+}
+
+void rk_step_lndham(AllData* ad, int tr_id, int th_id, double step)
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+	ExpData* ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	int jump = int(cp->params.find("jump")->second);
+
+	VSLStreamStatePtr* stream = &(ed->streams[tr_id]);
+	MKL_Complex16* phi = &(ed->phi_all[tr_id * sys_size]);
+	double* eta = &(ed->etas_all[tr_id]);
+
+	double prev_norm = 0.0;
+	double curr_norm = 0.0;
+	double norm_diff = 0.0;
+	double begin_part = 0.0;
+	double end_part = 0.0;
+	double begin_step = 0.0;
+	double end_step = 0.0;
+
+	save_phi_prev(ad, tr_id, th_id);
+	prev_norm = norm_square(phi, sys_size);
+	rk_int_lndham(ad, tr_id, th_id, step);
+
+	if (is_norm_crossed(phi, eta, sys_size))
+	{
+		curr_norm = norm_square(phi, sys_size);
+		norm_diff = prev_norm - curr_norm;
+		begin_part = (prev_norm - *(eta)) / norm_diff;
+		end_part = 1.0 - begin_part;
+		begin_step = step * begin_part;
+		end_step = step * end_part;
+
+		restore_from_prev(ad, tr_id, th_id, step);
+
+		rk_int_lndham(ad, tr_id, th_id, begin_step);
+
+		if (jump > 0 && ed->is_obs == 1)
+		{
+			double jump_time = ed->times_all[tr_id];
+			double jump_norm = norm_square(phi, sys_size);
+			double jump_eta = *eta;
+
+			ed->jump_times[tr_id].push_back(jump_time);
+			ed->jump_norms[tr_id].push_back(jump_norm);
+			ed->jump_etas[tr_id].push_back(jump_eta);
+
+			ed->jumps_counts[tr_id]++;
+		}
+
+		rk_recovery(ad, tr_id, th_id);
+		vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+		while (*eta == 0.0)
+		{
+			vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD, *stream, 1, eta, 0.0, 1.0);
+		}
+
+		rk_step_lndham(ad, tr_id, th_id, end_step);
 	}
 }
 

@@ -19,8 +19,8 @@ struct MainData
 
 	double T;							// Period
 
-	double * hamiltonian;				// Hamiltonian
-	double * hamiltonian_drv;			// Hamiltonian driving
+	MKL_Complex16* hamiltonian;				// Hamiltonian
+	MKL_Complex16* hamiltonian_drv;			// Hamiltonian driving
 
 	MKL_Complex16 * non_drv_part;		// Non-drv part for rk
 	MKL_Complex16 * drv_part;			// Non-drv part for rk

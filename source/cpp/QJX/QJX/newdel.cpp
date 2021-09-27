@@ -214,6 +214,43 @@ void MBLNewDelBehaviour::init_sizes(AllData * ad) const
 	md->T = T;
 }
 
+void LndHamNewDelBehaviour::init_sizes(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	cout << "max_num_threads: " << omp_get_max_threads() << endl;
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_before_init: " << omp_get_num_threads() << endl;
+		}
+	}
+	int num_threads = rp->num_threads;
+	cout << "num_threads_target: " << num_threads << endl;
+	omp_set_num_threads(num_threads);
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_after_init: " << omp_get_num_threads() << endl;
+		}
+	}
+
+	md->sys_size = int(cp->params.find("lndham_N")->second);
+	md->num_diss = md->sys_size * md->sys_size - 1;
+
+	md->num_ham_qj = 1;
+
+	double T = double(cp->params.find("lndham_T")->second);
+	md->T = T;
+}
+
+
 void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 {
 	ConfigParam * cp = ad->cp;
@@ -227,8 +264,8 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	dimer_prm_U = dimer_prm_U / double(md->sys_size - 1);
 	double dimer_prm_J = double(cp->params.find("dimer_prm_J")->second);
 
-	md->hamiltonian = new double[md->sys_size * md->sys_size];
-	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
+	md->hamiltonian = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->hamiltonian_drv = new MKL_Complex16[md->sys_size * md->sys_size];
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -236,8 +273,11 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		{
 			int index = st_id_1 * md->sys_size + st_id_2;
 
-			md->hamiltonian[index] = 0.0;
-			md->hamiltonian_drv[index] = 0.0;
+			md->hamiltonian[index].real = 0.0;
+			md->hamiltonian[index].imag = 0.0;
+
+			md->hamiltonian_drv[index].real = 0.0;
+			md->hamiltonian_drv[index].imag = 0.0;
 		}
 	}
 
@@ -245,8 +285,8 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	{
 		int index = st_id * md->sys_size + st_id;
 
-		md->hamiltonian[index] = 2.0 * dimer_prm_U * double(st_id * (st_id - 1) + (sys_size - (st_id + 1)) * (sys_size - (st_id + 1) - 1));
-		md->hamiltonian_drv[index] = double((sys_size - (st_id + 1)) - st_id);
+		md->hamiltonian[index].real = 2.0 * dimer_prm_U * double(st_id * (st_id - 1) + (sys_size - (st_id + 1)) * (sys_size - (st_id + 1) - 1));
+		md->hamiltonian_drv[index].real = double((sys_size - (st_id + 1)) - st_id);
 	}
 
 	for (int st_id = 0; st_id < (md->sys_size - 1); st_id++)
@@ -254,8 +294,8 @@ void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		int down_left = (st_id + 1) * md->sys_size + st_id;
 		int up_right = st_id * md->sys_size + (st_id + 1);
 
-		md->hamiltonian[down_left] -= dimer_prm_J * sqrt(double((md->sys_size - (st_id + 1)) * (st_id + 1)));
-		md->hamiltonian[up_right] -= dimer_prm_J * sqrt(double((st_id + 1) * (md->sys_size - (st_id + 1))));
+		md->hamiltonian[down_left].real -= dimer_prm_J * sqrt(double((md->sys_size - (st_id + 1)) * (st_id + 1)));
+		md->hamiltonian[up_right].real -= dimer_prm_J * sqrt(double((st_id + 1) * (md->sys_size - (st_id + 1))));
 	}
 
 	init_random_obs(ad);
@@ -278,8 +318,8 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	double * mult_tmp_2 = new double[md->sys_size * md->sys_size];
 	double * mult_tmp_3 = new double[md->sys_size * md->sys_size];
 
-	md->hamiltonian = new double[md->sys_size * md->sys_size];
-	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
+	md->hamiltonian = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->hamiltonian_drv = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special_3 = new MKL_Complex16[md->sys_size * md->sys_size];
@@ -297,8 +337,11 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 			mult_tmp_2[index] = 0.0;
 			mult_tmp_3[index] = 0.0;
 
-			md->hamiltonian[index] = 0.0;
-			md->hamiltonian_drv[index] = 0.0;
+			md->hamiltonian[index].real = 0.0;
+			md->hamiltonian[index].imag = 0.0;
+
+			md->hamiltonian_drv[index].real = 0.0;
+			md->hamiltonian_drv[index].imag = 0.0;
 		}
 	}
 
@@ -320,8 +363,8 @@ void JCSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		{
 			int index = st_id_1 * md->sys_size + st_id_2;
 
-			md->hamiltonian[index] = 0.5 / pow(alpha, 3) * mult_tmp_3[index];
-			md->hamiltonian_drv[index] = (a_dag[index] - a_std[index]);
+			md->hamiltonian[index].real = 0.5 / pow(alpha, 3) * mult_tmp_3[index];
+			md->hamiltonian_drv[index].real = (a_dag[index] - a_std[index]);
 
 			md->special[index].real = a_std[index];
 			md->special[index].imag = 0.0;
@@ -526,8 +569,8 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	Eigen::MatrixXd special_3 = Eigen::kroneckerProduct(s_J_plus, p_identity);
 	Eigen::MatrixXd special_4 = Eigen::kroneckerProduct(s_identity, p_special_4);
 
-	md->hamiltonian = new double[md->sys_size * md->sys_size];
-	md->hamiltonian_drv = new double[md->sys_size * md->sys_size];
+	md->hamiltonian = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->hamiltonian_drv = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special_2 = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special_3 = new MKL_Complex16[md->sys_size * md->sys_size];
@@ -539,9 +582,11 @@ void PSNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		{
 			int index = st_id_1 * md->sys_size + st_id_2;
 
-			md->hamiltonian[index] = hamiltonian(st_id_1, st_id_2);
+			md->hamiltonian[index].real = hamiltonian(st_id_1, st_id_2);
+			md->hamiltonian[index].imag = 0.0;
 
-			md->hamiltonian_drv[index] = hamiltonian_drv(st_id_1, st_id_2);
+			md->hamiltonian_drv[index].real = hamiltonian_drv(st_id_1, st_id_2);
+			md->hamiltonian_drv[index].imag = 0.0;
 
 			md->special[index].real = special(st_id_1, st_id_2);
 			md->special[index].imag = 0.0;
@@ -566,7 +611,7 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	ConfigParam * cp = ad->cp;
 	MainData * md = ad->md;
 
-	md->hamiltonian = new double[md->sys_size * md->sys_size];
+	md->hamiltonian = new MKL_Complex16[md->sys_size * md->sys_size];
 	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
@@ -575,7 +620,8 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		{
 			int index = st_id_1 * md->sys_size + st_id_2;
 
-			md->hamiltonian[index] = 0.0;
+			md->hamiltonian[index].real = 0.0;
+			md->hamiltonian[index].imag = 0.0;
 
 			md->special[index].real = 0.0;
 			md->special[index].imag = 0.0;
@@ -608,7 +654,7 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		}
 		sum *= 1.0 * mbl_prm_W;
 
-		md->hamiltonian[state_id * md->mbl_Ns + state_id] += sum;
+		md->hamiltonian[state_id * md->mbl_Ns + state_id].real += sum;
 	}
 
 	delete[] energies;
@@ -618,7 +664,7 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	double mbl_prm_U = double(cp->params.find("mbl_prm_U")->second);
 	for (int state_id = 0; state_id < md->mbl_Ns; state_id++)
 	{
-		md->hamiltonian[state_id * md->mbl_Ns + state_id] += mbl_prm_U * bit_count(md->mbl_id_to_x[state_id] & (md->mbl_id_to_x[state_id] << 1));
+		md->hamiltonian[state_id * md->mbl_Ns + state_id].real += mbl_prm_U * bit_count(md->mbl_id_to_x[state_id] & (md->mbl_id_to_x[state_id] << 1));
 	}
 	// =======================================
 
@@ -628,7 +674,7 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 	{
 		for (int state_id_2 = 0; state_id_2 < md->mbl_Ns; state_id_2++)
 		{
-			md->hamiltonian[state_id_1 * md->mbl_Ns + state_id_2] -= mbl_prm_J * md->mbl_adjacement[md->mbl_id_to_x[state_id_1] ^ md->mbl_id_to_x[state_id_2]];
+			md->hamiltonian[state_id_1 * md->mbl_Ns + state_id_2].real -= mbl_prm_J * md->mbl_adjacement[md->mbl_id_to_x[state_id_1] ^ md->mbl_id_to_x[state_id_2]];
 		}
 	}
 	// ====================================
@@ -640,7 +686,7 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 		{
 			int index = st_id_1 * md->sys_size + st_id_2;
 
-			md->special[index].real = md->hamiltonian[index];
+			md->special[index].real = md->hamiltonian[index].real;
 			md->special[index].imag = 0.0;
 		}
 	}
@@ -648,6 +694,80 @@ void MBLNewDelBehaviour::init_hamiltonians(AllData * ad) const
 
 	init_random_obs(ad);
 }
+
+void LndHamNewDelBehaviour::init_hamiltonians(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	md->hamiltonian = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonian[index].real = 0.0;
+			md->hamiltonian[index].imag = 0.0;
+
+			md->special[index].real = 0.0;
+			md->special[index].imag = 0.0;
+		}
+	}
+
+	// ========= disorder data ==========
+	int lndham_seed = int(cp->params.find("lndham_seed")->second);
+	int lndham_num_seeds = int(cp->params.find("lndham_num_seeds")->second);
+	double lndham_alpha = double(cp->params.find("lndham_alpha")->second);
+
+	VSLStreamStatePtr stream;
+	vslNewStream(&stream, VSL_BRNG_MCG31, 13371337);
+	vslLeapfrogStream(stream, lndham_seed, lndham_num_seeds);
+	double* disorder = new double[md->sys_size * md->sys_size];
+	vdRngGaussian(VSL_RNG_METHOD_GAUSSIAN_BOXMULLER, stream, md->sys_size * md->sys_size, disorder, 0.0, 1.0);
+	Eigen::MatrixXcd X(md->sys_size, md->sys_size);
+	for (auto st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (auto st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			auto index = st_id_1 * md->sys_size + st_id_2;
+			X(st_id_1, st_id_2) = std::complex<double>(disorder[index], disorder[index]);
+		}
+	}
+	delete[] disorder;
+
+	Eigen::MatrixXcd y = 0.5 * (X + X.adjoint());
+	Eigen::MatrixXcd y2 = y * y;
+	const auto y2_tr = y2.trace();
+	y = y / std::sqrt(y2_tr.real());
+
+
+	// ====================================
+
+	// ========== init special matrix ==========
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			complex<double> val = lndham_alpha / std::sqrt(static_cast<double>(md->sys_size)) * y(st_id_1, st_id_2);
+			md->hamiltonian[index].real = val.real();
+			md->hamiltonian[index].imag = val.imag();
+
+			md->special[index].real = val.real();
+			md->special[index].imag = val.imag();
+		}
+	}
+	// =========================================
+
+	init_random_obs(ad);
+}
+
+
 
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
 {

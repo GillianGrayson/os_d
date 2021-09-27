@@ -1749,6 +1749,54 @@ double get_imbalance_mbl(AllData * ad, double * adr)
 }
 
 
+MKL_Complex16 get_spec_lndham(AllData* ad, int tr_id)
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+	ExpData* ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	MKL_Complex16* phi = &(ed->phi_all[tr_id * sys_size]);
+	MKL_Complex16* phi_normed = new MKL_Complex16[sys_size];
+	MKL_Complex16* phi_normed_conj = new MKL_Complex16[sys_size];
+	double norm = sqrt(norm_square(phi, sys_size));
+	MKL_Complex16* mult_tmp = new MKL_Complex16[sys_size];
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		mult_tmp[st_id].real = 0.0;
+		mult_tmp[st_id].imag = 0.0;
+
+		phi_normed[st_id].real = phi[st_id].real / norm;
+		phi_normed[st_id].imag = phi[st_id].imag / norm;
+
+		phi_normed_conj[st_id].real = phi_normed[st_id].real;
+		phi_normed_conj[st_id].imag = -phi_normed[st_id].imag;
+	}
+
+	MKL_Complex16 ZERO = { 0.0, 0.0 };
+	MKL_Complex16 ONE = { 1.0, 0.0 };
+	cblas_zgemv(CblasRowMajor, CblasNoTrans, sys_size, sys_size, &ONE, md->special, sys_size, phi_normed, 1, &ZERO, mult_tmp, 1);
+
+	MKL_Complex16 result = { 0.0, 0.0 };
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		result.real += (phi_normed_conj[st_id].real * mult_tmp[st_id].real - phi_normed_conj[st_id].imag * mult_tmp[st_id].imag);
+		result.imag += (phi_normed_conj[st_id].imag * mult_tmp[st_id].real + phi_normed_conj[st_id].real * mult_tmp[st_id].imag);
+	}
+
+	delete[] mult_tmp;
+	delete[] phi_normed;
+	delete[] phi_normed_conj;
+
+	//double lndham_prm_alpha = double(cp->params.find("lndham_prm_alpha")->second);
+	//result.real = result.real * lndham_prm_alpha;
+	//result.imag = result.imag * lndham_prm_alpha;
+
+	return result;
+}
+
+
 vector<complex<double>> get_random_obs(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;
