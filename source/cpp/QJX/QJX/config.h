@@ -17,7 +17,11 @@
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 #include <unsupported/Eigen/KroneckerProduct>
+#include <Eigen/SparseCore>
 
+typedef Eigen::SparseMatrix<std::complex<double>> sp_mtx;
+typedef Eigen::MatrixXcd ds_mtx;
+typedef Eigen::Triplet<std::complex<double>> triplet;
 
 #define DIMER_SYS_ID 0
 #define JCS_SYS_ID 1

@@ -768,7 +768,6 @@ void LndHamNewDelBehaviour::init_hamiltonians(AllData* ad) const
 }
 
 
-
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
 {
 	ConfigParam * cp = ad->cp;
@@ -1083,6 +1082,109 @@ void MBLNewDelBehaviour::init_dissipators(AllData * ad) const
 	}
 }
 
+void LndHamNewDelBehaviour::init_dissipators(AllData* ad) const
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	std::vector<sp_mtx> f_basis;
+
+	std::vector<triplet> vec_triplets;
+	vec_triplets.reserve(md->sys_size);
+	for (int st_id = 0; st_id < md->sys_size; st_id++)
+	{
+		vec_triplets.push_back(triplet(st_id, st_id, std::complex<double>(1.0, 0.0)));
+	}
+	sp_mtx sp_eye(md->sys_size, md->sys_size);
+	sp_eye.setFromTriplets(vec_triplets.begin(), vec_triplets.end());
+
+	sp_mtx tmp = sp_eye / std::sqrt(double(md->sys_size));
+	f_basis.push_back(tmp);
+
+	double sqrt_2 = std::sqrt(2.0);
+
+	for (auto i = 0; i < md->sys_size; i++)
+	{
+		for (auto j = i + 1; j < md->sys_size; j++)
+		{
+			std::vector<triplet> vec_triplets(2);
+			vec_triplets[0] = triplet(i, j, std::complex<double>(1.0 / sqrt_2, 0.0));
+			vec_triplets[1] = triplet(j, i, std::complex<double>(1.0 / sqrt_2, 0.0));
+			tmp = sp_mtx(md->sys_size, md->sys_size);
+			tmp.setFromTriplets(vec_triplets.begin(), vec_triplets.end());
+			f_basis.push_back(tmp);
+
+			vec_triplets[0] = triplet(i, j, std::complex<double>(0.0, -1.0 / sqrt_2));
+			vec_triplets[1] = triplet(j, i, std::complex<double>(0.0, 1.0 / sqrt_2));
+			tmp = sp_mtx(md->sys_size, md->sys_size);
+			tmp.setFromTriplets(vec_triplets.begin(), vec_triplets.end());
+			f_basis.push_back(tmp);
+		}
+	}
+
+	for (auto i = 0; i < md->sys_size - 1; i++)
+	{
+		std::vector<triplet> vec_triplets(i + 2);
+		for (auto j = 0; j < i + 1; j++)
+		{
+			vec_triplets[j] = triplet(j, j, std::complex<double>(1.0 / std::sqrt(double((i + 1) * (i + 2))), 0.0));
+		}
+		vec_triplets[i + 1] = triplet(i + 1, i + 1, std::complex<double>(-double(i + 1) / std::sqrt(double((i + 1) * (i + 2))), 0.0));
+		tmp = sp_mtx(md->sys_size, md->sys_size);
+		tmp.setFromTriplets(vec_triplets.begin(), vec_triplets.end());
+		f_basis.push_back(tmp);
+	}
+
+	int lndham_seed = int(cp->params.find("lndham_seed")->second);
+	int lndham_num_seeds = int(cp->params.find("lndham_num_seeds")->second);
+
+	int M = md->sys_size * md->sys_size - 1;
+
+	VSLStreamStatePtr stream;
+	vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
+	vslLeapfrogStream(stream, lndham_seed, lndham_num_seeds);
+	double* disorder_real = new double[M * M];
+	double* disorder_imag = new double[M * M];
+	vdRngGaussian(VSL_RNG_METHOD_GAUSSIAN_BOXMULLER, stream, M * M, disorder_real, 0.0, 1.0);
+	vdRngGaussian(VSL_RNG_METHOD_GAUSSIAN_BOXMULLER, stream, M * M, disorder_imag, 0.0, 1.0);
+
+	Eigen::MatrixXcd X(M, M);
+	for (auto st_id_1 = 0; st_id_1 < M; st_id_1++)
+	{
+		for (auto st_id_2 = 0; st_id_2 < M; st_id_2++)
+		{
+			auto index = st_id_1 * M + st_id_2;
+			X(st_id_1, st_id_2) = std::complex<double>(0.5 * disorder_real[index], 0.5 * disorder_imag[index]);
+		}
+	}
+	delete[] disorder_real;
+	delete[] disorder_imag;
+
+	Eigen::MatrixXcd G = X * X.adjoint();
+	const auto trace = G.trace();
+	G = double(md->sys_size) * G / trace.real();
+
+	Eigen::ComplexEigenSolver<Eigen::MatrixXcd> es;
+	es.compute(G, true);
+
+	auto evals_tmp = es.eigenvalues();
+	std::vector<std::complex<double>> G_evals(evals_tmp.data(), evals_tmp.data() + evals_tmp.rows() * evals_tmp.cols());
+	auto evecs = es.eigenvectors();
+
+	for (int k1 = 0; k1 < M; k1++)
+	{
+		sp_mtx diss = sp_mtx(md->sys_size, md->sys_size);
+		for (int k2 = 0; k2 < M; k2++)
+		{
+			diss += evecs(k2, k1) * f_basis[k2 + 1];
+		}
+		diss *= std::sqrt(evals_tmp[k1]);
+
+		md->dissipators_eigen.push_back(diss);
+	}
+}
+
+
 void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 {
 	ConfigParam * cp = ad->cp;
@@ -1114,7 +1216,7 @@ void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			diss_part[index].real = 0.0;
 			diss_part[index].imag = 0.0;
 
-			hamitlonian_part[index].real = md->hamiltonian[index];
+			hamitlonian_part[index].real = md->hamiltonian[index].real;
 			hamitlonian_part[index].imag = 0.0;
 
 			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
@@ -1162,7 +1264,7 @@ void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			md->non_drv_part[index].real = hamitlonian_part[index].real;
 			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
 
-			md->drv_part[index].real = md->hamiltonian_drv[index];
+			md->drv_part[index].real = md->hamiltonian_drv[index].real;
 			md->drv_part[index].imag = 0.0;
 		}
 	}
@@ -1177,10 +1279,10 @@ void DimerNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			int index = st_id_1 * md->sys_size + st_id_2;
 
 			md->hamiltonians_qj[0][index].real += (hamitlonian_part[index].imag + E_0 * 0.0);
-			md->hamiltonians_qj[0][index].imag -= (hamitlonian_part[index].real + E_0 * md->hamiltonian_drv[index]);
+			md->hamiltonians_qj[0][index].imag -= (hamitlonian_part[index].real + E_0 * md->hamiltonian_drv[index].real);
 
 			md->hamiltonians_qj[1][index].real += (hamitlonian_part[index].imag + E_1 * 0.0);
-			md->hamiltonians_qj[1][index].imag -= (hamitlonian_part[index].real + E_1 * md->hamiltonian_drv[index]);
+			md->hamiltonians_qj[1][index].imag -= (hamitlonian_part[index].real + E_1 * md->hamiltonian_drv[index].real);
 		}
 	}
 
@@ -1218,7 +1320,7 @@ void JCSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			diss_part[index].real = 0.0;
 			diss_part[index].imag = 0.0;
 
-			hamitlonian_part[index].real = md->hamiltonian[index];
+			hamitlonian_part[index].real = md->hamiltonian[index].real;
 			hamitlonian_part[index].imag = 0.0;
 
 			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
@@ -1267,7 +1369,7 @@ void JCSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
 
 			md->drv_part[index].real = 0.0;
-			md->drv_part[index].imag = md->hamiltonian_drv[index];
+			md->drv_part[index].imag = md->hamiltonian_drv[index].real;
 		}
 	}
 
@@ -1280,10 +1382,10 @@ void JCSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 		{
 			int index = st_id_1 * md->sys_size + st_id_2;
 
-			md->hamiltonians_qj[0][index].real += (hamitlonian_part[index].imag + E_0 * md->hamiltonian_drv[index]);
+			md->hamiltonians_qj[0][index].real += (hamitlonian_part[index].imag + E_0 * md->hamiltonian_drv[index].real);
 			md->hamiltonians_qj[0][index].imag -= (hamitlonian_part[index].real + E_0 * 0.0);
 
-			md->hamiltonians_qj[1][index].real += (hamitlonian_part[index].imag + E_1 * md->hamiltonian_drv[index]);
+			md->hamiltonians_qj[1][index].real += (hamitlonian_part[index].imag + E_1 * md->hamiltonian_drv[index].real);
 			md->hamiltonians_qj[1][index].imag -= (hamitlonian_part[index].real + E_1 * 0.0);
 		}
 	}
@@ -1329,7 +1431,7 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			diss_part_s[index].real = 0.0;
 			diss_part_s[index].imag = 0.0;
 
-			hamitlonian_part[index].real = md->hamiltonian[index];
+			hamitlonian_part[index].real = md->hamiltonian[index].real;
 			hamitlonian_part[index].imag = 0.0;
 
 			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
@@ -1414,7 +1516,7 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
 
 			md->drv_part[index].real = 0.0;
-			md->drv_part[index].imag = md->hamiltonian_drv[index];
+			md->drv_part[index].imag = md->hamiltonian_drv[index].real;
 		}
 	}
 
@@ -1427,10 +1529,10 @@ void PSNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 		{
 			int index = st_id_1 * md->sys_size + st_id_2;
 
-			md->hamiltonians_qj[0][index].real += (hamitlonian_part[index].imag + E_0 * md->hamiltonian_drv[index]);
+			md->hamiltonians_qj[0][index].real += (hamitlonian_part[index].imag + E_0 * md->hamiltonian_drv[index].real);
 			md->hamiltonians_qj[0][index].imag -= (hamitlonian_part[index].real + E_0 * 0.0);
 
-			md->hamiltonians_qj[1][index].real += (hamitlonian_part[index].imag + E_1 * md->hamiltonian_drv[index]);
+			md->hamiltonians_qj[1][index].real += (hamitlonian_part[index].imag + E_1 * md->hamiltonian_drv[index].real);
 			md->hamiltonians_qj[1][index].imag -= (hamitlonian_part[index].real + E_1 * 0.0);
 		}
 	}
@@ -1467,7 +1569,7 @@ void MBLNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 			diss_part[index].real = 0.0;
 			diss_part[index].imag = 0.0;
 
-			hamitlonian_part[index].real = md->hamiltonian[index];
+			hamitlonian_part[index].real = md->hamiltonian[index].real;
 			hamitlonian_part[index].imag = 0.0;
 
 			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
@@ -1533,6 +1635,77 @@ void MBLNewDelBehaviour::init_hamiltonians_qj(AllData * ad) const
 	delete[] hamitlonian_part;
 }
 
+void LndHamNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	MKL_Complex16 one_cmplx = { 1.0, 0.0 };
+	MKL_Complex16 zero_cmplx = { 0.0, 0.0 };
+
+	md->hamiltonians_qj = new MKL_Complex16 * [md->num_ham_qj];
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		md->hamiltonians_qj[qj_ham_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+
+	MKL_Complex16* hamitlonian_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			hamitlonian_part[index].real = md->hamiltonian[index].real;
+			hamitlonian_part[index].imag = md->hamiltonian[index].imag;
+
+			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+			{
+				md->hamiltonians_qj[qj_ham_id][index].real = 0.0;
+				md->hamiltonians_qj[qj_ham_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		ds_mtx diss_part_eigen = md->dissipators_eigen[diss_id].adjoint() * md->dissipators_eigen[diss_id];
+
+		for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+		{
+			for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+			{
+				int index = st_id_1 * md->sys_size + st_id_2;
+				hamitlonian_part[index].real += 0.5 * diss_part_eigen(st_id_1, st_id_2).imag();
+				hamitlonian_part[index].imag -= 0.5 * diss_part_eigen(st_id_1, st_id_2).real();
+			}
+		}
+	}
+
+	md->non_drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->non_drv_part[index].real = hamitlonian_part[index].real;
+			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
+		}
+	}
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->hamiltonians_qj[0][index].real += hamitlonian_part[index].imag;
+			md->hamiltonians_qj[0][index].imag -= hamitlonian_part[index].real;
+		}
+	}
+	delete[] hamitlonian_part;
+}
+
+
 void DimerNewDelBehaviour::free_hamiltonians(AllData * ad) const
 {
 	MainData * md = ad->md;
@@ -1580,6 +1753,17 @@ void MBLNewDelBehaviour::free_hamiltonians(AllData * ad) const
 	free_random_obs(ad);
 }
 
+void LndHamNewDelBehaviour::free_hamiltonians(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	delete[] md->hamiltonian;
+	delete[] md->special;
+
+	free_random_obs(ad);
+}
+
+
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
 {
 	MainData * md = ad->md;
@@ -1623,6 +1807,11 @@ void MBLNewDelBehaviour::free_dissipators(AllData * ad) const
 	}
 	delete[] md->dissipators;
 }
+
+void LndHamNewDelBehaviour::free_dissipators(AllData* ad) const
+{
+}
+
 
 void DimerNewDelBehaviour::free_hamiltonians_qj(AllData * ad) const
 {
@@ -1669,6 +1858,19 @@ void PSNewDelBehaviour::free_hamiltonians_qj(AllData * ad) const
 void MBLNewDelBehaviour::free_hamiltonians_qj(AllData * ad) const
 {
 	MainData * md = ad->md;
+
+	delete[] md->non_drv_part;
+
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		delete[] md->hamiltonians_qj[qj_ham_id];
+	}
+	delete[] md->hamiltonians_qj;
+}
+
+void LndHamNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
+{
+	MainData* md = ad->md;
 
 	delete[] md->non_drv_part;
 

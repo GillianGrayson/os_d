@@ -83,7 +83,6 @@ void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 	cp->fn_suffix = suffix;
 }
 
-
 void PSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
 {
 	string setup = suffix_setup(rp);
@@ -152,6 +151,32 @@ void MBLOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precis
 	params << "_start("
 		<< int(cp->params.find("start_type")->second) << "_"
 		<< int(cp->params.find("start_state")->second) << ")";
+
+	string suffix = setup + qj + params.str();
+
+	if (rp->task_id == LPN_MULT_TASK_ID || rp->task_id == LPN_MULT_DEEP_TASK_ID)
+	{
+		string lpn = suffix_lpn(rp, cp);
+		suffix += lpn;
+	}
+
+	string ext = extension();
+	suffix += ext;
+
+	cp->fn_suffix = suffix;
+}
+
+void LndHamOutputBehavior::suffix_param(RunParam* rp, ConfigParam* cp, int precision) const
+{
+	string setup = suffix_setup(rp);
+	string qj = suffix_qj(rp, cp, precision);
+
+	stringstream params;
+
+	params << "_N(" << int(cp->params.find("lndham_N")->second) << ")";
+	params << "_rnd(" << int(cp->params.find("lndham_seed")->second) << ")";
+	params << "_alpha(" << setprecision(precision) << fixed << double(cp->params.find("lndham_alpha")->second) << ")";
+	params << "_T(" << setprecision(precision) << fixed << double(cp->params.find("lndham_T")->second) << ")";
 
 	string suffix = setup + qj + params.str();
 
