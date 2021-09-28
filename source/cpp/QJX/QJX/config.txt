@@ -1,15 +1,15 @@
-sys_id 3
+sys_id 4
 task_id 1
 prop_id 0
-is_debug 1
+is_debug 0
 is_pp 1
 init_fn 
 path 
 seed 1
 mns 1000000
 num_threads 1
-num_trajectories 10000
-num_tp_periods 500
-num_obs_periods 500
+num_trajectories 10
+num_tp_periods 100
+num_obs_periods 100
 ex_deep 16
 rk_ns 10000

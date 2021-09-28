@@ -65,7 +65,7 @@ void LndHamDebugBehaviour::save(AllData* ad) const
 	ConfigParam* cp = ad->cp;
 	MainData* md = ad->md;
 
-	save_hamiltonian_and_dissipation(ad);
+	save_hamiltonian_and_dissipation(ad, false);
 
 	if (rp->is_debug)
 	{
@@ -74,7 +74,7 @@ void LndHamDebugBehaviour::save(AllData* ad) const
 	}
 }
 
-void save_hamiltonian_and_dissipation(AllData * ad)
+void save_hamiltonian_and_dissipation(AllData * ad, bool save_diss)
 {
 	RunParam * rp = ad->rp;
 	ConfigParam * cp = ad->cp;
@@ -85,10 +85,13 @@ void save_hamiltonian_and_dissipation(AllData * ad)
 		string hamiltonian_fn = rp->path + "hamiltonian" + cp->fn_suffix;
 		save_complex_data(hamiltonian_fn, md->hamiltonian, md->sys_size * md->sys_size, 16, 0);
 
-		for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+		if (save_diss)
 		{
-			string dissipator_fn = rp->path + "dissipator_" + to_string(diss_id) + cp->fn_suffix;
-			save_complex_data(dissipator_fn, md->dissipators[diss_id], md->sys_size * md->sys_size, 16, 0);
+			for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+			{
+				string dissipator_fn = rp->path + "dissipator_" + to_string(diss_id) + cp->fn_suffix;
+				save_complex_data(dissipator_fn, md->dissipators[diss_id], md->sys_size * md->sys_size, 16, 0);
+			}
 		}
 
 		for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)

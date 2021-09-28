@@ -38,4 +38,4 @@ public:
 	virtual void save(AllData* ad) const;
 };
 
-void save_hamiltonian_and_dissipation(AllData * ad);
+void save_hamiltonian_and_dissipation(AllData* ad, bool save_diss = true);
