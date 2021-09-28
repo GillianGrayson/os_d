@@ -3381,6 +3381,10 @@ void MBLCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData * ad, int period_id) 
 					{
 						lambda_lpn_now(ad, tmp, tr_id, tr_id - num_trajectories / 2);
 					}
+					else
+					{
+						lambda_lpn_now_wo_renorm_just_to_save(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+					}
 				}
 				evo_chars_std(ad, tr_id, dump_id);
 				evo_chars_lpn(ad, tr_id, dump_id);
@@ -4290,6 +4294,10 @@ void LndHamCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData* ad, int period_id
 					if ((part_id == num_branches - 1) && (sub_step_id == num_sub_steps_per_part - 1))
 					{
 						lambda_lpn_now(ad, tmp, tr_id, tr_id - num_trajectories / 2);
+					}
+					else
+					{
+						lambda_lpn_now_wo_renorm_just_to_save(ad, tmp, tr_id, tr_id - num_trajectories / 2);
 					}
 				}
 				evo_chars_std(ad, tr_id, dump_id);

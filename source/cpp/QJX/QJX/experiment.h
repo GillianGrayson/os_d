@@ -175,6 +175,8 @@ void lambda_lpn(AllData * ad, CoreBehavior *cb, int tr_id, int base_tr_id);
 
 void lambda_lpn_now(AllData* ad, CoreBehavior* cb, int tr_id, int base_tr_id);
 
+void lambda_lpn_now_wo_renorm_just_to_save(AllData* ad, CoreBehavior* cb, int tr_id, int base_tr_id);
+
 void lambda_lpn_per_periods(AllData * ad, CoreBehavior *cb, int tr_id, int base_tr_id, int num_steps_T, int curr_step, int num_periods);
 
 void lambda_lpn_all(AllData * ad, CoreBehavior *cb);

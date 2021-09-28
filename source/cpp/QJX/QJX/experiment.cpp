@@ -2910,6 +2910,18 @@ void lambda_lpn_now(AllData* ad, CoreBehavior* cb, int tr_id, int base_tr_id)
 	ed->lambda_now[tr_id] = ed->lambda[tr_id] / ed->curr_time;
 }
 
+void lambda_lpn_now_wo_renorm_just_to_save(AllData* ad, CoreBehavior* cb, int tr_id, int base_tr_id)
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+	ExpData* ed = ad->ed;
+
+	double delta_f = cb->calc_delta_f(ad, tr_id, base_tr_id);
+
+	cb->calc_chars_lpn(ad, tr_id, base_tr_id);
+	ed->lambda_now[tr_id] = (ed->lambda[tr_id] + log(delta_f / ed->delta_s[tr_id] + 1.0e-16)) / ed->curr_time;
+}
+
 void lambda_lpn_per_periods(AllData * ad, CoreBehavior *cb, int tr_id, int base_tr_id, int num_steps_T, int curr_step, int num_periods)
 {
 	ConfigParam * cp = ad->cp;
