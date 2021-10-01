@@ -21,9 +21,10 @@ N = 50;
 alpha = 0.5;
 T = 1.0;
 
-num_seeds = 50;
+num_seeds = 100;
 
 ss = 0;
+mns = 1000000;
 
 num_trajectories = 200;
 num_target_trajectories = num_trajectories / 2;
@@ -32,7 +33,9 @@ lambdas_glob = zeros(num_seeds, num_target_trajectories);
 
 for seed = 1:num_seeds
 
-    path_to_folder = sprintf('%s/main_%d_%d_%d/lpn_%d_%0.4f_/run_%d_%d_%d_%d/N_%d_alpha_%0.4f/seed_%d/ss_%d', ...
+	seed = seed
+
+    path_to_folder = sprintf('%s/main_%d_%d_%d/lpn_%d_%0.4f/run_%d_%d_%d_%d/N_%d_alpha_%0.4f/seed_%d/ss_%d', ...
         data_path, ...
         sys_id, ...
         task_id, ...
@@ -85,7 +88,7 @@ suffix_save = sprintf('N(%d)_numSeeds(%d)_alpha(%0.4f)_T(%0.4f)_lpn(%d_%0.4f_%0.
 
 fig = figure;
 x_pos = 1;
-b = boxplot(lambdas_glob_1d,'Notch', 'off', 'positions', x_pos, 'Colors', 'k');
+b = boxplot(lambdas_glob_1d,'Notch', 'off', 'positions', x_pos, 'Colors', 'r');
 set(gca, 'FontSize', 40);
 all_items = handle(b);
 tags = get(all_items,'tag');
@@ -94,11 +97,11 @@ boxes = all_items(idx);
 set(all_items,'linewidth',3)
 idx = strcmpi(tags,'Outliers');
 outliers = all_items(idx);
-set(outliers, 'visible', 'on')
+set(outliers, 'visible', 'off')
 hold all;
-xs = x_pos * ones(size(diffs_all{g_id}, 1), 1) + ((rand(size(diffs_all{g_id}))-0.5)/10);
-h = scatter(xs, diffs_all{g_id}, 100, 'o', 'LineWidth',  1, 'MarkerEdgeColor', 'black', 'MarkerFaceColor', 'red', 'MarkerEdgeAlpha', opacity, 'MarkerFaceAlpha', opacity);
-h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+%xs = x_pos * ones(size(lambdas_glob_1d, 1), 1) + ((rand(size(lambdas_glob_1d))-0.5)/10);
+%h = scatter(xs, lambdas_glob_1d, 100, 'o', 'LineWidth',  1, 'MarkerEdgeColor', 'black', 'MarkerFaceColor', 'red', 'MarkerEdgeAlpha', 0.6, 'MarkerFaceAlpha', 0.6);
+%h.Annotation.LegendInformation.IconDisplayStyle = 'off';
 hold all;
 
 savefig(sprintf('%s/lambda_%s.fig', home_figures_path, suffix_save));
@@ -108,4 +111,6 @@ set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
 print(gcf, '-dpdf', sprintf('%s/lambda_%s.pdf', home_figures_path, suffix_save));
 close(fig)
+
+xlswrite(sprintf('%s/lambda_%s.xlsx', home_figures_path, suffix_save), lambdas_glob)
 

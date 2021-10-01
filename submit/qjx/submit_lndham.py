@@ -7,11 +7,11 @@ type = FSType.mpipks_sd
 
 num_runs = 1
 
-medium = 0
+medium = 1
 
 seed_start = 1
 seed_shift = 1
-seed_num = 10
+seed_num = 100
 
 for seed_id in range(0, seed_num):
     lndham_seed = seed_start + seed_id * seed_shift
@@ -98,7 +98,7 @@ for seed_id in range(0, seed_num):
         local_path += f"/lpn_{lpn_type}_{lpn_delta_s_str}"
 
     local_path += f"/run_{ex_deep}_{rk_ns}_{num_tp_periods}_{num_obs_periods}" + \
-                  f"/N_{lndham_N}_alpha_{lndham_alpha}" + \
+                  f"/N_{lndham_N}_alpha_{lndham_alpha_str}" + \
                   f'/seed_{lndham_seed}'
 
     for ss in range(start_seed, finish_seed, step_seed):
