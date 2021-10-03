@@ -1089,6 +1089,7 @@ void LndHamNewDelBehaviour::init_dissipators(AllData* ad) const
 
 	std::vector<sp_mtx> f_basis;
 
+	cout << "F-basis generation started" << endl;
 	std::vector<triplet> vec_triplets;
 	vec_triplets.reserve(md->sys_size);
 	for (int st_id = 0; st_id < md->sys_size; st_id++)
@@ -1134,12 +1135,14 @@ void LndHamNewDelBehaviour::init_dissipators(AllData* ad) const
 		tmp.setFromTriplets(vec_triplets.begin(), vec_triplets.end());
 		f_basis.push_back(tmp);
 	}
+	cout << "F-basis generation complete" << endl;
 
 	int lndham_seed = int(cp->params.find("lndham_seed")->second);
 	int lndham_num_seeds = int(cp->params.find("lndham_num_seeds")->second);
 
 	int M = md->sys_size * md->sys_size - 1;
 
+	cout << "G generation started" << endl;
 	VSLStreamStatePtr stream;
 	vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
 	vslLeapfrogStream(stream, lndham_seed, lndham_num_seeds);
@@ -1163,14 +1166,18 @@ void LndHamNewDelBehaviour::init_dissipators(AllData* ad) const
 	Eigen::MatrixXcd G = X * X.adjoint();
 	const auto trace = G.trace();
 	G = double(md->sys_size) * G / trace.real();
+	cout << "G generation complete" << endl;
 
+	cout << "G eigen started" << endl;
 	Eigen::ComplexEigenSolver<Eigen::MatrixXcd> es;
 	es.compute(G, true);
+	cout << "G eigen complete" << endl;
 
 	auto evals_tmp = es.eigenvalues();
 	std::vector<std::complex<double>> G_evals(evals_tmp.data(), evals_tmp.data() + evals_tmp.rows() * evals_tmp.cols());
 	auto evecs = es.eigenvectors();
 
+	cout << "dissipators generation started" << endl;
 	for (int k1 = 0; k1 < M; k1++)
 	{
 		sp_mtx diss = sp_mtx(md->sys_size, md->sys_size);
@@ -1182,6 +1189,7 @@ void LndHamNewDelBehaviour::init_dissipators(AllData* ad) const
 
 		md->dissipators_eigen.push_back(diss);
 	}
+	cout << "dissipators generation complete" << endl;
 }
 
 

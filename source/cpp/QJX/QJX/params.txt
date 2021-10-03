@@ -21,7 +21,7 @@ dump_adr_avg 0
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
-dump_num 100
+dump_num 500
 N 200
 diss_type 1
 diss_gamma 0.1
@@ -53,7 +53,7 @@ mbl_prm_W 1.0
 mbl_prm_U 1.0
 mbl_prm_J 1.0
 mbl_T 10
-lndham_N 10
+lndham_N 50
 lndham_seed 1
 lndham_num_seeds 1000000
 lndham_alpha 0.5
