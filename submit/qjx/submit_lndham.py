@@ -43,9 +43,9 @@ for seed_id in range(0, seed_num):
     lpn_eps_error = 1.0e-10
     lpn_eps_high = 10
     lpn_eps_low = -10
-    lpn_delta_s = 1.0e-3
-    lpn_delta_f_high = 1.0e-3
-    lpn_delta_f_low = 1.0e-3
+    lpn_delta_s = 1.0e-6
+    lpn_delta_f_high = 1.0e-6
+    lpn_delta_f_low = 1.0e-6
     lambda_per_periods = 1
     save_lambdas = 0
     num_lambdas_periods = 2
@@ -185,9 +185,10 @@ for seed_id in range(0, seed_num):
 
         fn_test = fn_path + '/spec_' + fn_suffix + '.txt'
 
-        # print(fn_test)
+
 
         if not os.path.isfile(fn_test):
+            print(fn_test)
             if type == FSType.cluster:
                 os.system('sbatch run_unn.sh ' + fn_path)
             elif type == FSType.mpipks_sd:

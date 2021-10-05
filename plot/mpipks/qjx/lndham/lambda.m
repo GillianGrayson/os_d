@@ -8,20 +8,20 @@ task_id = 7;
 prop_id = 0;
 
 lpn_type = -1;
-lpn_delta_f_h = 1e-3;
-lpn_delta_s = 1e-3;
-lpn_delta_f_l = 1e-3;
+lpn_delta_f_h = 1e-6;
+lpn_delta_s = 1e-6;
+lpn_delta_f_l = 1e-6;
 
 ex_deep = 16;
 rk_ns = 10000;
 num_tp_periods = 500;
 num_obs_periods = 500;
 
-N = 50; 
+N = 100; 
 alpha = 0.5;
 T = 1.0;
 
-num_seeds = 100;
+num_seeds = 5;
 
 ss = 0;
 mns = 1000000;
@@ -75,20 +75,21 @@ for seed = 1:num_seeds
 end
 
 lambdas_glob_1d = lambdas_glob(:);
-
+lambdas_glob_1d_mean = mean(lambdas_glob, 2);
 suffix_save = sprintf('N(%d)_numSeeds(%d)_alpha(%0.4f)_T(%0.4f)_lpn(%d_%0.4f_%0.4f_%0.4f)', ...
-        N, ...
-        num_seeds, ...
-        alpha, ...
-        T, ...
-        lpn_type, ...
-        log10(lpn_delta_s), ...
-        log10(lpn_delta_f_h), ...
-        log10(lpn_delta_f_l));
+    N, ...
+    num_seeds, ...
+    alpha, ...
+    T, ...
+    lpn_type, ...
+    log10(lpn_delta_s), ...
+    log10(lpn_delta_f_h), ...
+    log10(lpn_delta_f_l));
+x_pos = 1;
+    
 
 fig = figure;
-x_pos = 1;
-b = boxplot(lambdas_glob_1d,'Notch', 'off', 'positions', x_pos, 'Colors', 'r');
+b = boxplot(lambdas_glob_1d, 'Notch', 'off', 'positions', x_pos, 'Colors', 'r');
 set(gca, 'FontSize', 40);
 all_items = handle(b);
 tags = get(all_items,'tag');
@@ -103,13 +104,36 @@ hold all;
 %h = scatter(xs, lambdas_glob_1d, 100, 'o', 'LineWidth',  1, 'MarkerEdgeColor', 'black', 'MarkerFaceColor', 'red', 'MarkerEdgeAlpha', 0.6, 'MarkerFaceAlpha', 0.6);
 %h.Annotation.LegendInformation.IconDisplayStyle = 'off';
 hold all;
-
 savefig(sprintf('%s/lambda_%s.fig', home_figures_path, suffix_save));
 h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
 print(gcf, '-dpdf', sprintf('%s/lambda_%s.pdf', home_figures_path, suffix_save));
+close(fig)
+
+fig = figure;
+b = boxplot(lambdas_glob_1d_mean, 'Notch', 'off', 'positions', x_pos, 'Colors', 'r');
+set(gca, 'FontSize', 40);
+all_items = handle(b);
+tags = get(all_items,'tag');
+idx = strcmpi(tags,'box');
+boxes = all_items(idx);
+set(all_items,'linewidth',3)
+idx = strcmpi(tags,'Outliers');
+outliers = all_items(idx);
+set(outliers, 'visible', 'off')
+hold all;
+%xs = x_pos * ones(size(lambdas_glob_1d, 1), 1) + ((rand(size(lambdas_glob_1d))-0.5)/10);
+%h = scatter(xs, lambdas_glob_1d, 100, 'o', 'LineWidth',  1, 'MarkerEdgeColor', 'black', 'MarkerFaceColor', 'red', 'MarkerEdgeAlpha', 0.6, 'MarkerFaceAlpha', 0.6);
+%h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+hold all;
+savefig(sprintf('%s/lambda_mean_%s.fig', home_figures_path, suffix_save));
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print(gcf, '-dpdf', sprintf('%s/lambda_mean_%s.pdf', home_figures_path, suffix_save));
 close(fig)
 
 xlswrite(sprintf('%s/lambda_%s.xlsx', home_figures_path, suffix_save), lambdas_glob)
