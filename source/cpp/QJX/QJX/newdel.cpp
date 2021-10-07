@@ -1918,7 +1918,7 @@ void init_random_obs(AllData* ad)
 		for (int obs_id = 0; obs_id < num_random_obs; obs_id++)
 		{
 			VSLStreamStatePtr stream;
-			vslNewStream(&stream, VSL_BRNG_MCG31, 77778888);
+			vslNewStream(&stream, VSL_BRNG_MCG31, 3873247);
 			vslLeapfrogStream(stream, random_obs_seed + obs_id, random_obs_mns);
 
 			vdRngGaussian(VSL_RNG_METHOD_GAUSSIAN_BOXMULLER, stream, md->sys_size * md->sys_size, disorder_real, 0.0, 1.0);
