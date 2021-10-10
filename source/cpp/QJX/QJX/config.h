@@ -28,6 +28,7 @@ typedef Eigen::Triplet<std::complex<double>> triplet;
 #define PS_SYS_ID 2
 #define MBL_SYS_ID 3
 #define LNDHAM_SYS_ID 4
+#define INTEGRABLE_SYS_ID 4
 
 #define LPN_TASK_ID 0
 #define STD_TASK_ID 1
