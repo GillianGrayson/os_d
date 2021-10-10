@@ -13,6 +13,7 @@
 #include <math.h>
 #include <map>
 #include <utility>
+#include <bitset>
 
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>

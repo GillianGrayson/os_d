@@ -1414,46 +1414,39 @@ void IntegrableNewDelBehaviour::init_dissipators(AllData* ad) const
 	for (int state_id = 0; state_id <= integrable_N - 1; state_id++)
 	{
 		int state_ind = state_id;
+		vector<int> state_bits = convert_int_to_vector_of_bits(state_ind, integrable_N);
+		reverse(state_bits.begin(), state_bits.end());
 
-	}
-
-	for state_id = 1:num_states
-		state_int = state_id - 1;
-	state_bits = de2bi(state_int, N);
-	state_bits = flip(state_bits);
-
-	if (state_bits(1) == state_bits(end))
-		if state_bits(1) == 0
-			border_diss(state_id, state_id) = tau;
-		else
-			border_diss(state_id, state_id) = k;
-	end
-	else
-		inv_bits = state_bits;
-	inv_bits(1) = state_bits(end);
-	inv_bits(end) = state_bits(1);
-	inv_bits = flip(inv_bits);
-	row_id = bi2de(inv_bits) + 1;
-	border_diss(row_id, state_id) = 1;
-	end
-		end
-		dissipators{ N } = border_diss;
-
-
-
-	cout << "dissipators generation started" << endl;
-	for (int k1 = 0; k1 < M; k1++)
-	{
-		sp_mtx diss = sp_mtx(md->sys_size, md->sys_size);
-		for (int k2 = 0; k2 < M; k2++)
+		if (state_bits[0] == state_bits[integrable_N - 1])
 		{
-			diss += evecs(k2, k1) * f_basis[k2 + 1];
+			if (state_bits[0] == 0)
+			{
+				border_diss(state_id, state_id) = integrable_tau;
+			}
+			else
+			{
+				border_diss(state_id, state_id) = integrable_k;
+			}
 		}
-		diss *= std::sqrt(evals_tmp[k1]);
-
-		md->dissipators_eigen.push_back(diss);
+		else
+		{
+			vector<int> inv_bits = state_bits;
+			inv_bits[0] = state_bits[integrable_N - 1];
+			inv_bits[integrable_N - 1] = state_bits[0];
+			reverse(inv_bits.begin(), inv_bits.end());
+			int row_id = accumulate(inv_bits.rbegin(), inv_bits.rend(), 0, [](int x, int y) { return (x << 1) + y; });
+			border_diss(row_id, state_id) = 1;
+		}
 	}
-	cout << "dissipators generation complete" << endl;
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->dissipators[integrable_N - 1][index].real = border_diss(st_id_1, st_id_2).real();
+			md->dissipators[integrable_N - 1][index].imag = border_diss(st_id_1, st_id_2).imag();
+		}
+	}
 }
 
 
@@ -1977,6 +1970,97 @@ void LndHamNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
 	delete[] hamitlonian_part;
 }
 
+void IntegrableNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	MKL_Complex16 diss_gamma_cmplx = { 1, 0.0 };
+	MKL_Complex16 zero_cmplx = { 0.0, 0.0 };
+
+	md->hamiltonians_qj = new MKL_Complex16 * [md->num_ham_qj];
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		md->hamiltonians_qj[qj_ham_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+
+	MKL_Complex16* diss_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	MKL_Complex16* hamitlonian_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			diss_part[index].real = 0.0;
+			diss_part[index].imag = 0.0;
+
+			hamitlonian_part[index].real = md->hamiltonian[index].real;
+			hamitlonian_part[index].imag = 0.0;
+
+			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+			{
+				md->hamiltonians_qj[qj_ham_id][index].real = 0.0;
+				md->hamiltonians_qj[qj_ham_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		cblas_zgemm(
+			CblasRowMajor,
+			CblasConjTrans,
+			CblasNoTrans,
+			md->sys_size,
+			md->sys_size,
+			md->sys_size,
+			&diss_gamma_cmplx,
+			md->dissipators[diss_id],
+			md->sys_size,
+			md->dissipators[diss_id],
+			md->sys_size,
+			&zero_cmplx,
+			diss_part,
+			md->sys_size
+		);
+
+		for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+		{
+			for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+			{
+				int index = st_id_1 * md->sys_size + st_id_2;
+				hamitlonian_part[index].real += 0.5 * diss_part[index].imag;
+				hamitlonian_part[index].imag -= 0.5 * diss_part[index].real;
+			}
+		}
+	}
+
+	md->non_drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->non_drv_part[index].real = hamitlonian_part[index].real;
+			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
+		}
+	}
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->hamiltonians_qj[0][index].real += hamitlonian_part[index].imag;
+			md->hamiltonians_qj[0][index].imag -= hamitlonian_part[index].real;
+		}
+	}
+
+	delete[] diss_part;
+	delete[] hamitlonian_part;
+}
+
 
 void DimerNewDelBehaviour::free_hamiltonians(AllData * ad) const
 {
@@ -2035,6 +2119,16 @@ void LndHamNewDelBehaviour::free_hamiltonians(AllData* ad) const
 	free_random_obs(ad);
 }
 
+void IntegrableNewDelBehaviour::free_hamiltonians(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	delete[] md->hamiltonian;
+	delete[] md->special;
+
+	free_random_obs(ad);
+}
+
 
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
 {
@@ -2082,6 +2176,17 @@ void MBLNewDelBehaviour::free_dissipators(AllData * ad) const
 
 void LndHamNewDelBehaviour::free_dissipators(AllData* ad) const
 {
+}
+
+void IntegrableNewDelBehaviour::free_dissipators(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		delete[] md->dissipators[diss_id];
+	}
+	delete[] md->dissipators;
 }
 
 
@@ -2152,6 +2257,20 @@ void LndHamNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
 	}
 	delete[] md->hamiltonians_qj;
 }
+
+void IntegrableNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	delete[] md->non_drv_part;
+
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		delete[] md->hamiltonians_qj[qj_ham_id];
+	}
+	delete[] md->hamiltonians_qj;
+}
+
 
 
 
