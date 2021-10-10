@@ -58,6 +58,12 @@ lndham_seed 1
 lndham_num_seeds 1000000
 lndham_alpha 0.5
 lndham_T 1.0
+integrable_N 50
+integrable_seed 1
+integrable_num_seeds 1000000
+integrable_tau 1
+integrable_k -1
+integrable_T 1.0
 start_type 0
 start_state 0
 cd_dim 1

@@ -74,6 +74,21 @@ void LndHamDebugBehaviour::save(AllData* ad) const
 	}
 }
 
+void IntegrableDebugBehaviour::save(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	save_hamiltonian_and_dissipation(ad, false);
+
+	if (rp->is_debug)
+	{
+		string fn = rp->path + "spec_mtx" + cp->fn_suffix;
+		save_complex_data(fn, md->special, md->sys_size * md->sys_size, 16, 0);
+	}
+}
+
 void save_hamiltonian_and_dissipation(AllData * ad, bool save_diss)
 {
 	RunParam * rp = ad->rp;

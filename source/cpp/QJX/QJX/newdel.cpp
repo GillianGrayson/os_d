@@ -250,6 +250,42 @@ void LndHamNewDelBehaviour::init_sizes(AllData* ad) const
 	md->T = T;
 }
 
+void IntegrableNewDelBehaviour::init_sizes(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	cout << "max_num_threads: " << omp_get_max_threads() << endl;
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_before_init: " << omp_get_num_threads() << endl;
+		}
+	}
+	int num_threads = rp->num_threads;
+	cout << "num_threads_target: " << num_threads << endl;
+	omp_set_num_threads(num_threads);
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_after_init: " << omp_get_num_threads() << endl;
+		}
+	}
+	int N = int(cp->params.find("integrable_N")->second);
+	md->sys_size = std::round(std::pow(2, N));
+	md->num_diss = N;
+
+	md->num_ham_qj = 1;
+
+	double T = double(cp->params.find("integrable_T")->second);
+	md->T = T;
+}
+
 
 void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 {
@@ -767,6 +803,72 @@ void LndHamNewDelBehaviour::init_hamiltonians(AllData* ad) const
 	init_random_obs(ad);
 }
 
+void IntegrableNewDelBehaviour::init_hamiltonians(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	md->hamiltonian = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonian[index].real = 0.0;
+			md->hamiltonian[index].imag = 0.0;
+
+			md->special[index].real = 0.0;
+			md->special[index].imag = 0.0;
+		}
+	}
+
+	// ========= disorder data ==========
+	int integrable_seed = int(cp->params.find("integrable_seed")->second);
+	int integrable_num_seeds = int(cp->params.find("integrable_num_seeds")->second);
+	double integrable_tau = double(cp->params.find("integrable_tau")->second);
+	double integrable_k = double(cp->params.find("integrable_k")->second);
+
+	VSLStreamStatePtr stream;
+	vslNewStream(&stream, VSL_BRNG_MCG31, 13371337);
+	vslLeapfrogStream(stream, integrable_seed, integrable_num_seeds);
+	double* disorder = new double[md->sys_size * md->sys_size];
+	vdRngGaussian(VSL_RNG_METHOD_GAUSSIAN_BOXMULLER, stream, md->sys_size * md->sys_size, disorder, 0.0, 1.0);
+	Eigen::MatrixXcd X(md->sys_size, md->sys_size);
+	for (auto st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (auto st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			auto index = st_id_1 * md->sys_size + st_id_2;
+			X(st_id_1, st_id_2) = std::complex<double>(disorder[index], disorder[index]);
+		}
+	}
+	delete[] disorder;
+
+	Eigen::MatrixXcd y = 0.5 * (X + X.adjoint());
+	Eigen::MatrixXcd y2 = y * y;
+	const auto y2_tr = y2.trace();
+	y = y / std::sqrt(y2_tr.real());
+
+	// ========== init special matrix ==========
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			complex<double> val = y(st_id_1, st_id_2) / std::sqrt(static_cast<double>(md->sys_size));
+			md->special[index].real = val.real();
+			md->special[index].imag = val.imag();
+		}
+	}
+	// =========================================
+
+	init_random_obs(ad);
+}
+
 
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
 {
@@ -1176,6 +1278,168 @@ void LndHamNewDelBehaviour::init_dissipators(AllData* ad) const
 	auto evals_tmp = es.eigenvalues();
 	std::vector<std::complex<double>> G_evals(evals_tmp.data(), evals_tmp.data() + evals_tmp.rows() * evals_tmp.cols());
 	auto evecs = es.eigenvectors();
+
+	cout << "dissipators generation started" << endl;
+	for (int k1 = 0; k1 < M; k1++)
+	{
+		sp_mtx diss = sp_mtx(md->sys_size, md->sys_size);
+		for (int k2 = 0; k2 < M; k2++)
+		{
+			diss += evecs(k2, k1) * f_basis[k2 + 1];
+		}
+		diss *= std::sqrt(evals_tmp[k1]);
+
+		md->dissipators_eigen.push_back(diss);
+	}
+	cout << "dissipators generation complete" << endl;
+}
+
+void IntegrableNewDelBehaviour::init_dissipators(AllData* ad) const
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	int integrable_N = int(cp->params.find("integrable_N")->second);
+	int integrable_seed = int(cp->params.find("integrable_seed")->second);
+	int integrable_num_seeds = int(cp->params.find("integrable_num_seeds")->second);
+	double integrable_tau = double(cp->params.find("integrable_tau")->second);
+	double integrable_k = double(cp->params.find("integrable_k")->second);
+
+
+	int sys_size = md->sys_size;
+	md->dissipators = new MKL_Complex16 * [md->num_diss];
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		md->dissipators[diss_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+			{
+				md->dissipators[diss_id][index].real = 0.0;
+				md->dissipators[diss_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	Eigen::MatrixXcd con = Eigen::MatrixXcd::Zero(4, 4);
+	con(0, 0) = integrable_tau;
+	con(3, 3) = integrable_k;
+	con(1, 2) = 1;
+	con(2, 1) = 1;
+
+	Eigen::MatrixXcd eye = Eigen::MatrixXcd::Identity(2, 2);
+
+	// ======================================================================================
+	//                                  Left Dissipator (1, 2)
+	// ======================================================================================
+	Eigen::MatrixXcd left_diss = con;
+	for (int spin_id = 2; spin_id <= integrable_N - 1; spin_id++)
+	{
+		left_diss = Eigen::kroneckerProduct(left_diss, eye).eval();
+	}
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->dissipators[0][index].real = left_diss(st_id_1, st_id_2).real();
+			md->dissipators[0][index].imag = left_diss(st_id_1, st_id_2).imag();
+		}
+	}
+
+	// ======================================================================================
+	//                               Right Dissipator (N-1, N)
+	// ======================================================================================
+	Eigen::MatrixXcd right_diss = eye;
+	for (int spin_id = 1; spin_id <= integrable_N - 3; spin_id++)
+	{
+		right_diss = Eigen::kroneckerProduct(right_diss, eye).eval();
+	}
+	right_diss = Eigen::kroneckerProduct(right_diss, con).eval();
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->dissipators[integrable_N - 2][index].real = right_diss(st_id_1, st_id_2).real();
+			md->dissipators[integrable_N - 2][index].imag = right_diss(st_id_1, st_id_2).imag();
+		}
+	}
+
+	// ======================================================================================
+	//                               All middle dissipators
+	// ======================================================================================
+
+	for (int diss_id = 1; diss_id <= integrable_N - 3; diss_id++)
+	{
+		Eigen::MatrixXcd curr_diss = eye;
+
+		int left_s_id = 1;
+		int left_f_id = diss_id - 1;
+		for (int spin_id = left_s_id; spin_id <= left_f_id; spin_id++)
+		{
+			curr_diss = Eigen::kroneckerProduct(curr_diss, eye).eval();
+		}
+
+		curr_diss = Eigen::kroneckerProduct(curr_diss, con).eval();
+
+		int right_s_id = diss_id + 2;
+		int right_f_id = integrable_N - 1;
+		for (int spin_id = right_s_id; spin_id <= right_f_id; spin_id++)
+		{
+			curr_diss = Eigen::kroneckerProduct(curr_diss, eye).eval();
+		}
+		for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+		{
+			for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+			{
+				int index = st_id_1 * md->sys_size + st_id_2;
+				md->dissipators[integrable_N - 2][index].real = curr_diss(st_id_1, st_id_2).real();
+				md->dissipators[integrable_N - 2][index].imag = curr_diss(st_id_1, st_id_2).imag();
+			}
+		}
+	}
+
+	// ======================================================================================
+	//                               Border dissipator (N, 1)
+	// ======================================================================================
+	Eigen::MatrixXcd border_diss = Eigen::MatrixXcd::Zero(md->sys_size, md->sys_size);
+	for (int state_id = 0; state_id <= integrable_N - 1; state_id++)
+	{
+		int state_ind = state_id;
+
+	}
+
+	for state_id = 1:num_states
+		state_int = state_id - 1;
+	state_bits = de2bi(state_int, N);
+	state_bits = flip(state_bits);
+
+	if (state_bits(1) == state_bits(end))
+		if state_bits(1) == 0
+			border_diss(state_id, state_id) = tau;
+		else
+			border_diss(state_id, state_id) = k;
+	end
+	else
+		inv_bits = state_bits;
+	inv_bits(1) = state_bits(end);
+	inv_bits(end) = state_bits(1);
+	inv_bits = flip(inv_bits);
+	row_id = bi2de(inv_bits) + 1;
+	border_diss(row_id, state_id) = 1;
+	end
+		end
+		dissipators{ N } = border_diss;
+
+
 
 	cout << "dissipators generation started" << endl;
 	for (int k1 = 0; k1 < M; k1++)
