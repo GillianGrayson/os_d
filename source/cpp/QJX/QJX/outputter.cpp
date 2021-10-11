@@ -192,6 +192,33 @@ void LndHamOutputBehavior::suffix_param(RunParam* rp, ConfigParam* cp, int preci
 	cp->fn_suffix = suffix;
 }
 
+void IntegrableOutputBehavior::suffix_param(RunParam* rp, ConfigParam* cp, int precision) const
+{
+	string setup = suffix_setup(rp);
+	string qj = suffix_qj(rp, cp, precision);
+
+	stringstream params;
+
+	params << "_N(" << int(cp->params.find("integrable_N")->second) << ")";
+	params << "_seed(" << int(cp->params.find("integrable_seed")->second) << ")";
+	params << "_tau(" << int(cp->params.find("integrable_tau")->second) << ")";
+	params << "_k(" << int(cp->params.find("integrable_k")->second) << ")";
+	params << "_T(" << setprecision(precision) << fixed << double(cp->params.find("integrable_T")->second) << ")";
+
+	string suffix = setup + qj + params.str();
+
+	if (rp->task_id == LPN_MULT_TASK_ID || rp->task_id == LPN_MULT_DEEP_TASK_ID)
+	{
+		string lpn = suffix_lpn(rp, cp);
+		suffix += lpn;
+	}
+
+	string ext = extension();
+	suffix += ext;
+
+	cp->fn_suffix = suffix;
+}
+
 string suffix_qj(RunParam * rp, ConfigParam * cp, int precision)
 {
 	stringstream suffix;

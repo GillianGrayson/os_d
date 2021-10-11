@@ -80,7 +80,7 @@ void IntegrableDebugBehaviour::save(AllData* ad) const
 	ConfigParam* cp = ad->cp;
 	MainData* md = ad->md;
 
-	save_hamiltonian_and_dissipation(ad, false);
+	save_hamiltonian_and_dissipation(ad, true);
 
 	if (rp->is_debug)
 	{

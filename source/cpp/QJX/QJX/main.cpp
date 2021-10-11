@@ -56,6 +56,13 @@ int main()
 		ndb = new LndHamNewDelBehaviour();
 		cb = new LndHamCoreBehaviour();
 	}
+	else if (rp->sys_id == INTEGRABLE_SYS_ID)
+	{
+		db = new IntegrableDebugBehaviour();
+		ob = new IntegrableOutputBehavior();
+		ndb = new IntegrableNewDelBehaviour();
+		cb = new IntegrableCoreBehaviour();
+	}
 	else
 	{
 		stringstream msg;

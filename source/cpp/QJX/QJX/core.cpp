@@ -6436,8 +6436,6 @@ Split* init_split_structure_integrable(AllData* ad)
 		{
 			branch->g[diss_id] = 1.0;
 
-			ds_mtx diss = ds_mtx(md->dissipators_eigen[diss_id]);
-
 			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 			{
 				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
@@ -6445,8 +6443,8 @@ Split* init_split_structure_integrable(AllData* ad)
 					int index_xtd = diss_id * (md->sys_size * md->sys_size) + st_id_1 * md->sys_size + st_id_2;
 					int index = st_id_1 * md->sys_size + st_id_2;
 
-					branch->matrix[index_xtd].real = diss(st_id_1, st_id_2).real();
-					branch->matrix[index_xtd].imag = diss(st_id_1, st_id_2).imag();
+					branch->matrix[index_xtd].real = md->dissipators[diss_id][index].real;
+					branch->matrix[index_xtd].imag = md->dissipators[diss_id][index].imag;
 				}
 			}
 		}
@@ -6496,8 +6494,6 @@ Split* init_split_structure_integrable_deep(AllData* ad)
 		{
 			branch->g[diss_id] = 1.0;
 
-			ds_mtx diss = ds_mtx(md->dissipators_eigen[diss_id]);
-
 			for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 			{
 				for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
@@ -6505,8 +6501,8 @@ Split* init_split_structure_integrable_deep(AllData* ad)
 					int index_xtd = diss_id * (md->sys_size * md->sys_size) + st_id_1 * md->sys_size + st_id_2;
 					int index = st_id_1 * md->sys_size + st_id_2;
 
-					branch->matrix[index_xtd].real = diss(st_id_1, st_id_2).real();
-					branch->matrix[index_xtd].imag = diss(st_id_1, st_id_2).imag();
+					branch->matrix[index_xtd].real = md->dissipators[diss_id][index].real;
+					branch->matrix[index_xtd].imag = md->dissipators[diss_id][index].imag;
 				}
 			}
 		}
