@@ -1305,7 +1305,6 @@ void IntegrableNewDelBehaviour::init_dissipators(AllData* ad) const
 	double integrable_tau = double(cp->params.find("integrable_tau")->second);
 	double integrable_k = double(cp->params.find("integrable_k")->second);
 
-
 	int sys_size = md->sys_size;
 	md->dissipators = new MKL_Complex16 * [md->num_diss];
 	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
@@ -1401,8 +1400,8 @@ void IntegrableNewDelBehaviour::init_dissipators(AllData* ad) const
 			for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
 			{
 				int index = st_id_1 * md->sys_size + st_id_2;
-				md->dissipators[integrable_N - 2][index].real = curr_diss(st_id_1, st_id_2).real();
-				md->dissipators[integrable_N - 2][index].imag = curr_diss(st_id_1, st_id_2).imag();
+				md->dissipators[diss_id][index].real = curr_diss(st_id_1, st_id_2).real();
+				md->dissipators[diss_id][index].imag = curr_diss(st_id_1, st_id_2).imag();
 			}
 		}
 	}
@@ -1411,11 +1410,10 @@ void IntegrableNewDelBehaviour::init_dissipators(AllData* ad) const
 	//                               Border dissipator (N, 1)
 	// ======================================================================================
 	Eigen::MatrixXcd border_diss = Eigen::MatrixXcd::Zero(md->sys_size, md->sys_size);
-	for (int state_id = 0; state_id <= integrable_N - 1; state_id++)
+	for (int state_id = 0; state_id <= md->sys_size - 1; state_id++)
 	{
 		int state_ind = state_id;
 		vector<int> state_bits = convert_int_to_vector_of_bits(state_ind, integrable_N);
-		reverse(state_bits.begin(), state_bits.end());
 
 		if (state_bits[0] == state_bits[integrable_N - 1])
 		{
