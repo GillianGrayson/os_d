@@ -35,7 +35,7 @@ for seed_id in range(0, seed_num):
     rk_ns = 10000
 
     num_random_obs = 1
-    random_obs_seed = 100
+    random_obs_seed = lndham_seed
     random_obs_mns = 1000000
     random_obs_type = 2
     lpn_type = -1
@@ -57,7 +57,7 @@ for seed_id in range(0, seed_num):
     dump_evo_sep = 1
     dump_evo_avg = 0
     dump_type = 0
-    dump_num = num_obs_periods
+    dump_num = 1
     diss_type = 1
     diss_gamma = 0.1
     diss_phase = 0.0

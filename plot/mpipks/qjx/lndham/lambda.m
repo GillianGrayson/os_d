@@ -21,7 +21,7 @@ N = 100;
 alpha = 0.5;
 T = 1.0;
 
-num_seeds = 5;
+num_seeds = 100;
 
 ss = 0;
 mns = 1000000;
@@ -75,7 +75,7 @@ for seed = 1:num_seeds
 end
 
 lambdas_glob_1d = lambdas_glob(:);
-lambdas_glob_1d_mean = mean(lambdas_glob, 2);
+lambdas_glob_1d_mean = mean(lambdas_glob, 1);
 suffix_save = sprintf('N(%d)_numSeeds(%d)_alpha(%0.4f)_T(%0.4f)_lpn(%d_%0.4f_%0.4f_%0.4f)', ...
     N, ...
     num_seeds, ...
