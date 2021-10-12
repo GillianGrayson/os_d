@@ -13,7 +13,7 @@ seed_start = 1
 seed_shift = 1
 seed_num = 50
 
-Ts = [1.0, 2.0, 5.0, 10]
+Ts = [2.0, 5.0, 10.0]
 deltas = [1e-6, 1e-5, 1e-4, 1e-3]
 
 for T in Ts:

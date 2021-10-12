@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --cpus-per-task=1
 #SBATCH --time=2:00:00
+#SBATCH --output=/home/denysov/yusipov/os_d/submit/qjx/output/%j.out
 #SBATCH --mem=9000
 
 export OMP_NUM_THREADS=1

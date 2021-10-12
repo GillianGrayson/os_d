@@ -2,6 +2,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=48:00:00
 #SBATCH --partition=medium
+#SBATCH --output=/home/denysov/yusipov/os_d/submit/qjx/output/%j.out
 #SBATCH --mem=25000
 
 export OMP_NUM_THREADS=1
