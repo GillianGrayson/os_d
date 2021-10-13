@@ -1,5 +1,5 @@
 num_random_obs 1
-random_obs_seed 3
+random_obs_seed 6
 random_obs_mns 1000000
 random_obs_type 2
 lpn_type 0
@@ -54,12 +54,12 @@ mbl_prm_U 1.0
 mbl_prm_J 1.0
 mbl_T 10
 lndham_N 50
-lndham_seed 3
+lndham_seed 1
 lndham_num_seeds 1000000
 lndham_alpha 0.5
 lndham_T 1.0
 integrable_N 7
-integrable_seed 2
+integrable_seed 6
 integrable_num_seeds 1000000
 integrable_tau 1
 integrable_k -1
