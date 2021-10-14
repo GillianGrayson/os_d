@@ -5186,6 +5186,8 @@ void IntegrableCoreBehaviour::ex_period_obs_deep_mult_lpn(AllData* ad, int perio
 				evo_chars_lpn(ad, tr_id, dump_id);
 			}
 
+			dump_phi_evo(ad, true);
+
 #pragma omp parallel for
 			for (int tr_id = 0; tr_id < num_trajectories; tr_id++)
 			{

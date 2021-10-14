@@ -364,6 +364,8 @@ void LpnMultDeepExperimentBehaviour::obser_process(AllData * ad, PropagateBehavi
 	int dump_evo_sep = int(cp->params.find("dump_evo_sep")->second);
 	int dump_evo_avg = int(cp->params.find("dump_evo_avg")->second);
 
+	dump_phi_evo(ad, false);
+
 	int begin_period_id = 0;
 	int end_period_id = 0;
 	for (int dump_id = 1; dump_id < dump_num_total; dump_id++)
