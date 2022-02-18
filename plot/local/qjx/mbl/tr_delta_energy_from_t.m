@@ -25,7 +25,7 @@ diss_type = 1;
 diss_phase = 0.0;
 diss_gamma = 0.1;
 
-prm_W = 1.0;
+prm_W = 20.0;
 prm_U = 1.0;
 prm_J = 1.0;
 
@@ -113,9 +113,9 @@ set(gca, 'FontSize', 30);
 xlabel('$t$', 'Interpreter', 'latex');
 xlim([dump_periods(1) dump_periods(end)])
 set(gca, 'FontSize', 30);
-ylabel('$|\Delta(t)|$', 'Interpreter', 'latex');
+ylabel('$\Delta(t)$', 'Interpreter', 'latex');
 set(gca, 'YScale', 'log')
-ylim([1e-7, 10]);
+%ylim([1e-12, 0.01]);
 xtickangle(0)
 xticks(x_ticks);
 xticklabels(x_labels);
