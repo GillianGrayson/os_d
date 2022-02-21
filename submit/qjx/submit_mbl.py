@@ -35,7 +35,7 @@ for mbl_U_id in range(0, mbl_U_num):
             print('mbl_seed: ' + str(mbl_seed))
 
             sys_id = 3
-            task_id = 1 # 7
+            task_id = 7
             prop_id = 0
             is_debug = 0
             is_pp = 0
@@ -44,9 +44,9 @@ for mbl_U_id in range(0, mbl_U_num):
             seed = 0
             mns = 1000000
             num_threads = 1
-            num_trajectories = 10 # 200
+            num_trajectories = 200 # 200
             num_tp_periods = 500
-            num_obs_periods = 100000 # 500
+            num_obs_periods = 500 # 500
             ex_deep = 16
             rk_ns = 10000
 
@@ -77,7 +77,7 @@ for mbl_U_id in range(0, mbl_U_num):
             diss_type = 1
             diss_gamma = 0.1
             diss_phase = 0.0
-            mbl_Nc = 10
+            mbl_Nc = 8
             mbl_seed = mbl_seed
             mbl_mns = 1000000
             mbl_prm_W = mbl_W
@@ -89,8 +89,8 @@ for mbl_U_id in range(0, mbl_U_num):
             cd_dim = 1
             cd_eps = 1.0e-8
             deep_num_steps = 1000
-            jump = 1 # 0
-            jumps_counts = 100000 # 0
+            jump = 0 # 1
+            jumps_counts = 0 # 100000
 
             diss_phase_str = str(format(diss_phase, '0.4f'))
             diss_gamma_str = str(format(diss_gamma, '0.4f'))
