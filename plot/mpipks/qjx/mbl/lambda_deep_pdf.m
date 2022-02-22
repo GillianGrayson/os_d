@@ -21,8 +21,8 @@ num_rnd_obs = 1;
 rnd_obs_seed = 100;
 rnd_obs_type = 2;
 
-W_seed_s = 1;
-W_seed_num = 1000;
+W_seed_s = 4;
+W_seed_num = 1;
 W_mns = 1000000;
 
 diss_type = 1;
@@ -43,7 +43,7 @@ lpn_delta_f_l = 1e-6;
 ss = 0;
 mns = 1000000;
 
-num_trajectories = 200;
+num_trajectories = 10000;
 num_target_trajectories = num_trajectories / 2;
 num_runs = 1;
 
@@ -119,7 +119,7 @@ for W_id = 1:W_num
                 log10(lpn_delta_f_h), ...
                 log10(lpn_delta_f_l));
             s_index = (W_seed_id - 1) * num_runs * num_target_trajectories + (num_runs - 1) * num_target_trajectories + 1;
-            f_index = (W_seed_id - 1) * num_runs * num_target_trajectories + (num_runs - 1) * num_target_trajectories + num_target_trajectories
+            f_index = (W_seed_id - 1) * num_runs * num_target_trajectories + (num_runs - 1) * num_target_trajectories + num_target_trajectories;
             
             fn = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
             curr_data = importdata(fn);

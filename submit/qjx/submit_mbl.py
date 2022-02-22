@@ -13,13 +13,13 @@ mbl_U_start = 1.0
 mbl_U_shift = 0.1
 mbl_U_num = 1
 
-mbl_W_start = 10.0
+mbl_W_start = 20.0
 mbl_W_shift = 0.2
 mbl_W_num = 1
 
 mbl_seed_start = 1
 mbl_seed_shift = 1
-mbl_seed_num = 1000
+mbl_seed_num = 30
 
 for mbl_U_id in range(0, mbl_U_num):
     mbl_U = mbl_U_start + mbl_U_id * mbl_U_shift
@@ -44,7 +44,7 @@ for mbl_U_id in range(0, mbl_U_num):
             seed = 0
             mns = 1000000
             num_threads = 1
-            num_trajectories = 200 # 200
+            num_trajectories = 10000 # 200
             num_tp_periods = 500
             num_obs_periods = 500 # 500
             ex_deep = 16
