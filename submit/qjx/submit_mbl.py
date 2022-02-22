@@ -13,13 +13,13 @@ mbl_U_start = 1.0
 mbl_U_shift = 0.1
 mbl_U_num = 1
 
-mbl_W_start = 20.0
+mbl_W_start = 10.0
 mbl_W_shift = 0.2
 mbl_W_num = 1
 
 mbl_seed_start = 1
 mbl_seed_shift = 1
-mbl_seed_num = 10
+mbl_seed_num = 1000
 
 for mbl_U_id in range(0, mbl_U_num):
     mbl_U = mbl_U_start + mbl_U_id * mbl_U_shift
@@ -70,7 +70,7 @@ for mbl_U_id in range(0, mbl_U_num):
             dump_phi_evo = 0
             dump_adr_sep = 0
             dump_adr_avg = 0
-            dump_evo_sep = 1
+            dump_evo_sep = 0
             dump_evo_avg = 0
             dump_type = 0
             dump_num = 1 # num_obs_periods

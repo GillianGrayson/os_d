@@ -118,8 +118,8 @@ for W_id = 1:W_num
                 log10(lpn_delta_s), ...
                 log10(lpn_delta_f_h), ...
                 log10(lpn_delta_f_l));
-            s_index = (W_seed_id - 1) * num_runs * num_trajectories + (num_runs - 1) * num_trajectories + 1;
-            f_index = (W_seed_id - 1) * num_runs * num_trajectories + (num_runs - 1) * num_trajectories + num_target_trajectories;
+            s_index = (W_seed_id - 1) * num_runs * num_target_trajectories + (num_runs - 1) * num_target_trajectories + 1;
+            f_index = (W_seed_id - 1) * num_runs * num_target_trajectories + (num_runs - 1) * num_target_trajectories + num_target_trajectories;
             
             fn = sprintf('%s/lambda_%s.txt', path_to_folder, suffix);
             curr_data = importdata(fn);
