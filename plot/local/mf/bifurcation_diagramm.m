@@ -2,7 +2,7 @@ clear all;
 
 data_path = '../../../source/cpp/MF/MF';
 
-task = 0;
+task = 2;
 U_start = 0.01;
 U_shift = 0.01;
 U_num = 50;
