@@ -43,6 +43,53 @@ void DimerOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int prec
 	cp->fn_suffix = suffix;
 }
 
+void DimerSyncOutputBehavior::suffix_param(RunParam* rp, ConfigParam* cp, int precision) const
+{
+	string setup = suffix_setup(rp);
+	string qj = suffix_qj(rp, cp, precision);
+
+	stringstream params;
+
+	params << "_N(" << int(cp->params.find("dimersync_N")->second) << ")";
+
+	params << "_diss("
+		<< int(cp->params.find("diss_type")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("diss_gamma")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("diss_phase")->second) << ")";
+
+	params << "_drv1("
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_drv_ampl_1")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_drv_freq_1")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_drv_phase_1")->second) << ")";
+
+	params << "_drv2("
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_drv_ampl_2")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_drv_freq_2")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_drv_phase_2")->second) << ")";
+
+	params << "_prm("
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_prm_E")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_prm_U")->second) << "_"
+		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_prm_J")->second) << ")";
+
+	params << "_start("
+		<< int(cp->params.find("start_type")->second) << "_"
+		<< int(cp->params.find("start_state")->second) << ")";
+
+	string suffix = setup + qj + params.str();
+
+	if (rp->task_id == LPN_MULT_TASK_ID || rp->task_id == LPN_MULT_DEEP_TASK_ID)
+	{
+		string lpn = suffix_lpn(rp, cp);
+		suffix += lpn;
+	}
+
+	string ext = extension();
+	suffix += ext;
+
+	cp->fn_suffix = suffix;
+}
+
 void JCSOutputBehavior::suffix_param(RunParam * rp, ConfigParam * cp, int precision) const
 {
 	string setup = suffix_setup(rp);

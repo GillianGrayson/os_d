@@ -28,6 +28,13 @@ int main()
 		ndb = new DimerNewDelBehaviour();
 		cb = new DimerCoreBehaviour();
 	}
+	else if (rp->sys_id == DIMERSYNC_SYS_ID)
+	{
+		db = new DimerSyncDebugBehaviour();
+		ob = new DimerSyncOutputBehavior();
+		ndb = new DimerSyncNewDelBehaviour();
+		cb = new DimerSyncCoreBehaviour();
+	}
 	else if(rp->sys_id == JCS_SYS_ID)
 	{
 		db = new JCSDebugBehaviour();

@@ -5,6 +5,11 @@ void DimerDebugBehaviour::save(AllData * ad) const
 	save_hamiltonian_and_dissipation(ad);
 }
 
+void DimerSyncDebugBehaviour::save(AllData* ad) const
+{
+	save_hamiltonian_and_dissipation(ad);
+}
+
 void JCSDebugBehaviour::save(AllData * ad) const
 {
 	RunParam * rp = ad->rp;

@@ -14,6 +14,12 @@ public:
 	virtual void suffix_param(RunParam * rp, ConfigParam * cp, int precision) const;
 };
 
+class DimerSyncOutputBehavior : public OutputBehavior
+{
+public:
+	virtual void suffix_param(RunParam* rp, ConfigParam* cp, int precision) const;
+};
+
 class JCSOutputBehavior : public OutputBehavior
 {
 public:

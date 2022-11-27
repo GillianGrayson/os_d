@@ -14,6 +14,12 @@ public:
 	virtual void save(AllData * ad) const;
 };
 
+class DimerSyncDebugBehaviour : public DebugBehavior
+{
+public:
+	virtual void save(AllData* ad) const;
+};
+
 class JCSDebugBehaviour : public DebugBehavior
 {
 public:

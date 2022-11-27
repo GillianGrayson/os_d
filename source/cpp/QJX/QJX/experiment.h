@@ -102,6 +102,8 @@ double get_m2(double * adr, int sys_size, double mean);
 
 double get_energy(AllData * ad, int tr_id);
 
+double get_energy_sync(AllData* ad, int tr_id);
+
 MKL_Complex16 get_spec_jcs(AllData * ad, int tr_id);
 MKL_Complex16 get_spec_ps(AllData * ad, int tr_id);
 MKL_Complex16 get_spec_2_ps(AllData * ad, int tr_id);

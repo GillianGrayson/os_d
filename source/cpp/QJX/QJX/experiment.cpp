@@ -1468,6 +1468,55 @@ double get_energy(AllData * ad, int tr_id)
 	return energy;
 }
 
+double get_energy_sync(AllData* ad, int tr_id)
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+	ExpData* ed = ad->ed;
+
+	int sys_size = md->sys_size;
+
+	double prm_E = double(cp->params.find("dimersync_prm_E")->second);
+
+	MKL_Complex16* phi = &(ed->phi_all[tr_id * sys_size]);
+	MKL_Complex16* hamiltonian = md->hamiltonian;
+	MKL_Complex16* hamiltonian_drv = md->hamiltonian_drv;
+
+	double norm_2 = norm_square(phi, sys_size);
+
+	MKL_Complex16* sm = new MKL_Complex16[sys_size];
+
+	for (int st_id_1 = 0; st_id_1 < sys_size; st_id_1++)
+	{
+		MKL_Complex16 tmp;
+		tmp.real = 0;
+		tmp.imag = 0;
+		for (int st_id_2 = 0; st_id_2 < sys_size; st_id_2++)
+		{
+			int index = st_id_1 * sys_size + st_id_2;
+
+			double ham_val = (hamiltonian[index].real + prm_E * hamiltonian_drv[index].real);
+
+			tmp.real += (ham_val * phi[st_id_2].real / sqrt(norm_2) - (0.0) * phi[st_id_2].imag / sqrt(norm_2));
+			tmp.imag += (ham_val * phi[st_id_2].imag / sqrt(norm_2) + (0.0) * phi[st_id_2].real / sqrt(norm_2));
+		}
+
+		sm[st_id_1].real = tmp.real;
+		sm[st_id_1].imag = tmp.imag;
+	}
+
+	double energy = 0.0;
+	for (int st_id = 0; st_id < sys_size; st_id++)
+	{
+		energy += (phi[st_id].real / sqrt(norm_2) * sm[st_id].real + phi[st_id].imag / sqrt(norm_2) * sm[st_id].imag);
+	}
+
+	delete[] sm;
+
+	return energy;
+}
+
+
 MKL_Complex16 get_spec_jcs(AllData * ad, int tr_id)
 {
 	ConfigParam * cp = ad->cp;

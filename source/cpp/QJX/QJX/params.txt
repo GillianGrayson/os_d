@@ -33,6 +33,17 @@ dimer_drv_phase 0.0
 dimer_prm_E 0.0
 dimer_prm_U 0.15
 dimer_prm_J 1.0
+dimersync_N 100
+dimersync_drv_type 1
+dimersync_drv_ampl_1 3.4
+dimersync_drv_freq_1 1.0
+dimersync_drv_phase_1 0.0
+dimersync_drv_ampl_2 0.9
+dimersync_drv_freq_2 0.5
+dimersync_drv_phase_2 0.0
+dimersync_prm_E 0.0
+dimersync_prm_U 0.15
+dimersync_prm_J 1.0
 jcs_drv_part_1 2.0
 jcs_drv_part_2 2.0
 jcs_drv_ampl 3.0
@@ -68,6 +79,6 @@ start_type 0
 start_state 0
 cd_dim 1
 cd_eps 1e-08
-deep_num_steps 100
+deep_num_steps 50
 jump 0
 jumps_counts 0

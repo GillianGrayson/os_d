@@ -19,6 +19,7 @@ void init_rk_data(AllData * ad)
 	ed->args = new MKL_Complex16*[num_threads];
 	ed->non_drv_tmp = new MKL_Complex16*[num_threads];
 	ed->drv_tmp = new MKL_Complex16*[num_threads];
+	ed->drv_tmp_2 = new MKL_Complex16 * [num_threads];
 	for (int th_id = 0; th_id < num_threads; th_id++)
 	{
 		ed->k1[th_id] = new MKL_Complex16[sys_size];
@@ -28,6 +29,7 @@ void init_rk_data(AllData * ad)
 		ed->args[th_id] = new MKL_Complex16[sys_size];
 		ed->non_drv_tmp[th_id] = new MKL_Complex16[sys_size];
 		ed->drv_tmp[th_id] = new MKL_Complex16[sys_size];
+		ed->drv_tmp_2[th_id] = new MKL_Complex16[sys_size];
 		for (int st_id = 0; st_id < sys_size; st_id++)
 		{
 			ed->k1[th_id][st_id].real = 0.0;
@@ -44,6 +46,8 @@ void init_rk_data(AllData * ad)
 			ed->non_drv_tmp[th_id][st_id].imag = 0.0;
 			ed->drv_tmp[th_id][st_id].real = 0.0;
 			ed->drv_tmp[th_id][st_id].imag = 0.0;
+			ed->drv_tmp_2[th_id][st_id].real = 0.0;
+			ed->drv_tmp_2[th_id][st_id].imag = 0.0;
 		}
 	}
 }
@@ -95,6 +99,7 @@ void free_rk_data(AllData * ad)
 		delete[] ed->args[th_id];
 		delete[] ed->non_drv_tmp[th_id];
 		delete[] ed->drv_tmp[th_id];
+		delete[] ed->drv_tmp_2[th_id];
 	}
 	delete[] ed->k1;
 	delete[] ed->k2;
@@ -103,6 +108,7 @@ void free_rk_data(AllData * ad)
 	delete[] ed->args;
 	delete[] ed->non_drv_tmp;
 	delete[] ed->drv_tmp;
+	delete[] ed->drv_tmp_2;
 }
 
 void free_rk(AllData * ad)
