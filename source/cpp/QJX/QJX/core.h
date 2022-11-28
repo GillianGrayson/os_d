@@ -388,7 +388,7 @@ Split* init_split_structure_integrable(AllData* ad);
 Split* init_split_structure_integrable_deep(AllData* ad);
 
 void rk_right_part_dimer(AllData * ad, int sub_step, int tr_id, int th_id);
-void rk_right_part_dimer_sync(AllData* ad, int sub_step, int tr_id, int th_id);
+void rk_right_part_dimersync(AllData* ad, int sub_step, int tr_id, int th_id);
 void rk_right_part_jcs(AllData * ad, int sub_step, int tr_id, int th_id);
 void rk_right_part_ps(AllData * ad, int sub_step, int tr_id, int th_id);
 void rk_right_part_mbl(AllData * ad, int sub_step, int tr_id, int th_id);

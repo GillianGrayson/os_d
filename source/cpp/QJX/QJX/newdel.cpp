@@ -1713,9 +1713,6 @@ void DimerSyncNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
 	ConfigParam* cp = ad->cp;
 	MainData* md = ad->md;
 
-	double prm_E = double(cp->params.find("dimersync_prm_E")->second);
-	double drv_ampl_1 = double(cp->params.find("dimersync_drv_ampl_1")->second);
-
 	double diss_gamma = double(cp->params.find("diss_gamma")->second);
 	diss_gamma = diss_gamma / double(md->sys_size - 1);
 
@@ -1795,6 +1792,9 @@ void DimerSyncNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
 			md->drv_part_2[index].imag = 0.0;
 		}
 	}
+
+	double prm_E = double(cp->params.find("dimersync_prm_E")->second);
+	double drv_ampl_1 = double(cp->params.find("dimersync_drv_ampl_1")->second);
 
 	double E_0 = prm_E + drv_ampl_1;
 	double E_1 = prm_E - drv_ampl_1;
@@ -2424,7 +2424,6 @@ void DimerSyncNewDelBehaviour::free_dissipators(AllData* ad) const
 	}
 	delete[] md->dissipators;
 }
-
 
 void JCSNewDelBehaviour::free_dissipators(AllData * ad) const
 {
