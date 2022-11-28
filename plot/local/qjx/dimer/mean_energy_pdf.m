@@ -22,13 +22,13 @@ prm_J = 1.0;
 start_type = 0;
 start_state = 0;
 
-drv_ampl_2 = 0.0;
-drv_freq_2 = 0.5;
+drv_ampl_2 = 0.9;
+drv_freq_2 = 0.25;
 drv_phase_2 = 0.0;
 
 n_tr = 100;
 start_time_id = 1;
-shift_time = 200;
+shift_time = 100;
 if (sys_id == 6)
     suffix = sprintf('setup(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv1(%0.4f_%0.4f_%0.4f)_drv2(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
         sys_id, ...

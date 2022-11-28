@@ -38,7 +38,7 @@ dimersync_drv_type 1
 dimersync_drv_ampl_1 3.4
 dimersync_drv_freq_1 1.0
 dimersync_drv_phase_1 0.0
-dimersync_drv_ampl_2 0.9
+dimersync_drv_ampl_2 0.95
 dimersync_drv_freq_2 0.5
 dimersync_drv_phase_2 0.0
 dimersync_prm_E 0.0
