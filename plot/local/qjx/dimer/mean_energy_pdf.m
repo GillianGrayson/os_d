@@ -4,7 +4,7 @@ fig_path = 'E:/YandexDisk/Work/os_d/figures/dimer/qjx/sync_report';
 data_path = '../../../../source/cpp/QJX/QJX';
 
 sys_id = 6; 
-task_id = 4;
+task_id = 1;
 prop_id = 1;
 ss = 1;
 mns = 1000000;
@@ -12,25 +12,28 @@ N = 100;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
-drv_type = 1;
-drv_ampl = 3.4;
-drv_freq = 1.0;
-drv_phase = 0.0;
 prm_E = 0.0;
 prm_U = 0.15;
 prm_J = 1.0;
 start_type = 0;
 start_state = 0;
 
-drv_ampl_2 = 0.9;
-drv_freq_2 = 0.5;
+drv_type = 1;
+drv_ampl = 3.4;
+drv_freq = 1.0;
+drv_phase = 0.0;
+
+drv_ampl_2 = 0.0;
+drv_freq_2 = 0.6180339887498948;
 drv_phase_2 = 0.0;
+
+main_period = 2;
 
 n_tr = 100;
 start_time_id = 1;
-shift_time = 200;
+shift_time = 1;
 if (sys_id == 6)
-    suffix = sprintf('setup(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv1(%0.4f_%0.4f_%0.4f)_drv2(%0.4f_%0.4f_%0.4f)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
+    suffix = sprintf('setup(%d_%d_%d)_rnd(%d_%d)_N(%d)_diss(%d_%0.4f_%0.4f)_drv1(%0.4f_%0.4f_%0.4f)_drv2(%0.4f_%0.4f_%0.4f)_T(%d)_prm(%0.4f_%0.4f_%0.4f)_start(%d_%d)', ...
         sys_id, ...
         task_id, ...
         prop_id, ...
@@ -46,6 +49,7 @@ if (sys_id == 6)
         drv_ampl_2, ...
         drv_freq_2, ...
         drv_phase_2, ...
+        main_period, ...
         prm_E, ...
         prm_U, ...
         prm_J, ...

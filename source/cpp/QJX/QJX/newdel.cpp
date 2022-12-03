@@ -64,14 +64,26 @@ void DimerSyncNewDelBehaviour::init_sizes(AllData* ad) const
 	}
 
 	int N = int(cp->params.find("dimersync_N")->second);
+	int main_period = int(cp->params.find("dimersync_main_period")->second);
 	double T1 = 2.0 * PI / double(cp->params.find("dimersync_drv_freq_1")->second);
 	double T2 = 2.0 * PI / double(cp->params.find("dimersync_drv_freq_2")->second);
 	cout << "T1 = " << T1 << endl;
 	cout << "T2 = " << T2 << endl;
-	double T = T1;
-	if (T2 < T1)
+	cout << "main_period = " << main_period << endl;
+	double T = 0.0;
+	if (main_period == 1)
+	{
+		T = T1;
+	}
+	else if (main_period == 2)
 	{
 		T = T2;
+	}
+	else
+	{
+		stringstream msg;
+		msg << "Error: wrong dimersync_main_period" << endl;
+		Error(msg.str());
 	}
 	cout << "T = " << T << endl;
 

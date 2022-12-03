@@ -67,6 +67,8 @@ void DimerSyncOutputBehavior::suffix_param(RunParam* rp, ConfigParam* cp, int pr
 		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_drv_freq_2")->second) << "_"
 		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_drv_phase_2")->second) << ")";
 
+	params << "_T(" << int(cp->params.find("dimersync_main_period")->second) << ")";
+
 	params << "_prm("
 		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_prm_E")->second) << "_"
 		<< setprecision(precision) << fixed << double(cp->params.find("dimersync_prm_U")->second) << "_"
