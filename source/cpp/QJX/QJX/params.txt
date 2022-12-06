@@ -17,7 +17,7 @@ dump_obs 1
 dump_phi 0
 dump_phi_evo 1
 dump_adr_sep 0
-dump_adr_avg 0
+dump_adr_avg 1
 dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
@@ -33,7 +33,7 @@ dimer_drv_phase 0.0
 dimer_prm_E 0.0
 dimer_prm_U 0.15
 dimer_prm_J 1.0
-dimersync_N 100
+dimersync_N 50
 dimersync_drv_type 1
 dimersync_drv_ampl_1 3.4
 dimersync_drv_freq_1 1.0

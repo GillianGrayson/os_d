@@ -23,7 +23,7 @@ drv_ampl = 3.4;
 drv_freq = 1.0;
 drv_phase = 0.0;
 
-drv_ampl_2 = 0.3;
+drv_ampl_2 = 0.0;
 drv_freq_2 = 0.6180339887498948;
 drv_phase_2 = 0.0;
 
@@ -114,7 +114,7 @@ fn_fig = sprintf('%s/rho_direct_%d_%s', fig_path, period_plot, suffix);
 oqs_save_fig(fig, fn_fig)
 
 tic
-hus = husimi(nus, phis, rho_total);
+hus = husimi(nus, phis, transpose(rho_total));
 toc 
 
 fig = figure;
