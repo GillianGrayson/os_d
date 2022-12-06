@@ -8,7 +8,7 @@ task_id = 1;
 prop_id = 1;
 ss = 1;
 mns = 1000000;
-N = 100;
+N = 50;
 diss_type = 1;
 diss_gamma = 0.1;
 diss_phase = 0.0;
@@ -23,13 +23,13 @@ drv_ampl = 3.4;
 drv_freq = 1.0;
 drv_phase = 0.0;
 
-drv_ampl_2 = 0.9;
+drv_ampl_2 = 0.0;
 drv_freq_2 = 0.6180339887498948;
 drv_phase_2 = 0.0;
 
 main_period = 2;
 
-n_tr = 100;
+n_tr = 1000;
 start_time_id = 1;
 shift_time = 1;
 if (sys_id == 6)
