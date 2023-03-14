@@ -6,12 +6,11 @@ int main()
 
 	RunParam * rp = new RunParam();
 	ConfigParam * cp = new ConfigParam();
-	MainData * md = new MainData();
-	ExpData * ed = new ExpData();
-
-	AllData * ad = new AllData();
-
 	init_params(rp, cp, "config.txt", "params.txt");
+
+	MainData* md = new MainData();
+	ExpData* ed = new ExpData();
+	AllData* ad = new AllData();
 
 	DebugBehavior * db = nullptr;
 	OutputBehavior * ob = nullptr;
