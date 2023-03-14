@@ -15,10 +15,10 @@ save_lambdas 0
 num_lambdas_periods 2
 dump_obs 1
 dump_phi 0
-dump_phi_evo 1
+dump_phi_evo 0
 dump_adr_sep 0
-dump_adr_avg 1
-dump_evo_sep 1
+dump_adr_avg 0
+dump_evo_sep 0
 dump_evo_avg 0
 dump_type 0
 dump_num 100
@@ -76,13 +76,12 @@ integrable_num_seeds 1000000
 integrable_tau 1
 integrable_k -1
 integrable_T 1.0
-flq2sp_ampl 20.0
-flq2sp_freq 2.0
+flq2sp_ampl 100.0
+flq2sp_freq 10.0
 flq2sp_Delta_1 1.0
 flq2sp_Delta_2 1.0
 flq2sp_J 1.0
 flq2sp_gamma 0.05
-
 start_type 0
 start_state 0
 cd_dim 1

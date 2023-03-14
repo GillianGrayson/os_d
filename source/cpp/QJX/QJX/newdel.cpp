@@ -373,7 +373,7 @@ void Floq2SpinsNewDelBehaviour::init_sizes(AllData* ad) const
 	md->sys_size = std::round(std::pow(2, 2));
 	md->num_diss = 2;
 	md->num_ham_qj = 1;
-	md->T = 2.0 * PI / double(cp->params.find("flq2sp_freq")->second);;
+	md->T = 2.0 * PI / double(cp->params.find("flq2sp_freq")->second);
 }
 
 
@@ -1054,35 +1054,42 @@ void Floq2SpinsNewDelBehaviour::init_hamiltonians(AllData* ad) const
 	double Delta_2 = double(cp->params.find("flq2sp_Delta_2")->second);
 	double J = double(cp->params.find("flq2sp_J")->second);
 
+	Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+	std::string sep = "\n----------------------------------------\n";
+
 	Eigen::MatrixXcd sigma_0(2, 2);
 	sigma_0(0, 0) = std::complex<double>(1.0, 0.0);
 	sigma_0(0, 1) = std::complex<double>(0.0, 0.0);
 	sigma_0(1, 0) = std::complex<double>(0.0, 0.0);
 	sigma_0(1, 1) = std::complex<double>(1.0, 0.0);
+	std::cout << sigma_0.format(CleanFmt) << sep;
 
 	Eigen::MatrixXcd sigma_x(2, 2);
 	sigma_x(0, 0) = std::complex<double>(0.0, 0.0);
 	sigma_x(0, 1) = std::complex<double>(1.0, 0.0);
 	sigma_x(1, 0) = std::complex<double>(1.0, 0.0);
 	sigma_x(1, 1) = std::complex<double>(0.0, 0.0);
+	std::cout << sigma_x.format(CleanFmt) << sep;
 
 	Eigen::MatrixXcd sigma_y(2, 2);
-	sigma_x(0, 0) = std::complex<double>(0.0, 0.0);
-	sigma_x(0, 1) = std::complex<double>(0.0, -1.0);
-	sigma_x(1, 0) = std::complex<double>(0.0, 1.0);
-	sigma_x(1, 1) = std::complex<double>(0.0, 0.0);
+	sigma_y(0, 0) = std::complex<double>(0.0, 0.0);
+	sigma_y(0, 1) = std::complex<double>(0.0, -1.0);
+	sigma_y(1, 0) = std::complex<double>(0.0, 1.0);
+	sigma_y(1, 1) = std::complex<double>(0.0, 0.0);
+	std::cout << sigma_y.format(CleanFmt) << sep;
 
 	Eigen::MatrixXcd sigma_z(2, 2);
 	sigma_z(0, 0) = std::complex<double>(1.0, 0.0);
 	sigma_z(0, 1) = std::complex<double>(0.0, 0.0);
 	sigma_z(1, 0) = std::complex<double>(0.0, 0.0);
 	sigma_z(1, 1) = std::complex<double>(-1.0, 0.0);
+	std::cout << sigma_z.format(CleanFmt) << sep;
 
-	Eigen::MatrixXcd H = 0.5
-	* (Delta_1 * Eigen::kroneckerProduct(sigma_z, sigma_0) + Delta_2 * Eigen::kroneckerProduct(sigma_0, sigma_z))
-	+ J * Eigen::kroneckerProduct(sigma_y, sigma_0) * Eigen::kroneckerProduct(sigma_0, sigma_y);
+	Eigen::MatrixXcd H = 0.5 * (Delta_1 * Eigen::kroneckerProduct(sigma_z, sigma_0) + Delta_2 * Eigen::kroneckerProduct(sigma_0, sigma_z)) + J * Eigen::kroneckerProduct(sigma_y, sigma_0) * Eigen::kroneckerProduct(sigma_0, sigma_y);
+	std::cout << H.format(CleanFmt) << sep;
 
 	Eigen::MatrixXcd H_drv = Eigen::kroneckerProduct(sigma_x, sigma_0);
+	std::cout << H_drv.format(CleanFmt) << sep;
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
@@ -1752,20 +1759,27 @@ void Floq2SpinsNewDelBehaviour::init_dissipators(AllData* ad) const
 		}
 	}
 
+	Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+	std::string sep = "\n----------------------------------------\n";
+
 	Eigen::MatrixXcd sigma_0(2, 2);
 	sigma_0(0, 0) = std::complex<double>(1.0, 0.0);
 	sigma_0(0, 1) = std::complex<double>(0.0, 0.0);
 	sigma_0(1, 0) = std::complex<double>(0.0, 0.0);
 	sigma_0(1, 1) = std::complex<double>(1.0, 0.0);
+	std::cout << sigma_0.format(CleanFmt) << sep;
 
 	Eigen::MatrixXcd sigma_m(2, 2);
 	sigma_m(0, 0) = std::complex<double>(0.0, 0.0);
 	sigma_m(0, 1) = std::complex<double>(0.0, 0.0);
 	sigma_m(1, 0) = std::complex<double>(1.0, 0.0);
 	sigma_m(1, 1) = std::complex<double>(0.0, 0.0);
+	std::cout << sigma_m.format(CleanFmt) << sep;
 
 	Eigen::MatrixXcd diss_1 = Eigen::kroneckerProduct(sigma_m, sigma_0);
+	std::cout << diss_1.format(CleanFmt) << sep;
 	Eigen::MatrixXcd diss_2 = Eigen::kroneckerProduct(sigma_0, sigma_m);
+	std::cout << diss_2.format(CleanFmt) << sep;
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
