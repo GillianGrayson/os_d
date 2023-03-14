@@ -70,6 +70,13 @@ int main()
 		ndb = new IntegrableNewDelBehaviour();
 		cb = new IntegrableCoreBehaviour();
 	}
+	else if (rp->sys_id == FLOQ_2_SPINS_SYS_ID)
+	{
+		db = new Floq2SpinsDebugBehaviour();
+		ob = new Floq2SpinsOutputBehavior();
+		ndb = new Floq2SpinsNewDelBehaviour();
+		cb = new Floq2SpinsCoreBehaviour();
+	}
 	else
 	{
 		stringstream msg;

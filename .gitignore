@@ -132,3 +132,7 @@ source/cpp/CQdiss_os_jcs_opt/CQdiss_fbasis/My Advisor Results - CQdiss_fbasis/
 *.pdf
 
 *.fig
+
+*.vsidx
+
+*.lock

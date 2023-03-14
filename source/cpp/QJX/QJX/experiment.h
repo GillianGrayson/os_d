@@ -116,6 +116,8 @@ MKL_Complex16 get_spec_lndham(AllData* ad, int tr_id);
 
 MKL_Complex16 get_spec_integrable(AllData* ad, int tr_id);
 
+MKL_Complex16 get_spec_flq2sp(AllData* ad, int tr_id);
+
 vector<complex<double>> get_random_obs(AllData * ad, int tr_id);
 
 MKL_Complex16 get_num_photons_jcs(AllData * ad, int tr_id);

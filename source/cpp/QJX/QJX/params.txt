@@ -7,9 +7,9 @@ lpn_eps_deep 100
 lpn_eps_error 1e-10
 lpn_eps_high 100
 lpn_eps_low -100
-lpn_delta_s 1.0e-1
-lpn_delta_f_high 1.0e-1
-lpn_delta_f_low 1.0e-1
+lpn_delta_s 1.0e-6
+lpn_delta_f_high 1.0e-6
+lpn_delta_f_low 1.0e-6
 lambda_per_periods 1
 save_lambdas 0
 num_lambdas_periods 2
@@ -22,7 +22,7 @@ dump_evo_sep 1
 dump_evo_avg 0
 dump_type 0
 dump_num 100
-N 100
+N 10
 diss_type 1
 diss_gamma 0.1
 diss_phase 0.0
@@ -31,7 +31,7 @@ dimer_drv_ampl 3.4
 dimer_drv_freq 1.0
 dimer_drv_phase 0.0
 dimer_prm_E 0.0
-dimer_prm_U 0.15
+dimer_prm_U 0.3
 dimer_prm_J 1.0
 dimersync_N 50
 dimersync_drv_type 1
@@ -76,6 +76,13 @@ integrable_num_seeds 1000000
 integrable_tau 1
 integrable_k -1
 integrable_T 1.0
+flq2sp_ampl 20.0
+flq2sp_freq 2.0
+flq2sp_Delta_1 1.0
+flq2sp_Delta_2 1.0
+flq2sp_J 1.0
+flq2sp_gamma 0.05
+
 start_type 0
 start_state 0
 cd_dim 1
