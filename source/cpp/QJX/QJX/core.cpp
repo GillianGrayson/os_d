@@ -2051,24 +2051,23 @@ void DimerSyncCoreBehaviour::dump_lpn(AllData* ad) const
 
 	int dump_obs = int(cp->params.find("dump_obs")->second);
 
+	string fn;
+
+	double* lambda = ed->lambda_now;
+	fn = rp->path + "lambda" + cp->fn_suffix;
+	save_double_data(fn, lambda, num_trajectories, 16, false);
+
 	if (dump_obs == 1)
 	{
-		double* lambda = ed->lambda_now;
-		double* mean_lpn = ed->mean_lpn;
-		double* energy_lpn = ed->energy_lpn;
-
-		string fn;
-
-		fn = rp->path + "lambda" + cp->fn_suffix;
-		save_double_data(fn, lambda, num_trajectories, 16, false);
-
 		int* num_renorms = ed->num_renorms;
 		fn = rp->path + "num_renorms" + cp->fn_suffix;
 		save_int_data(fn, num_renorms, num_trajectories, false);
 
+		double* mean_lpn = ed->mean_lpn;
 		fn = rp->path + "mean_lpn" + cp->fn_suffix;
 		save_double_data(fn, mean_lpn, num_trajectories, 16, false);
 
+		double* energy_lpn = ed->energy_lpn;
 		fn = rp->path + "energy_lpn" + cp->fn_suffix;
 		save_double_data(fn, energy_lpn, num_trajectories, 16, false);
 
@@ -7725,20 +7724,19 @@ void Floq2SpinsCoreBehaviour::dump_lpn(AllData* ad) const
 
 	int dump_obs = int(cp->params.find("dump_obs")->second);
 
+	string fn;
+
+	double* lambda = ed->lambda_now;
+	fn = rp->path + "lambda" + cp->fn_suffix;
+	save_double_data(fn, lambda, num_trajectories, 16, false);
+
 	if (dump_obs == 1)
 	{
-		double* lambda = ed->lambda_now;
-		MKL_Complex16* spec_lpn = ed->spec_lpn;
-
-		string fn;
-
-		fn = rp->path + "lambda" + cp->fn_suffix;
-		save_double_data(fn, lambda, num_trajectories, 16, false);
-
 		int* num_renorms = ed->num_renorms;
 		fn = rp->path + "num_renorms" + cp->fn_suffix;
 		save_int_data(fn, num_renorms, num_trajectories, false);
 
+		MKL_Complex16* spec_lpn = ed->spec_lpn;
 		fn = rp->path + "spec_lpn" + cp->fn_suffix;
 		save_complex_data(fn, spec_lpn, num_trajectories, 16, false);
 
