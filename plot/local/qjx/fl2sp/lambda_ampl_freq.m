@@ -19,9 +19,9 @@ J = 1.0;
 gamma = 0.05;
 
 lpn_type = -1;
-lpn_delta_s = log10(1.0e-6);
-lpn_delta_f_high = log10(1.0e-6);
-lpn_delta_f_low = log10(1.0e-6);
+lpn_delta_s = log10(1.0e-1);
+lpn_delta_f_high = log10(1.0e-1);
+lpn_delta_f_low = log10(1.0e-1);
 
 ampl_start = 2.0;
 ampl_shift = 2.0;

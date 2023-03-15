@@ -7,7 +7,7 @@ init_fn
 path
 seed 1
 mns 1000000
-num_threads 10
+num_threads 25
 num_trajectories 50
 num_tp_periods 100
 num_obs_periods 100
