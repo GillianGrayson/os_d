@@ -3,6 +3,8 @@ clear all;
 path_figures = 'D:/YandexDisk/Work/os_d/drafts/floquet/two_spins/lambdas';
 path_data = 'D:/Work/os_d/source/cpp/QJX/QJX';
 
+cmap_type = 'rwb'; %% 'hot'
+
 sys_id = 7;
 task_id = 7;
 prop_id = 1;
@@ -70,8 +72,12 @@ set(gca, 'FontSize', 30);
 xlabel('$A$', 'Interpreter', 'latex');
 set(gca, 'FontSize', 30);
 ylabel('$\omega$', 'Interpreter', 'latex');
-colormap hot;
-h = colorbar;
+if strcmp(cmap_type,'rwb') == 1
+    h = colorbarpwn(min(lambdas(:)), max(lambdas(:)), 'level', 512);
+else
+    colormap hot;
+    h = colorbar;
+end
 set(gca, 'FontSize', 30);
 title(h, '$\lambda$', 'FontSize', 33, 'interpreter','latex');
 set(gca,'YDir','normal');

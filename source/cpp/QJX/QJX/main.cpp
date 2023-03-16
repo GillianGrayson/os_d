@@ -200,13 +200,13 @@ int main()
 	ConfigParam* cp = new ConfigParam();
 	init_params(rp, cp, "config.txt", "params.txt");
 
-	double ampl_start = 2.0;
-	double ampl_shift = 2.0;
-	int ampl_num = 50;
+	double ampl_start = 1.0;
+	double ampl_shift = 1.0;
+	int ampl_num = 100;
 
-	double omega_start = 0.2;
-	double omega_shift = 0.2;
-	int omega_num = 50;
+	double omega_start = 0.1;
+	double omega_shift = 0.1;
+	int omega_num = 100;
 
 	for (int ampl_id = 0; ampl_id < ampl_num; ampl_id++)
 	{
@@ -220,7 +220,7 @@ int main()
 			std::cout << endl << "ampl: " << ampl << endl;
 			std::cout << "omega: " << omega << endl;
 			
-			cp->rk_ns = max(1000, static_cast<int>(T / (0.001)));
+			cp->rk_ns = max(1000, static_cast<int>(T / (0.005)));
 
 			double step = T / cp->rk_ns;
 
