@@ -200,13 +200,13 @@ int main()
 	ConfigParam* cp = new ConfigParam();
 	init_params(rp, cp, "config.txt", "params.txt");
 
-	double ampl_start = 1.0;
-	double ampl_shift = 1.0;
-	int ampl_num = 100;
+	double ampl_start = 2.0;
+	double ampl_shift = 2.0;
+	int ampl_num = 50;
 
-	double omega_start = 0.1;
-	double omega_shift = 0.1;
-	int omega_num = 100;
+	double omega_start = 0.2;
+	double omega_shift = 0.2;
+	int omega_num = 50;
 
 	for (int ampl_id = 0; ampl_id < ampl_num; ampl_id++)
 	{
@@ -227,11 +227,11 @@ int main()
 			std::cout << "step: " << step << endl ;
 			std::cout << "rk_ns: " << cp->rk_ns << endl << endl;
 
-			auto it = cp->params.find("flq2sp_ampl");
+			auto it = cp->params.find("flqnsp_ampl");
 			if (it != cp->params.end())
 				it->second = ampl;
 
-			it = cp->params.find("flq2sp_freq");
+			it = cp->params.find("flq2np_freq");
 			if (it != cp->params.end())
 				it->second = omega;
 
@@ -302,6 +302,13 @@ int main()
 				ob = new Floq2SpinsOutputBehavior();
 				ndb = new Floq2SpinsNewDelBehaviour();
 				cb = new Floq2SpinsCoreBehaviour();
+			}
+			else if (rp->sys_id == FLOQ_MANY_SPINS_SYS_ID)
+			{
+				db = new FloqManySpinsDebugBehaviour();
+				ob = new FloqManySpinsOutputBehavior();
+				ndb = new FloqManySpinsNewDelBehaviour();
+				cb = new FloqManySpinsCoreBehaviour();
 			}
 			else
 			{

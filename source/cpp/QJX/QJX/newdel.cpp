@@ -376,6 +376,41 @@ void Floq2SpinsNewDelBehaviour::init_sizes(AllData* ad) const
 	md->T = 2.0 * PI / double(cp->params.find("flq2sp_freq")->second);
 }
 
+void FloqManySpinsNewDelBehaviour::init_sizes(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	cout << "max_num_threads: " << omp_get_max_threads() << endl;
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_before_init: " << omp_get_num_threads() << endl;
+		}
+	}
+	int num_threads = rp->num_threads;
+	cout << "num_threads_target: " << num_threads << endl;
+	omp_set_num_threads(num_threads);
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_after_init: " << omp_get_num_threads() << endl;
+		}
+	}
+
+	int n_spins = int(cp->params.find("flqnsp_n")->second);
+
+	md->sys_size = std::round(std::pow(2, n_spins));
+	md->num_diss = n_spins;
+	md->num_ham_qj = 1;
+	md->T = 2.0 * PI / double(cp->params.find("flqnsp_freq")->second);
+}
+
 
 void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 {
@@ -1111,6 +1146,156 @@ void Floq2SpinsNewDelBehaviour::init_hamiltonians(AllData* ad) const
 	init_random_obs(ad);
 }
 
+void FloqManySpinsNewDelBehaviour::init_hamiltonians(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	md->hamiltonian = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->hamiltonian_drv = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonian[index].real = 0.0;
+			md->hamiltonian[index].imag = 0.0;
+
+			md->hamiltonian_drv[index].real = 0.0;
+			md->hamiltonian_drv[index].imag = 0.0;
+
+			md->special[index].real = 0.0;
+			md->special[index].imag = 0.0;
+		}
+	}
+
+	int n_spins = int(cp->params.find("flqnsp_n")->second);
+
+	double Delta = double(cp->params.find("flqnsp_Delta")->second);
+	double J = double(cp->params.find("flqnsp_J")->second);
+
+	Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+	std::string sep = "\n----------------------------------------\n";
+
+	Eigen::MatrixXcd sigma_0(2, 2);
+	sigma_0(0, 0) = std::complex<double>(1.0, 0.0);
+	sigma_0(0, 1) = std::complex<double>(0.0, 0.0);
+	sigma_0(1, 0) = std::complex<double>(0.0, 0.0);
+	sigma_0(1, 1) = std::complex<double>(1.0, 0.0);
+	//std::cout << sigma_0.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_x(2, 2);
+	sigma_x(0, 0) = std::complex<double>(0.0, 0.0);
+	sigma_x(0, 1) = std::complex<double>(1.0, 0.0);
+	sigma_x(1, 0) = std::complex<double>(1.0, 0.0);
+	sigma_x(1, 1) = std::complex<double>(0.0, 0.0);
+	//std::cout << sigma_x.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_y(2, 2);
+	sigma_y(0, 0) = std::complex<double>(0.0, 0.0);
+	sigma_y(0, 1) = std::complex<double>(0.0, -1.0);
+	sigma_y(1, 0) = std::complex<double>(0.0, 1.0);
+	sigma_y(1, 1) = std::complex<double>(0.0, 0.0);
+	//std::cout << sigma_y.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_z(2, 2);
+	sigma_z(0, 0) = std::complex<double>(1.0, 0.0);
+	sigma_z(0, 1) = std::complex<double>(0.0, 0.0);
+	sigma_z(1, 0) = std::complex<double>(0.0, 0.0);
+	sigma_z(1, 1) = std::complex<double>(-1.0, 0.0);
+	//std::cout << sigma_z.format(CleanFmt) << sep;
+
+	std::vector<Eigen::MatrixXcd> s_sigmas_x;
+	std::vector<Eigen::MatrixXcd> s_sigmas_y;
+	std::vector<Eigen::MatrixXcd> s_sigmas_z;
+	for (int s_id = 0; s_id < n_spins; s_id++)
+	{
+		Eigen::MatrixXcd s_sigma_x(2, 2);
+		Eigen::MatrixXcd s_sigma_y(2, 2);
+		Eigen::MatrixXcd s_sigma_z(2, 2);
+		if (s_id == 0)
+		{
+			s_sigma_x = sigma_x;
+			s_sigma_y = sigma_y;
+			s_sigma_z = sigma_z;
+		}
+		else
+		{
+			s_sigma_x = sigma_0;
+			s_sigma_y = sigma_0;
+			s_sigma_z = sigma_0;
+		}
+
+		for (int it_id = 1; it_id < n_spins; it_id++)
+		{
+			if (it_id == s_id)
+			{
+				s_sigma_x = Eigen::kroneckerProduct(s_sigma_x, sigma_x).eval();
+				s_sigma_y = Eigen::kroneckerProduct(s_sigma_y, sigma_y).eval();
+				s_sigma_z = Eigen::kroneckerProduct(s_sigma_z, sigma_z).eval();
+			}
+			else
+			{
+				s_sigma_x = Eigen::kroneckerProduct(s_sigma_x, sigma_0).eval();
+				s_sigma_y = Eigen::kroneckerProduct(s_sigma_y, sigma_0).eval();
+				s_sigma_z = Eigen::kroneckerProduct(s_sigma_z, sigma_0).eval();
+			}
+		}
+
+		s_sigmas_x.push_back(s_sigma_x);
+		s_sigmas_y.push_back(s_sigma_y);
+		s_sigmas_z.push_back(s_sigma_z);
+	}
+
+	Eigen::MatrixXcd H = Eigen::MatrixXcd::Zero(md->sys_size, md->sys_size);
+	Eigen::MatrixXcd H_drv = Eigen::MatrixXcd::Zero(md->sys_size, md->sys_size);
+
+	if (n_spins == 1)
+	{
+		H = 0.5 * Delta * sigma_z;
+		H_drv = sigma_x;
+	}
+	else
+	{
+		Eigen::MatrixXcd interaction = Eigen::MatrixXcd::Identity(md->sys_size, md->sys_size);
+		for (int s_id = 0; s_id < n_spins; s_id++)
+		{
+			H = H + s_sigmas_z[s_id];
+			interaction = interaction * s_sigmas_y[s_id];
+		}
+		H *= 0.5 * Delta;
+		H += J * interaction;
+
+		H_drv = s_sigmas_x[0];
+	}
+
+	//std::cout << H.format(CleanFmt) << sep;
+	//std::cout << H_drv.format(CleanFmt) << sep;
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonian[index].real = H(st_id_1, st_id_2).real();
+			md->hamiltonian[index].imag = H(st_id_1, st_id_2).imag();
+
+			md->hamiltonian_drv[index].real = H_drv(st_id_1, st_id_2).real();
+			md->hamiltonian_drv[index].imag = H_drv(st_id_1, st_id_2).imag();
+
+			md->special[index].real = H(st_id_1, st_id_2).real();
+			md->special[index].imag = H(st_id_1, st_id_2).imag();
+		}
+	}
+
+	init_random_obs(ad);
+}
+
 
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
 {
@@ -1792,6 +1977,94 @@ void Floq2SpinsNewDelBehaviour::init_dissipators(AllData* ad) const
 
 			md->dissipators[1][index].real = diss_2(st_id_1, st_id_2).real();
 			md->dissipators[1][index].imag = diss_2(st_id_1, st_id_2).imag();
+		}
+	}
+}
+
+void FloqManySpinsNewDelBehaviour::init_dissipators(AllData* ad) const
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	md->dissipators = new MKL_Complex16 * [md->num_diss];
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		md->dissipators[diss_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+			{
+				md->dissipators[diss_id][index].real = 0.0;
+				md->dissipators[diss_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	int n_spins = int(cp->params.find("flqnsp_n")->second);
+
+	Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+	std::string sep = "\n----------------------------------------\n";
+
+	Eigen::MatrixXcd sigma_0(2, 2);
+	sigma_0(0, 0) = std::complex<double>(1.0, 0.0);
+	sigma_0(0, 1) = std::complex<double>(0.0, 0.0);
+	sigma_0(1, 0) = std::complex<double>(0.0, 0.0);
+	sigma_0(1, 1) = std::complex<double>(1.0, 0.0);
+	//std::cout << sigma_0.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_m(2, 2);
+	sigma_m(0, 0) = std::complex<double>(0.0, 0.0);
+	sigma_m(0, 1) = std::complex<double>(0.0, 0.0);
+	sigma_m(1, 0) = std::complex<double>(1.0, 0.0);
+	sigma_m(1, 1) = std::complex<double>(0.0, 0.0);
+	//std::cout << sigma_m.format(CleanFmt) << sep;
+
+
+	std::vector<Eigen::MatrixXcd> disses;
+	for (int s_id = 0; s_id < n_spins; s_id++)
+	{
+		Eigen::MatrixXcd s_sigma_m(2, 2);
+		if (s_id == 0)
+		{
+			s_sigma_m = sigma_m;
+		}
+		else
+		{
+			s_sigma_m = sigma_0;
+		}
+
+		for (int it_id = 1; it_id < n_spins; it_id++)
+		{
+			if (it_id == s_id)
+			{
+				s_sigma_m = Eigen::kroneckerProduct(s_sigma_m, sigma_m).eval();
+			}
+			else
+			{
+				s_sigma_m = Eigen::kroneckerProduct(s_sigma_m, sigma_0).eval();
+			}
+		}
+
+		disses.push_back(s_sigma_m);
+		//std::cout << s_sigma_m.format(CleanFmt) << sep;
+	}
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			for (int s_id = 0; s_id < n_spins; s_id++)
+			{
+				md->dissipators[s_id][index].real = disses[s_id](st_id_1, st_id_2).real();
+				md->dissipators[s_id][index].imag = disses[s_id](st_id_1, st_id_2).imag();
+			}
 		}
 	}
 }
@@ -2615,6 +2888,104 @@ void Floq2SpinsNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
 	delete[] hamitlonian_part;
 }
 
+void FloqManySpinsNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	double gamma = double(cp->params.find("flqnsp_gamma")->second);
+
+	MKL_Complex16 gamma_cmplx = { gamma, 0.0 };
+	MKL_Complex16 zero_cmplx = { 0.0, 0.0 };
+
+	md->hamiltonians_qj = new MKL_Complex16 * [md->num_ham_qj];
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		md->hamiltonians_qj[qj_ham_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+
+	MKL_Complex16* diss_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	MKL_Complex16* hamitlonian_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			diss_part[index].real = 0.0;
+			diss_part[index].imag = 0.0;
+
+			hamitlonian_part[index].real = md->hamiltonian[index].real;
+			hamitlonian_part[index].imag = md->hamiltonian[index].imag;
+
+			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+			{
+				md->hamiltonians_qj[qj_ham_id][index].real = 0.0;
+				md->hamiltonians_qj[qj_ham_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		cblas_zgemm(
+			CblasRowMajor,
+			CblasConjTrans,
+			CblasNoTrans,
+			md->sys_size,
+			md->sys_size,
+			md->sys_size,
+			&gamma_cmplx,
+			md->dissipators[diss_id],
+			md->sys_size,
+			md->dissipators[diss_id],
+			md->sys_size,
+			&zero_cmplx,
+			diss_part,
+			md->sys_size
+		);
+
+		for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+		{
+			for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+			{
+				int index = st_id_1 * md->sys_size + st_id_2;
+				hamitlonian_part[index].real += 0.5 * diss_part[index].imag;
+				hamitlonian_part[index].imag -= 0.5 * diss_part[index].real;
+			}
+		}
+	}
+
+	md->non_drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->non_drv_part[index].real = hamitlonian_part[index].real;
+			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
+
+			md->drv_part[index].real = md->hamiltonian_drv[index].real;
+			md->drv_part[index].imag = md->hamiltonian_drv[index].imag;
+		}
+	}
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonians_qj[0][index].real += hamitlonian_part[index].imag;
+			md->hamiltonians_qj[0][index].imag -= hamitlonian_part[index].real;
+		}
+	}
+
+	delete[] diss_part;
+	delete[] hamitlonian_part;
+}
+
 
 void DimerNewDelBehaviour::free_hamiltonians(AllData * ad) const
 {
@@ -2705,6 +3076,17 @@ void Floq2SpinsNewDelBehaviour::free_hamiltonians(AllData* ad) const
 	free_random_obs(ad);
 }
 
+void FloqManySpinsNewDelBehaviour::free_hamiltonians(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	delete[] md->hamiltonian;
+	delete[] md->hamiltonian_drv;
+	delete[] md->special;
+
+	free_random_obs(ad);
+}
+
 
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
 {
@@ -2777,6 +3159,17 @@ void IntegrableNewDelBehaviour::free_dissipators(AllData* ad) const
 }
 
 void Floq2SpinsNewDelBehaviour::free_dissipators(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		delete[] md->dissipators[diss_id];
+	}
+	delete[] md->dissipators;
+}
+
+void FloqManySpinsNewDelBehaviour::free_dissipators(AllData* ad) const
 {
 	MainData* md = ad->md;
 
@@ -2885,6 +3278,19 @@ void IntegrableNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
 }
 
 void Floq2SpinsNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	delete[] md->non_drv_part;
+
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		delete[] md->hamiltonians_qj[qj_ham_id];
+	}
+	delete[] md->hamiltonians_qj;
+}
+
+void FloqManySpinsNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
 {
 	MainData* md = ad->md;
 
