@@ -200,13 +200,14 @@ int main()
 	ConfigParam* cp = new ConfigParam();
 	init_params(rp, cp, "config.txt", "params.txt");
 
+	// ======== 2 Spins params ======== 
 	//double ampl_start = 1.0;
 	//double ampl_shift = 2.0;
 	//int ampl_num = 50;
-
 	//double omega_start = 0.1;
 	//double omega_shift = 0.2;
 	//int omega_num = 50;
+	// ======== 2 Spins params ======== 
 
 	double ampl_start = 0.025;
 	double ampl_shift = 0.05;
