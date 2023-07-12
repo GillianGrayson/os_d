@@ -88,6 +88,12 @@ flqnsp_freq 2.0
 flqnsp_Delta 1.0
 flqnsp_J 1.0
 flqnsp_gamma 0.05
+flq_sp_ph_n_ph 1
+flq_sp_ph_ampl 10.0
+flq_sp_ph_freq 1.0
+flq_sp_ph_Delta 0.1
+flq_sp_ph_Omega 1.0
+flq_sp_ph_gamma 0.01
 start_type 0
 start_state 0
 cd_dim 1

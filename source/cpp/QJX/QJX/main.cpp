@@ -209,13 +209,25 @@ int main()
 	//int omega_num = 50;
 	// ======== 2 Spins params ======== 
 
-	double ampl_start = 0.025;
-	double ampl_shift = 0.05;
+	// ======== 1 Spin params ======== 
+	//double ampl_start = 0.025;
+	//double ampl_shift = 0.05;
+	//int ampl_num = 50;
+
+	//double omega_start = 0.06;
+	//double omega_shift = 0.12;
+	//int omega_num = 50;
+	// ======== 1 Spin params ========
+
+	// ======== 1 spin and photonic mode params ======== 
+	double ampl_start = 0.6;
+	double ampl_shift = 0.6;
 	int ampl_num = 50;
 
-	double omega_start = 0.06;
-	double omega_shift = 0.12;
+	double omega_start = 0.07;
+	double omega_shift = 0.07;
 	int omega_num = 50;
+	// ======== 1 spin and photonic mode params ======== 
 
 	for (int ampl_id = 0; ampl_id < ampl_num; ampl_id++)
 	{
@@ -236,11 +248,11 @@ int main()
 			std::cout << "step: " << step << endl ;
 			std::cout << "rk_ns: " << cp->rk_ns << endl << endl;
 
-			auto it = cp->params.find("flqnsp_ampl");
+			auto it = cp->params.find("flq_sp_ph_ampl");
 			if (it != cp->params.end())
 				it->second = ampl;
 
-			it = cp->params.find("flqnsp_freq");
+			it = cp->params.find("flq_sp_ph_freq");
 			if (it != cp->params.end())
 				it->second = omega;
 
@@ -318,6 +330,13 @@ int main()
 				ob = new FloqManySpinsOutputBehavior();
 				ndb = new FloqManySpinsNewDelBehaviour();
 				cb = new FloqManySpinsCoreBehaviour();
+			}
+			else if (rp->sys_id == FLOQ_SPIN_PH_SYS_ID)
+			{
+				db = new FloqSpinPhDebugBehaviour();
+				ob = new FloqSpinPhOutputBehavior();
+				ndb = new FloqSpinPhNewDelBehaviour();
+				cb = new FloqSpinPhCoreBehaviour();
 			}
 			else
 			{

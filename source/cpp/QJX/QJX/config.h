@@ -33,6 +33,7 @@ typedef Eigen::Triplet<std::complex<double>> triplet;
 #define DIMERSYNC_SYS_ID 6
 #define FLOQ_2_SPINS_SYS_ID 7
 #define FLOQ_MANY_SPINS_SYS_ID 8
+#define FLOQ_SPIN_PH_SYS_ID 9
 
 #define LPN_TASK_ID 0
 #define STD_TASK_ID 1

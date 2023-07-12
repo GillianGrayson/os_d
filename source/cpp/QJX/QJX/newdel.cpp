@@ -411,6 +411,41 @@ void FloqManySpinsNewDelBehaviour::init_sizes(AllData* ad) const
 	md->T = 2.0 * PI / double(cp->params.find("flqnsp_freq")->second);
 }
 
+void FloqSpinPhNewDelBehaviour::init_sizes(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	cout << "max_num_threads: " << omp_get_max_threads() << endl;
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_before_init: " << omp_get_num_threads() << endl;
+		}
+	}
+	int num_threads = rp->num_threads;
+	cout << "num_threads_target: " << num_threads << endl;
+	omp_set_num_threads(num_threads);
+#pragma omp parallel
+	{
+		int t_id = omp_get_thread_num();
+		if (t_id == 0)
+		{
+			cout << "num_threads_after_init: " << omp_get_num_threads() << endl;
+		}
+	}
+
+	int n_ph = int(cp->params.find("flq_sp_ph_n_ph")->second);
+
+	md->sys_size = 2 * (n_ph + 1);
+	md->num_diss = 1;
+	md->num_ham_qj = 1;
+	md->T = 2.0 * PI / double(cp->params.find("flq_sp_ph_freq")->second);
+}
+
 
 void DimerNewDelBehaviour::init_hamiltonians(AllData * ad) const
 {
@@ -1296,6 +1331,125 @@ void FloqManySpinsNewDelBehaviour::init_hamiltonians(AllData* ad) const
 	init_random_obs(ad);
 }
 
+void FloqSpinPhNewDelBehaviour::init_hamiltonians(AllData* ad) const
+{
+	RunParam* rp = ad->rp;
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	md->hamiltonian = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->hamiltonian_drv = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->special = new MKL_Complex16[md->sys_size * md->sys_size];
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonian[index].real = 0.0;
+			md->hamiltonian[index].imag = 0.0;
+
+			md->hamiltonian_drv[index].real = 0.0;
+			md->hamiltonian_drv[index].imag = 0.0;
+
+			md->special[index].real = 0.0;
+			md->special[index].imag = 0.0;
+		}
+	}
+
+	int n_ph = int(cp->params.find("flq_sp_ph_n_ph")->second);
+
+	double Delta = double(cp->params.find("flq_sp_ph_Delta")->second);
+	double Omega = double(cp->params.find("flq_sp_ph_Omega")->second);
+
+	Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+	std::string sep = "\n----------------------------------------\n";
+
+	Eigen::MatrixXcd sigma_0(2, 2);
+	sigma_0(0, 0) = std::complex<double>(1.0, 0.0);
+	sigma_0(0, 1) = std::complex<double>(0.0, 0.0);
+	sigma_0(1, 0) = std::complex<double>(0.0, 0.0);
+	sigma_0(1, 1) = std::complex<double>(1.0, 0.0);
+	//std::cout << sigma_0.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_x(2, 2);
+	sigma_x(0, 0) = std::complex<double>(0.0, 0.0);
+	sigma_x(0, 1) = std::complex<double>(1.0, 0.0);
+	sigma_x(1, 0) = std::complex<double>(1.0, 0.0);
+	sigma_x(1, 1) = std::complex<double>(0.0, 0.0);
+	//std::cout << sigma_x.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_y(2, 2);
+	sigma_y(0, 0) = std::complex<double>(0.0, 0.0);
+	sigma_y(0, 1) = std::complex<double>(0.0, -1.0);
+	sigma_y(1, 0) = std::complex<double>(0.0, 1.0);
+	sigma_y(1, 1) = std::complex<double>(0.0, 0.0);
+	//std::cout << sigma_y.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_z(2, 2);
+	sigma_z(0, 0) = std::complex<double>(1.0, 0.0);
+	sigma_z(0, 1) = std::complex<double>(0.0, 0.0);
+	sigma_z(1, 0) = std::complex<double>(0.0, 0.0);
+	sigma_z(1, 1) = std::complex<double>(-1.0, 0.0);
+	//std::cout << sigma_z.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_m(2, 2);
+	sigma_m(0, 0) = std::complex<double>(0.0, 0.0);
+	sigma_m(0, 1) = std::complex<double>(0.0, 0.0);
+	sigma_m(1, 0) = std::complex<double>(1.0, 0.0);
+	sigma_m(1, 1) = std::complex<double>(0.0, 0.0);
+	//std::cout << sigma_m.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd sigma_p(2, 2);
+	sigma_p(0, 0) = std::complex<double>(0.0, 0.0);
+	sigma_p(0, 1) = std::complex<double>(1.0, 0.0);
+	sigma_p(1, 0) = std::complex<double>(0.0, 0.0);
+	sigma_p(1, 1) = std::complex<double>(0.0, 0.0);
+	//std::cout << sigma_p.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd a_std = Eigen::MatrixXcd::Zero(n_ph + 1, n_ph + 1);
+	for (int ph_id = 0; ph_id < n_ph; ph_id++)
+	{
+		a_std(ph_id, ph_id + 1) = std::sqrt(static_cast<double>(ph_id + 1));
+	}
+	Eigen::MatrixXcd a_dag = a_std.adjoint().eval();
+
+	Eigen::MatrixXcd ph_eye = Eigen::MatrixXcd::Identity(n_ph + 1, n_ph + 1);
+
+	Eigen::MatrixXcd sigma_x_full = Eigen::kroneckerProduct(ph_eye, sigma_x).eval();
+	Eigen::MatrixXcd sigma_y_full = Eigen::kroneckerProduct(ph_eye, sigma_y).eval();
+	Eigen::MatrixXcd sigma_z_full = Eigen::kroneckerProduct(ph_eye, sigma_z).eval();
+
+	Eigen::MatrixXcd a_dag_sigma_minus = Eigen::kroneckerProduct(a_dag, sigma_0) * Eigen::kroneckerProduct(ph_eye, sigma_m);
+	Eigen::MatrixXcd sigma_plus_a_std = Eigen::kroneckerProduct(ph_eye, sigma_p) * Eigen::kroneckerProduct(a_std, sigma_0);
+
+	Eigen::MatrixXcd H = 0.5 * Delta * sigma_z_full + 0.5 * Omega * (a_dag_sigma_minus + sigma_plus_a_std);
+	Eigen::MatrixXcd H_drv = sigma_x_full;
+
+	std::cout << H.format(CleanFmt) << sep;
+	std::cout << H_drv.format(CleanFmt) << sep;
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonian[index].real = H(st_id_1, st_id_2).real();
+			md->hamiltonian[index].imag = H(st_id_1, st_id_2).imag();
+
+			md->hamiltonian_drv[index].real = H_drv(st_id_1, st_id_2).real();
+			md->hamiltonian_drv[index].imag = H_drv(st_id_1, st_id_2).imag();
+
+			md->special[index].real = H(st_id_1, st_id_2).real();
+			md->special[index].imag = H(st_id_1, st_id_2).imag();
+		}
+	}
+
+	init_random_obs(ad);
+}
+
 
 void DimerNewDelBehaviour::init_dissipators(AllData * ad) const
 {
@@ -2065,6 +2219,64 @@ void FloqManySpinsNewDelBehaviour::init_dissipators(AllData* ad) const
 				md->dissipators[s_id][index].real = disses[s_id](st_id_1, st_id_2).real();
 				md->dissipators[s_id][index].imag = disses[s_id](st_id_1, st_id_2).imag();
 			}
+		}
+	}
+}
+
+void FloqSpinPhNewDelBehaviour::init_dissipators(AllData* ad) const
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	md->dissipators = new MKL_Complex16 * [md->num_diss];
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		md->dissipators[diss_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+			{
+				md->dissipators[diss_id][index].real = 0.0;
+				md->dissipators[diss_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	int n_ph = int(cp->params.find("flq_sp_ph_n_ph")->second);
+
+	Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+	std::string sep = "\n----------------------------------------\n";
+
+	Eigen::MatrixXcd sigma_0(2, 2);
+	sigma_0(0, 0) = std::complex<double>(1.0, 0.0);
+	sigma_0(0, 1) = std::complex<double>(0.0, 0.0);
+	sigma_0(1, 0) = std::complex<double>(0.0, 0.0);
+	sigma_0(1, 1) = std::complex<double>(1.0, 0.0);
+	//std::cout << sigma_0.format(CleanFmt) << sep;
+
+	Eigen::MatrixXcd a_std = Eigen::MatrixXcd::Zero(n_ph + 1, n_ph + 1);
+	for (int ph_id = 0; ph_id < n_ph; ph_id++)
+	{
+		a_std(ph_id, ph_id + 1) = std::sqrt(static_cast<double>(ph_id + 1));
+	}
+	Eigen::MatrixXcd a_dag = a_std.adjoint().eval();
+
+	Eigen::MatrixXcd diss = Eigen::kroneckerProduct(a_std, sigma_0).eval();
+
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->dissipators[0][index].real = diss(st_id_1, st_id_2).real();
+			md->dissipators[0][index].imag = diss(st_id_1, st_id_2).imag();
 		}
 	}
 }
@@ -2986,6 +3198,104 @@ void FloqManySpinsNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
 	delete[] hamitlonian_part;
 }
 
+void FloqSpinPhNewDelBehaviour::init_hamiltonians_qj(AllData* ad) const
+{
+	ConfigParam* cp = ad->cp;
+	MainData* md = ad->md;
+
+	double gamma = double(cp->params.find("flq_sp_ph_gamma")->second);
+
+	MKL_Complex16 gamma_cmplx = { gamma, 0.0 };
+	MKL_Complex16 zero_cmplx = { 0.0, 0.0 };
+
+	md->hamiltonians_qj = new MKL_Complex16 * [md->num_ham_qj];
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		md->hamiltonians_qj[qj_ham_id] = new MKL_Complex16[md->sys_size * md->sys_size];
+	}
+
+	MKL_Complex16* diss_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	MKL_Complex16* hamitlonian_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			diss_part[index].real = 0.0;
+			diss_part[index].imag = 0.0;
+
+			hamitlonian_part[index].real = md->hamiltonian[index].real;
+			hamitlonian_part[index].imag = md->hamiltonian[index].imag;
+
+			for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+			{
+				md->hamiltonians_qj[qj_ham_id][index].real = 0.0;
+				md->hamiltonians_qj[qj_ham_id][index].imag = 0.0;
+			}
+		}
+	}
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		cblas_zgemm(
+			CblasRowMajor,
+			CblasConjTrans,
+			CblasNoTrans,
+			md->sys_size,
+			md->sys_size,
+			md->sys_size,
+			&gamma_cmplx,
+			md->dissipators[diss_id],
+			md->sys_size,
+			md->dissipators[diss_id],
+			md->sys_size,
+			&zero_cmplx,
+			diss_part,
+			md->sys_size
+		);
+
+		for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+		{
+			for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+			{
+				int index = st_id_1 * md->sys_size + st_id_2;
+				hamitlonian_part[index].real += 0.5 * diss_part[index].imag;
+				hamitlonian_part[index].imag -= 0.5 * diss_part[index].real;
+			}
+		}
+	}
+
+	md->non_drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	md->drv_part = new MKL_Complex16[md->sys_size * md->sys_size];
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+			md->non_drv_part[index].real = hamitlonian_part[index].real;
+			md->non_drv_part[index].imag = hamitlonian_part[index].imag;
+
+			md->drv_part[index].real = md->hamiltonian_drv[index].real;
+			md->drv_part[index].imag = md->hamiltonian_drv[index].imag;
+		}
+	}
+
+	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
+	{
+		for (int st_id_2 = 0; st_id_2 < md->sys_size; st_id_2++)
+		{
+			int index = st_id_1 * md->sys_size + st_id_2;
+
+			md->hamiltonians_qj[0][index].real += hamitlonian_part[index].imag;
+			md->hamiltonians_qj[0][index].imag -= hamitlonian_part[index].real;
+		}
+	}
+
+	delete[] diss_part;
+	delete[] hamitlonian_part;
+}
+
 
 void DimerNewDelBehaviour::free_hamiltonians(AllData * ad) const
 {
@@ -3087,6 +3397,17 @@ void FloqManySpinsNewDelBehaviour::free_hamiltonians(AllData* ad) const
 	free_random_obs(ad);
 }
 
+void FloqSpinPhNewDelBehaviour::free_hamiltonians(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	delete[] md->hamiltonian;
+	delete[] md->hamiltonian_drv;
+	delete[] md->special;
+
+	free_random_obs(ad);
+}
+
 
 void DimerNewDelBehaviour::free_dissipators(AllData * ad) const
 {
@@ -3170,6 +3491,17 @@ void Floq2SpinsNewDelBehaviour::free_dissipators(AllData* ad) const
 }
 
 void FloqManySpinsNewDelBehaviour::free_dissipators(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	for (int diss_id = 0; diss_id < md->num_diss; diss_id++)
+	{
+		delete[] md->dissipators[diss_id];
+	}
+	delete[] md->dissipators;
+}
+
+void FloqSpinPhNewDelBehaviour::free_dissipators(AllData* ad) const
 {
 	MainData* md = ad->md;
 
@@ -3291,6 +3623,19 @@ void Floq2SpinsNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
 }
 
 void FloqManySpinsNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
+{
+	MainData* md = ad->md;
+
+	delete[] md->non_drv_part;
+
+	for (int qj_ham_id = 0; qj_ham_id < md->num_ham_qj; qj_ham_id++)
+	{
+		delete[] md->hamiltonians_qj[qj_ham_id];
+	}
+	delete[] md->hamiltonians_qj;
+}
+
+void FloqSpinPhNewDelBehaviour::free_hamiltonians_qj(AllData* ad) const
 {
 	MainData* md = ad->md;
 

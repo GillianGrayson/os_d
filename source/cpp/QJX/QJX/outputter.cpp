@@ -323,6 +323,33 @@ void FloqManySpinsOutputBehavior::suffix_param(RunParam* rp, ConfigParam* cp, in
 	cp->fn_suffix = suffix;
 }
 
+void FloqSpinPhOutputBehavior::suffix_param(RunParam* rp, ConfigParam* cp, int precision) const
+{
+	string setup = suffix_setup(rp);
+	string qj = suffix_qj(rp, cp, precision);
+
+	stringstream params;
+	params << "_nph(" << int(cp->params.find("flq_sp_ph_n_ph")->second) << ")";
+	params << "_ampl(" << setprecision(precision) << fixed << double(cp->params.find("flq_sp_ph_ampl")->second) << ")";
+	params << "_freq(" << setprecision(precision) << fixed << double(cp->params.find("flq_sp_ph_freq")->second) << ")";
+	params << "_D(" << setprecision(precision) << fixed << double(cp->params.find("flq_sp_ph_Delta")->second) << ")";
+	params << "_O(" << setprecision(precision) << fixed << double(cp->params.find("flq_sp_ph_Omega")->second) << ")";
+	params << "_gamma(" << setprecision(precision) << fixed << double(cp->params.find("flq_sp_ph_gamma")->second) << ")";
+
+	string suffix = setup + qj + params.str();
+
+	if (rp->task_id == LPN_MULT_TASK_ID || rp->task_id == LPN_MULT_DEEP_TASK_ID)
+	{
+		string lpn = suffix_lpn(rp, cp);
+		suffix += lpn;
+	}
+
+	string ext = extension();
+	suffix += ext;
+
+	cp->fn_suffix = suffix;
+}
+
 string suffix_qj(RunParam * rp, ConfigParam * cp, int precision)
 {
 	stringstream suffix;
