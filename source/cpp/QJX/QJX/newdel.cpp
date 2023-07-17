@@ -1427,8 +1427,8 @@ void FloqSpinPhNewDelBehaviour::init_hamiltonians(AllData* ad) const
 	Eigen::MatrixXcd H = 0.5 * Delta * sigma_z_full + 0.5 * Omega * (a_dag_sigma_minus + sigma_plus_a_std);
 	Eigen::MatrixXcd H_drv = sigma_x_full;
 
-	std::cout << H.format(CleanFmt) << sep;
-	std::cout << H_drv.format(CleanFmt) << sep;
+	//std::cout << H.format(CleanFmt) << sep;
+	//std::cout << H_drv.format(CleanFmt) << sep;
 
 	for (int st_id_1 = 0; st_id_1 < md->sys_size; st_id_1++)
 	{
